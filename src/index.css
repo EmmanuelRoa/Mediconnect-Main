@@ -1,68 +1,120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ⚡ LA MAGIA: usa data-theme en lugar de .dark */
+@custom-variant dark ([data-theme="dark"] &);
+
+* {
+  font-family: "Manrope", sans-serif;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Añade estas líneas para los nuevos colores */
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-btn-secondary: var(--bg-btn-secondary);
+  --color-destructive: var(--destructive);
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --radius: 0.625rem;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Light Mode Colors */
+  --background: #ffffff;
+  --foreground: #0b2c12;
+  --primary: #0b2c12;
+  --primary-foreground: #ffffff;
+  --secondary: #8bb1ca;
+  --secondary-foreground: #0b2c12;
+  --accent: #d7e3c9;
+  --accent-foreground: #0b2c12;
+  --neutral: #eff2d7;
+  --neutral-foreground: #0b2c12;
+  --card: #fbfbfb;
+  --card-foreground: #0b2c12;
+  --border: #eff2d7;
+  --input: #eff2d7;
+  --ring: #8bb1ca;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  /* Nuevos colores */
+  --bg-secondary: #fbfbfb;
+  --bg-btn-secondary: #f7f7f7;
+  --destructive: #ffebe9;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  /* Pie Chart Colors (Light Mode) */
+  --chart-1: 120 86% 7%; /* #0B2C12 */
+  --chart-2: 146 28% 24%; /* #2F5233 */
+  --chart-3: 139 17% 50%; /* #6B8F71 */
+  --chart-4: 120 19% 69%; /* #A8C3A0 */
+  --chart-5: 90 38% 89%; /* #D7E3C9 */
+  --chart-6: 72 41% 92%; /* #EFF2D7 */
+  --chart-7: 120 86% 7%; /* #0B2C12 */
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+[data-theme="dark"] {
+  /* Dark Mode Colors */
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #8bb1ca;
+  --secondary-foreground: #000000;
+  --accent: hsl(88, 32%, 84%);
+  --accent-foreground: #000000;
+  --neutral: #1e1e1e;
+  --neutral-foreground: #ffffff;
+  --card: #0a0a0a;
+  --card-foreground: #ffffff;
+  --border: #1e1e1e;
+  --input: #1e1e1e;
+  --ring: #8bb1ca;
+  --destructive: #3b0a0a;
+
+  /* Nuevos colores para dark */
+  --bg-secondary: #0a0a0a;
+  --bg-btn-secondary: #1e1e1e;
+
+  /* Pie Chart Colors (Dark Mode) */
+  --chart-1: 207 44% 60%; /* #8BB1CA */
+  --chart-2: 200 36% 76%; /* #A1C2D4 */
+  --chart-3: 192 38% 80%; /* #B7D0DD */
+  --chart-4: 197 35% 86%; /* #C9DCE6 */
+  --chart-5: 197 34% 90%; /* #D9E7ED */
+  --chart-6: 197 41% 94%; /* #EAF2F6 */
+  --chart-7: 88, 32%, 84%; /* #8BB1CA */
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-  a:hover {
-    color: #747bff;
+  body {
+    @apply bg-background text-foreground;
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
