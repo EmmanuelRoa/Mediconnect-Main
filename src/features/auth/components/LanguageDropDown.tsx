@@ -13,12 +13,6 @@ import { useAppStore } from "@/stores/useAppStore";
 const languages = [
   { code: "es", label: "Español" },
   { code: "en", label: "English" },
-  { code: "fr", label: "Français" },
-  { code: "ht", label: "Kreyòl" },
-  { code: "it", label: "Italiano" },
-  { code: "ja", label: "日本語" },
-  { code: "pt", label: "Português" },
-  { code: "zh", label: "中文" },
 ];
 
 type LanguageDropDownProps = {

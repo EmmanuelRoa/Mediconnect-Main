@@ -153,8 +153,8 @@ function RegisterPage() {
           );
         })}
       </div>
-      <div className="flex justify-center items-center w-full mt-6 ">
-        <div className="w-[90%] flex justify-center items-center ">
+      <div className="flex justify-center items-center w-full p-6 ">
+        <div className="w-[95%] flex justify-center items-center ">
           <AuthFooterContainer
             continueButtonProps={{
               children: t("footer.continue"),

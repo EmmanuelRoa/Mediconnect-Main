@@ -123,14 +123,16 @@ export function MCModalBase({
                 isMobile ? "flex-col-reverse" : ""
               }`}
             >
-              <MCButton
-                variant="secondary"
-                size={isMobile ? "l" : "m"}
-                onClick={onSecondary || onClose}
-                className={isMobile ? "w-full" : ""}
-              >
-                {secondaryText}
-              </MCButton>
+              <MorphingDialogClose>
+                <MCButton
+                  variant="secondary"
+                  size={isMobile ? "l" : "m"}
+                  onClick={onSecondary}
+                  className={isMobile ? "w-full" : ""}
+                >
+                  {secondaryText}
+                </MCButton>
+              </MorphingDialogClose>
               <MCButton
                 variant="delete"
                 size={isMobile ? "l" : "m"}
@@ -161,14 +163,16 @@ export function MCModalBase({
                 isMobile ? "flex-col-reverse" : ""
               }`}
             >
-              <MCButton
-                variant="secondary"
-                size={isMobile ? "l" : "m"}
-                onClick={onSecondary || onClose}
-                className={isMobile ? "w-full" : ""}
-              >
-                {secondaryText}
-              </MCButton>
+              <MorphingDialogClose>
+                <MCButton
+                  variant="secondary"
+                  size={isMobile ? "l" : "m"}
+                  onClick={onSecondary}
+                  className={isMobile ? "w-full" : ""}
+                >
+                  {secondaryText}
+                </MCButton>
+              </MorphingDialogClose>
               <MCButton
                 variant="primary"
                 size={isMobile ? "l" : "m"}

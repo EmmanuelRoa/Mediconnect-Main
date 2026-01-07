@@ -29,7 +29,9 @@ function OtpVerificationPage() {
       setOtp(data.otp);
 
       if (selectedRole === "Patient") {
-        return navigate("/auth/patient-onboarding", { replace: true });
+        return navigate("/auth/patient-onboarding/basic-info", {
+          replace: true,
+        });
       } else if (selectedRole === "Doctor") {
         return navigate("/auth/doctor-onboarding", { replace: true });
       } else if (selectedRole === "Center") {

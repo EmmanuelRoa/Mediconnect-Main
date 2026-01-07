@@ -8,7 +8,7 @@ import MCInput from "@/shared/components/forms/MCInput";
 import MCButton from "@/shared/components/forms/MCButton";
 import { LoginSchema } from "@/schema/AuthSchema";
 import { useAppStore } from "@/stores/useAppStore";
-import { type LoginSchemaType } from "@/schema/AuthSchema";
+import { type LoginSchemaType } from "@/types/AuthTypes";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import LanguageDropDown from "../components/LanguageDropDown";
@@ -97,6 +97,8 @@ function LoginPage() {
                 {t("login.subtitle", "Sign in to MediConnect")}
               </p>
             </div>
+
+            <LanguageDropDown />
           </div>
           <div ref={formRef} className="w-full max-w-xs sm:max-w-md mx-auto">
             <MCFormWrapper
@@ -153,7 +155,6 @@ function LoginPage() {
           </div>
         </main>
 
-        {/* SOLO DESKTOP: imagen lateral */}
         {!isMobile && (
           <aside className="h-full w-full">
             <img
