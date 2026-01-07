@@ -1,10 +1,10 @@
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
-import AuthContentContainer from "../components/AuthContentContainer";
+import AuthContentContainer from "../../components/AuthContentContainer";
 import MCInput from "@/shared/components/forms/MCInput";
 import { ForgotPasswordSchema } from "@/schema/AuthSchema";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "react-i18next";
-import AuthFooterContainer from "../components/AuthFooterContainer";
+import AuthFooterContainer from "../../components/AuthFooterContainer";
 import { useNavigate } from "react-router-dom";
 
 function ForgotPasswordPage() {

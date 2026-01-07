@@ -2,15 +2,18 @@ import { Route, Routes as Router, BrowserRouter } from "react-router-dom";
 import { ROUTES } from "./routes";
 import AuthLayout from "@/layout/AuthLayout";
 import DashboardLayout from "@/layout/DashboardLayout";
-import Login from "@/features/auth/pages/Login";
-import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage";
+import Login from "@/features/auth/pages/LoginPage";
+import ForgotPasswordPage from "@/features/auth/pages/passwordFlow/ForgotPasswordPage";
 import VerifyEmailPage from "@/features/auth/pages/passwordFlow/VerifyEmailPage";
 import ResetPasswordPage from "@/features/auth/pages/passwordFlow/ResetPasswordPage";
-import PasswordSuccessPage from "@/features/auth/pages/passwordFlow/PasswordSuccessPage";
-import Register from "@/features/auth/pages/registerFlow/Register";
+import PasswordSuccessPage from "@/features/auth/pages/PasswordSuccessPage";
+import Register from "@/features/auth/pages/registerFlow/RegisterPage";
 import DarkLayout from "@/layout/DarkLayout";
 import RegEmailVerificationPage from "@/features/auth/pages/registerFlow/RegEmailVerificationPage";
 import OtpVerificationPage from "@/features/auth/pages/registerFlow/OtpVerificationPage";
+import PatientOnboardingPage from "@/features/auth/pages/registerFlow/patientOnboarding/PatientOnboardingPage";
+import DoctorOnboardingPage from "@/features/auth/pages/registerFlow/DoctorOnboardingPage";
+import CenterOnboardingPage from "@/features/auth/pages/registerFlow/CenterOnboardingPage";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -26,6 +29,18 @@ function AppRouter() {
           <Route
             path={ROUTES.OTP_VERIFICATION}
             element={<OtpVerificationPage />}
+          />
+          <Route
+            path={ROUTES.PATIENT_ONBOARDING}
+            element={<PatientOnboardingPage />}
+          />
+          <Route
+            path={ROUTES.DOCTOR_ONBOARDING}
+            element={<DoctorOnboardingPage />}
+          />
+          <Route
+            path={ROUTES.CENTER_ONBOARDING}
+            element={<CenterOnboardingPage />}
           />
           {/* Password flow */}
           <Route

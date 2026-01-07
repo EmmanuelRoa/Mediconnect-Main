@@ -71,6 +71,9 @@ function VerifyEmailPage() {
         <AuthFooterContainer
           backButtonProps={{
             disabled: false,
+            onClick: () => {
+              navigate("/auth/forgot-password", { replace: true });
+            },
           }}
         />
       </MCFormWrapper>
