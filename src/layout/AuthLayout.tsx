@@ -23,7 +23,7 @@ function AuthLayout() {
       <div>
         <AuthHeader />
       </div>
-      <div className="h-full flex justify-center items-center mt-20">
+      <div className="h-full flex justify-center items-center mt-15">
         <Outlet />
       </div>
     </div>

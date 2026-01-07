@@ -7,12 +7,14 @@ interface AuthContentContainerProps {
   title: string;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
+  containerClassName?: string;
 }
 
 const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
   title,
   subtitle,
   children,
+  containerClassName = "",
 }) => {
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,9 +79,9 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`w-full flex flex-col justify-center items-center overflow-x-hidden ${
-        isMobile ? "p-4 max-w-full" : "p-8 max-w-3xl"
-      }`}
+      className={`w-full flex flex-col bg-red-300 justify-center items-center overflow-x-hidden ${
+        isMobile ? "p-4 max-w-full" : "max-w-3xl"
+      } ${containerClassName}`}
     >
       <h2
         ref={titleRef}
@@ -94,7 +96,14 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
           {subtitle}
         </p>
       )}
-      <div ref={contentRef} className={isMobile ? "w-full px-4" : "w-full"}>
+      <div
+        ref={contentRef}
+        className={
+          isMobile
+            ? "w-full px-4"
+            : "w-full flex flex-col items-center justify-center"
+        }
+      >
         {children}
       </div>
     </div>

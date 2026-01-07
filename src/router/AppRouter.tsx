@@ -7,7 +7,7 @@ import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage";
 import VerifyEmailPage from "@/features/auth/pages/VerifyEmailPage";
 import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage";
 import PasswordSuccessPage from "@/features/auth/pages/PasswordSuccessPage";
-
+import Register from "@/features/auth/pages/Register";
 import DarkLayout from "@/layout/DarkLayout";
 function AppRouter() {
   return (
@@ -15,6 +15,7 @@ function AppRouter() {
       <Router>
         <Route path={ROUTES.LOGIN} index element={<Login />} />
         <Route element={<AuthLayout />}>
+          <Route path={ROUTES.REGISTER} element={<Register />} />
           <Route
             path={ROUTES.FORGOT_PASSWORD}
             element={<ForgotPasswordPage />}

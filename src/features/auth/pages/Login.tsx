@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-// import LoginAsideImg from "@/assets/LoginAside.png";
+import LoginAsideImg from "@/assets/LoginAside.png";
 import Logo from "@/assets//MediConnectLanding-green.png";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCInput from "@/shared/components/forms/MCInput";
@@ -13,7 +13,7 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import LanguageDropDown from "../components/LanguageDropDown";
 import { useNavigate } from "react-router-dom";
-
+import OAuthProvider from "../components/OAuthProvider";
 function Login() {
   const { t } = useTranslation("auth");
   const isMobile = useIsMobile();
@@ -64,27 +64,41 @@ function Login() {
     <section className="max-h-screen h-screen overflow-hidden w-full bg-white">
       <div
         className={`h-full w-full ${
-          isMobile ? "" : "grid grid-cols-[33%_67%]"
+          isMobile ? "" : "grid grid-cols-[45%_55%]"
         }`}
       >
+        {/* SOLO DESKTOP: main vacío para el grid */}
+        {!isMobile && (
+          <main className="relative flex flex-col justify-center items-center px-8"></main>
+        )}
+
+        {/* MAIN PRINCIPAL: cambia clases según mobile/desktop */}
         <main
           ref={containerRef}
-          className={`flex flex-col justify-center items-center px-8 ${
-            isMobile ? "min-h-screen justify-center items-center" : ""
+          className={`flex flex-col justify-center items-center px-4 sm:px-8 z-10 bg-white
+          ${
+            isMobile
+              ? "min-h-screen w-full"
+              : "absolute top-0 bottom-0 w-[50%] rounded-r-4xl"
           }`}
         >
-          <div className="flex flex-col justify-center items-center gap-1 mb-2">
-            <img ref={logoRef} src={Logo} alt="Logo" className="w-32 mb-6" />
-            <div ref={headingRef}>
-              <h1 className="text-4xl font-bold text-center">
-                {t("login.welcome")}
+          <div className="flex flex-col justify-center items-center gap-1 mb-2 w-full">
+            <img
+              ref={logoRef}
+              src={Logo}
+              alt="Logo"
+              className="w-24 sm:w-32 mb-6"
+            />
+            <div ref={headingRef} className="w-full">
+              <h1 className="text-3xl sm:text-4xl font-bold text-center">
+                {t("login.welcome", "Welcome")}
               </h1>
-              <p className="text-xl text-center text-muted-foreground">
-                {t("login.subtitle")}
+              <p className="text-lg sm:text-xl text-center text-muted-foreground">
+                {t("login.subtitle", "Sign in to MediConnect")}
               </p>
             </div>
           </div>
-          <div ref={formRef} className="w-full max-w-sm">
+          <div ref={formRef} className="w-full max-w-xs sm:max-w-md mx-auto">
             <MCFormWrapper
               schema={LoginSchema(t)}
               onSubmit={handleSubmit}
@@ -97,33 +111,56 @@ function Login() {
               <MCInput
                 type="email"
                 name="email"
-                label={t("login.email")}
-                placeholder={t("login.emailPlaceholder")}
+                label={t("login.email", "Email")}
+                placeholder={t("login.emailPlaceholder", "Email")}
               />
               <MCInput
                 type="password"
-                label={t("login.password")}
+                label={t("login.password", "Password")}
                 name="password"
-                placeholder={t("login.passwordPlaceholder")}
+                placeholder={t("login.passwordPlaceholder", "Password")}
               />
               <div className="flex justify-end w-full mb-4">
                 <a
                   className="text-base text-primary font-semibold hover:underline"
                   onClick={() => navigate("/auth/forgot-password")}
                 >
-                  {t("login.forgot")}
+                  {t("login.forgot", "Forgot your password?")}
                 </a>
               </div>
               <MCButton type="submit" className="w-full" variant="primary">
-                {t("login.submit")}
+                {t("login.submit", "Sign In")}
               </MCButton>
-              <LanguageDropDown />
+
+              <div className="flex items-center my-4">
+                <hr className="flex-grow border-t border-gray-300" />
+                <span className="mx-2 text-gray-400">o</span>
+                <hr className="flex-grow border-t border-gray-300" />
+              </div>
+
+              <OAuthProvider />
             </MCFormWrapper>
+            <div className="mt-4 text-center text-sm sm:text-base">
+              <span>{t("login.noAccount", "¿No tienes cuenta?")}</span>
+              <button
+                className="ml-2 text-primary font-semibold hover:underline"
+                onClick={() => navigate("/auth/register")}
+                type="button"
+              >
+                {t("login.register", "Regístrate")}
+              </button>
+            </div>
           </div>
         </main>
+
+        {/* SOLO DESKTOP: imagen lateral */}
         {!isMobile && (
           <aside className="h-full w-full">
-            <img alt="Login Aside" className="h-full w-full object-cover" />
+            <img
+              src={LoginAsideImg}
+              alt="Login Aside"
+              className="h-full w-full object-cover"
+            />
           </aside>
         )}
       </div>
