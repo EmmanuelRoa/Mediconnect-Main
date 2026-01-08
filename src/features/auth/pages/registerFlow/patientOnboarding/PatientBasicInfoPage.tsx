@@ -5,89 +5,74 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "react-i18next";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
 import { useNavigate } from "react-router-dom";
-
-import { useState } from "react";
-// Importa zod si usas validación
-import { z } from "zod";
-
-const basicInfoSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  document: z.string().min(1),
-});
+import { PatientBasicInfoSchema } from "@/schema/OnbordingSchema";
+import type { PatientBasicInfoSchemaType } from "@/types/OnbordingTypes";
 
 function PatientBasicInfoPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    firstName: "Juan Luis",
-    lastName: "Guerrero Matos",
-    document: "000-00000-0",
-  });
+  const basicInfo = useAppStore((state) => state.patientOnboardingData);
+  const setBasicInfo = useAppStore((state) => state.setPatientOnboardingData);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = () => {
-    // Aquí puedes manejar el envío del formulario
-    navigate("/siguiente-paso"); // Cambia la ruta según tu flujo
+  const handleSubmit = (data: PatientBasicInfoSchemaType) => {
+    if (setBasicInfo) {
+      setBasicInfo({
+        ...basicInfo,
+        name: data.name,
+        lastName: data.lastName,
+        identityDocument: data.identityDocument,
+        email: basicInfo?.email ?? "",
+        password: basicInfo?.password ?? "",
+        confirmPassword: basicInfo?.confirmPassword ?? "",
+        urlImg: basicInfo?.urlImg,
+      });
+    }
+    navigate("/siguiente-paso");
   };
 
   return (
     <AuthContentContainer
-      title={t("Crear cuenta en MediConnect")}
-      subtitle={t(
-        "Por favor, completa tu información básica para continuar con el proceso de registro."
-      )}
+      title={t("patientBasicInfo.title")}
+      subtitle={t("patientBasicInfo.subtitle")}
     >
       <MCFormWrapper
-        onSubmit={handleSubmit}
-        schema={basicInfoSchema}
+        onSubmit={(data) => {
+          handleSubmit(data);
+        }}
+        schema={PatientBasicInfoSchema((key) => t(key))}
         defaultValues={{
-          firstName: form.firstName,
-          lastName: form.lastName,
-          document: form.document,
+          name: basicInfo?.name || "",
+          lastName: basicInfo?.lastName || "",
+          identityDocument: basicInfo?.identityDocument || "",
         }}
         className="flex flex-col items-center w-full"
       >
         <div className="flex flex-col items-center w-full max-w-md mx-auto">
           <MCInput
-            label={t("Nombre(s)")}
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-            required
+            label={t("patientBasicInfo.nameLabel")}
+            name="name"
+            placeholder={t("patientBasicInfo.namePlaceholder")}
           />
           <MCInput
-            label={t("Apellido(s)")}
+            label={t("patientBasicInfo.lastNameLabel")}
             name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
-            required
+            placeholder={t("patientBasicInfo.lastNamePlaceholder")}
           />
           <MCInput
-            label={t("Documento de identificación")}
-            name="document"
-            value={form.document}
-            onChange={handleChange}
-            required
+            label={t("patientBasicInfo.identityDocumentLabel")}
+            name="identityDocument"
+            placeholder={t("patientBasicInfo.identityDocumentPlaceholder")}
           />
         </div>
+        <AuthFooterContainer
+          backButtonProps={{
+            onClick() {
+              navigate("/auth/otp-verification");
+            },
+          }}
+        />
       </MCFormWrapper>
-      <AuthFooterContainer
-        continueButtonProps={{
-          onClick() {
-            navigate("/auth/patient-onboarding/password-setup");
-          },
-        }}
-        backButtonProps={{
-          onClick() {
-            navigate("/auth/otp-verification");
-          },
-        }}
-      />
     </AuthContentContainer>
   );
 }

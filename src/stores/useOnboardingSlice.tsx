@@ -4,7 +4,7 @@ import type { PatientOnboardingSchemaType } from "@/types/OnbordingTypes";
 export interface OnboardingSlice {
   selectedRole: "Patient" | "Doctor" | "Center" | null;
   patientOnboardingData?: PatientOnboardingSchemaType;
-  setpatientOnboardingData?: (data: PatientOnboardingSchemaType) => void;
+  setPatientOnboardingData?: (data: PatientOnboardingSchemaType) => void;
 
   setSelectedRole: (role: "Patient" | "Doctor" | "Center" | null) => void;
   clearOnboarding: () => void;
@@ -22,7 +22,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     urlImg: undefined,
   },
 
-  setpatientOnboardingData: (data) => set({ patientOnboardingData: data }),
+  setPatientOnboardingData: (data) => set({ patientOnboardingData: data }),
 
   setSelectedRole: (role) => set({ selectedRole: role }),
 

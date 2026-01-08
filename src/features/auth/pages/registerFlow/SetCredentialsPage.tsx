@@ -1,73 +1,71 @@
-import React, { useState } from "react";
 import AuthContentContainer from "@/features/auth/components/AuthContentContainer";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCInput from "@/shared/components/forms/MCInput";
-import MCButton from "@/shared/components/forms/MCButton";
+import { PatientCreatePasswordSchema } from "@/schema/OnbordingSchema";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 import { useAppStore } from "@/stores/useAppStore";
 import { useNavigate } from "react-router-dom";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
-const credentialsSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
-  });
-
+import type { PatientCreatePasswordSchemaType } from "@/types/OnbordingTypes";
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const selectedRole = useAppStore((state) => state.selectedRole);
-  const [form, setForm] = useState({
-    password: "",
-    confirmPassword: "",
-  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const setPatientOnboardingData = useAppStore(
+    (state) => state.setPatientOnboardingData
+  );
 
-  const handleSubmit = () => {
-    if (selectedRole === "Patient") {
+  const basicInfo = useAppStore((state) => state.patientOnboardingData);
+
+  const handleSubmit = (data: PatientCreatePasswordSchemaType) => {
+    if (selectedRole === "Patient" && setPatientOnboardingData) {
+      setPatientOnboardingData({
+        ...basicInfo,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        name: basicInfo!.name || "",
+        lastName: basicInfo!.lastName ?? "",
+        identityDocument: basicInfo!.identityDocument || "",
+        email: basicInfo!.email ?? "",
+
+        urlImg: basicInfo?.urlImg || undefined,
+      });
       navigate("/auth/patient-onboarding/profile-photo");
     }
   };
 
   return (
     <AuthContentContainer
-      title={t("Establece tus credenciales")}
-      subtitle={t(
-        "Crea una contraseña segura para proteger tu información médica."
-      )}
+      title={t("setCredentialsPage.title")}
+      subtitle={t("setCredentialsPage.subtitle")}
     >
       <MCFormWrapper
-        onSubmit={handleSubmit}
-        schema={credentialsSchema}
+        onSubmit={(data) => {
+          handleSubmit(data);
+        }}
+        schema={PatientCreatePasswordSchema((key) => t(key))}
+        defaultValues={{
+          password: basicInfo!.password || "",
+          confirmPassword: basicInfo!.confirmPassword || "",
+        }}
         className="flex flex-col items-center w-full"
       >
         <div className="flex flex-col items-center w-full max-w-md mx-auto">
           <MCInput
-            label={t("Contraseña")}
+            label={t("setCredentialsPage.passwordLabel")}
             name="password"
             type="password"
-            value={form.password}
-            onChange={handleChange}
+            placeholder={t("setCredentialsPage.passwordPlaceholder")}
             required
           />
           <MCInput
-            label={t("Confirmar contraseña")}
+            label={t("setCredentialsPage.confirmPasswordLabel")}
             name="confirmPassword"
             type="password"
-            value={form.confirmPassword}
-            onChange={handleChange}
+            placeholder={t("setCredentialsPage.confirmPasswordPlaceholder")}
             required
-          />{" "}
+          />
         </div>
       </MCFormWrapper>
       <AuthFooterContainer
