@@ -19,7 +19,7 @@ const AuthFooterContainer: React.FC<AuthFooterContainerProps> = ({
   const { t } = useTranslation("auth");
   return (
     <div
-      className={`w-full mt-6  ${
+      className={`w-full py-6 ${
         isMobile
           ? "flex flex-col-2  justify-between items-center"
           : "grid grid-cols-2  sm:flex sm:justify-between items-center"
