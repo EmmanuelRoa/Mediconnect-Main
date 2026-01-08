@@ -26,7 +26,6 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
 
   useGSAP(
     () => {
-      // Animación del título
       gsap.fromTo(
         titleRef.current,
         {
@@ -41,7 +40,6 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
         }
       );
 
-      // Animación del subtítulo (si existe)
       if (subtitleRef.current) {
         gsap.fromTo(
           subtitleRef.current,
@@ -59,7 +57,6 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
         );
       }
 
-      // Animación del contenido
       gsap.fromTo(
         contentRef.current,
         {
@@ -81,7 +78,7 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`w-full flex flex-col justify-center items-center overflow-x-hidden overflow-y-hidden ${
+      className={`w-full flex flex-col justify-center items-center overflow-x-hidden  overflow-y-hidden ${
         isMobile ? "p-4 max-w-full" : "max-w-3xl"
       } ${containerClassName} `}
     >

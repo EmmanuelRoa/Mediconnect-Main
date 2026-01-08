@@ -13,12 +13,13 @@ function RegEmailVerificationPage() {
   const navigate = useNavigate();
 
   const selectedRole = useAppStore((state) => state.selectedRole);
-  const basicInfo = useAppStore((state) => state.patientOnboardingData);
-  const setBasicInfo = useAppStore((state) => state.setPatientOnboardingData);
+  const patientBasicInfo = useAppStore((state) => state.patientOnboardingData);
+  const setPatientEmail = useAppStore(
+    (state) => state.setPatientOnboardingData
+  );
+  const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
+  const setEmailDoctor = useAppStore((state) => state.setDoctorOnboardingData);
 
-  console.log(basicInfo);
-
-  // FIX: Mover la validación a useEffect para evitar el bucle infinito
   useEffect(() => {
     if (!selectedRole) {
       console.log("No role selected, redirecting...");
@@ -27,23 +28,28 @@ function RegEmailVerificationPage() {
   }, [selectedRole, navigate]);
 
   const handlesubmit = (data: { email: string }) => {
-    if (data && setBasicInfo && basicInfo) {
-      setBasicInfo({
-        ...basicInfo,
+    console.log("selectedRole:", selectedRole);
+    console.log("doctorBasicInfo:", doctorBasicInfo);
+    console.log("setEmailDoctor:", setEmailDoctor);
+
+    if (selectedRole === "Doctor" && setEmailDoctor && doctorBasicInfo) {
+      setEmailDoctor({
+        ...doctorBasicInfo,
         email: data.email ?? "",
-        role: "Patient",
-        name: basicInfo?.name ?? "",
-        lastName: basicInfo?.lastName ?? "",
-        identityDocument: basicInfo?.identityDocument ?? "",
-        password: basicInfo?.password ?? "",
-        confirmPassword: basicInfo?.confirmPassword ?? "",
-        urlImg: basicInfo?.urlImg ?? "",
+      });
+      console.log("vamos a otp doctor");
+      navigate("/auth/otp-verification", { replace: true });
+    }
+
+    if (selectedRole === "Patient" && setPatientEmail && patientBasicInfo) {
+      setPatientEmail({
+        ...patientBasicInfo,
+        email: data.email ?? "",
       });
       navigate("/auth/otp-verification", { replace: true });
     }
   };
 
-  // Evitar renderizar el contenido si no hay rol seleccionado
   if (!selectedRole) {
     return null;
   }
@@ -51,7 +57,6 @@ function RegEmailVerificationPage() {
   return (
     <AuthContentContainer
       title={t("registerEmailVerifyPage.title")}
-      // FIX: Pasar string en lugar de JSX para evitar <div> dentro de <p>
       subtitle={t("registerEmailVerifyPage.subtitle")}
     >
       <MCFormWrapper
@@ -60,7 +65,10 @@ function RegEmailVerificationPage() {
           handlesubmit(data);
         }}
         defaultValues={{
-          email: basicInfo?.email || "",
+          email:
+            selectedRole === "Patient"
+              ? patientBasicInfo?.email || ""
+              : doctorBasicInfo?.email || "",
         }}
         className="flex flex-col items-center w-full"
       >
@@ -71,7 +79,11 @@ function RegEmailVerificationPage() {
             label={t("forgotPassword.emailLabel")}
             placeholder={t("forgotPassword.emailPlaceholder")}
           />
-          <p className="text-center mt-2 w-full">{basicInfo?.email}</p>
+          <p className="text-center mt-2 w-full">
+            {selectedRole === "Patient"
+              ? patientBasicInfo?.email
+              : doctorBasicInfo?.email}
+          </p>
         </div>
         <AuthFooterContainer
           backButtonProps={{

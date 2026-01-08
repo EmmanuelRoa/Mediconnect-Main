@@ -19,32 +19,46 @@ function SetCredentialsPage() {
     (state) => state.setPatientOnboardingData
   );
   const otpData = useAppStore((state) => state.otp);
-  console.log(basicInfo);
+  const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
+  const setDoctorOnboardingData = useAppStore(
+    (state) => state.setDoctorOnboardingData
+  );
 
   useEffect(() => {
     // Validar OTP
     if (!otpData) {
-      console.log("No OTP found, redirecting to OTP verification...");
       navigate("/auth/otp-verification", { replace: true });
       return;
     }
 
-    if (
-      !basicInfo?.name ||
-      !basicInfo?.lastName ||
-      !basicInfo?.identityDocument ||
-      !basicInfo?.email
-    ) {
-      console.log("Basic info incomplete, redirecting to basic info page...");
-      navigate("/auth/patient-onboarding/basic-info", { replace: true });
-      return;
+    if (selectedRole === "Patient") {
+      if (
+        !basicInfo?.name ||
+        !basicInfo?.lastName ||
+        !basicInfo?.identityDocument ||
+        !basicInfo?.email
+      ) {
+        navigate("/auth/patient-onboarding/basic-info", { replace: true });
+        return;
+      }
     }
 
-    if (selectedRole !== "Patient") {
-      console.log("Invalid role for patient onboarding, redirecting...");
+    if (selectedRole === "Doctor") {
+      if (
+        !doctorBasicInfo?.name ||
+        !doctorBasicInfo?.lastName ||
+        !doctorBasicInfo?.identityDocument ||
+        !doctorBasicInfo?.email
+      ) {
+        navigate("/auth/doctor-onboarding/basic-info", { replace: true });
+        return;
+      }
+    }
+
+    if (!selectedRole) {
       navigate("/auth/register", { replace: true });
     }
-  }, [otpData, basicInfo, selectedRole, navigate]);
+  }, [otpData, basicInfo, doctorBasicInfo, selectedRole, navigate]);
 
   const handleSubmit = (data: PatientCreatePasswordSchemaType) => {
     if (selectedRole === "Patient" && setPatientOnboardingData && basicInfo) {
@@ -60,6 +74,25 @@ function SetCredentialsPage() {
         urlImg: basicInfo.urlImg ?? "",
       });
       navigate("/auth/patient-onboarding/profile-photo", { replace: true });
+    }
+
+    if (
+      selectedRole === "Doctor" &&
+      setDoctorOnboardingData &&
+      doctorBasicInfo
+    ) {
+      setDoctorOnboardingData({
+        ...doctorBasicInfo,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        role: "Doctor",
+        name: doctorBasicInfo.name,
+        lastName: doctorBasicInfo.lastName,
+        identityDocument: doctorBasicInfo.identityDocument,
+        email: doctorBasicInfo.email,
+        urlImg: doctorBasicInfo.urlImg ?? "",
+      });
+      navigate("/auth/doctor-onboarding/profile-photo", { replace: true });
     }
   };
 

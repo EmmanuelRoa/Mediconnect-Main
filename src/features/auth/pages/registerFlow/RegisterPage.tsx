@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+
 const roles = [
   { key: "Patient", img: PacienteIMG },
   { key: "Doctor", img: DoctorIMG },
@@ -25,9 +26,13 @@ function RegisterPage() {
   const selectedRole = useAppStore((state) => state.selectedRole);
   const detailsRefs = useRef<Record<string, HTMLUListElement | null>>({});
 
+  const resetFlows = useAppStore((state) => state.clearOnboarding);
+
   const handleselectRole = (roleKey: "Patient" | "Doctor" | "Center") => {
-    setRoleInStore(roleKey);
-    console.log(selectedRole);
+    if (selectedRole !== roleKey) {
+      resetFlows(); // Reinicia todo el onboarding si cambia el rol
+      setRoleInStore(roleKey);
+    }
   };
 
   useEffect(() => {

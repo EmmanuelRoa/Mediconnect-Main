@@ -32,6 +32,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     name: "",
     lastName: "",
     gender: "",
+    role: "Doctor",
     birthDate: "",
     nationality: "",
     identityDocument: "",
@@ -44,9 +45,12 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     identityDocumentFile: null,
     certifications: [],
     academicTitle: null,
+    password: "",
+    confirmPassword: "",
   },
 
   setPatientOnboardingData: (data) => set({ patientOnboardingData: data }),
+  setDoctorOnboardingData: (data) => set({ doctorOnboardingData: data }),
 
   setSelectedRole: (role) => set({ selectedRole: role }),
 
@@ -67,6 +71,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
       doctorOnboardingData: {
         name: "",
         lastName: "",
+        role: "Doctor",
         gender: "",
         birthDate: "",
         nationality: "",
@@ -80,6 +85,8 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         identityDocumentFile: null,
         certifications: [],
         academicTitle: null,
+        password: "",
+        confirmPassword: "",
       },
     }),
 });

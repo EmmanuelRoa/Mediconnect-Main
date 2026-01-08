@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import AuthContentContainer from "../../components/AuthContentContainer";
 import MCOtpInput from "@/shared/components/forms/MCOtpInput";
@@ -7,47 +8,60 @@ import { useTranslation } from "react-i18next";
 import AuthFooterContainer from "../../components/AuthFooterContainer";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 function OtpVerificationPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
-
-  // FIX: Obtener el email del basicInfo o patientOnboardingData
-  const basicInfo = useAppStore((state) => state.patientOnboardingData);
-  const confirmedEmail = basicInfo?.email;
-
   const otpData = useAppStore((state) => state.otp);
   const setOtp = useAppStore((state) => state.setOtp);
   const selectedRole = useAppStore((state) => state.selectedRole);
-  console.log(basicInfo);
-  // Validar que exista email confirmado
+  const basicInfo = useAppStore((state) => state.patientOnboardingData);
+  const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
+
+  const confirmedEmail =
+    selectedRole === "Patient"
+      ? basicInfo?.email
+      : selectedRole === "Doctor"
+      ? doctorBasicInfo?.email
+      : undefined;
+
   useEffect(() => {
+    if (!selectedRole) {
+      navigate("/auth/register", { replace: true });
+      return;
+    }
+
     if (!confirmedEmail) {
-      console.log("No confirmed email, redirecting...");
       navigate("/auth/reg-email-verification", { replace: true });
     }
-  }, [confirmedEmail, navigate]);
+  }, [confirmedEmail, selectedRole, navigate]);
 
   const handleSubmit = (data: { otp: string }) => {
     console.log("OTP Data:", data);
+
     setOtp(data.otp);
 
-    // FIX: Remover la validación innecesaria de otpData
-    if (selectedRole === "Patient") {
-      navigate("/auth/patient-onboarding/basic-info", { replace: true });
-    } else if (selectedRole === "Doctor") {
-      navigate("/auth/doctor-onboarding", { replace: true });
-    } else if (selectedRole === "Center") {
-      navigate("/auth/center-onboarding", { replace: true });
-    } else {
-      // Si no hay rol, redirigir al registro
-      navigate("/auth/register", { replace: true });
-    }
+    // Esperar un tick para asegurar que el estado se guardó
+    setTimeout(() => {
+      if (selectedRole === "Patient") {
+        navigate("/auth/patient-onboarding/basic-info", { replace: true });
+      } else if (selectedRole === "Doctor") {
+        navigate("/auth/doctor-onboarding", { replace: true });
+      } else if (selectedRole === "Center") {
+        navigate("/auth/center-onboarding", { replace: true });
+      } else {
+        // Si no hay rol, redirigir al registro
+        navigate("/auth/register", { replace: true });
+      }
+    }, 0);
   };
 
-  // Early return si no hay email confirmado
-  if (!confirmedEmail) {
+  const handleResendOtp = () => {
+    // TODO: Implementar lógica de reenvío de OTP
+    console.log("Resending OTP to:", confirmedEmail);
+  };
+
+  if (!selectedRole || !confirmedEmail) {
     return null;
   }
 
@@ -74,10 +88,11 @@ function OtpVerificationPage() {
               setOtp(value);
             }}
           />
-          {/* Solo para debugging, remover en producción */}
+
+          {/* Debug info - remover en producción */}
           {otpData && (
             <p className="text-center mt-2 w-full text-sm text-gray-500">
-              {otpData}
+              OTP actual: {otpData}
             </p>
           )}
         </div>
@@ -89,14 +104,12 @@ function OtpVerificationPage() {
             </span>{" "}
             {t("verifyEmail.tip").split(":")[1]}
           </p>
+
           <MCButton
             variant="tercero"
             size="m"
             type="button"
-            onClick={() => {
-              // TODO: Implementar lógica de reenvío de OTP
-              console.log("Resending OTP to:", confirmedEmail);
-            }}
+            onClick={handleResendOtp}
           >
             {t("verifyEmail.resend")}
           </MCButton>

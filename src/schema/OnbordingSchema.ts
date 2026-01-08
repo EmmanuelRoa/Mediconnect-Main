@@ -63,6 +63,7 @@ export const BaseDoctorSchema = z.object({
   lastName: z.string(),
   gender: z.string(),
   birthDate: z.string(),
+  role: z.literal("Doctor"),
   nationality: z.string(),
   identityDocument: z.string(),
   exequatur: z.string(),
@@ -71,9 +72,11 @@ export const BaseDoctorSchema = z.object({
   phone: z.string(),
   email: z.string(),
   urlImg: z.string().optional(),
-  identityDocumentFile: z.any().optional(), // Puede ser File o string (URL)
-  certifications: z.array(z.any()).optional(), // Archivos PDF o imagen
-  academicTitle: z.any().optional(), // Archivo PDF o imagen
+  identityDocumentFile: z.any().optional(),
+  certifications: z.array(z.any()).optional(),
+  academicTitle: z.any().optional(),
+  password: z.string(),
+  confirmPassword: z.string(),
 });
 
 export function DoctorOnboardingSchema(t: (key: string) => string) {
@@ -81,6 +84,7 @@ export function DoctorOnboardingSchema(t: (key: string) => string) {
     name: z.string().min(1, t("validation.nameRequired")),
     lastName: z.string().min(1, t("validation.lastNameRequired")),
     gender: z.string().min(1, t("validation.genderRequired")),
+    role: z.literal("Doctor"),
     birthDate: z.string().min(1, t("validation.birthDateRequired")),
     nationality: z.string().min(1, t("validation.nationalityRequired")),
     identityDocument: z
@@ -98,6 +102,16 @@ export function DoctorOnboardingSchema(t: (key: string) => string) {
     identityDocumentFile: z.any().optional(),
     certifications: z.array(z.any()).optional(),
     academicTitle: z.any().optional(),
+    password: z.string().min(6, t("validation.passwordMin")),
+    confirmPassword: z.string().min(6, t("validation.passwordMin")),
+  }).superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t("validation.passwordsMustMatch"),
+        path: ["confirmPassword"],
+      });
+    }
   });
 }
 
