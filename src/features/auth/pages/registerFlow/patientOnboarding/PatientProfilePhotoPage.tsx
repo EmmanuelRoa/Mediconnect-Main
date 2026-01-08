@@ -34,23 +34,6 @@ function PatientProfilePhotoPage() {
   const profileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // if (!otpData) {
-    //   console.log("No OTP found, redirecting to OTP verification...");
-    //   navigate("/auth/otp-verification", { replace: true });
-    //   return;
-    // }
-
-    // if (
-    //   !basicInfo?.name ||
-    //   !basicInfo?.lastName ||
-    //   !basicInfo?.identityDocument ||
-    //   !basicInfo?.email
-    // ) {
-    //   console.log("Basic info incomplete, redirecting to basic info page...");
-    //   navigate("/auth/patient-onboarding/basic-info", { replace: true });
-    //   return;
-    // }
-
     if (!basicInfo?.password || !basicInfo?.confirmPassword) {
       console.log("Credentials not set, redirecting to password setup...");
       navigate("/auth/patient-onboarding/password-setup", { replace: true });

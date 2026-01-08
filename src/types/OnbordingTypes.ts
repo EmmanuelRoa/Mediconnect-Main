@@ -2,7 +2,8 @@ import { z } from "zod";
 import {
   PatientOnboardingSchema,
   PatientBasicInfoSchema,
-  PatientCreatePasswordSchema,
+  CreatePasswordSchema,
+  DoctorOnboardingSchema,
 } from "@/schema/OnbordingSchema";
 
 export type PatientOnboardingSchemaType = z.infer<
@@ -12,5 +13,8 @@ export type PatientBasicInfoSchemaType = z.infer<
   ReturnType<typeof PatientBasicInfoSchema>
 >;
 export type PatientCreatePasswordSchemaType = z.infer<
-  ReturnType<typeof PatientCreatePasswordSchema>
+  ReturnType<typeof CreatePasswordSchema>
+>;
+export type DoctorOnboardingSchemaType = z.infer<
+  ReturnType<typeof DoctorOnboardingSchema>
 >;

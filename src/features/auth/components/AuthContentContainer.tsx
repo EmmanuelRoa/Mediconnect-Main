@@ -8,6 +8,7 @@ interface AuthContentContainerProps {
   subtitle?: React.ReactNode;
   children: React.ReactNode;
   containerClassName?: string;
+  titleAndSubtitleStart?: boolean;
 }
 
 const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
@@ -15,6 +16,7 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
   subtitle,
   children,
   containerClassName = "",
+  titleAndSubtitleStart = false,
 }) => {
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,18 +83,23 @@ const AuthContentContainer: React.FC<AuthContentContainerProps> = ({
       ref={containerRef}
       className={`w-full flex flex-col justify-center items-center overflow-x-hidden overflow-y-hidden ${
         isMobile ? "p-4 max-w-full" : "max-w-3xl"
-      } ${containerClassName}`}
+      } ${containerClassName} `}
     >
       <h2
         ref={titleRef}
         className={`text-3xl font-bold mb-2 text-center ${
           isMobile ? "text-2xl" : ""
-        }`}
+        } , ${titleAndSubtitleStart ? "text-start" : ""}`}
       >
         {title}
       </h2>
       {subtitle && (
-        <p ref={subtitleRef} className="text-primary/80 mb-6 text-center">
+        <p
+          ref={subtitleRef}
+          className={`text-primary/80 mb-6 text-center ${
+            titleAndSubtitleStart ? "text-start" : ""
+          }`}
+        >
           {subtitle}
         </p>
       )}

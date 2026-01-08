@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import AuthContentContainer from "@/features/auth/components/AuthContentContainer";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCInput from "@/shared/components/forms/MCInput";
-import { PatientCreatePasswordSchema } from "@/schema/OnbordingSchema";
+import { CreatePasswordSchema } from "@/schema/OnbordingSchema";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { useNavigate } from "react-router-dom";
@@ -72,7 +72,7 @@ function SetCredentialsPage() {
         onSubmit={(data) => {
           handleSubmit(data);
         }}
-        schema={PatientCreatePasswordSchema((key) => t(key))}
+        schema={CreatePasswordSchema((key) => t(key))}
         defaultValues={{
           password: basicInfo?.password || "",
           confirmPassword: basicInfo?.confirmPassword || "",

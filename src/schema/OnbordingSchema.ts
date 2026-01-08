@@ -58,7 +58,50 @@ export function PatientBasicInfoSchema(t: (key: string) => string) {
   });
 }
 
-export function PatientCreatePasswordSchema(t: (key: string) => string) {
+export const BaseDoctorSchema = z.object({
+  name: z.string(),
+  lastName: z.string(),
+  gender: z.string(),
+  birthDate: z.string(),
+  nationality: z.string(),
+  identityDocument: z.string(),
+  exequatur: z.string(),
+  mainSpecialty: z.string(),
+  secondarySpecialties: z.array(z.string()).optional(),
+  phone: z.string(),
+  email: z.string(),
+  urlImg: z.string().optional(),
+  identityDocumentFile: z.any().optional(), // Puede ser File o string (URL)
+  certifications: z.array(z.any()).optional(), // Archivos PDF o imagen
+  academicTitle: z.any().optional(), // Archivo PDF o imagen
+});
+
+export function DoctorOnboardingSchema(t: (key: string) => string) {
+  return BaseDoctorSchema.extend({
+    name: z.string().min(1, t("validation.nameRequired")),
+    lastName: z.string().min(1, t("validation.lastNameRequired")),
+    gender: z.string().min(1, t("validation.genderRequired")),
+    birthDate: z.string().min(1, t("validation.birthDateRequired")),
+    nationality: z.string().min(1, t("validation.nationalityRequired")),
+    identityDocument: z
+      .string()
+      .min(1, t("validation.identityDocumentRequired")),
+    exequatur: z.string().min(1, t("validation.exequaturRequired")),
+    mainSpecialty: z.string().min(1, t("validation.mainSpecialtyRequired")),
+    secondarySpecialties: z.array(z.string()).optional(),
+    phone: z.string().min(1, t("validation.phoneRequired")),
+    email: z
+      .string()
+      .min(1, t("validation.emailRequired"))
+      .email(t("validation.emailInvalid")),
+    urlImg: z.string().optional(),
+    identityDocumentFile: z.any().optional(),
+    certifications: z.array(z.any()).optional(),
+    academicTitle: z.any().optional(),
+  });
+}
+
+export function CreatePasswordSchema(t: (key: string) => string) {
   return BasePatientSchema.pick({
     password: true,
     confirmPassword: true,
