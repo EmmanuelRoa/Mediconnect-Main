@@ -61,11 +61,28 @@ export function MCModalBase({
 
   // Clases de tamaño adaptativas para móvil
   const sizeClasses = {
-    small: isMobile ? "w-full max-w-[95vw] mx-2" : "max-w-md",
-    medium: isMobile ? "w-full max-w-[95vw] mx-2" : "max-w-lg",
-    large: isMobile ? "w-full max-w-[95vw] mx-2" : "max-w-2xl",
-    full: isMobile ? "w-full max-w-[100vw] mx-0" : "max-w-full mx-4",
+    small: isMobile
+      ? "w-full max-w-[95vw] mx-2 max-h-[160px]" // menos alto en móvil
+      : "w-md max-h-[360px]", // más alto en escritorio
+    medium: isMobile
+      ? "w-full max-w-[95vw] mx-2 max-h-[140px]"
+      : "w-lg max-h-[480px]",
+    large: isMobile
+      ? "w-full max-w-[95vw] mx-2 max-h-[140px]"
+      : "w-2xl max-h-[600px]",
+    full: isMobile
+      ? "w-full max-w-[95vw] mx-0 max-h-[80vh]" // menos alto en móvil
+      : "w-4xl mx-4 max-h-[800px]", // más alto en escritorio
   };
+
+  // Alturas máximas por tamaño en escritorio
+  const contentMaxHeight = {
+    small: "max-h-[200px]",
+    medium: "max-h-[360px]",
+    large: "max-h-[500px]",
+    full: "max-h-[700px]",
+  };
+  const modalContentMaxH = isMobile ? "max-h-[60vh]" : contentMaxHeight[size];
 
   // Espaciado adaptativo para móvil
   const paddingClasses = isMobile ? "p-4" : "p-6";
@@ -92,7 +109,7 @@ export function MCModalBase({
       <MorphingDialogContainer className={paddingClasses}>
         <MorphingDialogContent
           className={`bg-white rounded-3xl shadow-lg ${sizeClasses[size]} ${
-            isMobile ? "max-h-[90vh] overflow-y-auto" : ""
+            isMobile ? "max-h-[90vh] " : ""
           } ${className}`}
         >
           {/* Header - Título y botón de cerrar */}
@@ -112,7 +129,9 @@ export function MCModalBase({
           </div>
 
           {/* Content */}
-          <MorphingDialogDescription className={contentPadding}>
+          <MorphingDialogDescription
+            className={`${contentPadding} flex-1 overflow-y-auto ${modalContentMaxH}`} // Altura máxima dinámica
+          >
             {children}
           </MorphingDialogDescription>
 
