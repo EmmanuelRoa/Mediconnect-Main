@@ -16,6 +16,7 @@ export function PatientOnboardingSchema(t: (key: string) => string) {
   return BasePatientSchema.extend({
     name: z.string().min(1, t("validation.nameRequired")),
     lastName: z.string().min(1, t("validation.lastNameRequired")),
+    role: z.literal("Patient"),
     urlImg: z.string().optional(),
     identityDocument: z.string().refine(
       (val) => {

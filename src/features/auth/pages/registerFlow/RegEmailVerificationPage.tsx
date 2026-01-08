@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import AuthContentContainer from "../../components/AuthContentContainer";
 import MCInput from "@/shared/components/forms/MCInput";
@@ -11,24 +12,46 @@ function RegEmailVerificationPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
 
-  const registerEmailData = useAppStore((state) => state.registerEmail);
-  const setRegisterEmail = useAppStore((state) => state.setRegisterEmail);
   const selectedRole = useAppStore((state) => state.selectedRole);
+  const basicInfo = useAppStore((state) => state.patientOnboardingData);
+  const setBasicInfo = useAppStore((state) => state.setPatientOnboardingData);
+
+  console.log(basicInfo);
+
+  // FIX: Mover la validación a useEffect para evitar el bucle infinito
+  useEffect(() => {
+    if (!selectedRole) {
+      console.log("No role selected, redirecting...");
+      navigate("/auth/register", { replace: true });
+    }
+  }, [selectedRole, navigate]);
 
   const handlesubmit = (data: { email: string }) => {
-    setRegisterEmail({ email: data.email });
-    navigate("/auth/otp-verification", { replace: true });
+    if (data && setBasicInfo && basicInfo) {
+      setBasicInfo({
+        ...basicInfo,
+        email: data.email ?? "",
+        role: "Patient",
+        name: basicInfo?.name ?? "",
+        lastName: basicInfo?.lastName ?? "",
+        identityDocument: basicInfo?.identityDocument ?? "",
+        password: basicInfo?.password ?? "",
+        confirmPassword: basicInfo?.confirmPassword ?? "",
+        urlImg: basicInfo?.urlImg ?? "",
+      });
+      navigate("/auth/otp-verification", { replace: true });
+    }
   };
 
+  // Evitar renderizar el contenido si no hay rol seleccionado
   if (!selectedRole) {
-    console.log(selectedRole);
-
-    navigate("/auth/register", { replace: true });
+    return null;
   }
 
   return (
     <AuthContentContainer
       title={t("registerEmailVerifyPage.title")}
+      // FIX: Pasar string en lugar de JSX para evitar <div> dentro de <p>
       subtitle={t("registerEmailVerifyPage.subtitle")}
     >
       <MCFormWrapper
@@ -37,7 +60,7 @@ function RegEmailVerificationPage() {
           handlesubmit(data);
         }}
         defaultValues={{
-          email: registerEmailData?.email || "",
+          email: basicInfo?.email || "",
         }}
         className="flex flex-col items-center w-full"
       >
@@ -48,7 +71,7 @@ function RegEmailVerificationPage() {
             label={t("forgotPassword.emailLabel")}
             placeholder={t("forgotPassword.emailPlaceholder")}
           />
-          <p className="text-center mt-2 w-full">{registerEmailData?.email}</p>
+          <p className="text-center mt-2 w-full">{basicInfo?.email}</p>
         </div>
         <AuthFooterContainer
           backButtonProps={{

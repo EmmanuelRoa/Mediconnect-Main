@@ -15,11 +15,12 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
   patientOnboardingData: {
     name: "",
     lastName: "",
+    role: "Patient",
     identityDocument: "",
     email: "",
     password: "",
     confirmPassword: "",
-    urlImg: undefined,
+    urlImg: "",
   },
 
   setPatientOnboardingData: (data) => set({ patientOnboardingData: data }),
@@ -29,5 +30,15 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
   clearOnboarding: () =>
     set({
       selectedRole: null,
+      patientOnboardingData: {
+        name: "",
+        lastName: "",
+        role: "Patient",
+        identityDocument: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        urlImg: "",
+      },
     }),
 });

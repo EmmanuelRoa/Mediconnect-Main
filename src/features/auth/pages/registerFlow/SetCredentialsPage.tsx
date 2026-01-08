@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import AuthContentContainer from "@/features/auth/components/AuthContentContainer";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCInput from "@/shared/components/forms/MCInput";
@@ -7,33 +8,73 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useNavigate } from "react-router-dom";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
 import type { PatientCreatePasswordSchemaType } from "@/types/OnbordingTypes";
+
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
-  const selectedRole = useAppStore((state) => state.selectedRole);
 
+  const selectedRole = useAppStore((state) => state.selectedRole);
+  const basicInfo = useAppStore((state) => state.patientOnboardingData);
   const setPatientOnboardingData = useAppStore(
     (state) => state.setPatientOnboardingData
   );
+  const otpData = useAppStore((state) => state.otp);
+  console.log(basicInfo);
+  // Validar que se haya completado la información básica
+  useEffect(() => {
+    // Validar OTP
+    if (!otpData) {
+      console.log("No OTP found, redirecting to OTP verification...");
+      navigate("/auth/otp-verification", { replace: true });
+      return;
+    }
 
-  const basicInfo = useAppStore((state) => state.patientOnboardingData);
+    // Validar que exista información básica completa
+    if (
+      !basicInfo?.name ||
+      !basicInfo?.lastName ||
+      !basicInfo?.identityDocument ||
+      !basicInfo?.email
+    ) {
+      console.log("Basic info incomplete, redirecting to basic info page...");
+      navigate("/auth/patient-onboarding/basic-info", { replace: true });
+      return;
+    }
+
+    // Validar rol
+    if (selectedRole !== "Patient") {
+      console.log("Invalid role for patient onboarding, redirecting...");
+      navigate("/auth/register", { replace: true });
+    }
+  }, [otpData, basicInfo, selectedRole, navigate]);
 
   const handleSubmit = (data: PatientCreatePasswordSchemaType) => {
-    navigate("/auth/patient-onboarding/profile-photo");
-    if (selectedRole === "Patient" && setPatientOnboardingData) {
+    if (selectedRole === "Patient" && setPatientOnboardingData && basicInfo) {
       setPatientOnboardingData({
         ...basicInfo,
         password: data.password,
         confirmPassword: data.confirmPassword,
-        name: basicInfo!.name || "",
-        lastName: basicInfo!.lastName ?? "",
-        identityDocument: basicInfo!.identityDocument || "",
-        email: basicInfo!.email ?? "",
-
-        urlImg: basicInfo?.urlImg || undefined,
+        role: "Patient",
+        name: basicInfo.name,
+        lastName: basicInfo.lastName,
+        identityDocument: basicInfo.identityDocument,
+        email: basicInfo.email,
+        urlImg: basicInfo.urlImg ?? "",
       });
+      navigate("/auth/patient-onboarding/profile-photo", { replace: true });
     }
   };
+
+  // Early return si no hay información básica completa
+  if (
+    !basicInfo?.name ||
+    !basicInfo?.lastName ||
+    !basicInfo?.identityDocument ||
+    !basicInfo?.email ||
+    !otpData
+  ) {
+    return null;
+  }
 
   return (
     <AuthContentContainer
@@ -46,8 +87,8 @@ function SetCredentialsPage() {
         }}
         schema={PatientCreatePasswordSchema((key) => t(key))}
         defaultValues={{
-          password: basicInfo!.password || "",
-          confirmPassword: basicInfo!.confirmPassword || "",
+          password: basicInfo.password || "",
+          confirmPassword: basicInfo.confirmPassword || "",
         }}
         className="flex flex-col items-center w-full"
       >
@@ -57,23 +98,23 @@ function SetCredentialsPage() {
             name="password"
             type="password"
             placeholder={t("setCredentialsPage.passwordPlaceholder")}
-            required
           />
           <MCInput
             label={t("setCredentialsPage.confirmPasswordLabel")}
             name="confirmPassword"
             type="password"
             placeholder={t("setCredentialsPage.confirmPasswordPlaceholder")}
-            required
           />
-        </div>{" "}
+        </div>
         <AuthFooterContainer
           backButtonProps={{
             onClick() {
-              navigate("/auth/patient-onboarding/basic-info");
+              navigate("/auth/patient-onboarding/basic-info", {
+                replace: true,
+              });
             },
           }}
-        ></AuthFooterContainer>
+        />
       </MCFormWrapper>
     </AuthContentContainer>
   );

@@ -36,6 +36,7 @@ export type GlobalUISlice = {
   allowedPages: string[];
   setAccessPage: (canAccess: boolean, pages: string[]) => void;
   modalOpen: boolean;
+  setModalOpen: (isOpen: boolean) => void;
 };
 
 export const createGlobalUISlice: StateCreator<GlobalUISlice> = (set, get) => ({
@@ -78,4 +79,5 @@ export const createGlobalUISlice: StateCreator<GlobalUISlice> = (set, get) => ({
   setAccessPage: (canAccess, pages) =>
     set({ canAccessPage: canAccess, allowedPages: pages }),
   modalOpen: false,
+  setModalOpen: (isOpen: boolean) => set({ modalOpen: isOpen }),
 });

@@ -23,13 +23,10 @@ function AuthHeader() {
 
   // Solo el contenido del botón, sin el button tag
   const backButtonContent = (
-    <button
-      className="group flex items-center gap-2 text-white transition-all duration-150 hover:opacity-80 active:scale-95"
-      type="button"
-    >
+    <div className="group flex items-center gap-2 text-white transition-all duration-150 hover:opacity-80 active:scale-95 cursor-pointer">
       <ArrowLeft className="text-white transition-transform duration-200 group-hover:-translate-x-1 group-hover:scale-110" />
       <span className="font-medium text-lg">{t("header.back")}</span>
-    </button>
+    </div>
   );
 
   return (
@@ -53,7 +50,14 @@ function AuthHeader() {
               </div>
             </MCModalBase>
           ) : (
-            <div onClick={handleDirectBack}>{backButtonContent}</div>
+            <button
+              onClick={handleDirectBack}
+              className="group flex items-center gap-2 text-white transition-all duration-150 hover:opacity-80 active:scale-95"
+              type="button"
+            >
+              <ArrowLeft className="text-white transition-transform duration-200 group-hover:-translate-x-1 group-hover:scale-110" />
+              <span className="font-medium text-lg">{t("header.back")}</span>
+            </button>
           )}
 
           {/* Center: Logo */}

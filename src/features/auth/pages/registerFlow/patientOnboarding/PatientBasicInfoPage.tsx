@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import AuthContentContainer from "@/features/auth/components/AuthContentContainer";
 import MCInput from "@/shared/components/forms/MCInput";
@@ -14,22 +15,44 @@ function PatientBasicInfoPage() {
 
   const basicInfo = useAppStore((state) => state.patientOnboardingData);
   const setBasicInfo = useAppStore((state) => state.setPatientOnboardingData);
+  const otpData = useAppStore((state) => state.otp);
+  const selectedRole = useAppStore((state) => state.selectedRole);
+  console.log(basicInfo);
+  // Validar que exista OTP verificado antes de acceder a esta página
+  useEffect(() => {
+    if (!otpData || !basicInfo?.email) {
+      console.log("No OTP or email found, redirecting to OTP verification...");
+      navigate("/auth/otp-verification", { replace: true });
+      return;
+    }
+
+    if (selectedRole !== "Patient") {
+      console.log("Invalid role for patient onboarding, redirecting...");
+      navigate("/auth/register", { replace: true });
+    }
+  }, [otpData, basicInfo?.email, selectedRole, navigate]);
 
   const handleSubmit = (data: PatientBasicInfoSchemaType) => {
-    if (setBasicInfo) {
+    if (setBasicInfo && basicInfo) {
       setBasicInfo({
         ...basicInfo,
         name: data.name,
         lastName: data.lastName,
+        role: "Patient",
         identityDocument: data.identityDocument,
-        email: basicInfo?.email ?? "",
-        password: basicInfo?.password ?? "",
-        confirmPassword: basicInfo?.confirmPassword ?? "",
-        urlImg: basicInfo?.urlImg,
+        email: basicInfo.email,
+        password: basicInfo.password ?? "",
+        confirmPassword: basicInfo.confirmPassword ?? "",
+        urlImg: basicInfo.urlImg ?? "",
       });
+      navigate("/auth/patient-onboarding/password-setup", { replace: true });
     }
-    navigate("/auth/patient-onboarding/password-setup");
   };
+
+  // Early return si no hay OTP o email
+  if (!otpData || !basicInfo?.email) {
+    return null;
+  }
 
   return (
     <AuthContentContainer
@@ -68,7 +91,7 @@ function PatientBasicInfoPage() {
         <AuthFooterContainer
           backButtonProps={{
             onClick() {
-              navigate("/auth/otp-verification");
+              navigate("/auth/otp-verification", { replace: true });
             },
           }}
         />

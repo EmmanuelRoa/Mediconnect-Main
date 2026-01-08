@@ -32,6 +32,7 @@ export const useAppStore = create<AppStore>()(
 
         // De OnboardingSlice (rol persistente)
         selectedRole: state.selectedRole,
+        patientOnboardingData: state.patientOnboardingData,
 
         // De AuthFlowSlice (datos temporales del flujo)
         forgotPassword: state.forgotPassword,

@@ -13,6 +13,9 @@ export const ROUTES = {
   DOCTOR_ONBOARDING: "/auth/doctor-onboarding",
   CENTER_ONBOARDING: "/auth/center-onboarding",
 
+  //Register success
+  REGISTER_SUCCESS: "/auth/register-success",
+
   //New password flow
   FORGOT_PASSWORD: "/auth/forgot-password",
   VERIFY_EMAIL: "/auth/verify-email",

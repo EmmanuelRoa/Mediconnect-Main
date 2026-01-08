@@ -16,6 +16,7 @@ import PatientProfilePhotoPage from "@/features/auth/pages/registerFlow/patientO
 import SetCredentialsPage from "@/features/auth/pages/registerFlow/SetCredentialsPage";
 import DoctorOnboardingPage from "@/features/auth/pages/registerFlow/DoctorOnboardingPage";
 import CenterOnboardingPage from "@/features/auth/pages/registerFlow/CenterOnboardingPage";
+import RegisterSuccessPage from "@/features/auth/pages/registerFlow/RegisterSuccessPage";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -51,6 +52,10 @@ function AppRouter() {
           <Route
             path={ROUTES.CENTER_ONBOARDING}
             element={<CenterOnboardingPage />}
+          />
+          <Route
+            path={ROUTES.REGISTER_SUCCESS}
+            element={<RegisterSuccessPage />}
           />
           {/* Password flow */}
           <Route
