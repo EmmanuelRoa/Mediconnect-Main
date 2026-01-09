@@ -20,15 +20,17 @@ interface MCModalBaseProps {
   children: React.ReactNode;
   triggerClassName?: string;
   title?: string;
-  size?: "small" | "medium" | "large" | "full";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
   variant?: "warning" | "confirm" | "decide" | "info";
   onConfirm?: () => void;
   onSecondary?: () => void;
   confirmText?: string;
   secondaryText?: string;
-  typeclose?: "Arrow" | "Cross";
+  typeclose?: "Arrow" | "X";
   zIndex?: number;
+  borderHeader?: boolean;
+  borderFooter?: boolean;
 }
 
 export function MCModalBase({
@@ -37,9 +39,9 @@ export function MCModalBase({
   onClose,
   children,
   title,
-  typeclose = "Cross",
+  typeclose = "X",
   triggerClassName,
-  size = "medium",
+  size = "md",
   className = "",
   variant = "info",
   onConfirm,
@@ -47,6 +49,8 @@ export function MCModalBase({
   confirmText = "Confirmar",
   secondaryText = "Cancelar",
   zIndex = 50,
+  borderHeader = false,
+  borderFooter = false,
 }: MCModalBaseProps) {
   const isControlled = isOpen !== undefined;
   const isMobile = useIsMobile();
@@ -64,20 +68,15 @@ export function MCModalBase({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isControlled, isOpen, onClose]);
 
-  // Clases de tamaño adaptativas para móvil y desktop
+  // Sistema de tamaños con jerarquía clara y precisa
   const sizeClasses = {
-    small: isMobile
+    sm: isMobile
       ? "w-full max-w-[95vw] mx-2 max-h-[70vh]"
       : "max-w-md max-h-[60vh] w-full",
-    medium: isMobile
-      ? "w-full max-w-[95vw] mx-2 max-h-[80vh]"
-      : "max-w-lg max-h-[70vh] w-full",
-    large: isMobile
-      ? "w-full max-w-[95vw] mx-2 max-h-[90vh]"
-      : "max-w-2xl max-h-[85vh] w-full",
-    full: isMobile
-      ? "w-full max-w-[100vw] mx-0 max-h-[95vh]"
-      : "max-w-6xl max-h-[95vh] w-full mx-4",
+    md: isMobile ? "w-[95vw] h-[70vh]" : "w-[512px] h-[600px]",
+    lg: isMobile ? "w-[95vw] h-[80vh]" : "w-[672px] h-[700px]",
+    xl: isMobile ? "w-[98vw] h-[85vh]" : "w-[896px] h-[800px]",
+    "2xl": isMobile ? "w-[100vw] h-[90vh]" : "w-[1152px] h-[900px]",
   };
 
   // Espaciado adaptativo para móvil
@@ -106,14 +105,16 @@ export function MCModalBase({
           {trigger}
         </MorphingDialogTrigger>
       )}
-      <MorphingDialogContainer className={paddingClasses} zIndex={zIndex}>
+      <MorphingDialogContainer className={paddingClasses}>
         <MorphingDialogContent
-          className={`bg-white rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col`}
+          className={`bg-white rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col overflow-hidden`}
         >
           {/* Header */}
           {(title || typeclose) && (
             <div
-              className={`flex justify-between items-center ${headerPadding} flex-shrink-0 `}
+              className={`flex justify-between items-center ${headerPadding} flex-shrink-0 ${
+                borderHeader ? "border-b border-gray-100" : ""
+              }`}
             >
               {title && (
                 <MorphingDialogTitle>
@@ -133,19 +134,19 @@ export function MCModalBase({
             </div>
           )}
 
-          {/* Content (scrollable) */}
+          {/* Content */}
           <MorphingDialogDescription
-            className={`${contentPadding} flex-1 min-h-0 overflow-y-auto`}
+            className={`${contentPadding} flex-1 overflow-y-auto min-h-0`}
           >
-            <div className="min-h-0">{children}</div>
+            {children}
           </MorphingDialogDescription>
 
-          {/* Footer por variante (fijo) */}
+          {/* Footer */}
           {variant === "warning" && (
             <div
-              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0  ${
-                isMobile ? "flex-col-reverse" : ""
-              }`}
+              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${
+                borderFooter ? "border-t border-gray-100" : ""
+              } ${isMobile ? "flex-col-reverse" : ""}`}
             >
               <MorphingDialogClose>
                 <MCButton
@@ -170,7 +171,9 @@ export function MCModalBase({
 
           {variant === "confirm" && (
             <div
-              className={`flex justify-end ${footerPadding} flex-shrink-0  `}
+              className={`flex justify-end ${footerPadding} flex-shrink-0 ${
+                borderFooter ? "border-t border-gray-100" : ""
+              }`}
             >
               <MCButton
                 variant="primary"
@@ -185,9 +188,9 @@ export function MCModalBase({
 
           {variant === "decide" && (
             <div
-              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0  ${
-                isMobile ? "flex-col-reverse" : ""
-              }`}
+              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${
+                borderFooter ? "border-t border-gray-100" : ""
+              } ${isMobile ? "flex-col-reverse" : ""}`}
             >
               <MorphingDialogClose>
                 <MCButton

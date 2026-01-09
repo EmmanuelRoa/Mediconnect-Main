@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import AuthContentContainer from "@/features/auth/components/AuthContentContainer";
 import MCInput from "@/shared/components/forms/MCInput";

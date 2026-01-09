@@ -1,5 +1,3 @@
-"use client";
-
 import React, {
   useCallback,
   useContext,
@@ -19,6 +17,29 @@ import {
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { XIcon, ArrowLeft } from "lucide-react";
+
+const dialogStack: string[] = [];
+
+function addToStack(id: string) {
+  if (!dialogStack.includes(id)) {
+    dialogStack.push(id);
+  }
+}
+
+function removeFromStack(id: string) {
+  const index = dialogStack.indexOf(id);
+  if (index > -1) {
+    dialogStack.splice(index, 1);
+  }
+}
+
+function isTopDialog(id: string) {
+  return dialogStack[dialogStack.length - 1] === id;
+}
+
+function getStackIndex(id: string) {
+  return dialogStack.indexOf(id);
+}
 
 export type MorphingDialogContextType = {
   isOpen: boolean;
@@ -98,14 +119,19 @@ function MorphingDialogTrigger({
 }: MorphingDialogTriggerProps) {
   const { setIsOpen, isOpen, uniqueId } = useMorphingDialog();
 
-  const handleClick = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen, setIsOpen]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation(); // Evita propagación
+      setIsOpen(!isOpen);
+    },
+    [isOpen, setIsOpen]
+  );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        event.stopPropagation();
         setIsOpen(!isOpen);
       }
     },
@@ -150,6 +176,10 @@ function MorphingDialogContent({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Solo cerrar si es el modal superior
+      if (event.key === "Escape" && isTopDialog(uniqueId)) {
+        setIsOpen(false);
+      }
       if (event.key === "Tab") {
         if (!firstFocusableElement || !lastFocusableElement) return;
 
@@ -167,14 +197,12 @@ function MorphingDialogContent({
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, firstFocusableElement, lastFocusableElement]);
+  }, [setIsOpen, firstFocusableElement, lastFocusableElement, uniqueId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -190,12 +218,18 @@ function MorphingDialogContent({
         (focusableElements[0] as HTMLElement).focus();
       }
     } else {
-      document.body.classList.remove("overflow-hidden");
+      // Solo quitar overflow-hidden si no hay más modales abiertos
+      if (dialogStack.length === 0) {
+        document.body.classList.remove("overflow-hidden");
+      }
       triggerRef.current?.focus();
     }
   }, [isOpen, triggerRef]);
 
-  // Remover el useEffect de click outside ya que ahora se maneja en el Container
+  // Detener propagación de clics dentro del contenido
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
 
   return (
     <motion.div
@@ -207,6 +241,7 @@ function MorphingDialogContent({
       aria-modal="true"
       aria-labelledby={`motion-ui-morphing-dialog-title-${uniqueId}`}
       aria-describedby={`motion-ui-morphing-dialog-description-${uniqueId}`}
+      onClick={handleContentClick}
     >
       {children}
     </motion.div>
@@ -217,16 +252,10 @@ export type MorphingDialogContainerProps = {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-  zIndex?: number;
 };
 
-function MorphingDialogContainer({
-  children,
-  className,
-  style,
-  zIndex = 50,
-}: MorphingDialogContainerProps) {
-  const { isOpen, uniqueId } = useMorphingDialog();
+function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
+  const { isOpen, uniqueId, setIsOpen } = useMorphingDialog();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -234,7 +263,32 @@ function MorphingDialogContainer({
     return () => setMounted(false);
   }, []);
 
+  // Manejar el stack de modales
+  useEffect(() => {
+    if (isOpen) {
+      addToStack(uniqueId);
+    } else {
+      removeFromStack(uniqueId);
+    }
+    return () => {
+      removeFromStack(uniqueId);
+    };
+  }, [isOpen, uniqueId]);
+
+  // Cerrar solo este modal al hacer clic en el backdrop
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Solo cerrar si el clic fue directamente en el backdrop
+      if (e.target === e.currentTarget && isTopDialog(uniqueId)) {
+        setIsOpen(false);
+      }
+    },
+    [setIsOpen, uniqueId]
+  );
+
   if (!mounted) return null;
+
+  const zIndex = 50 + getStackIndex(uniqueId) * 10;
 
   return createPortal(
     <AnimatePresence initial={false} mode="sync">
@@ -242,22 +296,18 @@ function MorphingDialogContainer({
         <>
           <motion.div
             key={`backdrop-${uniqueId}`}
-            className="fixed inset-0 h-full w-full bg-black/10 backdrop-blur-xs dark:bg-black/40"
+            className="fixed inset-0 h-full w-full bg-black/10 backdrop-blur-sm dark:bg-black/40"
             style={{ zIndex: zIndex - 1 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={(e) => e.stopPropagation()} // Detener propagación del click
+            onClick={handleBackdropClick}
           />
           <div
-            className={cn(
-              "fixed inset-0 flex items-center justify-center",
-              className
-            )}
-            style={{ zIndex, ...style }}
-            data-modal-z-index={zIndex} // Agregar atributo para detección de z-index
+            className="fixed inset-0 flex items-center justify-center pointer-events-none"
+            style={{ zIndex }}
           >
-            {children}
+            <div className="pointer-events-auto">{children}</div>
           </div>
         </>
       )}
@@ -388,20 +438,24 @@ export type MorphingDialogCloseProps = {
     animate: Variant;
     exit: Variant;
   };
-  typeclose?: "Arrow" | "Cross";
+  typeclose?: "Arrow" | "X";
 };
 
 function MorphingDialogClose({
   children,
   className,
   variants,
-  typeclose = "Cross",
+  typeclose,
 }: MorphingDialogCloseProps) {
   const { setIsOpen, uniqueId } = useMorphingDialog();
 
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-  }, [setIsOpen]);
+  const handleClose = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsOpen(false);
+    },
+    [setIsOpen]
+  );
 
   return (
     <motion.button
@@ -416,13 +470,7 @@ function MorphingDialogClose({
       variants={variants}
     >
       {children ||
-        (typeclose === "Cross" ? (
-          <XIcon size={24} />
-        ) : (
-          <div className="flex gap-2 justify-center items-center">
-            <ArrowLeft size={24} />
-          </div>
-        ))}
+        (typeclose === "Arrow" ? <ArrowLeft size={24} /> : <XIcon size={24} />)}
     </motion.button>
   );
 }

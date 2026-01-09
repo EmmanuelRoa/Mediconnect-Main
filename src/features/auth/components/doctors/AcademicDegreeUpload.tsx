@@ -8,9 +8,8 @@ import "filepond/dist/filepond.min.css";
 import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-// Agrega la importación de Lucide
+
 import { ImageUp, Camera, Image as ImageIcon } from "lucide-react";
-import { createPortal } from "react-dom";
 import { XIcon } from "lucide-react";
 
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
@@ -104,7 +103,7 @@ export function AcademicDegreeUploadTrigger({
         id="academic-degree"
         {...modalProps}
         trigger={children}
-        size="large"
+        size="lg"
         typeclose="Arrow"
         triggerClassName="w-full"
       >
@@ -192,22 +191,20 @@ export function AcademicDegreeUploadTrigger({
         </div>
       </MCModalBase>
 
-      {/* Crop Modal - Renderizado fuera del modal principal */}
-      {rawImage &&
-        cropModalOpen &&
-        createPortal(
-          <MCProfileImageUploader
-            isOpen={cropModalOpen}
-            onClose={() => setCropModalOpen(false)}
-            imageSrc={rawImage}
-            aspectRatio={1}
-            isCircular={true}
-            onCropComplete={handleCropComplete}
-            title="Recorta tu foto de perfil"
-          />,
-          document.body
-        )}
+      {/* Crop Modal - Usando MCModalBase a través de MCProfileImageUploader */}
+      {rawImage && (
+        <MCProfileImageUploader
+          isOpen={cropModalOpen}
+          onClose={() => setCropModalOpen(false)}
+          imageSrc={rawImage}
+          aspectRatio={1}
+          isCircular={false}
+          onCropComplete={handleCropComplete}
+          title="Recorta tu foto de perfil"
+        />
+      )}
     </>
   );
 }
+
 export default AcademicDegreeUploadTrigger;

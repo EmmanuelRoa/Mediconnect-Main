@@ -42,7 +42,7 @@ function AuthHeader() {
               onConfirm={handleConfirmCancel}
               confirmText={t("header.confirmCancel")}
               secondaryText={t("header.continue")}
-              size="small"
+              size="sm"
             >
               <div className="flex flex-col">
                 <p className="text-primary text-justify">
