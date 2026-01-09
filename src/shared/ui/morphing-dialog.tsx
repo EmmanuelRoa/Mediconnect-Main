@@ -18,8 +18,7 @@ import {
 } from "motion/react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { XIcon } from "lucide-react";
-import useClickOutside from "@/lib/hooks/useClickOutside";
+import { XIcon, ArrowLeft } from "lucide-react";
 
 export type MorphingDialogContextType = {
   isOpen: boolean;
@@ -117,7 +116,7 @@ function MorphingDialogTrigger({
     <motion.button
       ref={triggerRef}
       layoutId={`dialog-${uniqueId}`}
-      className={cn("relative cursor-pointer w-full", className)} // <-- agrega w-full aquí
+      className={cn("relative cursor-pointer", className)}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       style={style}
@@ -151,9 +150,6 @@ function MorphingDialogContent({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
       if (event.key === "Tab") {
         if (!firstFocusableElement || !lastFocusableElement) return;
 
@@ -171,12 +167,14 @@ function MorphingDialogContent({
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [setIsOpen, firstFocusableElement, lastFocusableElement]);
+  }, [isOpen, firstFocusableElement, lastFocusableElement]);
 
   useEffect(() => {
     if (isOpen) {
@@ -197,11 +195,7 @@ function MorphingDialogContent({
     }
   }, [isOpen, triggerRef]);
 
-  useClickOutside(containerRef, () => {
-    if (isOpen) {
-      setIsOpen(false);
-    }
-  });
+  // Remover el useEffect de click outside ya que ahora se maneja en el Container
 
   return (
     <motion.div
@@ -223,9 +217,15 @@ export type MorphingDialogContainerProps = {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  zIndex?: number;
 };
 
-function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
+function MorphingDialogContainer({
+  children,
+  className,
+  style,
+  zIndex = 50,
+}: MorphingDialogContainerProps) {
   const { isOpen, uniqueId } = useMorphingDialog();
   const [mounted, setMounted] = useState(false);
 
@@ -243,11 +243,20 @@ function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
           <motion.div
             key={`backdrop-${uniqueId}`}
             className="fixed inset-0 h-full w-full bg-black/10 backdrop-blur-xs dark:bg-black/40"
+            style={{ zIndex: zIndex - 1 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={(e) => e.stopPropagation()} // Detener propagación del click
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className={cn(
+              "fixed inset-0 flex items-center justify-center",
+              className
+            )}
+            style={{ zIndex, ...style }}
+            data-modal-z-index={zIndex} // Agregar atributo para detección de z-index
+          >
             {children}
           </div>
         </>
@@ -379,12 +388,14 @@ export type MorphingDialogCloseProps = {
     animate: Variant;
     exit: Variant;
   };
+  typeclose?: "Arrow" | "Cross";
 };
 
 function MorphingDialogClose({
   children,
   className,
   variants,
+  typeclose = "Cross",
 }: MorphingDialogCloseProps) {
   const { setIsOpen, uniqueId } = useMorphingDialog();
 
@@ -404,7 +415,14 @@ function MorphingDialogClose({
       exit="exit"
       variants={variants}
     >
-      {children || <XIcon size={24} />}
+      {children ||
+        (typeclose === "Cross" ? (
+          <XIcon size={24} />
+        ) : (
+          <div className="flex gap-2 justify-center items-center">
+            <ArrowLeft size={24} />
+          </div>
+        ))}
     </motion.button>
   );
 }

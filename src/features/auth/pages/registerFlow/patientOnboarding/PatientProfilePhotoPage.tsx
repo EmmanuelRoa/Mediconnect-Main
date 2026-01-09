@@ -7,6 +7,7 @@ import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer"
 import { Camera } from "lucide-react";
 import MCProfileImageUploader from "@/shared/components/MCProfileImageUploader";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+
 const DEFAULT_PROFILE_IMAGE =
   "https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg";
 
