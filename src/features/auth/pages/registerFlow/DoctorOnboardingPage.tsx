@@ -30,7 +30,10 @@ function DoctorOnboardingPage() {
       doctorOnboardingData?.phone &&
       doctorOnboardingData?.email;
 
-    const isIdDocComplete = doctorOnboardingData?.identityDocument;
+    const isIdDocComplete = Boolean(
+      doctorOnboardingData?.identityDocument ||
+        doctorOnboardingData?.identityDocumentFile
+    );
 
     const isProfilePhotoComplete = Boolean(doctorOnboardingData?.urlImg);
 
