@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Progress } from "@/shared/ui/progress";
 import OnboardingChecklist from "@/features/onboarding/components/OnboardingChecklist";
 // Importa los componentes necesarios para cada paso
-import CenterInfoStep from "@/features/onboarding/components/center/CenterInfoStep";
+import CenterInfoStep from "@/features/onboarding/components/center/centerInfoStep/CenterInfoStep";
 import HealthCertificateUpload from "@/features/onboarding/components/center/HealthCertificateUpload";
 import ProfilePhotoUpload from "@/features/onboarding/components/center/ProfilePhotoUpload";
 

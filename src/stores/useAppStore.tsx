@@ -9,14 +9,12 @@ import {
   type AuthFlowSlice,
   createAuthFlowSlice,
 } from "@/stores/useAuthFlowSlice";
-import { type GlobalUISlice, createGlobalUISlice } from "./useGlobalUISlice";
 
-type AppStore = GlobalUISlice & AuthSlice & OnboardingSlice & AuthFlowSlice;
+type AppStore = AuthSlice & OnboardingSlice & AuthFlowSlice;
 
 export const useAppStore = create<AppStore>()(
   persist(
     (...a) => ({
-      ...createGlobalUISlice(...a),
       ...createAuthSlice(...a),
       ...createOnboardingSlice(...a),
       ...createAuthFlowSlice(...a),
@@ -24,7 +22,6 @@ export const useAppStore = create<AppStore>()(
     {
       name: "app-storage",
       storage: createJSONStorage(() => sessionStorage),
-
       partialize: (state) => ({
         // De AuthSlice (sesión persistente)
         isAuthenticated: state.isAuthenticated,
@@ -34,13 +31,10 @@ export const useAppStore = create<AppStore>()(
         selectedRole: state.selectedRole,
         patientOnboardingData: state.patientOnboardingData,
         doctorOnboardingData: state.doctorOnboardingData,
+        centerOnboardingData: state.centerOnboardingData,
         // De AuthFlowSlice (datos temporales del flujo)
         forgotPassword: state.forgotPassword,
         otp: state.otp,
-
-        // De GlobalUISlice
-        theme: state.theme,
-        language: state.language,
       }),
     }
   )

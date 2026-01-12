@@ -38,7 +38,6 @@ function PersonalIdentificationStep1({
   ];
 
   const handleSubmit = (data: DoctorBasicInfoSchemaType) => {
-    // Ya no necesitas actualizar el store aquí si usas setDoctorField en los onChange
     onValidationChange?.(true);
     onNext?.();
   };
@@ -89,7 +88,10 @@ function PersonalIdentificationStep1({
               placeholder="Seleccionar género"
               options={genderOptions}
               onChange={(value) =>
-                setDoctorField?.("gender", Array.isArray(value) ? value[0] : value)
+                setDoctorField?.(
+                  "gender",
+                  Array.isArray(value) ? value[0] : value
+                )
               }
             />
             <MCInput
@@ -109,7 +111,10 @@ function PersonalIdentificationStep1({
               placeholder="Seleccionar nacionalidad"
               options={nationalityOptions}
               onChange={(value) =>
-                setDoctorField?.("nationality", Array.isArray(value) ? value[0] : value)
+                setDoctorField?.(
+                  "nationality",
+                  Array.isArray(value) ? value[0] : value
+                )
               }
             />
             <MCInput

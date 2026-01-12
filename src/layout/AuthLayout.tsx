@@ -2,13 +2,14 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import AuthHeader from "@/features/auth/components/AuthHeader";
 import { useAppStore } from "@/stores/useAppStore";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 function AuthLayout() {
   const location = useLocation();
   const clearOnboarding = useAppStore((state) => state.clearOnboarding);
   const clearAuthFlow = useAppStore((state) => state.clearAuthFlow);
 
-  const setAccessPage = useAppStore((state) => state.setAccessPage);
+  const setAccessPage = useGlobalUIStore((state) => state.setAccessPage);
 
   useEffect(() => {
     return () => {

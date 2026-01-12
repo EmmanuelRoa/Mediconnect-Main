@@ -48,7 +48,6 @@ function MCStepper({
       {items.map((item, index) => {
         const status = getStepStatus(index, current, item.status);
         const isLast = index === items.length - 1;
-        const isClickable = onChange && !item.disabled;
 
         // Colores personalizados
         const bubbleBg =
@@ -65,22 +64,19 @@ function MCStepper({
               {/* Step Circle */}
               <motion.button
                 type="button"
-                onClick={() => isClickable && onChange(index)}
-                disabled={!isClickable}
+                // Quita el onClick y siempre deshabilitado
+                disabled
                 className={cn(
                   "relative flex items-center justify-center rounded-full transition-all",
                   "h-14 w-14 text-2xl font-semibold",
-                  isClickable && "cursor-pointer",
-                  !isClickable && "cursor-default",
                   bubbleBg,
                   bubbleText,
-                  ringAccent
+                  ringAccent,
+                  "cursor-default" // Siempre cursor default
                 )}
                 style={{
                   boxShadow: undefined,
                 }}
-                whileHover={isClickable ? { scale: 1.08 } : undefined}
-                whileTap={isClickable ? { scale: 0.95 } : undefined}
                 layout
               >
                 {item.icon ? (

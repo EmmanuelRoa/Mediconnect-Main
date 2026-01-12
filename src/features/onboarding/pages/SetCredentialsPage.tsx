@@ -71,7 +71,7 @@ function SetCredentialsPage() {
         lastName: basicInfo.lastName,
         identityDocument: basicInfo.identityDocument,
         email: basicInfo.email,
-        urlImg: basicInfo.urlImg ?? "",
+        urlImg: basicInfo.urlImg ?? undefined,
       });
       navigate("/auth/patient-onboarding/profile-photo", { replace: true });
     }
@@ -90,7 +90,7 @@ function SetCredentialsPage() {
         lastName: doctorBasicInfo.lastName,
         identityDocument: doctorBasicInfo.identityDocument,
         email: doctorBasicInfo.email,
-        urlImg: doctorBasicInfo.urlImg ?? "",
+        urlImg: doctorBasicInfo.urlImg ?? undefined,
       });
       navigate("/auth/doctor-onboarding/profile-photo", { replace: true });
     }

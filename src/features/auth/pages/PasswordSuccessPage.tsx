@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import SuccessImg from "@/assets/successPassword.png";
 import MCButton from "@/shared/components/forms/MCButton";
-import { useAppStore } from "@/stores/useAppStore";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 function PasswordSuccessPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
-  const canAccessPage = useAppStore((state) => state.canAccessPage);
-  const allowedPages = useAppStore((state) => state.allowedPages);
+  const canAccessPage = useGlobalUIStore((state) => state.canAccessPage);
+  const allowedPages = useGlobalUIStore((state) => state.allowedPages);
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {

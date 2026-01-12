@@ -19,7 +19,10 @@ export interface OnboardingSlice {
     field: K,
     value: DoctorOnboardingSchemaType[K]
   ) => void;
-
+  setCenterField?: <K extends keyof CenterOnboardingSchemaType>(
+    field: K,
+    value: CenterOnboardingSchemaType[K]
+  ) => void;
   setSelectedRole: (role: "Patient" | "Doctor" | "Center" | null) => void;
   clearOnboarding: () => void;
 }
@@ -74,6 +77,14 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     set((state) => ({
       doctorOnboardingData: {
         ...state.doctorOnboardingData!,
+        [field]: value,
+      },
+    })),
+
+  setCenterField: (field, value) =>
+    set((state) => ({
+      centerOnboardingData: {
+        ...state.centerOnboardingData!,
         [field]: value,
       },
     })),

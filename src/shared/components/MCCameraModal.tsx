@@ -10,7 +10,8 @@ import {
   MorphingDialogDescription,
   MorphingDialogContainer,
 } from "@/shared/ui/morphing-dialog";
-import { useAppStore } from "@/stores/useAppStore";
+
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 type MCCameraModalProps = {
   children?: React.ReactNode;
@@ -28,10 +29,10 @@ export function MCCameraModal({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const isMobile = useIsMobile();
 
-  const isLoading = useAppStore((state) => state.isloading);
-  const setIsLoading = useAppStore((state) => state.setIsLoading);
-  const error = useAppStore((state) => state.error);
-  const setError = useAppStore((state) => state.setError);
+  const isLoading = useGlobalUIStore((state) => state.isloading);
+  const setIsLoading = useGlobalUIStore((state) => state.setIsLoading);
+  const error = useGlobalUIStore((state) => state.error);
+  const setError = useGlobalUIStore((state) => state.setError);
 
   const startCamera = async () => {
     try {

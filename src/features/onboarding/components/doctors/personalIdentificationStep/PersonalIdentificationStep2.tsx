@@ -4,6 +4,7 @@ import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { useAppStore } from "@/stores/useAppStore";
 import { DoctorProfessionalInfoSchema } from "@/schema/OnbordingSchema";
 import { useEffect } from "react";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 type PersonalIdentificationStep2Props = {
   children?: React.ReactNode;
@@ -29,7 +30,9 @@ function PersonalIdentificationStep2({
     (state) => state.doctorOnboardingData
   );
   const setDoctorField = useAppStore((state) => state.setDoctorField);
-  const setOnboardingStep = useAppStore((state) => state.setOnboardingStep);
+  const setOnboardingStep = useGlobalUIStore(
+    (state) => state.setOnboardingStep
+  );
 
   const handleSubmit = (data: any) => {
     // El submit ya no necesita actualizar el store aquí si usas setDoctorField en los onChange

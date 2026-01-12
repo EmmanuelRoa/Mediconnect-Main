@@ -2,7 +2,6 @@ import { z } from "zod";
 import { ValidateDominicanID } from "@/utils/ValidateDominicanID";
 import { ValidateDominicanRNC } from "@/utils/ValidateDominicanRNC";
 import { validatePassport } from "@/utils/validatePassport";
-import { Description } from "@radix-ui/react-dialog";
 
 // Schema para archivos subidos
 export const UploadedFileSchema = z.object({

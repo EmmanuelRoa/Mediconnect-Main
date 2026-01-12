@@ -43,7 +43,7 @@ function PatientBasicInfoPage() {
         email: basicInfo.email,
         password: basicInfo.password ?? "",
         confirmPassword: basicInfo.confirmPassword ?? "",
-        urlImg: basicInfo.urlImg ?? "",
+        urlImg: typeof basicInfo.urlImg === "string" ? undefined : basicInfo.urlImg,
       });
       navigate("/auth/patient-onboarding/password-setup", { replace: true });
     }

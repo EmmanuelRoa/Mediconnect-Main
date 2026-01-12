@@ -7,7 +7,7 @@ import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer"
 import { Camera } from "lucide-react";
 import MCProfileImageUploader from "@/shared/components/MCProfileImageUploader";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 const DEFAULT_PROFILE_IMAGE =
   "https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg";
 
@@ -19,11 +19,11 @@ function PatientProfilePhotoPage() {
     (state) => state.setPatientOnboardingData
   );
   const basicInfo = useAppStore((state) => state.patientOnboardingData);
-  const isModalOpen = useAppStore((state) => state.modalOpen);
-  const setIsModalOpen = useAppStore((state) => state.setModalOpen);
+  const isModalOpen = useGlobalUIStore((state) => state.modalOpen);
+  const setIsModalOpen = useGlobalUIStore((state) => state.setModalOpen);
   const otpData = useAppStore((state) => state.otp);
   const selectedRole = useAppStore((state) => state.selectedRole);
-  const setAccessPage = useAppStore((state) => state.setAccessPage);
+  const setAccessPage = useGlobalUIStore((state) => state.setAccessPage);
 
   const [profile, setProfile] = useState<string>(
     typeof basicInfo?.urlImg === "object" && basicInfo.urlImg?.url

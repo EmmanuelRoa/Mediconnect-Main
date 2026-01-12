@@ -1,8 +1,8 @@
 import { Spinner } from "@/shared/ui/spinner";
-import { useAppStore } from "@/stores/useAppStore";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 function MCLoadingSpinner() {
-  const isloading = useAppStore((state) => state.isloading);
+  const isloading = useGlobalUIStore((state) => state.isloading);
 
   if (!isloading) return null;
 

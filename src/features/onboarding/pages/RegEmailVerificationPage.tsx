@@ -78,7 +78,9 @@ function RegEmailVerificationPage() {
           email:
             selectedRole === "Patient"
               ? patientBasicInfo?.email || ""
-              : doctorBasicInfo?.email || "",
+              : selectedRole === "Doctor"
+              ? doctorBasicInfo?.email || ""
+              : centerBasicInfo?.email || "",
         }}
         className="flex flex-col items-center w-full"
       >
