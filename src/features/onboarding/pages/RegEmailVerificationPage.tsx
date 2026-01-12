@@ -19,6 +19,8 @@ function RegEmailVerificationPage() {
   );
   const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
   const setEmailDoctor = useAppStore((state) => state.setDoctorOnboardingData);
+  const centerBasicInfo = useAppStore((state) => state.centerOnboardingData);
+  const setEmailCenter = useAppStore((state) => state.setCenterOnboardingData);
 
   useEffect(() => {
     if (!selectedRole) {
@@ -44,6 +46,14 @@ function RegEmailVerificationPage() {
     if (selectedRole === "Patient" && setPatientEmail && patientBasicInfo) {
       setPatientEmail({
         ...patientBasicInfo,
+        email: data.email ?? "",
+      });
+      navigate("/auth/otp-verification", { replace: true });
+    }
+
+    if (selectedRole === "Center" && setEmailCenter && centerBasicInfo) {
+      setEmailCenter({
+        ...centerBasicInfo,
         email: data.email ?? "",
       });
       navigate("/auth/otp-verification", { replace: true });

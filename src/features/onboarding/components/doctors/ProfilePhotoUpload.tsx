@@ -23,7 +23,11 @@ export function ProfilePhotoUploadTrigger({
 
     setDoctorOnboardingData({
       ...doctorOnboardingData,
-      urlImg: fileUrl,
+      urlImg: {
+        url: fileUrl,
+        type: "image",
+        name: "Foto de perfil",
+      },
     });
   };
 
@@ -32,7 +36,7 @@ export function ProfilePhotoUploadTrigger({
 
     setDoctorOnboardingData({
       ...doctorOnboardingData,
-      urlImg: "",
+      urlImg: undefined,
     });
   };
 
@@ -52,9 +56,9 @@ export function ProfilePhotoUploadTrigger({
         doctorOnboardingData?.urlImg
           ? [
               {
-                url: doctorOnboardingData.urlImg,
-                type: "image",
-                name: "Foto de perfil",
+                url: doctorOnboardingData.urlImg.url,
+                type: doctorOnboardingData.urlImg.type,
+                name: doctorOnboardingData.urlImg.name,
               },
             ]
           : []

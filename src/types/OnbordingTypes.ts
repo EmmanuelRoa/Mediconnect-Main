@@ -8,6 +8,9 @@ import {
   UploadedFileSchema,
   DoctorBasicInfoSchema,
   DoctorProfessionalInfoSchema,
+  CenterBasicInfoSchema,
+  CenterLocationInfoSchema,
+  CenterOnboardingSchema,
 } from "@/schema/OnbordingSchema";
 
 // Exportar tipos inferidos de Zod
@@ -33,6 +36,17 @@ export type DoctorBasicInfoSchemaType = z.infer<
 
 export type DoctorProfessionalInfoSchemaType = z.infer<
   ReturnType<typeof DoctorProfessionalInfoSchema>
+>;
+export type CenterOnboardingSchemaType = z.infer<
+  ReturnType<typeof CenterOnboardingSchema>
+>;
+
+export type CenterBasicInfoSchemaType = z.infer<
+  ReturnType<typeof CenterBasicInfoSchema>
+>;
+
+export type CenterLocationInfoSchemaType = z.infer<
+  ReturnType<typeof CenterLocationInfoSchema>
 >;
 
 export type UploadedFileType = z.infer<typeof UploadedFileSchema>;

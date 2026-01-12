@@ -61,6 +61,7 @@ export const createAuthFlowSlice: StateCreator<AuthFlowSlice> = (set) => ({
       loginCredentials: { email: "", password: "" },
       forgotPassword: { email: "" },
       otp: "",
+      verifyEmail: { verified: false, email: "" },
       resetPassword: { password: "", confirmPassword: "" },
     }),
 });

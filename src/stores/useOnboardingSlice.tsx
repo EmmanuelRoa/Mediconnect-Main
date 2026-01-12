@@ -2,15 +2,18 @@ import { type StateCreator } from "zustand";
 import type {
   PatientOnboardingSchemaType,
   DoctorOnboardingSchemaType,
+  CenterOnboardingSchemaType,
 } from "@/types/OnbordingTypes";
 
 export interface OnboardingSlice {
   selectedRole: "Patient" | "Doctor" | "Center" | null;
   patientOnboardingData?: PatientOnboardingSchemaType;
   doctorOnboardingData?: DoctorOnboardingSchemaType;
+  centerOnboardingData?: CenterOnboardingSchemaType;
 
   setPatientOnboardingData?: (data: PatientOnboardingSchemaType) => void;
   setDoctorOnboardingData?: (data: DoctorOnboardingSchemaType) => void;
+  setCenterOnboardingData?: (data: CenterOnboardingSchemaType) => void;
 
   setDoctorField?: <K extends keyof DoctorOnboardingSchemaType>(
     field: K,
@@ -31,7 +34,6 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     email: "",
     password: "",
     confirmPassword: "",
-    urlImg: "",
   },
   doctorOnboardingData: {
     name: "",
@@ -45,15 +47,28 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     mainSpecialty: "",
     phone: "",
     email: "",
-    secondarySpecialties: [],
-    urlImg: "",
-
     password: "",
     confirmPassword: "",
+  },
+  centerOnboardingData: {
+    name: "",
+    Description: "",
+    address: "",
+    neighborhood: "",
+    rnc: "",
+    zipCode: "",
+    coordinates: {
+      latitude: 0,
+      longitude: 0,
+    },
+    centerType: "",
+    phone: "",
+    email: "",
   },
 
   setPatientOnboardingData: (data) => set({ patientOnboardingData: data }),
   setDoctorOnboardingData: (data) => set({ doctorOnboardingData: data }),
+  setCenterOnboardingData: (data) => set({ centerOnboardingData: data }),
 
   setDoctorField: (field, value) =>
     set((state) => ({
@@ -76,9 +91,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         email: "",
         password: "",
         confirmPassword: "",
-        urlImg: "",
       },
-
       doctorOnboardingData: {
         name: "",
         lastName: "",
@@ -91,10 +104,23 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         mainSpecialty: "",
         phone: "",
         email: "",
-        secondarySpecialties: [],
-        urlImg: "",
         password: "",
         confirmPassword: "",
+      },
+      centerOnboardingData: {
+        name: "",
+        Description: "",
+        address: "",
+        neighborhood: "",
+        rnc: "",
+        zipCode: "",
+        coordinates: {
+          latitude: 0,
+          longitude: 0,
+        },
+        centerType: "",
+        phone: "",
+        email: "",
       },
     }),
 });

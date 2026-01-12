@@ -26,8 +26,8 @@ function PatientProfilePhotoPage() {
   const setAccessPage = useAppStore((state) => state.setAccessPage);
 
   const [profile, setProfile] = useState<string>(
-    typeof basicInfo?.urlImg === "string" && basicInfo.urlImg
-      ? basicInfo.urlImg
+    typeof basicInfo?.urlImg === "object" && basicInfo.urlImg?.url
+      ? basicInfo.urlImg.url
       : DEFAULT_PROFILE_IMAGE
   );
 
@@ -73,7 +73,11 @@ function PatientProfilePhotoPage() {
         email: basicInfo.email,
         password: basicInfo.password,
         confirmPassword: basicInfo.confirmPassword,
-        urlImg: croppedImage,
+        urlImg: {
+          url: croppedImage,
+          type: "image",
+          name: "Foto de perfil",
+        },
       });
     }
     setIsModalOpen(false);
@@ -83,7 +87,14 @@ function PatientProfilePhotoPage() {
     if (setPatientOnboardingData && basicInfo) {
       setPatientOnboardingData({
         ...basicInfo,
-        urlImg: profile,
+        urlImg:
+          profile !== DEFAULT_PROFILE_IMAGE
+            ? {
+                url: profile,
+                type: "image",
+                name: "Foto de perfil",
+              }
+            : undefined,
       });
     }
     setAccessPage(true, ["/auth/register-success"]);

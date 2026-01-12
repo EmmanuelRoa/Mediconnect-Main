@@ -17,12 +17,15 @@ function OtpVerificationPage() {
   const selectedRole = useAppStore((state) => state.selectedRole);
   const basicInfo = useAppStore((state) => state.patientOnboardingData);
   const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
+  const centerBasicInfo = useAppStore((state) => state.centerOnboardingData);
   const verifyEmail = useAppStore((state) => state.verifyEmail);
   const confirmedEmail =
     selectedRole === "Patient"
       ? basicInfo?.email
       : selectedRole === "Doctor"
       ? doctorBasicInfo?.email
+      : selectedRole === "Center"
+      ? centerBasicInfo?.email
       : undefined;
 
   useEffect(() => {

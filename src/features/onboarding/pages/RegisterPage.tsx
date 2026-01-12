@@ -27,10 +27,12 @@ function RegisterPage() {
   const detailsRefs = useRef<Record<string, HTMLUListElement | null>>({});
 
   const resetFlows = useAppStore((state) => state.clearOnboarding);
+  const clearAuthFlow = useAppStore((state) => state.clearAuthFlow);
 
   const handleselectRole = (roleKey: "Patient" | "Doctor" | "Center") => {
     if (selectedRole !== roleKey) {
       resetFlows();
+      clearAuthFlow();
       setRoleInStore(roleKey);
     }
   };
