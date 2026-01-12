@@ -102,7 +102,7 @@ function RegisterPage() {
               <img
                 src={role.img}
                 alt={roleT("title")}
-                className={`w-full h-full object-cover transition-all duration-200`}
+                className={`w-full h-full object-cover transition-transform duration-500 rounded-3xl group-hover:scale-110 hover:scale-110`}
                 style={{ objectPosition: isMobile ? "top" : "center" }}
               />
               {/* Overlay degradado */}

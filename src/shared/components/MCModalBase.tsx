@@ -112,9 +112,10 @@ export function MCModalBase({
           {/* Header */}
           {(title || typeclose) && (
             <div
-              className={`flex justify-between items-center ${headerPadding} flex-shrink-0 ${
-                borderHeader ? "border-b border-gray-100" : ""
-              }`}
+              className={`flex justify-between items-center ${headerPadding} flex-shrink-0
+      ${typeclose === "Arrow" ? "bg-accent text-primary rounded-t-3xl" : ""}
+      ${borderHeader ? "border-b border-gray-100" : ""}
+    `}
             >
               {title && (
                 <MorphingDialogTitle>
@@ -127,10 +128,17 @@ export function MCModalBase({
                   </h2>
                 </MorphingDialogTitle>
               )}
-              <MorphingDialogClose
-                typeclose={typeclose}
-                className="text-primary flex-shrink-0"
-              />
+              {typeclose === "Arrow" ? (
+                <MorphingDialogClose
+                  typeclose="Arrow"
+                  className="text-primary flex-shrink-0"
+                />
+              ) : (
+                <MorphingDialogClose
+                  typeclose={typeclose}
+                  className="text-primary flex-shrink-0"
+                />
+              )}
             </div>
           )}
 

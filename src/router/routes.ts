@@ -11,6 +11,7 @@ export const ROUTES = {
   PATIENT_PROFILE_PHOTO: "/auth/patient-onboarding/profile-photo",
 
   DOCTOR_ONBOARDING: "/auth/doctor-onboarding",
+  DOCTOR_PASSWORD: "/auth/doctor-onboarding/password-setup",
   CENTER_ONBOARDING: "/auth/center-onboarding",
 
   //Register success

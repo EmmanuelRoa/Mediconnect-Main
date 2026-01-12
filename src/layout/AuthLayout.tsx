@@ -21,16 +21,12 @@ function AuthLayout() {
     };
   }, [location.pathname, clearAuthFlow, clearOnboarding, setAccessPage]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
   return (
     <div className="min-h-screen flex flex-col">
       <div>
         <AuthHeader />
       </div>
-      <div className="h-full flex justify-center items-center mt-15">
+      <div className="h-full flex justify-center items-center pt-15">
         <Outlet />
       </div>
     </div>

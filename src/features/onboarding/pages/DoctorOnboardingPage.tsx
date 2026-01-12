@@ -10,7 +10,8 @@ import AcademicDegreeUpload from "../../onboarding/components/doctors/AcademicDe
 import GovernmentIdUpload from "../../onboarding/components/doctors/GovernmentIdUpload";
 import ProfilePhotoUpload from "../../onboarding/components/doctors/ProfilePhotoUpload";
 import AdditionalCertificationsUpload from "../../onboarding/components/doctors/AdditionalCertificationsUpload";
-
+import DialogTrigger from "@/features/onboarding/components/doctors/personalIdentificationStep/PersonalIdentificationDialog";
+import PersonalIdentificationDialog from "@/features/onboarding/components/doctors/personalIdentificationStep/PersonalIdentificationDialog";
 function DoctorOnboardingPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
@@ -75,6 +76,7 @@ function DoctorOnboardingPage() {
         title: "Información personal",
         completed: completionStates.isPersonalInfoComplete,
         onClick: () => console.log("Información personal"),
+        trigger: <PersonalIdentificationDialog />, // <-- FIXED
       },
       {
         id: "id-doc",
@@ -169,7 +171,18 @@ function DoctorOnboardingPage() {
         </div>
 
         <OnboardingChecklist items={checklistItems} />
-        <AuthFooterContainer />
+        <AuthFooterContainer
+          continueButtonProps={{
+            children: t("footer.continue"),
+            onClick: () => navigate("/auth/center-onboarding"),
+            disabled:
+              progressStats.completedRequiredItems <
+              progressStats.requiredItemsCount,
+          }}
+          backButtonProps={{
+            onClick: () => navigate("/auth/otp-verification"),
+          }}
+        />
       </div>
     </AuthContentContainer>
   );

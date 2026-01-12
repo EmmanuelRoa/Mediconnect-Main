@@ -470,7 +470,14 @@ function MorphingDialogClose({
       variants={variants}
     >
       {children ||
-        (typeclose === "Arrow" ? <ArrowLeft size={24} /> : <XIcon size={24} />)}
+        (typeclose === "Arrow" ? (
+          <div className="flex items-center justify-center gap-1.5">
+            <ArrowLeft className="p-0 m-0 " size={24} />{" "}
+            <p className="text-lg font-medium">Volver</p>
+          </div>
+        ) : (
+          <XIcon size={24} />
+        ))}
     </motion.button>
   );
 }
