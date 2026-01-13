@@ -180,7 +180,7 @@ function DoctorOnboardingPage() {
         <AuthFooterContainer
           continueButtonProps={{
             children: t("footer.continue"),
-            onClick: () => navigate("/auth/center-onboarding"),
+            onClick: () => navigate("/auth/doctor-onboarding/password-setup"),
             disabled:
               progressStats.completedRequiredItems <
               progressStats.requiredItemsCount,

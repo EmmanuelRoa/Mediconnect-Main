@@ -136,7 +136,7 @@ function CenterOnboardingPage() {
         <AuthFooterContainer
           continueButtonProps={{
             children: t("footer.continue"),
-            onClick: () => navigate("/auth/center-onboarding-finish"),
+            onClick: () => navigate("/auth/center-onboarding/password-setup"),
             disabled:
               progressStats.completedRequiredItems <
               progressStats.requiredItemsCount,

@@ -97,7 +97,11 @@ function PatientProfilePhotoPage() {
             : undefined,
       });
     }
-    setAccessPage(true, ["/auth/register-success"]);
+    setAccessPage(
+      true,
+      [{ page: "/auth/register-success", reason: "register" }],
+      "register"
+    );
     navigate("/auth/register-success", { replace: true });
   };
 

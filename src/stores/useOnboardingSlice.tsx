@@ -57,9 +57,10 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     name: "",
     Description: "",
     address: "",
-    neighborhood: "",
+    role: "Center",
     rnc: "",
-    zipCode: "",
+    password: "",
+    confirmPassword: "",
     coordinates: {
       latitude: 0,
       longitude: 0,
@@ -124,7 +125,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         name: "",
         Description: "",
         address: "",
-
+        role: "Center",
         rnc: "",
 
         coordinates: {
@@ -136,6 +137,8 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         email: "",
         province: "",
         municipality: "",
+        password: "",
+        confirmPassword: "",
       },
     }),
 });

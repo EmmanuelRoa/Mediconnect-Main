@@ -58,6 +58,10 @@ function AppRouter() {
             element={<CenterOnboardingPage />}
           />
           <Route
+            path={ROUTES.CENTER_PASSWORD}
+            element={<SetCredentialsPage />}
+          />
+          <Route
             path={ROUTES.REGISTER_SUCCESS}
             element={<RegisterSuccessPage />}
           />

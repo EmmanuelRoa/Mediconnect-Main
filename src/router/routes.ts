@@ -13,6 +13,7 @@ export const ROUTES = {
   DOCTOR_ONBOARDING: "/auth/doctor-onboarding",
   DOCTOR_PASSWORD: "/auth/doctor-onboarding/password-setup",
   CENTER_ONBOARDING: "/auth/center-onboarding",
+  CENTER_PASSWORD: "/auth/center-onboarding/password-setup",
 
   //Register success
   REGISTER_SUCCESS: "/auth/register-success",

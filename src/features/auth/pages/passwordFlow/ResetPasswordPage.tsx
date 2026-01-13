@@ -34,8 +34,11 @@ function ResetPasswordPage() {
         password: data.password,
         confirmPassword: data.confirmPassword,
       });
-      setAccessPage(true, ["/auth/password-success"]);
-
+      setAccessPage(
+        true,
+        [{ page: "/auth/password-success", reason: "password" }],
+        "password"
+      );
       navigate("/auth/password-success", { replace: true });
     } else {
       alert(t("resetPassword.errorFields"));

@@ -62,6 +62,9 @@ export const BaseCenterSchema = z.object({
   email: z.string().email(),
   urlImg: UploadedFileSchema.optional(), // Cambiado aquí
   healthCertificateFile: UploadedFileSchema.optional(),
+  password: z.string(),
+  confirmPassword: z.string(),
+  role: z.literal("Center"),
 });
 
 export function PatientOnboardingSchema(t: (key: string) => string) {
@@ -237,6 +240,15 @@ export function CenterOnboardingSchema(t: (key: string) => string) {
       .email(t("validation.emailInvalid")),
     urlImg: UploadedFileSchema.optional(),
     healthCertificateFile: UploadedFileSchema.optional(),
+    password: z.string().min(6, t("validation.passwordMin")),
+    confirmPassword: z.string().min(6, t("validation.passwordMin")),
+  }).superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t("validation.passwordsMustMatch"),
+      });
+    }
   });
 }
 

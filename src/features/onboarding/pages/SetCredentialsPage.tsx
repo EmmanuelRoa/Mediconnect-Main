@@ -8,6 +8,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useNavigate } from "react-router-dom";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
 import type { PatientCreatePasswordSchemaType } from "@/types/OnbordingTypes";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
@@ -18,16 +19,21 @@ function SetCredentialsPage() {
   const setPatientOnboardingData = useAppStore(
     (state) => state.setPatientOnboardingData
   );
-  const otpData = useAppStore((state) => state.otp);
   const doctorBasicInfo = useAppStore((state) => state.doctorOnboardingData);
   const setDoctorOnboardingData = useAppStore(
     (state) => state.setDoctorOnboardingData
   );
+  const centerBasicInfo = useAppStore((state) => state.centerOnboardingData);
+  const setCenterOnboardingData = useAppStore(
+    (state) => state.setCenterOnboardingData
+  );
+  const verifyEmail = useAppStore((state) => state.verifyEmail);
+  const setAccessPage = useGlobalUIStore((state) => state.setAccessPage);
 
   useEffect(() => {
-    // Validar OTP
-    if (!otpData) {
-      navigate("/auth/otp-verification", { replace: true });
+    // Validar verificación de email
+    if (!verifyEmail?.verified) {
+      navigate("/auth/email-verification", { replace: true });
       return;
     }
 
@@ -55,10 +61,29 @@ function SetCredentialsPage() {
       }
     }
 
+    if (selectedRole === "Center") {
+      if (
+        !centerBasicInfo?.name ||
+        !centerBasicInfo?.address ||
+        !centerBasicInfo?.rnc ||
+        !centerBasicInfo?.email
+      ) {
+        navigate("/auth/center-onboarding/basic-info", { replace: true });
+        return;
+      }
+    }
+
     if (!selectedRole) {
       navigate("/auth/register", { replace: true });
     }
-  }, [otpData, basicInfo, doctorBasicInfo, selectedRole, navigate]);
+  }, [
+    verifyEmail,
+    basicInfo,
+    doctorBasicInfo,
+    centerBasicInfo,
+    selectedRole,
+    navigate,
+  ]);
 
   const handleSubmit = (data: PatientCreatePasswordSchemaType) => {
     if (selectedRole === "Patient" && setPatientOnboardingData && basicInfo) {
@@ -92,9 +117,62 @@ function SetCredentialsPage() {
         email: doctorBasicInfo.email,
         urlImg: doctorBasicInfo.urlImg ?? undefined,
       });
-      navigate("/auth/doctor-onboarding/profile-photo", { replace: true });
+      setAccessPage(
+        true,
+        [{ page: "/auth/register-success", reason: "register" }],
+        "register"
+      );
+      navigate("/auth/register-success", { replace: true });
+    }
+
+    if (
+      selectedRole === "Center" &&
+      setCenterOnboardingData &&
+      centerBasicInfo
+    ) {
+      setCenterOnboardingData({
+        ...centerBasicInfo,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        role: "Center",
+        name: centerBasicInfo.name,
+        address: centerBasicInfo.address,
+        rnc: centerBasicInfo.rnc,
+        email: centerBasicInfo.email,
+        urlImg: centerBasicInfo.urlImg ?? undefined,
+      });
+      setAccessPage(
+        true,
+        [{ page: "/auth/register-success", reason: "register" }],
+        "register"
+      );
+      navigate("/auth/register-success", { replace: true });
     }
   };
+
+  // Obtener los datos y default values según el rol
+  let defaultValues = { password: "", confirmPassword: "" };
+  let backPath = "/auth/patient-onboarding/basic-info";
+
+  if (selectedRole === "Doctor" && doctorBasicInfo) {
+    defaultValues = {
+      password: doctorBasicInfo.password || "",
+      confirmPassword: doctorBasicInfo.confirmPassword || "",
+    };
+    backPath = "/auth/doctor-onboarding";
+  } else if (selectedRole === "Center" && centerBasicInfo) {
+    defaultValues = {
+      password: centerBasicInfo.password || "",
+      confirmPassword: centerBasicInfo.confirmPassword || "",
+    };
+    backPath = "/auth/center-onboarding";
+  } else if (selectedRole === "Patient" && basicInfo) {
+    defaultValues = {
+      password: basicInfo.password || "",
+      confirmPassword: basicInfo.confirmPassword || "",
+    };
+    backPath = "/auth/patient-onboarding/basic-info";
+  }
 
   return (
     <AuthContentContainer
@@ -102,14 +180,9 @@ function SetCredentialsPage() {
       subtitle={t("setCredentialsPage.subtitle")}
     >
       <MCFormWrapper
-        onSubmit={(data) => {
-          handleSubmit(data);
-        }}
+        onSubmit={handleSubmit}
         schema={CreatePasswordSchema((key) => t(key))}
-        defaultValues={{
-          password: basicInfo?.password || "",
-          confirmPassword: basicInfo?.confirmPassword || "",
-        }}
+        defaultValues={defaultValues}
         className="flex flex-col items-center w-full"
       >
         <div className="flex flex-col items-center w-full max-w-md mx-auto">
@@ -129,9 +202,7 @@ function SetCredentialsPage() {
         <AuthFooterContainer
           backButtonProps={{
             onClick() {
-              navigate("/auth/patient-onboarding/basic-info", {
-                replace: true,
-              });
+              navigate(backPath, { replace: true });
             },
           }}
         />
