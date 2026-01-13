@@ -30,11 +30,13 @@ function CenterInfoStep2({
     address: string;
     neighborhood: string;
     zipCode: string;
+    province?: string;
+    municipality?: string;
   }) => {
-    // Autocompletar los campos del formulario
     setCenterField?.("address", details.address);
-    setCenterField?.("neighborhood", details.neighborhood);
-    setCenterField?.("zipCode", details.zipCode);
+    if (details.province) setCenterField?.("province", details.province);
+    if (details.municipality)
+      setCenterField?.("municipality", details.municipality);
   };
 
   return (
@@ -65,14 +67,29 @@ function CenterInfoStep2({
         onSubmit={handleSubmit}
         defaultValues={centerOnboardingData}
         onValidationChange={onValidationChange}
-        key={`${centerOnboardingData?.address}-${centerOnboardingData?.neighborhood}-${centerOnboardingData?.zipCode}`}
+        key={`${centerOnboardingData?.address}-${centerOnboardingData?.province}-${centerOnboardingData?.municipality}`}
       >
-        <div className="space-y-4">
-          <MCTextArea
-            name="address"
-            label="Dirección"
-            placeholder="Calle, número, sector, ciudad"
-            onChange={(e) => setCenterField?.("address", e.target.value)}
+        <div className="space-y-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <MCInput
+              name="address"
+              label="Dirección"
+              placeholder="Calle, número, sector, ciudad"
+              onChange={(e) => setCenterField?.("address", e.target.value)}
+            />
+            <MCInput
+              name="province"
+              label="Provincia"
+              placeholder="Ej: Santo Domingo"
+              onChange={(e) => setCenterField?.("province", e.target.value)}
+            />
+          </div>
+
+          <MCInput
+            name="municipality"
+            label="Municipio"
+            placeholder="Ej: Santo Domingo Este"
+            onChange={(e) => setCenterField?.("municipality", e.target.value)}
           />
         </div>
         {children}

@@ -68,6 +68,7 @@ export function MCCameraModal({
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setIsCameraActive(false);
   };
 
   useEffect(() => {
@@ -94,7 +95,6 @@ export function MCCameraModal({
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL("image/jpeg", 0.95);
         stopCamera();
-        setIsCameraActive(false);
         onCapture(imageDataUrl);
       }
     }
@@ -102,7 +102,6 @@ export function MCCameraModal({
 
   const handleCancel = () => {
     stopCamera();
-    setIsCameraActive(false);
   };
 
   // Espaciado adaptativo para móvil

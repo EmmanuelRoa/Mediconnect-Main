@@ -33,8 +33,8 @@ function CenterInfoStep({ children }: CenterInfoDialogProps) {
 
   const centerStep2 =
     centerSteps?.address &&
-    centerSteps?.neighborhood &&
-    centerSteps?.zipCode &&
+    centerSteps?.province &&
+    centerSteps?.municipality &&
     centerSteps?.coordinates;
 
   const handleValidationChange = (isValid: boolean) => setStep1Valid(isValid);

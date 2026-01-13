@@ -67,6 +67,8 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     centerType: "",
     phone: "",
     email: "",
+    province: "",
+    municipality: "",
   },
 
   setPatientOnboardingData: (data) => set({ patientOnboardingData: data }),
@@ -122,9 +124,9 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         name: "",
         Description: "",
         address: "",
-        neighborhood: "",
+
         rnc: "",
-        zipCode: "",
+
         coordinates: {
           latitude: 0,
           longitude: 0,
@@ -132,6 +134,8 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         centerType: "",
         phone: "",
         email: "",
+        province: "",
+        municipality: "",
       },
     }),
 });

@@ -48,11 +48,11 @@ export const BaseCenterSchema = z.object({
   Description: z.string(),
   website: z.string().optional(),
   address: z.string(),
-  neighborhood: z.string(),
+  province: z.string(),
   rnc: z.string().refine((val) => ValidateDominicanRNC(val), {
     message: "RNC inválido",
   }),
-  zipCode: z.string(),
+  municipality: z.string(),
   coordinates: z.object({
     latitude: z.number(),
     longitude: z.number(),
@@ -213,14 +213,15 @@ export function CenterOnboardingSchema(t: (key: string) => string) {
     Description: z.string().min(1, t("validation.descriptionRequired")),
     website: z.string().url(t("validation.websiteInvalid")).optional(),
     address: z.string().min(1, t("validation.addressRequired")),
-    neighborhood: z.string().min(1, t("validation.neighborhoodRequired")),
+    province: z.string().min(1, t("validation.provinceRequired")),
+    municipality: z.string().min(1, t("validation.municipalityRequired")),
     rnc: z
       .string()
       .min(1, t("validation.rncRequired"))
       .refine((val) => ValidateDominicanRNC(val), {
         message: t("validation.rncInvalid"),
       }),
-    zipCode: z.string().min(1, t("validation.zipCodeRequired")),
+
     coordinates: z.object({
       latitude: z.number(),
       longitude: z.number(),
@@ -270,13 +271,13 @@ export function CenterBasicInfoSchema(t: (key: string) => string) {
 export function CenterLocationInfoSchema(t: (key: string) => string) {
   return BaseCenterSchema.pick({
     address: true,
-    neighborhood: true,
-    zipCode: true,
+    province: true,
+    municipality: true,
     coordinates: true,
   }).extend({
     address: z.string().min(1, t("validation.addressRequired")),
-    neighborhood: z.string().min(1, t("validation.neighborhoodRequired")),
-    zipCode: z.string().min(1, t("validation.zipCodeRequired")),
+    province: z.string().min(1, t("validation.provinceRequired")),
+    municipality: z.string().min(1, t("validation.municipalityRequired")),
     coordinates: z.object({
       latitude: z.number(),
       longitude: z.number(),

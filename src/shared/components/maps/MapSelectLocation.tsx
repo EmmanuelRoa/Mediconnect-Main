@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
+import { ParseDominicanAddress } from "@/utils/addressParser";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -10,6 +11,8 @@ interface Props {
     address: string;
     neighborhood: string;
     zipCode: string;
+    province?: string;
+    municipality?: string;
   }) => void;
 }
 
@@ -55,11 +58,18 @@ export default function MapSelectLocation({
           address = data.features[0].place_name;
         }
 
-        // Llamar al callback con los detalles
+        // Parse the Dominican address
+        const parsedAddress = ParseDominicanAddress(
+          address || "Dirección no encontrada"
+        );
+
+        // Llamar al callback con los detalles parseados
         onLocationDetails?.({
-          address: address || "Dirección no encontrada",
+          address: parsedAddress.direccion,
           neighborhood: neighborhood || "",
           zipCode: zipCode || "",
+          province: parsedAddress.provincia,
+          municipality: parsedAddress.municipio,
         });
       }
     } catch (error) {
@@ -140,7 +150,7 @@ export default function MapSelectLocation({
         ref={containerRef}
         className="h-full w-full rounded-xl border border-gray-300"
       />
-      <p className="text-xs text-primary mt-2">
+      <p className="text-sm text-primary py-4 ">
         Haga clic en el mapa o arrastre el marcador para seleccionar la
         ubicación
       </p>

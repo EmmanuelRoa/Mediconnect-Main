@@ -36,7 +36,7 @@ const getStepStatus = (
 function MCStepper({
   items,
   current = 0,
-  onChange,
+
   size = "large",
   showLabels = false,
   className,
