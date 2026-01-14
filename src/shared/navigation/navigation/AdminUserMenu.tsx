@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,35 +13,41 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@/shared/ui/dropdown-menu";
+} from "@/shared/animate-ui/components/radix/dropdown-menu";
 import { Button } from "@/shared/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
+  User,
+  Pencil,
   Languages,
+  Moon,
+  Settings,
+  Shield,
+  LogOut,
   ChevronDown,
   Sun,
   Monitor,
-  Moon,
   X,
-  LogOut,
 } from "lucide-react";
+
 import { useTranslation } from "react-i18next";
 import { flushSync } from "react-dom";
-import { useAppStore } from "@/stores/useAppStore";
+import flagSpain from "@/assets/flag-spain.png";
+import flagUSA from "@/assets/flag-usa.png";
+
 import type { Theme } from "@/stores/useGlobalUISlice";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import MCSheetProfile from "@/shared/components/MCSheetProfile";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
-
 const isMac =
   typeof window !== "undefined" &&
   /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 const cmdOrCtrl = isMac ? "⌘" : "Ctrl";
 
 const languages = [
-  { code: "es", label: "Español" },
-  { code: "en", label: "English" },
+  { code: "es", label: "Español", flag: flagSpain },
+  { code: "en", label: "English", flag: flagUSA },
 ];
 
 const themeOptions: { value: Theme; label: string; icon: React.ReactNode }[] = [
@@ -62,22 +68,15 @@ const themeOptions: { value: Theme; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-interface BaseUserMenuProps {
-  children: React.ReactNode;
-  roleText: string;
-}
-
-function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
+export function AdminUserMenu() {
   const [open, setOpen] = useState(false);
   const [subMenuOpen, setSubMenuOpen] = useState<string | null>(null);
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false); // Nuevo estado
   const { t } = useTranslation("dashboard");
   const language = useGlobalUIStore((state) => state.language);
   const setLanguage = useGlobalUIStore((state) => state.setLanguage);
   const theme = useGlobalUIStore((state) => state.theme);
   const setTheme = useGlobalUIStore((state) => state.setTheme);
-  const user = useAppStore((state) => state.user);
-  const logout = useAppStore((state) => state.logout);
   const themeButtonRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -85,6 +84,7 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
     async (newTheme: Theme, event: React.MouseEvent) => {
       const target = event.currentTarget as HTMLElement;
 
+      // Check if View Transitions API is supported
       if (!document.startViewTransition) {
         setTheme(newTheme);
         return;
@@ -138,11 +138,7 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    setOpen(false);
-  };
-
+  // Mobile sub-menu component
   const MobileSubMenu = ({
     title,
     children,
@@ -179,6 +175,7 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
     (option) => option.value === theme
   );
 
+  // Opcional: atajo de teclado Ctrl+E o Cmd+E para abrir editar perfil
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "e") {
@@ -189,52 +186,41 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const userInitials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "MC";
-
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className={`flex items-center justify-center gap-3 rounded-full w-full bg-transparent hover:bg-accent/80 outline-none border-none shadow-none ring-0 focus:ring-0 h-fit transition-colors ${
+            className={`flex items-center  justify-center gap-3 rounded-full w-full  bg-transparent hover:bg-accent/80   outline-none border-none shadow-none ring-0 focus:ring-0 h-fit transition-colors ${
               open ? "bg-primary rounded-full text-primary" : ""
             }`}
           >
             <Avatar className="h-14 w-14 rounded-full shadow-lg transition-all">
               <AvatarImage
-                src={user?.avatar}
-                alt={user?.name || "User"}
+                src="https://i.pinimg.com/736x/ff/e7/3f/ffe73ffe75682fec82ccd320ccb43fe9.jpg"
+                alt="José Almirante"
                 className="object-cover"
               />
-              <AvatarFallback className="text-xl">
-                {userInitials}
-              </AvatarFallback>
+              <AvatarFallback className="text-xl">JA</AvatarFallback>
             </Avatar>
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 0">
               <div className="flex flex-col items-start leading-tight text-left">
                 <span
                   className={`text-base font-semibold ${
                     !open ? "text-primary" : "text-background"
                   }`}
                 >
-                  {user?.name || "Usuario"}
+                  José Almirante
                 </span>
                 <span
                   className={`text-sm font-normal max-w-35 truncate ${
                     !open ? "text-primary" : "text-background"
                   }`}
                   style={{ textOverflow: "clip" }}
-                  title={user?.email}
+                  title="jose@gmail.com"
                 >
-                  {roleText}
+                  {t("userMenu.admin")}
                 </span>
               </div>
               <div className="flex flex-col h-full w-full items-start justify-start">
@@ -251,15 +237,14 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
         <DropdownMenuContent
           className={cn(
             "rounded-2xl bg-background border border-primary/20",
-            isMobile ? "w-[calc(100vw-2rem)] max-w-sm" : "w-80"
+            isMobile
+              ? "w-[calc(100vw-2rem)] max-w-sm" // Better mobile width
+              : "w-80"
           )}
-          align={isMobile ? "end" : "end"}
+          align={isMobile ? "end" : "end"} // Keep consistent alignment
           side="bottom"
-          sideOffset={isMobile ? 12 : 8}
-          avoidCollisions={true}
-          onEscapeKeyDown={() => setOpen(false)}
-          onPointerDownOutside={() => setOpen(false)}
-          onInteractOutside={() => setOpen(false)}
+          sideOffset={isMobile ? 12 : 8} // More space on mobile
+          avoidCollisions={true} // Prevent dropdown from going off-screen
         >
           <DropdownMenuLabel
             className={cn(
@@ -274,12 +259,12 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
               )}
             >
               <AvatarImage
-                src={user?.avatar}
-                alt={user?.name || "User"}
+                src="https://i.pinimg.com/736x/ff/e7/3f/ffe73ffe75682fec82ccd320ccb43fe9.jpg"
+                alt="José Almirante"
                 className="object-cover"
               />
               <AvatarFallback className={cn(isMobile ? "text-sm" : "text-xl")}>
-                {userInitials}
+                JA
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col items-start leading-tight text-left min-w-0 flex-1">
@@ -289,7 +274,7 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
                   isMobile ? "text-sm" : "text-base"
                 )}
               >
-                {user?.name || "Usuario"}
+                José Almirante
               </span>
               <span
                 className={cn(
@@ -297,11 +282,12 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
                   isMobile ? "text-xs max-w-40" : "text-sm max-w-55"
                 )}
                 style={{ textOverflow: "clip" }}
-                title={user?.email}
+                title="emmanuel03250310@gmail.com"
               >
-                {user?.email || "email@example.com"}
+                emmanuel03250310@gmail.com
               </span>
             </div>
+            {/* Close button for mobile */}
             {isMobile && (
               <Button
                 variant="ghost"
@@ -316,8 +302,27 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
 
           <DropdownMenuSeparator className="bg-primary/15" />
 
-          {/* Content específico del rol */}
-          {children}
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <User className="w-4 h-4 mr-2" />
+              {t("userMenu.viewProfile")}
+              {!isMobile && (
+                <DropdownMenuShortcut>⇧{cmdOrCtrl}+P</DropdownMenuShortcut>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault(); // Evita que se cierre antes de tiempo
+                setIsEditProfileOpen(true);
+              }}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              {t("userMenu.editProfile")}
+              {!isMobile && (
+                <DropdownMenuShortcut>{cmdOrCtrl}+E</DropdownMenuShortcut>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
 
           <DropdownMenuGroup>
             {/* Language Menu */}
@@ -331,6 +336,13 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
                   {t("userMenu.changeLanguage")}
                 </div>
                 <div className="flex items-center gap-2">
+                  {currentLang && (
+                    <img
+                      src={currentLang.flag}
+                      alt={currentLang.label}
+                      className="w-4 h-4 rounded-full"
+                    />
+                  )}
                   <ChevronDown className="w-3 h-3" />
                 </div>
               </DropdownMenuItem>
@@ -358,6 +370,11 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
                           language === lang.code ? "text-primary" : ""
                         )}
                       >
+                        <img
+                          src={lang.flag}
+                          alt={lang.label}
+                          className="w-5 h-5 rounded-full"
+                        />
                         {lang.label}
                       </DropdownMenuRadioItem>
                     ))}
@@ -417,9 +434,26 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
             )}
           </DropdownMenuGroup>
 
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <Settings className="w-4 h-4 mr-2" />
+              {t("userMenu.settings")}
+              {!isMobile && (
+                <DropdownMenuShortcut>{cmdOrCtrl}+S</DropdownMenuShortcut>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Shield className="w-4 h-4 mr-2" />
+              {t("userMenu.privacy")}
+              {!isMobile && (
+                <DropdownMenuShortcut>{cmdOrCtrl}+P</DropdownMenuShortcut>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+
           <DropdownMenuSeparator className="bg-primary/15" />
 
-          <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+          <DropdownMenuItem variant="destructive">
             <LogOut className="w-4 h-4 mr-2" />
             {t("userMenu.logout")}
             {!isMobile && (
@@ -429,6 +463,7 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Sheet controlado por estado */}
       <MCSheetProfile
         open={isEditProfileOpen}
         onOpenChange={setIsEditProfileOpen}
@@ -454,6 +489,11 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
                       : "border border-transparent"
                   )}
                 >
+                  <img
+                    src={lang.flag}
+                    alt={lang.label}
+                    className="w-6 h-6 rounded-full"
+                  />
                   <span className="font-medium">{lang.label}</span>
                   {language === lang.code && (
                     <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
@@ -496,4 +536,4 @@ function BaseUserMenu({ children, roleText }: BaseUserMenuProps) {
   );
 }
 
-export default BaseUserMenu;
+export default AdminUserMenu;

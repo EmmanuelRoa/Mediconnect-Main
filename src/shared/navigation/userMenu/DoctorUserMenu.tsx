@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-} from "@/shared/animate-ui/components/radix/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import {
   User,
   Pencil,

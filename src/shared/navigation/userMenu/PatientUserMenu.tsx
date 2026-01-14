@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-} from "@/shared/animate-ui/components/radix/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import { User, Pencil, Settings, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";

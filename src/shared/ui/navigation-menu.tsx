@@ -84,7 +84,6 @@ const NavigationMenuTrigger = React.forwardRef<
         "relative top-[1px] ml-1 h-4 w-5 transition-transform duration-200 group-data-[state=open]:rotate-180",
         active && "text-primary-foreground"
       )}
-      aria-hidden="true"
     />
   </NavigationMenuPrimitive.Trigger>
 ));
