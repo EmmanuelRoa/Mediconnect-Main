@@ -11,10 +11,11 @@ import {
   NavigationMenuContent,
 } from "@/shared/ui/navigation-menu";
 import { useLocation } from "react-router-dom";
-import AdminNavbarBell from "./AdminNavbarBell";
+import AdminNavbarBell from "../components/AdminNavbarBell";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { NAVBAR_CONFIG } from "@/config/navbar.config";
 function AdminNavbar() {
   const location = useLocation();
   const { t } = useTranslation("dashboard");

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import MCNavbar from "@/shared/navigation/navigation/AdminNavbar";
-import MCNavbarMobile from "@/shared/navigation/navigation/AdminNavbarMobile";
+import MCNavbar from "@/shared/navigation/MCNavbar";
+import MCNavbarMobile from "@/shared/navigation/AdminNavbarMobile";
 function DashboardLayout() {
   return (
     <div className="p-8 bg-bg-btn-secondary  min-h-screen  flex flex-col gap-6">

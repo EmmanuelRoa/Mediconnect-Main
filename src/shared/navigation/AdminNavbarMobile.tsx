@@ -11,9 +11,10 @@ import AdminUserMenu from "./AdminUserMenu";
 import AdminNavbarBell from "@/shared/components/AdminNavbarBell";
 import LogoImg from "@/assets/MediConnectLanding-green.png";
 import LogoImgdDark from "@/assets/MediConnectLanding.png";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+
 function AdminNavbarMobile() {
   const [open, setOpen] = useState(false);
   const [usuariosOpen, setUsuariosOpen] = useState(false);

@@ -22,7 +22,12 @@ export interface AuthSlice {
 export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   isAuthenticated: false,
   token: null,
-  user: null,
+  user: {
+    id: "",
+    name: "",
+    email: "",
+    role: "PATIENT",
+  },
 
   login: (token, user) =>
     set({
