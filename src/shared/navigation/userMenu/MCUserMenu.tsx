@@ -34,17 +34,15 @@ export function MCUserMenu() {
         return {
           name: "Ilia Topuria",
           email: "Iliatopuria17@gmail.com",
-          avatar:
-            "https://i.pinimg.com/564x/dc/71/e0/dc71e024c3efcce5e3b6c6667b69d24e.jpg",
           initials: "IT",
           roleLabel: t("userMenu.patient"),
+          avatar: "",
         };
       case "DOCTOR":
         return {
           name: "Dr. Cristiano Ronaldo",
           email: "DrCr7Mediconnect@mediconnect.com",
-          avatar:
-            "https://i.pinimg.com/564x/13/23/13/132313a652fd9aa1a6b8ff27b7c0c66c.jpg",
+          avatar: "",
           initials: "CR",
           roleLabel: t("userMenu.doctor"),
         };
@@ -52,8 +50,7 @@ export function MCUserMenu() {
         return {
           name: "Hospital Dario Contreras",
           email: "HospDarioCont@gmail.com",
-          avatar:
-            "https://i.pinimg.com/564x/ff/e7/3f/ffe73ffe75682fec82ccd320ccb43fe9.jpg",
+          avatar: "",
           initials: "HC",
           roleLabel: t("userMenu.healthCenter"),
         };
@@ -61,8 +58,7 @@ export function MCUserMenu() {
         return {
           name: "José Almirante",
           email: "emmanuel03250310@gmail.com",
-          avatar:
-            "https://i.pinimg.com/736x/ff/e7/3f/ffe73ffe75682fec82ccd320ccb43fe9.jpg",
+          avatar: "",
           initials: "JA",
           roleLabel: t("userMenu.admin"),
         };

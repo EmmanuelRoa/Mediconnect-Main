@@ -18,7 +18,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/ui/avatar";
-import Avatar from "boring-avatars";
+import { MCUserAvatar } from "./MCUserAvatar";
 import {
   User,
   Pencil,
@@ -234,21 +234,11 @@ export function MCUserMenuContent({
             isMobile ? "px-3 py-3" : "px-4 py-3"
           )}
         >
-          <UiAvatar
-            className={cn(
-              "rounded-full shadow-lg",
-              isMobile ? "h-10 w-10" : "h-13 w-13"
-            )}
-          >
-            <AvatarImage
-              src={userData.avatar}
-              alt={userData.name}
-              className="object-cover"
-            />
-            <AvatarFallback className={cn(isMobile ? "text-sm" : "text-xl")}>
-              {userData.initials}
-            </AvatarFallback>
-          </UiAvatar>
+          <MCUserAvatar
+            name={userData.name}
+            size={isMobile ? 40 : 52}
+            square={false}
+          />
           <div className="flex flex-col items-start leading-tight text-left min-w-0 flex-1">
             <span
               className={cn(
@@ -412,12 +402,6 @@ export function MCUserMenuContent({
               <DropdownMenuShortcut>{cmdOrCtrl}+P</DropdownMenuShortcut>
             )}
           </DropdownMenuItem>
-          {userRole === "PATIENT" && (
-            <DropdownMenuItem>
-              <HelpCircle className="w-4 h-4 mr-2" />
-              {t("userMenu.helpCenter")}
-            </DropdownMenuItem>
-          )}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="bg-primary/15" />

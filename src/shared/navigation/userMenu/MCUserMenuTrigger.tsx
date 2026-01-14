@@ -2,7 +2,7 @@ import { Button } from "@/shared/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { ChevronDown } from "lucide-react";
 import { DropdownMenuTrigger } from "@/shared/animate-ui/components/radix/dropdown-menu";
-
+import { MCUserAvatar } from "./MCUserAvatar";
 interface UserData {
   name: string;
   email: string;
@@ -20,21 +20,24 @@ export function MCUserMenuTrigger({ userData, open }: MCUserMenuTriggerProps) {
   return (
     <DropdownMenuTrigger asChild>
       <Button
-        variant="outline"
         className={`flex items-center justify-center gap-3 rounded-full w-full bg-transparent hover:bg-accent/80 outline-none border-none shadow-none ring-0 focus:ring-0 h-fit transition-colors ${
           open ? "bg-primary rounded-full text-primary" : ""
         }`}
       >
-        <Avatar className="h-14 w-14 rounded-full shadow-lg transition-all">
-          <AvatarImage
-            src={userData.avatar}
-            alt={userData.name}
-            className="object-cover"
-          />
-          <AvatarFallback className="text-xl">
-            {userData.initials}
-          </AvatarFallback>
-        </Avatar>
+        {userData.avatar ? (
+          <Avatar className="h-14 w-14 rounded-full shadow-lg transition-all">
+            <AvatarImage
+              src={userData.avatar}
+              alt={userData.name}
+              className="object-cover"
+            />
+            <AvatarFallback className="text-xl">
+              {userData.initials}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <MCUserAvatar name={userData.name} size={54} square={false} />
+        )}
 
         <div className="flex items-start gap-3">
           <div className="flex flex-col items-start leading-tight text-left">
@@ -58,7 +61,7 @@ export function MCUserMenuTrigger({ userData, open }: MCUserMenuTriggerProps) {
 
           <div className="flex flex-col h-full w-full items-start justify-start">
             <ChevronDown
-              className={`w-7 h-7 mt-0.5 stroke-2.5 transition-transform duration-200 ${
+              className={`w-6 h-6 mt-0.5 stroke-2.5 transition-transform duration-200 ${
                 open ? "rotate-180 text-background" : "text-primary"
               }`}
             />

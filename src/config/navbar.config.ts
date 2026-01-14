@@ -13,6 +13,7 @@ export const NAVBAR_CONFIG = {
   DOCTOR: {
     home: "/doctor/dashboard",
     menu: [
+      { label: "Inicio", href: "/doctor/dashboard" },
       { label: "Pacientes", href: "/doctor/my-patients" },
       { label: "Citas", href: "/doctor/appointments" },
       { label: "Servicios", href: "/doctor/services" },
@@ -23,9 +24,9 @@ export const NAVBAR_CONFIG = {
   CENTER: {
     home: "/center/dashboard",
     menu: [
+      { label: "Inicio", href: "/center/dashboard" },
       { label: "Doctores", href: "/center/staff" },
-      { label: "Citas", href: "/center/all-appointments" },
-      { label: "Finanzas", href: "/center/finances" },
+      { label: "Solicitudes", href: "/center/requests" },
     ],
   },
 };
