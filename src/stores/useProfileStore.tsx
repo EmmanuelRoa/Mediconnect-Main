@@ -1,61 +1,43 @@
 import { create } from "zustand";
+import {
+  type ProfileType,
+  type DoctorProfileType,
+  type PatientProfileType,
+  type CenterProfileType,
+  type CenterLocationType,
+} from "@/types/ProfileTypes";
 
-export type UserRole = "PATIENT" | "DOCTOR" | "CENTER";
-
-interface BaseProfile {
-  id: string;
-  role: UserRole;
-  nombre: string;
-  email: string;
-  telefono?: string;
-  avatar?: string;
-  banner?: string;
-}
-
-interface DoctorProfile extends BaseProfile {
-  especialidad: string;
-  anosExperiencia: number;
-  biografia?: string;
-}
-
-interface PatientProfile extends BaseProfile {
-  cedula: string;
-  edad?: number;
-  tipoSangre?: string;
-}
-
-interface CenterProfile extends BaseProfile {
-  tipoCentro: string;
-  sitioWeb?: string;
-}
-
-type Profile = DoctorProfile | PatientProfile | CenterProfile;
-
-interface ProfileState {
-  byId: Record<string, Profile>;
-  updateProfile: (id: string, data: Partial<Profile>) => void;
-  setProfile: (profile: Profile) => void;
-}
+type ProfileState = {
+  profile: ProfileType | null;
+  doctorProfile: DoctorProfileType | null;
+  patientProfile: PatientProfileType | null;
+  centerProfile: CenterProfileType | null;
+  centerLocation: CenterLocationType | null;
+  setProfile: (profile: ProfileType) => void;
+  setDoctorProfile: (profile: DoctorProfileType) => void;
+  setPatientProfile: (profile: PatientProfileType) => void;
+  setCenterProfile: (profile: CenterProfileType) => void;
+  setCenterLocation: (location: CenterLocationType) => void;
+  reset: () => void;
+};
 
 export const useProfileStore = create<ProfileState>((set) => ({
-  byId: {},
-
-  setProfile: (profile) =>
-    set((state) => ({
-      byId: {
-        ...state.byId,
-        [profile.id]: profile,
-      },
-    })),
-
-  updateProfile: (id, data) =>
-    set((state) => ({
-      byId: {
-        ...state.byId,
-        [id]: {
-          ...state.byId[id],
-          ...data,
-        },
-      },
-    })),
+  profile: null,
+  doctorProfile: null,
+  patientProfile: null,
+  centerProfile: null,
+  centerLocation: null,
+  setProfile: (profile) => set({ profile }),
+  setDoctorProfile: (doctorProfile) => set({ doctorProfile }),
+  setPatientProfile: (patientProfile) => set({ patientProfile }),
+  setCenterProfile: (centerProfile) => set({ centerProfile }),
+  setCenterLocation: (centerLocation) => set({ centerLocation }),
+  reset: () =>
+    set({
+      profile: null,
+      doctorProfile: null,
+      patientProfile: null,
+      centerProfile: null,
+      centerLocation: null,
+    }),
 }));

@@ -1,5 +1,5 @@
 import { Sheet, SheetContent } from "@/shared/ui/sheet";
-import MCSheetPatient from "./MCSheetPatient";
+import MCSheetPatient from "./patient/MCSheetPatient";
 import MCSheetDoctor from "./MCSheetDoctor";
 import MCSheetHealthCenter from "./MCSheetHealthCenter";
 import { useAppStore } from "@/stores/useAppStore";
