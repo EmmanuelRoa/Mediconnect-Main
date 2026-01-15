@@ -1,18 +1,23 @@
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/shared/ui/textarea";
+import React from "react"; // Ensure React is imported for types
+
 interface MCTextAreaProps {
   name: string;
   label?: string;
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void; // <-- Add this
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void; // <-- Add this
   className?: string;
   required?: boolean;
   disabled?: boolean;
   rows?: number;
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
+  autoFocus?: boolean;
 }
 
 function MCTextArea({
@@ -21,12 +26,15 @@ function MCTextArea({
   placeholder,
   value,
   onChange,
+  onBlur, // <-- Add this
+  onKeyDown, // <-- Add this
   className,
   required = false,
   disabled = false,
   rows = 4,
   status = "default",
   statusMessage,
+  autoFocus = false,
 }: MCTextAreaProps) {
   const {
     register,
@@ -65,6 +73,8 @@ function MCTextArea({
         required={required}
         disabled={disabled}
         rows={rows}
+        autoFocus={autoFocus}
+        onKeyDown={onKeyDown} // <-- Add this
         {...(() => {
           const field = register(name);
           return {
@@ -76,7 +86,7 @@ function MCTextArea({
           };
         })()}
         className={cn(
-          "w-full rounded-3xl border focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 p-3 resize-none text-primary",
+          "w-full rounded-3xl border focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 p-3 resize-none text-primary  ",
           handleStatusColor(),
           className
         )}

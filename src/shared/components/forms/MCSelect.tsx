@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -8,8 +9,7 @@ import {
 } from "@/shared/ui/select";
 import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 
 interface MCSelectProps {
   name: string;
@@ -24,6 +24,7 @@ interface MCSelectProps {
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
   variant?: "edit";
+  searchable?: boolean;
   onChange?: (value: string | string[]) => void;
 }
 
@@ -40,6 +41,7 @@ function MCSelect({
   status = "default",
   statusMessage,
   variant,
+  searchable = false,
   onChange,
 }: MCSelectProps) {
   const {
@@ -50,6 +52,7 @@ function MCSelect({
   } = useFormContext();
 
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const currentValue = watch(name);
 
   const handleStatusColor = () => {
@@ -98,6 +101,7 @@ function MCSelect({
       setValue(name, value);
       onChange?.(value);
     }
+    setSearchQuery(""); // Limpiar búsqueda después de seleccionar
   };
 
   const removeValue = (valueToRemove: string) => {
@@ -117,6 +121,13 @@ function MCSelect({
     }
     return placeholder;
   };
+
+  // Filtrar opciones basado en la búsqueda
+  const filteredOptions = searchable
+    ? options.filter((option) =>
+        option.label.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : options;
 
   return (
     <div className="w-full flex flex-col mb-4 px-0">
@@ -143,12 +154,10 @@ function MCSelect({
         >
           <SelectTrigger
             className={cn(
-              // Estilos base igual que Input
               "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary",
               getSizeClasses(),
               handleStatusColor(),
               getVariantClasses(),
-              // Añade los estilos de focus y aria-invalid igual que Input
               "focus-visible:border-ring focus-visible:ring-accent/70 focus-visible:ring-[3px]",
               "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
               className
@@ -158,26 +167,56 @@ function MCSelect({
               {getDisplayValue()}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent position="popper" align="end">
+          <SelectContent
+            position="popper"
+            align="end"
+            className="bg-background"
+          >
+            {/* Search Input */}
+            {searchable && (
+              <div className="px-2 py-2 border-b">
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/50"
+                    size={16}
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar..."
+                    className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background text-primary"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+            )}
+
             <SelectGroup>
-              {options.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={cn(
-                    multiple && selectedValues.includes(option.value)
-                      ? "bg-primary/10"
-                      : ""
-                  )}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>{option.label}</span>
-                    {multiple && selectedValues.includes(option.value) && (
-                      <span className="ml-2">✓</span>
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className={cn(
+                      multiple && selectedValues.includes(option.value)
+                        ? "bg-primary/10"
+                        : ""
                     )}
-                  </div>
-                </SelectItem>
-              ))}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{option.label}</span>
+                      {multiple && selectedValues.includes(option.value) && (
+                        <span className="ml-2">✓</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="px-2 py-6 text-center text-sm text-primary/50">
+                  No se encontraron resultados
+                </div>
+              )}
             </SelectGroup>
           </SelectContent>
         </Select>
