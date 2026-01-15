@@ -43,14 +43,34 @@ export function patientProfileSchema(t: (key: string) => string) {
         message: t("validation.identityDocumentInvalid"),
       }),
     phone: z.string().optional(),
-    age: z.number().optional(),
+    age: z
+      .string()
+      .refine((val) => !val || !isNaN(Number(val)), {
+        message: t("validation.ageInvalid"),
+      })
+      .transform((val) => (val ? Number(val) : undefined))
+      .optional(),
     gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
     bloodType: z
-      .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"])
+      .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], {
+        message: t("validation.bloodTypeInvalid"),
+      })
       .optional(),
     nationality: z.string().optional(),
-    weight: z.number().optional(),
-    height: z.number().optional(),
+    weight: z
+      .string()
+      .refine((val) => !val || !isNaN(Number(val)), {
+        message: t("validation.weightInvalid"),
+      })
+      .transform((val) => (val ? Number(val) : undefined))
+      .optional(),
+    height: z
+      .string()
+      .refine((val) => !val || !isNaN(Number(val)), {
+        message: t("validation.heightInvalid"),
+      })
+      .transform((val) => (val ? Number(val) : undefined))
+      .optional(),
   });
 }
 

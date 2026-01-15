@@ -120,7 +120,7 @@ export function MCModalBase({
               {title && (
                 <MorphingDialogTitle>
                   <h2
-                    className={`font-semibold text-primary ${
+                    className={`font-semibold text-primary dark:text-primary-dark ${
                       isMobile ? "text-lg" : "text-xl"
                     }`}
                   >
@@ -144,7 +144,7 @@ export function MCModalBase({
 
           {/* Content */}
           <MorphingDialogDescription
-            className={`${contentPadding} flex-1 overflow-y-auto min-h-0 scrollbar-hide`}
+            className={`${contentPadding} flex-1 overflow-y-auto min-h-0 scrollbar-hide text-gray-600 dark:text-gray-300`}
           >
             {children}
           </MorphingDialogDescription>

@@ -1,12 +1,15 @@
 import MCButton from "../../../../components/forms/MCButton";
 import MCInput from "../../../../components/forms/MCInput";
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import MCFormWrapper from "../../../../components/forms/MCFormWrapper";
 import MCProfileImageUploader from "../../../../components/MCProfileImageUploader";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "../../MCUserBanner";
 import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { MCDialogBase } from "@/shared/components/MCDialogBase";
+import { MCModalBase } from "@/shared/components/MCModalBase";
 
 interface PersonalInformationProps {
   schema: any;
@@ -19,6 +22,7 @@ function PersonalInformation({
   schema,
   onOpenChange,
 }: PersonalInformationProps) {
+  const { t } = useTranslation("patient");
   const patientProfile = useProfileStore((s) => s.patientProfile);
   const setPatientProfile = useProfileStore((s) => s.setPatientProfile);
 
@@ -37,6 +41,11 @@ function PersonalInformation({
 
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para controlar la apertura del modal de eliminación de imagen de perfil
+  const [showDeleteProfileModal, setShowDeleteProfileModal] = useState(false);
+  // Estado para controlar la apertura del modal de eliminación de imagen de banner
+  const [showDeleteBannerModal, setShowDeleteBannerModal] = useState(false);
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -67,6 +76,10 @@ function PersonalInformation({
   // Borrar imagen de perfil
   const handleRemoveProfileImage = () => {
     setProfileImage("");
+    if (profileInputRef.current) {
+      profileInputRef.current.value = "";
+    }
+    setShowDeleteProfileModal(false); // Cierra el modal después de borrar
   };
 
   // Borrar imagen de banner
@@ -75,6 +88,7 @@ function PersonalInformation({
     if (bannerInputRef.current) {
       bannerInputRef.current.value = "";
     }
+    setShowDeleteBannerModal(false); // Cierra el modal después de borrar
   };
 
   const handleSubmit = (data: any) => {
@@ -103,9 +117,39 @@ function PersonalInformation({
         isCircular={cropType === "profile"}
         onCropComplete={handleCropComplete}
         title={
-          cropType === "banner" ? "Recortar banner" : "Recortar foto de perfil"
+          cropType === "banner"
+            ? t("profileForm.cropBanner")
+            : t("profileForm.cropProfilePhoto")
         }
       />
+
+      {/* Modal para eliminar foto de perfil */}
+      <MCDialogBase
+        open={showDeleteProfileModal}
+        onOpenChange={setShowDeleteProfileModal}
+        title={t("profileForm.confirmDeleteTitle")}
+        onConfirm={handleRemoveProfileImage}
+        onSecondary={() => setShowDeleteProfileModal(false)}
+        variant="warning"
+        size="sm"
+      >
+        <p>{t("profileForm.confirmDeleteDescription")}</p>
+      </MCDialogBase>
+
+      {/* Modal para eliminar banner */}
+      <MCDialogBase
+        open={showDeleteBannerModal}
+        onOpenChange={setShowDeleteBannerModal}
+        title={t("profileForm.confirmDeleteBannerTitle")}
+        onConfirm={handleRemoveBannerImage}
+        onSecondary={() => setShowDeleteBannerModal(false)}
+        variant="warning"
+        size="sm"
+      >
+        <p className="text-sm text-muted-foreground">
+          {t("profileForm.confirmDeleteBannerDescription")}
+        </p>
+      </MCDialogBase>
 
       <MCFormWrapper
         schema={schema}
@@ -115,7 +159,9 @@ function PersonalInformation({
       >
         {/* Imagen de Banner */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-medium">Imagen de Banner</h3>
+          <h3 className="text-lg font-medium">
+            {t("profileForm.bannerImage")}
+          </h3>
           <div className="relative w-full h-40 bg-accent/30 rounded-2xl overflow-hidden group">
             <label
               className="absolute inset-0 cursor-pointer"
@@ -128,39 +174,37 @@ function PersonalInformation({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <MCUserBanner name={patientProfile?.fullName || "Sin nombre"} />
+                <MCUserBanner
+                  name={
+                    patientProfile?.fullName ||
+                    t("profileForm.fullNamePlaceholder")
+                  }
+                />
               )}
               <input
                 ref={bannerInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setBannerImage(reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                  e.target.value = "";
-                }}
+                onChange={(e) => handleImageChange(e, "banner")}
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-white font-semibold text-lg">
-                  Cambiar imagen
+                  {t("profileForm.changeImage")}
                 </span>
               </div>
             </label>
             {bannerImage && (
               <button
                 type="button"
-                className="absolute top-2 right-2 bg-white/80 rounded-full p-1 hover:bg-red-100 transition"
-                onClick={handleRemoveBannerImage}
-                aria-label="Borrar banner"
+                className="absolute top-2 right-3 bg-red-500 text-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors z-20 border-2 border-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteBannerModal(true);
+                }}
+                aria-label={t("profileForm.deleteBanner")}
               >
-                <Trash2 className="w-5 h-5 text-red-500" />
+                <Trash2 className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -168,113 +212,129 @@ function PersonalInformation({
 
         {/* Foto de perfil */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-medium">Foto de perfil</h3>
+          <h3 className="text-lg font-medium">
+            {t("profileForm.profilePhoto")}
+          </h3>
           <div className="flex items-center gap-4">
-            <div className="relative w-32 h-32 rounded-full bg-accent/30 overflow-hidden group">
-              <label
-                className="absolute inset-0 cursor-pointer"
-                onClick={() => profileInputRef.current?.click()}
-              >
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Perfil"
-                    className="w-full h-full object-cover"
+            <div className="relative w-32 h-32 overflow-hidden group">
+              <div className="w-full h-full rounded-full border-4">
+                <label
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={() => profileInputRef.current?.click()}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Perfil"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <MCUserAvatar
+                      name={
+                        patientProfile?.fullName ||
+                        t("profileForm.fullNamePlaceholder")
+                      }
+                      size={128}
+                      className="w-full h-full"
+                    />
+                  )}
+                  <input
+                    ref={profileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageChange(e, "profile")}
                   />
-                ) : (
-                  <MCUserAvatar
-                    name={patientProfile?.fullName || "Sin nombre"}
-                    size={128}
-                    className="w-full h-full"
-                  />
-                )}
-                <input
-                  ref={profileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleImageChange(e, "profile")}
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                  <span className="text-white font-semibold text-sm">
-                    Cambiar imagen
-                  </span>
-                </div>
-              </label>
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                    <span className="text-white font-semibold text-sm">
+                      {t("profileForm.changeImage")}
+                    </span>
+                  </div>
+                </label>
+              </div>
+              {/* Botón de eliminar rojo */}
               {profileImage && (
                 <button
                   type="button"
-                  className="absolute top-2 right-2 bg-white/80 rounded-full p-1 hover:bg-red-100 transition"
-                  onClick={handleRemoveProfileImage}
-                  aria-label="Borrar foto de perfil"
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors z-20 border-2 border-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteProfileModal(true);
+                  }}
+                  aria-label={t("profileForm.deleteProfilePhoto")}
                 >
-                  <Trash2 className="w-5 h-5 text-red-500" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               )}
             </div>
             <div className="flex flex-col gap-2">
               <p className="text-sm text-muted-foreground">
-                Recomendado: 400x400px, formato JPG o PNG
+                {t("profileForm.recommended")}
               </p>
             </div>
           </div>
         </div>
 
-        {/* ...inputs restantes... */}
+        {/* Inputs del formulario */}
         <MCInput
           name="fullName"
-          label="Nombre Completo"
+          label={t("profileForm.fullName")}
           type="text"
-          placeholder="Ingresa tu nombre completo"
+          placeholder={t("profileForm.fullNamePlaceholder")}
         />
 
         <MCInput
           name="identityDocument"
-          label="Cédula"
+          label={t("profileForm.identityDocument")}
           type="text"
-          placeholder="000-0000000-0"
+          placeholder={t("profileForm.identityDocumentPlaceholder")}
         />
 
         <MCInput
           name="email"
-          label="Email"
+          label={t("profileForm.email")}
           type="email"
-          placeholder="correo@ejemplo.com"
+          placeholder={t("profileForm.emailPlaceholder")}
         />
 
-        <MCInput name="age" label="Edad" type="number" placeholder="45" />
+        <MCInput
+          name="age"
+          label={t("profileForm.age")}
+          type="number"
+          placeholder={t("profileForm.agePlaceholder")}
+        />
 
         <MCInput
           name="height"
-          label="Altura (cm)"
+          label={t("profileForm.height")}
           type="number"
-          placeholder="175"
+          placeholder={t("profileForm.heightPlaceholder")}
         />
 
         <MCInput
           name="weight"
-          label="Peso (kg)"
+          label={t("profileForm.weight")}
           type="number"
-          placeholder="80"
+          placeholder={t("profileForm.weightPlaceholder")}
         />
 
         <MCInput
           name="bloodType"
-          label="Tipo de Sangre"
+          label={t("profileForm.bloodType")}
           type="text"
-          placeholder="O+"
+          placeholder={t("profileForm.bloodTypePlaceholder")}
         />
 
         <div className="flex gap-3 mt-4">
           <MCButton variant="primary" size="m" type="submit">
-            Guardar cambios
+            {t("profileForm.saveChanges")}
           </MCButton>
           <MCButton
             variant="secondary"
             size="m"
             onClick={() => onOpenChange(false)}
           >
-            Cancelar
+            {t("profileForm.cancel")}
           </MCButton>
         </div>
       </MCFormWrapper>
