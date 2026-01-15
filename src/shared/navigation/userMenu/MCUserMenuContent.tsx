@@ -172,7 +172,7 @@ export function MCUserMenuContent({
     icon: React.ReactNode;
     label: string;
     shortcut?: string;
-    action: (e: Event) => void;
+    action: (e: React.MouseEvent) => void;
     badge?: string;
   };
 
@@ -188,7 +188,7 @@ export function MCUserMenuContent({
         icon: <Pencil className="w-4 h-4 mr-2" />,
         label: t("userMenu.editProfile"),
         shortcut: !isMobile ? `${cmdOrCtrl}+E` : undefined,
-        action: (e: Event) => {
+        action: (e: React.MouseEvent) => {
           e.preventDefault();
           setIsEditProfileOpen(true);
         },
@@ -282,7 +282,12 @@ export function MCUserMenuContent({
         {/* Ítems específicos por rol */}
         <DropdownMenuGroup>
           {roleSpecificItems.map((item, index) => (
-            <DropdownMenuItem key={index}>
+            <DropdownMenuItem
+              key={index}
+              onClick={item.action}
+              tabIndex={0}
+              role="menuitem"
+            >
               {item.icon}
               <span className="flex-1">{item.label}</span>
               {item.badge && (

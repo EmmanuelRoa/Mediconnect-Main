@@ -4,7 +4,7 @@ import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import type { Theme } from "@/stores/useGlobalUISlice";
-import MCSheetProfile from "@/shared/components/MCSheetProfile";
+import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import MCUserMenuTrigger from "./MCUserMenuTrigger";
 import MCUserMenuContent from "./MCUserMenuContent";
 import { DropdownMenu } from "@/shared/animate-ui/components/radix/dropdown-menu";
