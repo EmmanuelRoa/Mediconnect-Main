@@ -19,7 +19,7 @@ export function doctorProfileSchema(t: (key: string) => string) {
   return profileSchema(t).extend({
     specialty: z.string().min(1, t("validation.specialtyRequired")),
     phone: z.string().min(1, t("validation.phoneRequired")).optional(),
-    yearsExperience: z.number().min(0, t("validation.yearsPositive")),
+    yearsExperience: z.string().min(0, t("validation.yearsPositive")),
     biography: z.string().min(1, t("validation.biographyRequired")).optional(),
     secondarySpecialties: z
       .array(z.string().min(1, t("validation.secondarySpecialtyRequired")))

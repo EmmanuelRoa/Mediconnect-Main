@@ -54,7 +54,7 @@ function MCSheetDoctor({ onOpenChange }: MCSheetDoctorProps) {
           className="
             fixed right-4 pt-2 z-50
             h-12 w-12 rounded-full
-            bg-background shadow-md
+         
             flex items-center justify-center
             transition
           "

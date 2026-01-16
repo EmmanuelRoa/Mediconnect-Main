@@ -35,7 +35,7 @@ function MCSheetProfile({ open, onOpenChange }: MCSheetProfileProps) {
         className={
           isMobile
             ? "inset-y-0 my-2.5 flex items-center justify-center h-[calc(100%-20px)] w-[calc(100vw-20px)] ml-[10px] rounded-l-4xl border-accent overflow-hidden"
-            : "w-[900px] border-accent inset-y-0 my-2.5 flex items-center justify-center h-[calc(100%-20px)] rounded-l-4xl"
+            : "w-[1000px] border-accent inset-y-0 my-2.5 flex items-center justify-center h-[calc(100%-20px)] rounded-l-4xl"
         }
       >
         {renderProfileContent()}

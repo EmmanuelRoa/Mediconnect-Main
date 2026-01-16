@@ -28,7 +28,7 @@ function MCSheetHealthCenter({ onOpenChange }: MCSheetHealthCenterProps) {
       {isMobile && (
         <button
           onClick={() => onOpenChange(false)}
-          className="fixed right-4 pt-2 z-50 h-12 w-12 rounded-full bg-background shadow-md flex items-center justify-center transition"
+          className="fixed right-4 pt-2 z-50 h-12 w-12 rounded-full flex items-center justify-center transition"
           aria-label={t("common.close")}
         >
           <X className="h-6 w-6" />

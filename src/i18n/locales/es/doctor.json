@@ -1,4 +1,32 @@
 {
+  "validation": {
+    "roleRequired": "El rol es requerido",
+    "fullNameRequired": "El nombre completo es requerido",
+    "emailInvalid": "Dirección de correo electrónico inválida",
+    "specialtyRequired": "La especialidad principal es requerida",
+    "phoneRequired": "El número de teléfono es requerido",
+    "yearsPositive": "Los años de experiencia deben ser positivos",
+    "biographyRequired": "La biografía es requerida",
+    "secondarySpecialtyRequired": "La especialidad secundaria no puede estar vacía",
+    "licenseNumberRequired": "El número de licencia es requerido",
+    "identityDocumentRequired": "El documento de identidad es requerido",
+    "nationalityRequired": "La nacionalidad es requerida",
+    "birthDateRequired": "La fecha de nacimiento es requerida",
+    "institutionRequired": "La institución es requerida",
+    "degreeRequired": "El título o certificación es requerido",
+    "startMonthRequired": "El mes de inicio es requerido",
+    "startYearRequired": "El año de inicio es requerido",
+    "endMonthRequired": "El mes de finalización es requerido",
+    "endYearRequired": "El año de finalización es requerido",
+    "educationAtLeastOne": "Se requiere al menos una formación académica",
+    "hospitalRequired": "La organización/hospital es requerida",
+    "positionRequired": "El cargo es requerido",
+    "experienceAtLeastOne": "Se requiere al menos una experiencia laboral",
+    "languageRequired": "El idioma no puede estar vacío",
+    "languageAtLeastOne": "Se requiere al menos un idioma",
+    "insuranceProviderRequired": "La aseguradora no puede estar vacía"
+  },
+
   "navbar": {
     "home": "Inicio",
     "patients": "Pacientes",
@@ -6,6 +34,7 @@
     "services": "Servicios",
     "schedule": "Calendario"
   },
+
   "profileForm": {
     "cropBanner": "Recortar Banner",
     "cropProfilePhoto": "Recortar Foto de Perfil",
@@ -44,6 +73,7 @@
     "saveChanges": "Guardar Cambios",
     "cancel": "Cancelar"
   },
+
   "specialties": {
     "cardiology": "Cardiología",
     "dermatology": "Dermatología",
@@ -56,6 +86,7 @@
     "gynecology": "Ginecología",
     "ophthalmology": "Oftalmología"
   },
+
   "languages": {
     "title": "Idiomas",
     "description": "Selecciona los idiomas en los que puedes atender a tus pacientes",
@@ -64,6 +95,7 @@
     "select": "Selecciona un idioma",
     "remove": "Eliminar idioma"
   },
+
   "insurance": {
     "title": "Seguros Médicos",
     "description": "Selecciona las aseguradoras con las que trabajas",
@@ -72,6 +104,7 @@
     "select": "Selecciona un seguro",
     "remove": "Eliminar seguro"
   },
+
   "educationForm": {
     "educationTitle": "Formación",
     "degree": "Título o Certificación",
@@ -88,6 +121,7 @@
     "confirmDeleteDescription": "Esta acción no se puede deshacer. ¿Estás seguro que deseas eliminar esta formación académica?",
     "dragHandle": "Arrastrar para reordenar"
   },
+
   "experienceForm": {
     "experienceTitle": "Experiencia",
     "position": "Cargo",
@@ -104,6 +138,7 @@
     "confirmDeleteDescription": "Esta acción no se puede deshacer. ¿Estás seguro que deseas eliminar esta experiencia laboral?",
     "dragHandle": "Arrastrar para reordenar"
   },
+
   "months": {
     "january": "Enero",
     "february": "Febrero",
@@ -118,6 +153,7 @@
     "november": "Noviembre",
     "december": "Diciembre"
   },
+
   "tabs": {
     "general": "Información General",
     "education": "Formación",
@@ -125,10 +161,12 @@
     "languages": "Idiomas",
     "insurance": "Seguros"
   },
+
   "editProfile": {
     "title": "Editar Perfil",
     "subtitle": "Actualiza tu información profesional y preferencias"
   },
+
   "common": {
     "close": "Cerrar"
   }

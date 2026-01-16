@@ -3,9 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useMemo, useState } from "react";
 import { patientProfileSchema } from "@/schema/profile.schema";
 import { useTranslation } from "react-i18next";
-import PersonalInformation from "./personalInformation";
-import ClinicalHistory from "./clinicalHistory";
-import Insurance from "./insurance";
+import PersonalInformation from "./PersonalInformation";
+import ClinicalHistory from "./ClinicalHistory";
+import Insurance from "./Insurance";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface MCSheetPatientProps {
@@ -35,7 +35,7 @@ function MCSheetPatient({ onOpenChange }: MCSheetPatientProps) {
           className="
             fixed right-4 pt-2 z-50
             h-12 w-12 rounded-full
-            bg-background shadow-md
+          
             flex items-center justify-center
             transition
           "

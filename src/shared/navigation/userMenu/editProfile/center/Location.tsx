@@ -18,9 +18,6 @@ function Location({ onOpenChange }: LocationProps) {
   const centerLocation = useProfileStore((s) => s.centerLocation);
   const setCenterLocation = useProfileStore((s) => s.setCenterLocation);
 
-  const [mapCoords, setMapCoords] = useState(
-    centerLocation?.coordinates || { latitude: 19.4326, longitude: -99.1332 }
-  );
   const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
@@ -39,12 +36,11 @@ function Location({ onOpenChange }: LocationProps) {
       address: details.address,
       province: details.province || "",
       municipality: details.municipality || "",
-      coordinates: mapCoords,
+      coordinates: centerLocation?.coordinates || { latitude: 0, longitude: 0 },
     });
   };
 
   const handleMapChange = (lat: number, lng: number) => {
-    setMapCoords({ latitude: lat, longitude: lng });
     setCenterLocation({
       ...centerLocation,
       address: centerLocation?.address || "",
@@ -58,7 +54,7 @@ function Location({ onOpenChange }: LocationProps) {
     setCenterLocation({
       ...centerLocation,
       ...data,
-      coordinates: mapCoords,
+      coordinates: centerLocation?.coordinates,
     });
     if (onOpenChange) onOpenChange(false);
   };
@@ -79,7 +75,10 @@ function Location({ onOpenChange }: LocationProps) {
 
       <div className="h-[350px] mb-6">
         <MapSelectLocation
-          value={{ lat: mapCoords.latitude, lng: mapCoords.longitude }}
+          value={{
+            lat: centerLocation?.coordinates?.latitude || 0,
+            lng: centerLocation?.coordinates?.longitude || 0,
+          }}
           onChange={handleMapChange}
           onLocationDetails={handleLocationDetails}
         />

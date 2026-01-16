@@ -90,6 +90,15 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
       setDoctorProfile({
         ...doctorProfile,
         ...data,
+        yearsExperience:
+          data.yearsExperience !== undefined && data.yearsExperience !== ""
+            ? Number(data.yearsExperience)
+            : undefined,
+        secondarySpecialties: Array.isArray(data.secondarySpecialties)
+          ? data.secondarySpecialties
+          : data.secondarySpecialties
+          ? [data.secondarySpecialties]
+          : [],
         avatar: profileImage
           ? { url: profileImage, type: "image", name: "avatar" }
           : undefined,
