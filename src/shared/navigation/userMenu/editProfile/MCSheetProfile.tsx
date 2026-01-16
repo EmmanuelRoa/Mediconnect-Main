@@ -1,7 +1,7 @@
 import { Sheet, SheetContent } from "@/shared/ui/sheet";
 // import MCSheetPatient from "./patient/MCSheetPatient";
 import MCSheetDoctor from "./doctor/MCSheetDoctor";
-import MCSheetHealthCenter from "./MCSheetHealthCenter";
+import MCSheetHealthCenter from "./center/MCSheetHealthCenter";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 interface MCSheetProfileProps {
