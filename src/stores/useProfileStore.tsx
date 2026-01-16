@@ -7,6 +7,10 @@ import {
   type CenterLocationType,
   type PatientClinicalHistoryType,
   type PatientInsuranceType,
+  type DoctorEducationType,
+  type DoctorExperienceType,
+  type DoctorLanguageType,
+  type DoctorInsuranceType,
 } from "@/types/ProfileTypes";
 
 type ProfileState = {
@@ -17,6 +21,10 @@ type ProfileState = {
   centerLocation: CenterLocationType | null;
   patientClinicalHistory: PatientClinicalHistoryType | null;
   patientInsurance: PatientInsuranceType | [null] | null;
+  doctorEducation: DoctorEducationType | null;
+  doctorExperience: DoctorExperienceType | null;
+  doctorLanguage: DoctorLanguageType | null;
+  doctorInsurance: DoctorInsuranceType | null;
   setProfile: (profile: ProfileType) => void;
   setDoctorProfile: (profile: DoctorProfileType) => void;
   setPatientProfile: (profile: PatientProfileType) => void;
@@ -24,6 +32,10 @@ type ProfileState = {
   setCenterLocation: (location: CenterLocationType) => void;
   setPatientClinicalHistory: (history: PatientClinicalHistoryType) => void;
   setPatientInsurance: (insurance: PatientInsuranceType) => void;
+  setDoctorEducation: (education: DoctorEducationType) => void;
+  setDoctorExperience: (experience: DoctorExperienceType) => void;
+  setDoctorLanguage: (language: DoctorLanguageType) => void;
+  setDoctorInsurance: (insurance: DoctorInsuranceType) => void;
   reset: () => void;
 };
 
@@ -35,6 +47,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
   centerLocation: null,
   patientClinicalHistory: null,
   patientInsurance: null,
+  doctorEducation: null,
+  doctorExperience: null,
+  doctorLanguage: null,
+  doctorInsurance: null,
   setProfile: (profile) => set({ profile }),
   setDoctorProfile: (doctorProfile) => set({ doctorProfile }),
   setPatientProfile: (patientProfile) => set({ patientProfile }),
@@ -43,6 +59,10 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setPatientClinicalHistory: (patientClinicalHistory) =>
     set({ patientClinicalHistory }),
   setPatientInsurance: (patientInsurance) => set({ patientInsurance }),
+  setDoctorEducation: (doctorEducation) => set({ doctorEducation }),
+  setDoctorExperience: (doctorExperience) => set({ doctorExperience }),
+  setDoctorLanguage: (doctorLanguage) => set({ doctorLanguage }),
+  setDoctorInsurance: (doctorInsurance) => set({ doctorInsurance }),
   reset: () =>
     set({
       profile: null,
@@ -52,5 +72,9 @@ export const useProfileStore = create<ProfileState>((set) => ({
       centerLocation: null,
       patientClinicalHistory: null,
       patientInsurance: null,
+      doctorEducation: null,
+      doctorExperience: null,
+      doctorLanguage: null,
+      doctorInsurance: null,
     }),
 }));
