@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -11,7 +12,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@/shared/animate-ui/components/radix/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
 import {
   Avatar as UiAvatar,
@@ -87,6 +88,7 @@ export function MCUserMenuContent({
   userRole,
 }: MCUserMenuContentProps) {
   const { t } = useTranslation("common");
+  const navigate = useNavigate();
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode);
@@ -97,13 +99,28 @@ export function MCUserMenuContent({
 
   const handleThemeChangeAndClose = (
     themeValue: Theme,
-    event: React.MouseEvent
+    event: React.MouseEvent,
   ) => {
     handleThemeChange(themeValue, event);
     if (isMobile) {
       setSubMenuOpen(null);
     }
   };
+
+  // Función para obtener la ruta de perfil según el rol
+  const getProfileRoute = (): string => {
+    switch (userRole) {
+      case "DOCTOR":
+        return "/doctor/profile";
+      case "CENTER":
+        return "/center/profile";
+      case "PATIENT":
+        return "/patient/profile";
+      default:
+        return "/patient/profile";
+    }
+  };
+
   const languages = [
     {
       code: "es",
@@ -172,7 +189,7 @@ export function MCUserMenuContent({
     icon: React.ReactNode;
     label: string;
     shortcut?: string;
-    action: (e: React.MouseEvent) => void;
+    action: (e: Event) => void;
     badge?: string;
   };
 
@@ -182,13 +199,16 @@ export function MCUserMenuContent({
         icon: <User className="w-4 h-4 mr-2" />,
         label: t("userMenu.viewProfile"),
         shortcut: !isMobile ? `⇧${cmdOrCtrl}+P` : undefined,
-        action: () => {},
+        action: (e: Event) => {
+          e.preventDefault();
+          navigate(getProfileRoute());
+        },
       },
       {
         icon: <Pencil className="w-4 h-4 mr-2" />,
         label: t("userMenu.editProfile"),
         shortcut: !isMobile ? `${cmdOrCtrl}+E` : undefined,
-        action: (e: React.MouseEvent) => {
+        action: (e: Event) => {
           e.preventDefault();
           setIsEditProfileOpen(true);
         },
@@ -219,7 +239,7 @@ export function MCUserMenuContent({
   const roleSpecificItems = getRoleSpecificItems();
   const currentLang = languages.find((lang) => lang.code === language);
   const currentThemeOption = themeOptions.find(
-    (option) => option.value === theme
+    (option) => option.value === theme,
   );
 
   return (
@@ -227,7 +247,7 @@ export function MCUserMenuContent({
       <DropdownMenuContent
         className={cn(
           "rounded-2xl bg-background border border-primary/20",
-          isMobile ? "w-[calc(100vw-2rem)] max-w-sm" : "w-80"
+          isMobile ? "w-[calc(100vw-2rem)] max-w-sm" : "w-80",
         )}
         align={isMobile ? "end" : "end"}
         side="bottom"
@@ -238,7 +258,7 @@ export function MCUserMenuContent({
         <DropdownMenuLabel
           className={cn(
             "flex items-center gap-3",
-            isMobile ? "px-3 py-3" : "px-4 py-3"
+            isMobile ? "px-3 py-3" : "px-4 py-3",
           )}
         >
           <MCUserAvatar
@@ -250,7 +270,7 @@ export function MCUserMenuContent({
             <span
               className={cn(
                 "font-semibold",
-                isMobile ? "text-sm" : "text-base"
+                isMobile ? "text-sm" : "text-base",
               )}
             >
               {userData.name}
@@ -258,7 +278,7 @@ export function MCUserMenuContent({
             <span
               className={cn(
                 "font-normal overflow-hidden truncate",
-                isMobile ? "text-xs max-w-40" : "text-sm max-w-55"
+                isMobile ? "text-xs max-w-40" : "text-sm max-w-55",
               )}
               title={userData.email}
             >
@@ -282,12 +302,7 @@ export function MCUserMenuContent({
         {/* Ítems específicos por rol */}
         <DropdownMenuGroup>
           {roleSpecificItems.map((item, index) => (
-            <DropdownMenuItem
-              key={index}
-              onClick={item.action}
-              tabIndex={0}
-              role="menuitem"
-            >
+            <DropdownMenuItem key={index} onSelect={(e) => item.action(e)}>
               {item.icon}
               <span className="flex-1">{item.label}</span>
               {item.badge && (
@@ -383,7 +398,7 @@ export function MCUserMenuContent({
                     onClick={(e) => handleThemeChange(option.value, e)}
                     className={cn(
                       "cursor-pointer flex items-center gap-2",
-                      theme === option.value && "text-primary"
+                      theme === option.value && "text-primary",
                     )}
                   >
                     {theme === option.value && (
@@ -445,7 +460,7 @@ export function MCUserMenuContent({
                     "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent",
                     language === lang.code
                       ? "bg-primary/10 text-primary border border-primary/20"
-                      : "border border-transparent"
+                      : "border border-transparent",
                   )}
                 >
                   <img
@@ -476,7 +491,7 @@ export function MCUserMenuContent({
                     "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent",
                     theme === option.value
                       ? "bg-primary/10 text-primary border border-primary/20"
-                      : "border border-transparent"
+                      : "border border-transparent",
                   )}
                 >
                   {option.icon}

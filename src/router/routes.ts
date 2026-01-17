@@ -1,3 +1,5 @@
+import { P } from "node_modules/framer-motion/dist/types.d-DagZKalS";
+
 export const ROUTES = {
   // --- AUTH & ONBOARDING ---
   LOGIN: "/login",
@@ -32,6 +34,8 @@ export const ROUTES = {
     PROFILE: "/patient/profile",
     INSURANCE: "/patient/my-insurance",
     SETTINGS: "/patient/settings",
+    PATIENT_PROFILE_PRIVATE: "/patient/profile",
+    PATIENT_PROFILE_PUBLIC: "/patient/profile/:patientId",
   },
 
   // --- DASHBOARD DOCTOR ---
@@ -42,13 +46,19 @@ export const ROUTES = {
     SERVICES: "/doctor/services",
     CALENDAR: "/doctor/schedule",
     PROFILE: "/doctor/profile",
+    SETTINGS: "/doctor/settings",
+    DOCTOR_PROFILE_PRIVATE: "/doctor/profile",
+    DOCTOR_PROFILE_PUBLIC: "/doctor/profile/:doctorId",
   },
 
   // --- DASHBOARD CENTRO MÉDICO ---
   CENTER: {
     HOME: "/center/dashboard",
     DOCTORS: "/center/staff",
-    APPOINTMENTS: "/center/all-appointments",
-    FINANCES: "/center/finances",
+    REQUESTS: "/center/requests",
+    PROFILE: "/center/profile",
+    SETTINGS: "/center/settings",
+    CENTER_PROFILE_PRIVATE: "/center/profile",
+    CENTER_PROFILE_PUBLIC: "/center/profile/:centerId",
   },
 };
