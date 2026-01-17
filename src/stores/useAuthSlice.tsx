@@ -8,6 +8,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  banner?: string;
 }
 
 export interface AuthSlice {

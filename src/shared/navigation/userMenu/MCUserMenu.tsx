@@ -32,7 +32,7 @@ export function MCUserMenu() {
     switch (user?.role) {
       case "PATIENT":
         return {
-          name: "Ilia Topuria",
+          name: "IliaTopuria",
           email: "Iliatopuria17@gmail.com",
           initials: "IT",
           roleLabel: t("userMenu.patient"),
@@ -86,7 +86,7 @@ export function MCUserMenu() {
       const y = top + height / 2;
       const maxRadius = Math.hypot(
         Math.max(left, window.innerWidth - left),
-        Math.max(top, window.innerHeight - top)
+        Math.max(top, window.innerHeight - top),
       );
 
       document.documentElement.animate(
@@ -100,10 +100,10 @@ export function MCUserMenu() {
           duration: 500,
           easing: "ease-in-out",
           pseudoElement: "::view-transition-new(root)",
-        }
+        },
       );
     },
-    [setTheme]
+    [setTheme],
   );
 
   // Atajo de teclado para editar perfil

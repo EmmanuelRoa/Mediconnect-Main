@@ -36,7 +36,7 @@ function MCButton({
 
   const sizeStyles: Record<string, string> = {
     s: "px-4 py-2 text-sm", // pequeño
-    m: "px-6 py43 text-base md:px-8 md:py-6 md:text-lg", // intermedio real
+    m: "px-6 py-4 text-base md:px-8 md:py-6 md:text-lg", // intermedio real
     l: "px-8 py-5 text-lg md:px-10 md:py-7 md:text-xl", // era el m anterior
     xl: "px-12 py-7 text-xl md:px-16 md:py-10 md:text-2xl", // era el l anterior
   };

@@ -32,10 +32,10 @@ function PersonalInformation({
   const [tempImage, setTempImage] = useState<string>("");
 
   const [bannerImage, setBannerImage] = useState<string>(
-    patientProfile?.banner?.url || ""
+    patientProfile?.banner?.url || "",
   );
   const [profileImage, setProfileImage] = useState<string>(
-    patientProfile?.avatar?.url || ""
+    patientProfile?.avatar?.url || "",
   );
 
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +46,7 @@ function PersonalInformation({
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: CropType
+    type: CropType,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -171,12 +171,7 @@ function PersonalInformation({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <MCUserBanner
-                  name={
-                    patientProfile?.fullName ||
-                    t("profileForm.fullNamePlaceholder")
-                  }
-                />
+                <MCUserBanner name="IliaTopuria" />
               )}
               <input
                 ref={bannerInputRef}
@@ -237,10 +232,7 @@ function PersonalInformation({
                     />
                   ) : (
                     <MCUserAvatar
-                      name={
-                        patientProfile?.fullName ||
-                        t("profileForm.fullNamePlaceholder")
-                      }
+                      name="IliaTopuria"
                       size={isMobile ? 96 : 128}
                       className="w-full h-full"
                     />

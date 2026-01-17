@@ -1,5 +1,3 @@
-import { P } from "node_modules/framer-motion/dist/types.d-DagZKalS";
-
 export const ROUTES = {
   // --- AUTH & ONBOARDING ---
   LOGIN: "/login",
