@@ -47,14 +47,19 @@ export const BANNER_COLORS = [
 type MCUserBannerProps = {
   name: string;
   bannerUrl?: string | null;
-  height?: number;
+
   className?: string;
 };
+
+function isSafari() {
+  if (typeof navigator === "undefined") return false;
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
 
 export function MCUserBanner({
   name,
   bannerUrl,
-  height = 220,
+
   className = "",
 }: MCUserBannerProps) {
   // Si el usuario tiene banner propio → úsalo
@@ -64,7 +69,17 @@ export function MCUserBanner({
         src={bannerUrl}
         alt={`${name} banner`}
         className={`w-full object-cover rounded-xl ${className}`}
-        style={{ height }}
+      />
+    );
+  }
+
+  // Si es Safari y no hay imagen, mostrar imagen fija
+  if (isSafari()) {
+    return (
+      <img
+        src="https://i.pinimg.com/1200x/04/6a/eb/046aeb05b2396c31672bb33ba4d5fe54.jpg"
+        alt="Safari default banner"
+        className={`w-full  object-cover rounded-xl ${className}`}
       />
     );
   }
@@ -73,8 +88,7 @@ export function MCUserBanner({
   return (
     <div className={`w-full h-fit rounded-xl overflow-hidden ${className}`}>
       <Avatar
-        size={450}
-        className="w-full h-fit"
+        className=" h-fit w-full"
         name={name}
         variant="abstract"
         colors={BANNER_COLORS}

@@ -69,17 +69,17 @@ function PatientProfilePage() {
           <PatientProfileBannerMobile user={user} setOpenSheet={setOpenSheet} />
         ) : (
           <div className="w-[90%] shadow-md rounded-4xl border-0">
-            <div className="relative h-60 flex items-end rounded-t-4xl">
+            <div className="relative h-60 flex items-end rounded-t-4xl bg-background ">
               {user?.banner ? (
                 <img
                   src={user.banner}
                   alt="Banner de usuario"
-                  className="absolute top-0 left-0 w-full h-full object-cover rounded-t-4xl"
+                  className="absolute top-0 left-0 w-full h-full object-cover rounded-t-4xl "
                   style={{ zIndex: 1 }}
                 />
               ) : (
                 <MCUserBanner
-                  className="absolute top-0 left-0 w-full h-full rounded-t-4xl rounded-b-none"
+                  className="absolute top-0 left-0 w-full h-full rounded-t-4xl   "
                   name={user?.name || "IliaTopuria"}
                 />
               )}
@@ -89,7 +89,7 @@ function PatientProfilePage() {
               >
                 <div className="flex items-center w-[95%]">
                   {user?.avatar ? (
-                    <UiAvatar className="w-40 h-40 rounded-full border-4 border-white">
+                    <UiAvatar className="w-40 h-40 rounded-full border-4 border-background">
                       <AvatarImage src={user.avatar} alt="User Avatar" />
                       <AvatarFallback>
                         {user.name
@@ -103,7 +103,7 @@ function PatientProfilePage() {
                     <MCUserAvatar
                       name={user?.name || "IliaTopuria"}
                       size={180}
-                      className=""
+                      className="border-6 "
                     />
                   )}
 

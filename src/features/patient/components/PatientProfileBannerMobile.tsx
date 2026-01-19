@@ -43,7 +43,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
           />
         ) : (
           <MCUserBanner
-            name={user?.name || "Paciente"}
+            name={user?.name || "IliaTopuria"}
             className="w-full h-full"
           />
         )}
@@ -63,7 +63,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
             </UiAvatar>
           ) : (
             <MCUserAvatar
-              name={user?.name || "Paciente"}
+              name={user?.name || "IliaTopuria"}
               size={112}
               className="border-4 border-background"
             />

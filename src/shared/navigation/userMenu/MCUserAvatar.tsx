@@ -64,7 +64,7 @@ export function MCUserAvatar({
       variant="beam"
       colors={AVATAR_COLORS}
       square={square}
-      className={`rounded-full ${className}`}
+      className={` rounded-full h-full  border-background ${className}`}
     />
   );
 }

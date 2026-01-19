@@ -33,7 +33,7 @@ function MCNavbar() {
   const ns = nsMap[effectiveRole] || "patient";
 
   return (
-    <nav className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3 bg-background rounded-full shadow-md border border-border">
+    <nav className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3 bg-background rounded-full shadow-sm border-none border-background ">
       {/* Logo */}
       <div className="flex items-center gap-2 sm:gap-3">
         <img
