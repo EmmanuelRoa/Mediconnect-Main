@@ -20,6 +20,9 @@ interface MCInputProps {
   size?: "small" | "medium" | "large";
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
+  variant?: "edit" | "default";
+  // Nueva prop para modo standalone
+  standalone?: boolean;
 }
 
 function MCInput({
@@ -36,14 +39,13 @@ function MCInput({
   size = "medium",
   status = "default",
   statusMessage,
-  variant, // <-- Agrega esta prop
-}: MCInputProps & { variant?: "edit" }) {
-  // <-- Extiende las variantes
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext();
-  const [PasswordVisibility, SetPasswordVisibility] = useState(false);
+  variant = "default",
+  standalone = false,
+}: MCInputProps) {
+  // Obtener form context solo si NO está en modo standalone
+  const formContext = standalone ? null : useFormContext();
+
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
 
   const handleStatusColor = () => {
     switch (status) {
@@ -72,7 +74,7 @@ function MCInput({
   };
 
   const handlePasswordToggle = () => {
-    SetPasswordVisibility(!PasswordVisibility);
+    setPasswordVisibility(!passwordVisibility);
   };
 
   const getVariantClasses = () => {
@@ -81,6 +83,30 @@ function MCInput({
     }
     return "";
   };
+
+  // Props del input dependiendo del modo
+  const inputProps = standalone
+    ? {
+        // Modo standalone: solo value y onChange controlado
+        value: value || "",
+        onChange: onChange,
+      }
+    : (() => {
+        // Modo form: usar react-hook-form register
+        if (!formContext) return {};
+
+        const field = formContext.register(name);
+        return {
+          ...field,
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+            field.onChange(e);
+            onChange?.(e);
+          },
+        };
+      })();
+
+  // Obtener errores solo si está en un form
+  const error = !standalone && formContext?.formState?.errors?.[name];
 
   return (
     <div className="w-full flex flex-col mb-4 px-0">
@@ -101,7 +127,7 @@ function MCInput({
               className="rounded-2xl text-gray-500 px-2 py-1"
               onClick={handlePasswordToggle}
             >
-              {PasswordVisibility ? (
+              {passwordVisibility ? (
                 <span className="flex items-center gap-1">
                   <EyeOffIcon size={18} />
                   <p className="hidden sm:inline">Ocultar</p>
@@ -122,26 +148,16 @@ function MCInput({
         <Input
           id={name}
           placeholder={placeholder}
-          type={type === "password" && PasswordVisibility ? "text" : type}
+          type={type === "password" && passwordVisibility ? "text" : type}
           required={required}
-          value={value}
           disabled={disabled}
-          {...(() => {
-            const field = register(name);
-            return {
-              ...field,
-              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                field.onChange(e);
-                onChange?.(e);
-              },
-            };
-          })()}
+          {...inputProps}
           className={cn(
             "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary placeholder:text-md",
             getSizeClasses(),
             handleStatusColor(),
-            getVariantClasses(), // <-- Aplica la variante
-            className
+            getVariantClasses(),
+            className,
           )}
         />
       </div>
@@ -154,21 +170,22 @@ function MCInput({
             status === "success"
               ? "text-green-500"
               : status === "error"
-              ? "text-red-500"
-              : status === "warning"
-              ? "text-yellow-500"
-              : status === "loading"
-              ? "text-blue-500"
-              : "text-gray-500"
+                ? "text-red-500"
+                : status === "warning"
+                  ? "text-yellow-500"
+                  : status === "loading"
+                    ? "text-blue-500"
+                    : "text-gray-500",
           )}
         >
           {statusMessage}
         </span>
       )}
 
-      {errors[name] && (
+      {/* Form Errors (solo si NO es standalone) */}
+      {error && (
         <span className="text-red-500 text-sm mt-1">
-          {String(errors[name]?.message)}
+          {String(error?.message)}
         </span>
       )}
     </div>

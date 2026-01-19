@@ -27,7 +27,6 @@ export function MCUserMenu() {
   // Referencias
   const themeButtonRef = useRef<HTMLDivElement>(null);
 
-  // Obtener datos del usuario según rol
   const getUserData = () => {
     switch (user?.role) {
       case "PATIENT":

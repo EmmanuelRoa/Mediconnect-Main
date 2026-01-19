@@ -133,9 +133,7 @@ function PatientProfilePage() {
 
   return (
     <div
-      className={`w-full ${isMobile ? "flex flex-col" : "grid grid-cols-[5%_95%]"} justify-between items-start ${
-        isMobile ? "p-2" : "p-4"
-      }`}
+      className={`w-full ${isMobile ? "flex flex-col" : "grid grid-cols-[5%_95%]"} justify-between items-start `}
     >
       {!isMobile && (
         <aside>
@@ -143,7 +141,7 @@ function PatientProfilePage() {
         </aside>
       )}
 
-      <main className="w-full flex flex-col justify-center items-center gap-8">
+      <main className="w-full flex flex-col justify-center items-center gap-4 ">
         {isMobile && (
           <div className="w-full px-2 py-3">
             <MCBackButton variant="background" />
