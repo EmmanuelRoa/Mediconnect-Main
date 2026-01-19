@@ -34,8 +34,12 @@ import MCDoctorsCards from "@/shared/components/MCDoctorsCards";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import PatientProfileBannerMobile from "@/features/patient/components/PatientProfileBannerMobile";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
+import MCFilterInput from "@/shared/components/filters/MCFilterInput";
+import PatientProfileBanner from "../components/PatientProfileBanner";
+
 function PatientProfilePage() {
   const [openSheet, setOpenSheet] = useState(false);
+  const [activeTab, setActiveTab] = useState("cards");
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
 
@@ -69,103 +73,7 @@ function PatientProfilePage() {
         {isMobile ? (
           <PatientProfileBannerMobile user={user} setOpenSheet={setOpenSheet} />
         ) : (
-          <div className="w-[90%] shadow-md rounded-4xl border-0">
-            <div className="relative h-60 flex items-end rounded-t-4xl bg-background ">
-              {user?.banner ? (
-                <img
-                  src={user.banner}
-                  alt="Banner de usuario"
-                  className="absolute top-0 left-0 w-full h-full object-cover rounded-t-4xl "
-                  style={{ zIndex: 1 }}
-                />
-              ) : (
-                <MCUserBanner
-                  className="absolute top-0 left-0 w-full h-full rounded-t-4xl   "
-                  name={user?.name || "IliaTopuria"}
-                />
-              )}
-              <div
-                className="absolute left-10 bottom-[-80px] w-full"
-                style={{ zIndex: 2 }}
-              >
-                <div className="flex items-center w-[95%]">
-                  {user?.avatar ? (
-                    <UiAvatar className="w-40 h-40 rounded-full border-4 border-background">
-                      <AvatarImage src={user.avatar} alt="User Avatar" />
-                      <AvatarFallback>
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </UiAvatar>
-                  ) : (
-                    <MCUserAvatar
-                      name={user?.name || "IliaTopuria"}
-                      size={180}
-                      className="border-6 "
-                    />
-                  )}
-
-                  <div className="mt-25 w-full flex justify-between items-center px-6 ">
-                    <div className="flex flex-col">
-                      <h3 className="text-primary font-semibold text-2xl">
-                        Ilia Topuria
-                      </h3>
-                      <p className="text-primary">
-                        <span className="font-medium">Paciente desde:</span> 15
-                        de Enero, 2025
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <MCButton
-                        variant="secondary"
-                        size="m"
-                        className="font-medium rounded-full transition-colors transition-opacity transition-transform duration-200 focus:outline-none px-6 py-3 text-base md:px-8 md:py-6 md:text-lg bg-transparent border border-primary text-primary hover:bg-primary/10 hover:opacity-90 active:bg-primary/20 active:opacity-80 active:scale-95 active:shadow-inner"
-                        onClick={() => setOpenSheet(true)}
-                      >
-                        Editar Perfil
-                      </MCButton>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button className="font-medium rounded-full transition-colors transition-opacity transition-transform duration-200 focus:outline-none px-6 py-3 text-base md:px-8 md:py-6 md:text-lg bg-transparent border border-primary text-primary hover:bg-primary/10 hover:opacity-90 active:bg-primary/20 active:opacity-80 active:scale-95 active:shadow-inner">
-                            <Ellipsis />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <History className="w-4 h-4 mr-2" />
-                            Ver historial completo
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Settings className="w-4 h-4 mr-2" />
-                            Configuración
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Shield className="w-4 h-4 mr-2" />
-                            Privacidad y seguridad
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar perfil
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <LogOut className="w-4 h-4 mr-2 text-red-500" />
-                            <span className="text-red-500">Cerrar sesión</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-background h-35 rounded-b-4xl"></div>
-          </div>
+          <PatientProfileBanner user={user} setOpenSheet={setOpenSheet} />
         )}
 
         <div className={isMobile ? "w-full px-2" : "w-[90%]"}>
@@ -303,10 +211,15 @@ function PatientProfilePage() {
               >
                 Doctores Favoritos
               </h2>
-
-              <MCFilterPopover activeFiltersCount={0} onClearFilters={() => {}}>
-                <div>nose no</div>
-              </MCFilterPopover>
+              <div className="flex items-center gap-2 ">
+                <MCFilterInput></MCFilterInput>
+                <MCFilterPopover
+                  activeFiltersCount={0}
+                  onClearFilters={() => {}}
+                >
+                  <div></div>
+                </MCFilterPopover>
+              </div>
             </div>
           </CardHeader>
 

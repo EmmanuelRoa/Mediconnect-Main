@@ -14,21 +14,31 @@ export function MCFilterPopover({
   activeFiltersCount,
   onClearFilters,
 }: MCFilterPopoverProps) {
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="gap-2 relative">
-          <SlidersHorizontal className="w-4 h-4" />
-          Filtros
+        <Button
+          variant={`outline`}
+          className={`flex items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
+            open
+              ? "opacity ring-2 ring-accent/70  border-secondary"
+              : "opacity-100"
+          }`}
+          aria-label="Abrir filtros"
+        >
+          <SlidersHorizontal className="w-4.5 h-4.5" />
+          <p>Filtros</p>
           {activeFiltersCount > 0 && (
-            <span className="ml-1 h-5 w-5 flex items-center justify-center text-xs bg-primary text-primary-foreground rounded-full">
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
               {activeFiltersCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="max-w-[600px] w-fit p-5 bg-background shadow-lg z-50 border border-primary/10 rounded-2xl"
+        className="max-w-[600px] min-w-[450px] p-5 bg-background shadow-lg z-50 border border-primary/10 rounded-2xl"
         align="end"
         side="bottom"
         sideOffset={8}
@@ -41,12 +51,12 @@ export function MCFilterPopover({
             {activeFiltersCount > 0 && (
               <Button
                 variant="ghost"
-                size="sm"
+                aria-label="Limpiar filtros"
                 onClick={onClearFilters}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="transition-all duration-200 ease-in-out hover:bg-primary dark:hover:bg-primary/10 active:scale-95 active:bg-primary/20 focus:ring-2 focus:ring-primary/30 rounded-full"
               >
-                <X className="w-3 h-3 mr-1" />
-                Limpiar todos
+                <X className="w-4 h-4" />
+                Limpiar
               </Button>
             )}
           </div>
