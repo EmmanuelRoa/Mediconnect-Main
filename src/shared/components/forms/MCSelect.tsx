@@ -125,7 +125,7 @@ function MCSelect({
   // Filtrar opciones basado en la búsqueda
   const filteredOptions = searchable
     ? options.filter((option) =>
-        option.label.toLowerCase().includes(searchQuery.toLowerCase())
+        option.label.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : options;
 
@@ -133,15 +133,21 @@ function MCSelect({
     <div className="w-full flex flex-col mb-4 px-0">
       {/* Label */}
       {label && (
-        <div className="flex flex-row justify-between items-center mb-1 gap-2">
-          <label
-            htmlFor={name}
-            className="text-left text-base sm:text-lg text-primary"
-          >
-            {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
-          </label>
-        </div>
+        <label
+          htmlFor={name}
+          className={cn(
+            "block text-primary mb-1",
+            size === "small"
+              ? "text-sm"
+              : size === "large"
+                ? "text-lg"
+                : "text-base",
+          )}
+          style={{ width: "100%" }}
+        >
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
       )}
 
       {/* Select Container */}
@@ -160,7 +166,7 @@ function MCSelect({
               getVariantClasses(),
               "focus-visible:border-ring focus-visible:ring-accent/70 focus-visible:ring-[3px]",
               "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-              className
+              className,
             )}
           >
             <SelectValue placeholder={placeholder}>
@@ -201,7 +207,7 @@ function MCSelect({
                     className={cn(
                       multiple && selectedValues.includes(option.value)
                         ? "bg-primary/10"
-                        : ""
+                        : "",
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -254,12 +260,12 @@ function MCSelect({
             status === "success"
               ? "text-green-500"
               : status === "error"
-              ? "text-red-500"
-              : status === "warning"
-              ? "text-yellow-500"
-              : status === "loading"
-              ? "text-blue-500"
-              : "text-gray-500"
+                ? "text-red-500"
+                : status === "warning"
+                  ? "text-yellow-500"
+                  : status === "loading"
+                    ? "text-blue-500"
+                    : "text-gray-500",
           )}
         >
           {statusMessage}

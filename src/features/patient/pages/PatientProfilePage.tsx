@@ -1,33 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
-import MCButton from "@/shared/components/forms/MCButton";
-import {
-  History,
-  Settings,
-  Shield,
-  Copy,
-  LogOut,
-  MoreHorizontal,
-  Heart,
-  AlertTriangle,
-  Ellipsis,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
+
+import { Heart, AlertTriangle } from "lucide-react";
+
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
-import {
-  Avatar as UiAvatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/shared/ui/avatar";
-import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
-import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
+
 import { useAppStore } from "@/stores/useAppStore";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import MCDoctorsCards from "@/shared/components/MCDoctorsCards";
@@ -36,10 +13,73 @@ import PatientProfileBannerMobile from "@/features/patient/components/PatientPro
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import MCFilterInput from "@/shared/components/filters/MCFilterInput";
 import PatientProfileBanner from "../components/PatientProfileBanner";
+import FilterMyDoctors from "../components/filters/FilterMyDoctors";
+import { type DoctorFiltersSlice } from "@/stores/filters/doctorFilters.slice";
+import { useFiltersStore } from "@/stores/ useFiltersStore";
+
+const doctorsList = [
+  {
+    name: "Alexander Gil",
+    specialty: "cardiology",
+    rating: 4.8,
+    yearsOfExperience: 15,
+    languages: ["es", "en", "fr"],
+    insuranceAccepted: ["senasa", "universal", "humano"],
+    isFavorite: true,
+    urlImage:
+      "https://i.pinimg.com/736x/58/8b/f4/588bf4e2b04c192c96b297d7627b31e6.jpg",
+  },
+  {
+    name: "María López",
+    specialty: "Dermatóloga",
+    rating: 4.9,
+    yearsOfExperience: 10,
+    languages: ["es", "en"],
+    insuranceAccepted: ["palic", "humano"],
+    isFavorite: true,
+    urlImage:
+      "https://i.pinimg.com/736x/22/1f/d5/221fd565c4175235f7ae93d2ba80c641.jpg",
+  },
+  {
+    name: "Carlos Méndez",
+    specialty: "Pediatra",
+    rating: 4.7,
+    yearsOfExperience: 8,
+    languages: ["es"],
+    insuranceAccepted: ["universal"],
+    isFavorite: true,
+    urlImage:
+      "https://i.pinimg.com/736x/b5/09/6b/b5096bf449df00f2f3fc52d8a4de5c70.jpg",
+  },
+  {
+    name: "Sofía Ramírez",
+    specialty: "Endocrinóloga",
+    rating: 4.6,
+    yearsOfExperience: 12,
+    languages: ["es", "fr"],
+    insuranceAccepted: ["senasa", "mapfre", "yunen"],
+    isFavorite: true,
+    urlImage:
+      "https://i.pinimg.com/736x/8f/7a/9c/8f7a9cb4ea42e64fa5c7025a9918d62c.jpg",
+  },
+];
+
+function getActiveFilters(
+  filters: DoctorFiltersSlice["doctorFilters"],
+): string[] {
+  const active: string[] = [];
+  if (filters.specialty) active.push("Especialidad");
+  if (filters.languages.length) active.push("Idiomas");
+  if (filters.acceptingInsurance.length) active.push("Seguros");
+  if (filters.yearsOfExperience) active.push("Experiencia");
+  if (filters.rating && filters.rating > 0) active.push("Ranking");
+  if (filters.isFavorite) active.push("Solo favoritos");
+  return active;
+}
 
 function PatientProfilePage() {
   const [openSheet, setOpenSheet] = useState(false);
-  const [activeTab, setActiveTab] = useState("cards");
+
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
 
@@ -53,9 +93,49 @@ function PatientProfilePage() {
     { name: "ARS Yunen" },
   ];
 
+  const doctorFilters = useFiltersStore((state) => state.doctorFilters);
+  const setDoctorFilters = useFiltersStore((state) => state.setDoctorFilters);
+
+  // Filtrado de doctores usando doctorFilters
+  const filteredDoctors = doctorsList.filter((doctor) => {
+    if (
+      doctorFilters.specialty &&
+      doctor.specialty.toLowerCase() !== doctorFilters.specialty.toLowerCase()
+    )
+      return false;
+    if (
+      doctorFilters.languages.length &&
+      !doctorFilters.languages.some((lang: any) =>
+        doctor.languages.includes(lang),
+      )
+    )
+      return false;
+    if (
+      doctorFilters.acceptingInsurance.length &&
+      !doctorFilters.acceptingInsurance.some((ins) =>
+        doctor.insuranceAccepted.includes(ins),
+      )
+    )
+      return false;
+    if (
+      doctorFilters.yearsOfExperience &&
+      doctor.yearsOfExperience < doctorFilters.yearsOfExperience
+    )
+      return false;
+    if (doctorFilters.rating && doctor.rating < doctorFilters.rating)
+      return false;
+    if (doctorFilters.isFavorite === true && !doctor.isFavorite) return false;
+    return true;
+  });
+
+  const activeFilters = getActiveFilters(doctorFilters);
+  console.log(activeFilters);
+
   return (
     <div
-      className={`w-full ${isMobile ? "flex flex-col" : "grid grid-cols-[5%_95%]"} justify-between items-start ${isMobile ? "p-2" : "p-4"}`}
+      className={`w-full ${isMobile ? "flex flex-col" : "grid grid-cols-[5%_95%]"} justify-between items-start ${
+        isMobile ? "p-2" : "p-4"
+      }`}
     >
       {!isMobile && (
         <aside>
@@ -204,76 +284,57 @@ function PatientProfilePage() {
         <Card
           className={`animate-fade-in rounded-4xl border-0 shadow-md bg-background ${isMobile ? "w-full" : "w-[90%]"}`}
         >
-          <CardHeader className={isMobile ? "p-4" : "p-2"}>
-            <div className="flex justify-between items-center">
+          <CardHeader className={isMobile ? "p-4 pb-2" : "p-6 pb-4"}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2
-                className={` ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+                className={`${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
               >
                 Doctores Favoritos
               </h2>
-              <div className="flex items-center gap-2 ">
-                <MCFilterInput></MCFilterInput>
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <div className="w-full sm:w-auto flex-1 sm:flex-none">
+                  <MCFilterInput />
+                </div>
                 <MCFilterPopover
-                  activeFiltersCount={0}
-                  onClearFilters={() => {}}
+                  activeFiltersCount={activeFilters.length}
+                  onClearFilters={() =>
+                    setDoctorFilters({
+                      name: "",
+                      specialty: "",
+                      yearsOfExperience: null,
+                      languages: [],
+                      acceptingInsurance: [],
+                      isFavorite: null,
+                      rating: null,
+                    })
+                  }
                 >
-                  <div></div>
+                  <FilterMyDoctors
+                    doctorFilters={doctorFilters}
+                    setDoctorFilters={setDoctorFilters}
+                  />
                 </MCFilterPopover>
               </div>
             </div>
           </CardHeader>
 
-          <CardContent
-            className={`mb-6 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 3xl:grid-cols-3 gap-4 ${isMobile ? "px-2" : ""}`}
-          >
-            <MCDoctorsCards
-              key={1}
-              name="Alexander Gil"
-              specialty="Cardiólogo"
-              rating={4.8}
-              yearsOfExperience={15}
-              languages={["Español", "Inglés", "Francés"]}
-              insuranceAccepted={["ARS humano", "ARS Universal", "ARS Senasa"]}
-              isFavorite={true}
-              fullInfoView={true}
-              urlImage="https://i.pinimg.com/736x/58/8b/f4/588bf4e2b04c192c96b297d7627b31e6.jpg"
-            />
-            <MCDoctorsCards
-              key={2}
-              name="María López"
-              specialty="Dermatóloga"
-              rating={4.9}
-              yearsOfExperience={10}
-              languages={["Español", "Inglés"]}
-              insuranceAccepted={["ARS Palic", "Humano Seguros"]}
-              isFavorite={true}
-              fullInfoView={true}
-              urlImage="https://i.pinimg.com/736x/22/1f/d5/221fd565c4175235f7ae93d2ba80c641.jpg"
-            />
-            <MCDoctorsCards
-              key={3}
-              name="Carlos Méndez"
-              specialty="Pediatra"
-              rating={4.7}
-              yearsOfExperience={8}
-              languages={["Español"]}
-              insuranceAccepted={["ARS Universal"]}
-              isFavorite={true}
-              fullInfoView={true}
-              urlImage="https://i.pinimg.com/736x/b5/09/6b/b5096bf449df00f2f3fc52d8a4de5c70.jpg"
-            />
-            <MCDoctorsCards
-              key={4}
-              name="Sofía Ramírez"
-              specialty="Endocrinóloga"
-              rating={4.6}
-              yearsOfExperience={12}
-              languages={["Español", "Francés"]}
-              insuranceAccepted={["ARS Senasa", "MAPFRE ARS", "ARS Yunen"]}
-              isFavorite={true}
-              fullInfoView={true}
-              urlImage="https://i.pinimg.com/736x/8f/7a/9c/8f7a9cb4ea42e64fa5c7025a9918d62c.jpg"
-            />
+          <CardContent className={isMobile ? "p-4 pt-2" : "p-6 pt-4"}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+              {filteredDoctors.map((doctor, idx) => (
+                <MCDoctorsCards
+                  key={idx}
+                  name={doctor.name}
+                  specialty={doctor.specialty}
+                  rating={doctor.rating}
+                  yearsOfExperience={doctor.yearsOfExperience}
+                  languages={doctor.languages}
+                  insuranceAccepted={doctor.insuranceAccepted}
+                  isFavorite={doctor.isFavorite}
+                  fullInfoView={true}
+                  urlImage={doctor.urlImage}
+                />
+              ))}
+            </div>
           </CardContent>
         </Card>
 

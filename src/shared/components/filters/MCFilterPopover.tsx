@@ -21,7 +21,7 @@ export function MCFilterPopover({
       <PopoverTrigger asChild>
         <Button
           variant={`outline`}
-          className={`flex items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
+          className={`flex  w-full items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
             open
               ? "opacity ring-2 ring-accent/70  border-secondary"
               : "opacity-100"
@@ -38,10 +38,11 @@ export function MCFilterPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="max-w-[600px] min-w-[450px] p-5 bg-background shadow-lg z-50 border border-primary/10 rounded-2xl"
+        className="min-w-full sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] p-5 bg-bg-secondary shadow-lg z-50 border border-primary/20 rounded-2xl"
         align="end"
         side="bottom"
         sideOffset={8}
+        avoidCollisions={false}
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -60,7 +61,7 @@ export function MCFilterPopover({
               </Button>
             )}
           </div>
-          <div>{children}</div>
+          <div className="w-full">{children}</div>
         </div>
       </PopoverContent>
     </Popover>
