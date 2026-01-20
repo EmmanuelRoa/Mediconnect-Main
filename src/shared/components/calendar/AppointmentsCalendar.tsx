@@ -5,8 +5,7 @@ import { Calendar } from "@/shared/ui/calendar";
 import { AppointmentCard } from "./AppointmentCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays } from "lucide-react";
-
-// Sample data for appointments
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import type { Appointment, AppointmentStatus } from "./AppointmentCard";
 
 const appointmentsData: Appointment[] = [
@@ -111,7 +110,7 @@ export function AppointmentsCalendar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="font-display text-2xl font-medium text-foreground mb-6">
+        <h2 className=" text-2xl font-medium text-foreground pb-6">
           Calendario de citas
         </h2>
         <Calendar
@@ -129,7 +128,7 @@ export function AppointmentsCalendar() {
 
       {/* Divider */}
       <div className="hidden lg:flex justify-center items-stretch">
-        <div className="w-px bg-border h-full" />
+        <div className="w-px bg-primary/10 h-full" />
       </div>
 
       {/* Appointments Section */}
@@ -138,8 +137,8 @@ export function AppointmentsCalendar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-          <h2 className="font-display text-2xl font-medium text-foreground">
+        <div className="flex items-center justify-between pb-6 flex-wrap gap-2">
+          <h2 className=" text-2xl font-medium text-foreground">
             Citas para {format(selectedDate, "d 'de' MMMM", { locale: es })}
           </h2>
           <span className="bg-sage-light text-primary text-sm font-medium px-3 py-1 rounded-full">
@@ -177,7 +176,7 @@ export function AppointmentsCalendar() {
                 <div className="w-16 h-16 rounded-full bg-sage-light flex items-center justify-center mb-4">
                   <CalendarDays className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-display text-xl font-medium text-foreground mb-2">
+                <h3 className=" text-xl font-medium text-foreground mb-2">
                   Sin citas programadas
                 </h3>
                 <p className="text-muted-foreground max-w-xs">

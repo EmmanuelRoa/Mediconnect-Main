@@ -10,11 +10,18 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface MCSheetPatientProps {
   onOpenChange: (open: boolean) => void;
+  whatTab?: "general" | "history" | "insurance";
 }
 
-function MCSheetPatient({ onOpenChange }: MCSheetPatientProps) {
+function MCSheetPatient({ onOpenChange, whatTab }: MCSheetPatientProps) {
   const { t } = useTranslation("patient");
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState(
+    whatTab === "history"
+      ? "historial"
+      : whatTab === "insurance"
+        ? "seguros"
+        : "general",
+  );
   const isMobile = useIsMobile();
 
   const schema = useMemo(() => patientProfileSchema(t), [t]);
@@ -143,8 +150,8 @@ function MCSheetPatient({ onOpenChange }: MCSheetPatientProps) {
                 {activeTab === "general"
                   ? t("profileForm.generalInfo")
                   : activeTab === "historial"
-                  ? t("profileForm.clinicalHistory")
-                  : t("profileForm.insurance")}
+                    ? t("profileForm.clinicalHistory")
+                    : t("profileForm.insurance")}
               </h2>
             </div>
           )}
@@ -154,8 +161,8 @@ function MCSheetPatient({ onOpenChange }: MCSheetPatientProps) {
               {activeTab === "general"
                 ? t("profileForm.generalInfo")
                 : activeTab === "historial"
-                ? t("profileForm.clinicalHistory")
-                : t("profileForm.insurance")}
+                  ? t("profileForm.clinicalHistory")
+                  : t("profileForm.insurance")}
             </h2>
           )}
 

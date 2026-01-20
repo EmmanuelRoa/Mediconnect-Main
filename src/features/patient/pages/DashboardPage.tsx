@@ -9,13 +9,15 @@ import MCDoctorsCards from "@/shared/components/MCDoctorsCards";
 import { Search } from "lucide-react";
 import { AppointmentsCalendar } from "@/shared/components/calendar/AppointmentsCalendar";
 import DoctorSearchBar from "../components/DoctorSearchBar";
+import MyInsurance from "../components/dashboard/MyInsurance";
+import MyDoctors from "../components/dashboard/MyDoctors";
 function DashboardPage() {
   return (
     <main className="  min-h-screen">
       <div className=" mx-auto space-y-6">
         {/* BUSCADOR SUPERIOR */}
         <div className=" rounded-4xl p-12 w-full flex flex-col items-center bg-accent-foreground ">
-          <h1 className="text-4xl font-semibold text-accent mb-4">
+          <h1 className="text-4xl font-semibold text-background dark:text-primary mb-4">
             Busca médicos, especialidades o clínicas cercanas
           </h1>
 
@@ -31,12 +33,16 @@ function DashboardPage() {
             <AppointmentsCalendar />
           </Card>
           {/* Mis seguros */}
-          <Card className="rounded-4xl"></Card>
+          <Card className="rounded-4xl">
+            <MyInsurance></MyInsurance>
+          </Card>
         </div>
 
         {/* FILA 2: DOCTORES + HISTORIA CLÍNICA */}
         <div className="grid grid-cols-[7fr_3fr] gap-6 w-full">
-          <Card className="rounded-2xl"></Card>
+          <Card className="rounded-2xl">
+            <MyDoctors />
+          </Card>
           <Card className="rounded-2xl"></Card>
         </div>
       </div>

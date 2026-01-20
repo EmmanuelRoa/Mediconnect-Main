@@ -7,15 +7,16 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 interface MCSheetProfileProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  whatTab?: "general" | "history" | "insurance";
 }
 
-function MCSheetProfile({ open, onOpenChange }: MCSheetProfileProps) {
+function MCSheetProfile({ open, onOpenChange, whatTab }: MCSheetProfileProps) {
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
   const renderProfileContent = () => {
     switch (user?.role) {
       case "PATIENT":
-        return <MCSheetPatient onOpenChange={onOpenChange} />;
+        return <MCSheetPatient onOpenChange={onOpenChange} whatTab={whatTab} />;
       case "DOCTOR":
         return <MCSheetDoctor onOpenChange={onOpenChange} />;
       case "CENTER":
