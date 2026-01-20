@@ -100,6 +100,12 @@ function MCButton({
       active:bg-primary/10
       disabled:opacity-50 disabled:cursor-not-allowed
     `,
+    outlineDelete: `
+      bg-transparent border border-red-600 text-red-600
+      hover:bg-red-600 hover:text-white hover:shadow-md
+      active:bg-red-700
+      disabled:opacity-50 disabled:cursor-not-allowed
+    `,
   };
 
   return (

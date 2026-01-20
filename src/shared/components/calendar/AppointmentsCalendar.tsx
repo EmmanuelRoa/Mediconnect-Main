@@ -7,17 +7,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays } from "lucide-react";
 
 // Sample data for appointments
-const appointmentsData = [
+import type { Appointment, AppointmentStatus } from "./AppointmentCard";
+
+const appointmentsData: Appointment[] = [
   {
     id: "1",
     date: new Date(2026, 0, 20),
     clientName: "Alexander Gil",
-    clientImage:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+
     service: "Consulta interna",
     startTime: "9:00 AM",
     endTime: "10:00 AM",
     isVirtual: true,
+    status: "scheduled" as AppointmentStatus,
   },
   {
     id: "2",
@@ -29,6 +31,7 @@ const appointmentsData = [
     startTime: "10:00 AM",
     endTime: "11:00 AM",
     isVirtual: false,
+    status: "pending" as AppointmentStatus,
   },
   {
     id: "3",
@@ -40,6 +43,7 @@ const appointmentsData = [
     startTime: "2:00 PM",
     endTime: "3:00 PM",
     isVirtual: true,
+    status: "in_progress" as AppointmentStatus,
   },
   {
     id: "4",
@@ -51,6 +55,7 @@ const appointmentsData = [
     startTime: "11:00 AM",
     endTime: "12:00 PM",
     isVirtual: false,
+    status: "completed" as AppointmentStatus,
   },
   {
     id: "5",
@@ -62,6 +67,7 @@ const appointmentsData = [
     startTime: "2:00 PM",
     endTime: "3:00 PM",
     isVirtual: true,
+    status: "cancelled" as AppointmentStatus,
   },
   {
     id: "6",
@@ -73,6 +79,7 @@ const appointmentsData = [
     startTime: "11:00 AM",
     endTime: "12:00 PM",
     isVirtual: false,
+    status: "scheduled" as AppointmentStatus,
   },
 ];
 
@@ -97,7 +104,7 @@ export function AppointmentsCalendar() {
   const appointmentDates = appointmentsData.map((apt) => apt.date);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-[4fr_0.5fr_6fr] gap-4">
       {/* Calendar Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -119,6 +126,11 @@ export function AppointmentsCalendar() {
           appointmentCounts={appointmentCounts}
         />
       </motion.div>
+
+      {/* Divider */}
+      <div className="hidden lg:flex justify-center items-stretch">
+        <div className="w-px bg-border h-full" />
+      </div>
 
       {/* Appointments Section */}
       <motion.div
