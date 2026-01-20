@@ -7,6 +7,7 @@ import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import MCFilterInput from "@/shared/components/filters/MCFilterInput";
 import MCDoctorsCards from "@/shared/components/MCDoctorsCards";
 import { Search } from "lucide-react";
+import { AppointmentsCalendar } from "@/shared/components/calendar/AppointmentsCalendar";
 import DoctorSearchBar from "../components/DoctorSearchBar";
 function DashboardPage() {
   return (
@@ -26,9 +27,11 @@ function DashboardPage() {
         {/* FILA 1: CALENDARIO + SEGUROS */}
         <div className="grid grid-cols-[7fr_3fr] gap-6 w-full">
           {/* Calendario + citas */}
-          <Card className="rounded-2xl"></Card>
+          <Card className="rounded-4xl">
+            <AppointmentsCalendar />
+          </Card>
           {/* Mis seguros */}
-          <Card className="rounded-2xl"></Card>
+          <Card className="rounded-4xl"></Card>
         </div>
 
         {/* FILA 2: DOCTORES + HISTORIA CLÍNICA */}

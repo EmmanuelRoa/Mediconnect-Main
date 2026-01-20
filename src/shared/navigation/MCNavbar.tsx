@@ -56,7 +56,7 @@ function MCNavbar() {
                       className={`${navigationMenuTriggerStyle()} text-sm lg:text-base px-2 lg:px-4 py-2 rounded-full hover:rounded-full transition-all ${
                         location.pathname === item.href
                           ? "font-medium bg-primary text-primary-foreground shadow-md"
-                          : "font-normal opacity-70 hover:opacity-100"
+                          : "font-normal  opacity-70 hover:opacity-100"
                       }`}
                     >
                       {t(`navbar.${item.label.toLowerCase()}`, { ns })}

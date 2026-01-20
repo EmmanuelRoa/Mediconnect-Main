@@ -1,0 +1,182 @@
+import { useState, useMemo } from "react";
+import { format, isSameDay } from "date-fns";
+import { es } from "date-fns/locale";
+import { Calendar } from "@/shared/ui/calendar";
+import { AppointmentCard } from "./AppointmentCard";
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarDays } from "lucide-react";
+
+// Sample data for appointments
+const appointmentsData = [
+  {
+    id: "1",
+    date: new Date(2026, 0, 20),
+    clientName: "Alexander Gil",
+    clientImage:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    service: "Consulta interna",
+    startTime: "9:00 AM",
+    endTime: "10:00 AM",
+    isVirtual: true,
+  },
+  {
+    id: "2",
+    date: new Date(2026, 0, 20),
+    clientName: "Clay Gomera",
+    clientImage:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    service: "Fisioterapia",
+    startTime: "10:00 AM",
+    endTime: "11:00 AM",
+    isVirtual: false,
+  },
+  {
+    id: "3",
+    date: new Date(2026, 0, 22),
+    clientName: "María López",
+    clientImage:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    service: "Terapia ocupacional",
+    startTime: "2:00 PM",
+    endTime: "3:00 PM",
+    isVirtual: true,
+  },
+  {
+    id: "4",
+    date: new Date(2026, 0, 25),
+    clientName: "Carlos Mendez",
+    clientImage:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    service: "Consulta general",
+    startTime: "11:00 AM",
+    endTime: "12:00 PM",
+    isVirtual: false,
+  },
+  {
+    id: "5",
+    date: new Date(2026, 0, 22),
+    clientName: "María López",
+    clientImage:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    service: "Terapia ocupacional",
+    startTime: "2:00 PM",
+    endTime: "3:00 PM",
+    isVirtual: true,
+  },
+  {
+    id: "6",
+    date: new Date(2026, 0, 25),
+    clientName: "Carlos Mendez",
+    clientImage:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    service: "Consulta general",
+    startTime: "11:00 AM",
+    endTime: "12:00 PM",
+    isVirtual: false,
+  },
+];
+
+export function AppointmentsCalendar() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const appointmentsForDate = appointmentsData.filter((apt) =>
+    isSameDay(apt.date, selectedDate),
+  );
+
+  // Calculate appointment counts per date
+  const appointmentCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    appointmentsData.forEach((apt) => {
+      const dateKey = apt.date.toDateString();
+      counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
+    });
+    return counts;
+  }, []);
+
+  // Get dates that have appointments for highlighting
+  const appointmentDates = appointmentsData.map((apt) => apt.date);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Calendar Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <h2 className="font-display text-2xl font-medium text-foreground mb-6">
+          Calendario de citas
+        </h2>
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => date && setSelectedDate(date)}
+          locale={es}
+          className="w-full"
+          modifiers={{
+            hasAppointment: appointmentDates,
+          }}
+          appointmentCounts={appointmentCounts}
+        />
+      </motion.div>
+
+      {/* Appointments Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+          <h2 className="font-display text-2xl font-medium text-foreground">
+            Citas para {format(selectedDate, "d 'de' MMMM", { locale: es })}
+          </h2>
+          <span className="bg-sage-light text-primary text-sm font-medium px-3 py-1 rounded-full">
+            {appointmentsForDate.length}{" "}
+            {appointmentsForDate.length === 1 ? "cita" : "citas"}
+          </span>
+        </div>
+
+        <div className="space-y-4 ">
+          <AnimatePresence mode="wait">
+            {appointmentsForDate.length > 0 ? (
+              <motion.div
+                key={selectedDate.toISOString()}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4"
+              >
+                {appointmentsForDate.map((appointment, index) => (
+                  <AppointmentCard
+                    key={appointment.id}
+                    appointment={appointment}
+                    index={index}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-center justify-center h-[300px] text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-sage-light flex items-center justify-center mb-4">
+                  <CalendarDays className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-display text-xl font-medium text-foreground mb-2">
+                  Sin citas programadas
+                </h3>
+                <p className="text-muted-foreground max-w-xs">
+                  No tienes citas para este día. Selecciona otra fecha o agenda
+                  una nueva cita.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
