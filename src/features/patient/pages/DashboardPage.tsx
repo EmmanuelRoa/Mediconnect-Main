@@ -112,7 +112,7 @@ function DashboardPage() {
           {/* FILA 1: CALENDARIO + SEGUROS */}
           <div className="grid grid-cols-1 lg:grid-cols-[69.5%_29.5%] gap-4 w-full">
             {/* Calendario + citas */}
-            <Card className="rounded-2xl md:rounded-4xl">
+            <Card className="rounded-2xl md:rounded-4xl  min-h-0">
               <AppointmentsCalendar />
             </Card>
 

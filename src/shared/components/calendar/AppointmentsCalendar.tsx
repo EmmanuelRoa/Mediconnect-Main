@@ -125,47 +125,74 @@ export function AppointmentsCalendar() {
       : "appointments.appointmentsCount_plural";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[4fr_0.5fr_6fr] gap-4">
+    <div className="w-full h-full grid grid-cols-1 lg:grid-cols-[40%_auto_1fr] gap-6">
       {/* Calendar Section */}
-      <motion.div {...fadeInUp}>
+      <motion.div
+        {...fadeInUp}
+        className="flex flex-col w-full min-h-0"
+        style={{
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         <h2
-          className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+          className={`mb-6 flex-shrink-0 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
         >
           {t("navbar.calendar")}
         </h2>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => date && setSelectedDate(date)}
-          locale={calendarLocale}
-          className="w-full"
-          modifiers={{
-            hasAppointment: appointmentDates,
-          }}
-          appointmentCounts={appointmentCounts}
-        />
+        <div className="flex-1 w-full min-h-0 overflow-auto">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => date && setSelectedDate(date)}
+            locale={calendarLocale}
+            className="w-full h-fit"
+            modifiers={{
+              hasAppointment: appointmentDates,
+            }}
+            appointmentCounts={appointmentCounts}
+          />
+        </div>
       </motion.div>
 
       {/* Divider */}
-      <div className="hidden lg:flex justify-center items-stretch">
-        <div className="w-px bg-primary/10 h-full" />
+      <div
+        className="hidden lg:flex justify-center items-stretch"
+        style={{ flexShrink: 0 }}
+      >
+        <div className="w-px bg-primary/10" style={{ minHeight: "100%" }} />
       </div>
 
       {/* Appointments Section */}
-      <motion.div {...fadeInUpDelayed}>
-        <div className="flex items-center justify-between pb-6 flex-wrap gap-2">
+      <motion.div
+        {...fadeInUpDelayed}
+        className="flex flex-col w-full min-h-0"
+        style={{
+          WebkitOverflowScrolling: "touch",
+          minWidth: 0,
+        }}
+      >
+        <div className="flex items-center justify-between pb-6 flex-wrap gap-2 flex-shrink-0">
           <h2
-            className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+            className={`${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
           >
             {t("appointments.appointmentsForDate", { date: formattedDate })}
           </h2>
-          <span className="bg-sage-light text-primary text-sm font-medium px-3 py-1 rounded-full">
+          <span className="bg-sage-light text-primary text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap">
             {t(appointmentCountKey, { count: appointmentsForDate.length })}
           </span>
         </div>
 
         <div
-          className={`space-y-4 ${isScrollable ? "max-h-[320px] overflow-y-auto pr-2" : ""}`}
+          className={`space-y-4 w-full flex-1 min-h-0 ${isScrollable ? "overflow-y-auto pr-2" : ""}`}
+          style={
+            isScrollable
+              ? {
+                  maxHeight: isMobile ? "400px" : "500px",
+                  WebkitOverflowScrolling: "touch",
+                  overflowX: "hidden",
+                }
+              : {}
+          }
         >
           <AnimatePresence mode="wait">
             {appointmentsForDate.length > 0 ? (
@@ -174,7 +201,7 @@ export function AppointmentsCalendar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-4"
+                className="space-y-4 w-full"
               >
                 {appointmentsForDate.map((appointment, index) => (
                   <AppointmentCard

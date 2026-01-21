@@ -19,25 +19,43 @@ const insurances = [
     name: "ARS Yunen",
     logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
   },
+  {
+    name: "ARS Yunen",
+    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
+  },
+  {
+    name: "ARS Yunen",
+    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
+  },
+  {
+    name: "ARS Yunen",
+    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
+  },
 ];
 
 function MyInsurance() {
   const [openSheet, setOpenSheet] = useState(false);
-  const scrollable = insurances.length >= 4;
   const isMobile = useIsMobile();
   const { t } = useTranslation("patient");
 
+  // Ajusta el número de items para activar el scroll según el tamaño de pantalla
+  const scrollLimit = isMobile ? 3 : 5; // Puedes ajustar estos valores
+  const scrollable = insurances.length > scrollLimit;
+
   return (
-    <motion.div {...fadeInUp}>
+    <motion.div {...fadeInUp} className="w-full h-full flex flex-col">
       <h2
-        className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+        className={`mb-6 ${
+          isMobile ? "text-lg" : "text-2xl"
+        } font-semibold text-foreground`}
       >
         {t("insurance.title")}
       </h2>
       <div
-        className={`space-y-6 mb-8 ${
-          scrollable ? "max-h-72 overflow-y-auto" : ""
+        className={`space-y-6 mb-8 flex-1 ${
+          scrollable ? "overflow-y-auto" : ""
         }`}
+        style={scrollable ? { maxHeight: "22rem" } : {}}
       >
         {insurances.map((insurance) => (
           <div
@@ -54,7 +72,7 @@ function MyInsurance() {
         ))}
       </div>
       <MCButton
-        className="w-full rounded-full text-lg bg-primary text-background"
+        className="w-full rounded-full text-lg bg-primary text-background mt-auto"
         onClick={() => setOpenSheet(true)}
       >
         {t("insurance.add")}
