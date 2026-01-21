@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { fadeInUp } from "@/lib/animations/commonAnimations";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile"; // Importa el sheet
+import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 
 const insurances = [
   {
@@ -19,11 +21,11 @@ const insurances = [
 ];
 
 function MyInsurance() {
-  const [openSheet, setOpenSheet] = useState(false); // Estado para el sheet
+  const [openSheet, setOpenSheet] = useState(false);
   const scrollable = insurances.length >= 4;
   const isMobile = useIsMobile();
   return (
-    <>
+    <motion.div {...fadeInUp}>
       <h2
         className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
       >
@@ -50,7 +52,7 @@ function MyInsurance() {
       </div>
       <MCButton
         className="w-full rounded-full text-lg bg-primary text-background"
-        onClick={() => setOpenSheet(true)} // Abre el sheet al hacer clic
+        onClick={() => setOpenSheet(true)}
       >
         Agregar plan
       </MCButton>
@@ -58,9 +60,8 @@ function MyInsurance() {
         open={openSheet}
         onOpenChange={setOpenSheet}
         whatTab="insurance"
-      />{" "}
-      {/* Sheet */}
-    </>
+      />
+    </motion.div>
   );
 }
 

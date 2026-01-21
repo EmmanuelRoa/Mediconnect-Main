@@ -4,6 +4,8 @@ import { useDebounce } from "@/lib/hooks/useDebounce";
 import SearchDropdown from "./searchComponent/SearchDropdown";
 import InsuranceDropdown from "@/features/patient/components/searchComponent/InsuranceDropdown";
 import type { Doctor, Specialty, InsurancePlan } from "@/data/searchData";
+import { motion } from "framer-motion";
+import { fadeInUp } from "@/lib/animations/commonAnimations";
 
 const DoctorSearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,7 +58,7 @@ const DoctorSearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <motion.div {...fadeInUp} className="w-full max-w-4xl mx-auto">
       <div className="bg-card rounded-full shadow-search flex items-center p-2 pl-6 relative border-2 border-foreground/10">
         {/* Campo de búsqueda */}
         <div ref={searchRef} className="flex-1 py-2 relative">
@@ -119,7 +121,7 @@ const DoctorSearchBar = () => {
           <Search className="w-5 h-5 text-primary-foreground" />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -13,6 +13,9 @@ import MyInsurance from "../components/dashboard/MyInsurance";
 import { DoctorCarousel } from "../components/dashboard/DoctorCarousel";
 import MedicalInfoCard from "../components/dashboard/MedicalInfoCard";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { motion } from "framer-motion";
+import { fadeInUp } from "@/lib/animations/commonAnimations";
+
 const mockDoctors = [
   {
     id: 1,
@@ -96,10 +99,10 @@ const mockDoctors = [
 function DashboardPage() {
   const isMobile = useIsMobile();
   return (
-    <main className="  min-h-screen">
-      <div className=" mx-auto space-y-4">
+    <motion.main {...fadeInUp} className="min-h-screen">
+      <div className="mx-auto space-y-4">
         {/* BUSCADOR SUPERIOR */}
-        <div className=" rounded-4xl p-12 w-full flex flex-col items-center bg-accent-foreground ">
+        <div className="rounded-4xl p-12 w-full flex flex-col items-center bg-accent-foreground ">
           <h1 className="text-4xl font-semibold text-background dark:text-primary mb-4">
             Busca médicos, especialidades o clínicas cercanas
           </h1>
@@ -147,7 +150,7 @@ function DashboardPage() {
           </div>
         </div>
       </div>
-    </main>
+    </motion.main>
   );
 }
 

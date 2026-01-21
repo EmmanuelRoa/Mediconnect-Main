@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import type { Appointment, AppointmentStatus } from "./AppointmentCard";
+import { fadeInUp, fadeInUpDelayed } from "@/lib/animations/commonAnimations";
 
 const appointmentsData: Appointment[] = [
   {
@@ -105,11 +106,7 @@ export function AppointmentsCalendar() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[4fr_0.5fr_6fr] gap-4">
       {/* Calendar Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
+      <motion.div {...fadeInUp}>
         <h2
           className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
         >
@@ -134,11 +131,7 @@ export function AppointmentsCalendar() {
       </div>
 
       {/* Appointments Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
+      <motion.div {...fadeInUpDelayed}>
         <div className="flex items-center justify-between pb-6 flex-wrap gap-2">
           <h2
             className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}

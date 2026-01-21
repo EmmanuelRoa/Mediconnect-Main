@@ -15,6 +15,8 @@ import { useFiltersStore } from "@/stores/ useFiltersStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/shared/ui/button";
+import { motion } from "framer-motion";
+import { fadeInUp } from "@/lib/animations/commonAnimations";
 
 interface Doctor {
   id: number;
@@ -108,7 +110,7 @@ export function DoctorCarousel({
   };
 
   return (
-    <section className="max-w-full ">
+    <motion.section className="max-w-full" {...fadeInUp}>
       <div className="flex items-center justify-between gap-4 mb-6">
         <h2
           className={`${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
@@ -149,7 +151,7 @@ export function DoctorCarousel({
           onClick={() => scroll("left")}
           className={cn(
             buttonVariants({ variant: buttonVariant }),
-            "size-11 aria-disabled:opacity-50 p-2 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
+            "size-11 aria-disabled:opacity-50 p-2 border-none select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
             defaultClassNames.button_previous,
           )}
           aria-label="Scroll left"
@@ -190,7 +192,7 @@ export function DoctorCarousel({
           onClick={() => scroll("right")}
           className={cn(
             buttonVariants({ variant: buttonVariant }),
-            "size-11 aria-disabled:opacity-50 p-2 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
+            "size-11 aria-disabled:opacity-50 p-2 select-none border-none  transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
             defaultClassNames.button_next,
           )}
           aria-label="Scroll right"
@@ -198,6 +200,6 @@ export function DoctorCarousel({
           <ChevronRight size={20} className="text-foreground" />
         </button>
       </div>
-    </section>
+    </motion.section>
   );
 }

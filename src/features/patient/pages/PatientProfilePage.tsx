@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
 
 import { Heart, AlertTriangle } from "lucide-react";
@@ -17,6 +18,7 @@ import FilterMyDoctors from "../components/filters/FilterMyDoctors";
 import { type DoctorFiltersSlice } from "@/stores/filters/doctorFilters.slice";
 import { useFiltersStore } from "@/stores/ useFiltersStore";
 import MedicalInfoCard from "@/features/patient/components/dashboard/MedicalInfoCard";
+import { fadeInUp } from "@/lib/animations/commonAnimations";
 
 const doctorsList = [
   {
@@ -142,7 +144,10 @@ function PatientProfilePage() {
         </aside>
       )}
 
-      <main className="w-full flex flex-col justify-center items-center gap-4 ">
+      <motion.main
+        {...fadeInUp}
+        className="w-full flex flex-col justify-center items-center gap-4 "
+      >
         {isMobile && (
           <div className="w-full px-2 py-3">
             <MCBackButton variant="background" />
@@ -267,7 +272,7 @@ function PatientProfilePage() {
         </Card>
 
         <MCSheetProfile open={openSheet} onOpenChange={setOpenSheet} />
-      </main>
+      </motion.main>
     </div>
   );
 }
