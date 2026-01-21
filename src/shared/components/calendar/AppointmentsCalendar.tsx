@@ -84,7 +84,7 @@ const appointmentsData: Appointment[] = [
 
 export function AppointmentsCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
+  const isMobile = useIsMobile();
   const appointmentsForDate = appointmentsData.filter((apt) =>
     isSameDay(apt.date, selectedDate),
   );
@@ -110,7 +110,9 @@ export function AppointmentsCalendar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className=" text-2xl font-medium text-foreground pb-6">
+        <h2
+          className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+        >
           Calendario de citas
         </h2>
         <Calendar
@@ -138,7 +140,9 @@ export function AppointmentsCalendar() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <div className="flex items-center justify-between pb-6 flex-wrap gap-2">
-          <h2 className=" text-2xl font-medium text-foreground">
+          <h2
+            className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+          >
             Citas para {format(selectedDate, "d 'de' MMMM", { locale: es })}
           </h2>
           <span className="bg-sage-light text-primary text-sm font-medium px-3 py-1 rounded-full">

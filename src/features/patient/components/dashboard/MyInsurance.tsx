@@ -21,10 +21,12 @@ const insurances = [
 function MyInsurance() {
   const [openSheet, setOpenSheet] = useState(false); // Estado para el sheet
   const scrollable = insurances.length >= 4;
-
+  const isMobile = useIsMobile();
   return (
-    <div className="rounded-2xl">
-      <h2 className="text-2xl font-medium text-foreground pb-6">
+    <>
+      <h2
+        className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
+      >
         Tus planes de seguro
       </h2>
       <div
@@ -58,7 +60,7 @@ function MyInsurance() {
         whatTab="insurance"
       />{" "}
       {/* Sheet */}
-    </div>
+    </>
   );
 }
 

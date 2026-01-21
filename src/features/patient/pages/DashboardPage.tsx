@@ -10,11 +10,94 @@ import { Search } from "lucide-react";
 import { AppointmentsCalendar } from "@/shared/components/calendar/AppointmentsCalendar";
 import DoctorSearchBar from "../components/DoctorSearchBar";
 import MyInsurance from "../components/dashboard/MyInsurance";
-import MyDoctors from "../components/dashboard/MyDoctors";
+import { DoctorCarousel } from "../components/dashboard/DoctorCarousel";
+import MedicalInfoCard from "../components/dashboard/MedicalInfoCard";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+const mockDoctors = [
+  {
+    id: 1,
+    name: "Eduardo Segura",
+    specialty: "Cardiólogo",
+    rating: 4.8,
+    yearsOfExperience: 15,
+    languages: ["Español", "Inglés"],
+    insuranceAccepted: ["Seguros Monterrey", "GNP", "MetLife"],
+    isFavorite: true,
+    urlImage:
+      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "10/10/2025",
+  },
+  {
+    id: 2,
+    name: "Jorge Tapia",
+    specialty: "Cardiólogo",
+    rating: 4.4,
+    yearsOfExperience: 12,
+    languages: ["Español", "Inglés", "Francés"],
+    insuranceAccepted: ["AXA", "Seguros Monterrey"],
+    isFavorite: true,
+    urlImage:
+      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "10/10/2025",
+  },
+  {
+    id: 3,
+    name: "Eladio Tavarez",
+    specialty: "Cardiólogo",
+    rating: 4.8,
+    yearsOfExperience: 20,
+    languages: ["Español"],
+    insuranceAccepted: ["GNP", "Banorte"],
+    isFavorite: true,
+    urlImage:
+      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "10/10/2025",
+  },
+  {
+    id: 4,
+    name: "Anni Yuen",
+    specialty: "Cardiólogo",
+    rating: 4.8,
+    yearsOfExperience: 8,
+    languages: ["Español", "Inglés", "Mandarín"],
+    insuranceAccepted: ["MetLife", "Seguros Monterrey"],
+    isFavorite: true,
+    urlImage:
+      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "10/10/2025",
+  },
+  {
+    id: 5,
+    name: "María González",
+    specialty: "Pediatra",
+    rating: 4.9,
+    yearsOfExperience: 10,
+    languages: ["Español", "Portugués"],
+    insuranceAccepted: ["AXA", "GNP"],
+    isFavorite: false,
+    urlImage:
+      "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "05/09/2025",
+  },
+  {
+    id: 6,
+    name: "Carlos Mendez",
+    specialty: "Dermatólogo",
+    rating: 4.7,
+    yearsOfExperience: 18,
+    languages: ["Español", "Inglés"],
+    insuranceAccepted: ["Seguros Monterrey", "Banorte", "GNP"],
+    isFavorite: false,
+    urlImage:
+      "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&h=300&fit=crop&crop=face",
+    lastAppointment: "22/08/2025",
+  },
+];
 function DashboardPage() {
+  const isMobile = useIsMobile();
   return (
     <main className="  min-h-screen">
-      <div className=" mx-auto space-y-6">
+      <div className=" mx-auto space-y-4">
         {/* BUSCADOR SUPERIOR */}
         <div className=" rounded-4xl p-12 w-full flex flex-col items-center bg-accent-foreground ">
           <h1 className="text-4xl font-semibold text-background dark:text-primary mb-4">
@@ -26,26 +109,42 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* FILA 1: CALENDARIO + SEGUROS */}
-        <div className="grid grid-cols-[7fr_3fr] gap-6 w-full">
-          {/* Calendario + citas */}
-          <Card className="rounded-4xl">
-            <AppointmentsCalendar />
-          </Card>
-          {/* Mis seguros */}
-          <Card className="rounded-4xl">
-            <MyInsurance></MyInsurance>
-          </Card>
-        </div>
+        <div className="w-full flex flex-col justify-center items-center gap-4">
+          {/* FILA 1: CALENDARIO + SEGUROS */}
+          <div className="grid grid-cols-[69.5%_29.5%]  justify-between  w-full">
+            {/* Calendario + citas */}
+            <Card className="rounded-4xl">
+              <AppointmentsCalendar />
+            </Card>
 
-        {/* FILA 2: DOCTORES + HISTORIA CLÍNICA */}
-        <div className="grid grid-cols-[7fr_3fr] gap-6 w-full">
-          <Card className="rounded-4xl">
-            <MyDoctors />
-          </Card>
-          <Card className="rounded-4xl">
-            <MyInsurance></MyInsurance>
-          </Card>
+            {/* Mis seguros */}
+            <Card className="rounded-4xl">
+              <MyInsurance></MyInsurance>
+            </Card>
+          </div>
+          <div className="grid grid-cols-[69.5%_29.5%]  justify-between  w-full">
+            <Card className="rounded-4xl ">
+              <DoctorCarousel doctors={mockDoctors} />
+            </Card>
+            {/* Información médica */}
+
+            <MedicalInfoCard
+              isMobile={isMobile}
+              age="45 años"
+              bmi="26.1"
+              height="175 cm"
+              weight="80 kg"
+              bloodType="O+"
+              allergies={[
+                "Penicilina (produce erupción cutánea)",
+                "Penicilina (produce erupción cutánea)",
+              ]}
+              conditions={[
+                "Apendicectomía en 2010",
+                "Antecedentes familiares de diabetes tipo 2",
+              ]}
+            />
+          </div>
         </div>
       </div>
     </main>

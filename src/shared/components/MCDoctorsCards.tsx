@@ -46,7 +46,7 @@ const VARIANT_STYLES = {
     showExtraInfo: false,
   },
   m: {
-    imageHeight: "h-40",
+    imageHeight: "h-48",
     title: "text-base",
     subtitle: "text-sm",
     gap: "gap-1.5",
@@ -63,10 +63,6 @@ const VARIANT_STYLES = {
   },
 };
 
-/* =========================
-   COMPONENT
-========================= */
-
 function MCDoctorsCards({
   name,
   specialty,
@@ -76,7 +72,7 @@ function MCDoctorsCards({
   insuranceAccepted,
   isFavorite,
   urlImage,
-  variant = "m",
+  variant = "default",
   lastAppointment,
 }: Doctor) {
   const styles = VARIANT_STYLES[variant];
@@ -133,7 +129,7 @@ function MCDoctorsCards({
             <CardTitle className={`font-semibold text-primary ${styles.title}`}>
               {name}
             </CardTitle>
-            <p className={`text-secondary ${styles.subtitle}`}>{specialty}</p>
+            <p className={`text-primary/80 ${styles.subtitle}`}>{specialty}</p>
           </div>
 
           <div className="flex items-center gap-1">
@@ -151,7 +147,7 @@ function MCDoctorsCards({
         <div className={`flex flex-col text-primary ${styles.gap}`}>
           {/* Mostrar lastAppointment en "s" y "m" */}
           {(variant === "s" || variant === "m") && lastAppointment && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-primary/50 my-1">
               Última cita: {lastAppointment}
             </span>
           )}
@@ -203,7 +199,7 @@ function MCDoctorsCards({
       </CardContent>
 
       {/* ACTIONS */}
-      <div className="mt-auto px-4 pb-4 grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 ">
         <MCButton size={styles.buttonSize}>Agendar</MCButton>
         <MCButton size={styles.buttonSize} variant="secondary">
           Perfil

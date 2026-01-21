@@ -16,6 +16,7 @@ import PatientProfileBanner from "../components/PatientProfileBanner";
 import FilterMyDoctors from "../components/filters/FilterMyDoctors";
 import { type DoctorFiltersSlice } from "@/stores/filters/doctorFilters.slice";
 import { useFiltersStore } from "@/stores/ useFiltersStore";
+import MedicalInfoCard from "@/features/patient/components/dashboard/MedicalInfoCard";
 
 const doctorsList = [
   {
@@ -48,29 +49,8 @@ const doctorsList = [
     languages: ["es"],
     insuranceAccepted: ["universal"],
     isFavorite: true,
-    urlImage: "",
-  },
-  {
-    name: "Sofía Ramírez",
-    specialty: "Endocrinóloga",
-    rating: 4.6,
-    yearsOfExperience: 12,
-    languages: ["es", "fr"],
-    insuranceAccepted: ["senasa", "mapfre", "yunen"],
-    isFavorite: true,
     urlImage:
-      "https://i.pinimg.com/736x/8f/7a/9c/8f7a9cb4ea42e64fa5c7025a9918d62c.jpg",
-  },
-  {
-    name: "Sofía Ramírez",
-    specialty: "Endocrinóloga",
-    rating: 4.6,
-    yearsOfExperience: 12,
-    languages: ["es", "fr"],
-    insuranceAccepted: ["senasa", "mapfre", "yunen"],
-    isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/8f/7a/9c/8f7a9cb4ea42e64fa5c7025a9918d62c.jpg",
+      "https://i.pinimg.com/736x/b5/09/6b/b5096bf449df00f2f3fc52d8a4de5c70.jpg",
   },
   {
     name: "Sofía Ramírez",
@@ -211,92 +191,22 @@ function PatientProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="animate-fade-in rounded-4xl border-0 shadow-md bg-background">
-              <CardContent className={isMobile ? "p-4" : "p-2"}>
-                <h2
-                  className={`mb-6 ${isMobile ? "text-lg" : "text-2xl"} font-semibold text-foreground`}
-                >
-                  Información Médica
-                </h2>
-                <div
-                  className={`mb-6 grid ${isMobile ? "grid-cols-2" : "grid-cols-4"} gap-4`}
-                >
-                  <div>
-                    <p className="text-xs text-muted-foreground">Edad</p>
-                    <p
-                      className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-foreground`}
-                    >
-                      45 años
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">IMC</p>
-                    <p
-                      className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-foreground`}
-                    >
-                      26.1
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Altura</p>
-                    <p
-                      className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-foreground`}
-                    >
-                      175 cm
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Peso</p>
-                    <p
-                      className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-foreground`}
-                    >
-                      80 kg
-                    </p>
-                  </div>
-                </div>
-                <div className="border-t border-muted my-4"></div>
-                <div className="mb-4">
-                  <p className="text-xs text-muted-foreground">
-                    Tipo de sangre
-                  </p>
-                  <p
-                    className={`${isMobile ? "text-base" : "text-lg"} font-bold text-foreground`}
-                  >
-                    O+
-                  </p>
-                </div>
-                <div className="border-t border-muted my-4"></div>
-                <div
-                  className={`${isMobile ? "max-h-64" : "max-h-48"} overflow-y-auto pr-2`}
-                >
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2 text-red-600">
-                      <Heart className="h-4 w-4" />
-                      <span className="font-medium">Alergias</span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Penicilina (produce erupción cutánea)
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Penicilina (produce erupción cutánea)
-                    </p>
-                  </div>
-                  <div className="border-t border-muted my-4"></div>
-                  <div>
-                    <div className="flex items-center gap-2 text-orange-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="font-medium">Condiciones</span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Apendicectomía en 2010
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Antecedentes familiares de diabetes tipo 2
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MedicalInfoCard
+              isMobile={isMobile}
+              age="45 años"
+              bmi="26.1"
+              height="175 cm"
+              weight="80 kg"
+              bloodType="O+"
+              allergies={[
+                "Penicilina (produce erupción cutánea)",
+                "Penicilina (produce erupción cutánea)",
+              ]}
+              conditions={[
+                "Apendicectomía en 2010",
+                "Antecedentes familiares de diabetes tipo 2",
+              ]}
+            />
           </div>
         </div>
 
@@ -338,7 +248,7 @@ function PatientProfilePage() {
           </CardHeader>
 
           <CardContent className={isMobile ? "p-4 pt-2" : "p-6 pt-4"}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               {filteredDoctors.map((doctor, idx) => (
                 <MCDoctorsCards
                   key={idx}
