@@ -23,7 +23,7 @@ import DoctorDashboard from "@/features/doctor/pages/DashboardPage";
 import CenterDashboard from "@/features/center/pages/DashboardPage";
 
 import PatientProfilePage from "@/features/patient/pages/PatientProfilePage";
-
+import Search from "@/features/search/pages/Search";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -93,6 +93,8 @@ function AppRouter() {
               path={ROUTES.PATIENT.PATIENT_PROFILE_PRIVATE}
               element={<PatientProfilePage />}
             />
+
+            <Route path={ROUTES.COMMON.GLOBAL_SEARCH} element={<Search />} />
 
             <Route path={ROUTES.DOCTOR.HOME} element={<DoctorDashboard />} />
             <Route path={ROUTES.CENTER.HOME} element={<CenterDashboard />} />

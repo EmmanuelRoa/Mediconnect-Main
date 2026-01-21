@@ -59,4 +59,9 @@ export const ROUTES = {
     CENTER_PROFILE_PRIVATE: "/center/profile",
     CENTER_PROFILE_PUBLIC: "/center/profile/:centerId",
   },
+
+  COMMON: {
+    CHAT: "/chat",
+    GLOBAL_SEARCH: "/search",
+  },
 };

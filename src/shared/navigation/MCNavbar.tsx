@@ -1,6 +1,7 @@
 import LogoImg from "@/assets/MediConnectLanding-green.png";
 import LogoImgdDark from "@/assets/MediConnectLanding.png";
 import MCUserMenu from "./userMenu/MCUserMenu"; // Cambiar import
+import { Search } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -8,7 +9,7 @@ import {
   NavigationMenuLink,
   navigationMenuTriggerStyle,
 } from "@/shared/ui/navigation-menu";
-import { useLocation, Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AdminNavbarBell from "../components/AdminNavbarBell";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
@@ -75,6 +76,21 @@ function MCNavbar() {
 
       {/* User Menu */}
       <div className="flex items-center gap-2 sm:gap-3">
+        <Link
+          to="/search"
+          className={`relative rounded-full p-3 transition-transform duration-300 h-14 w-14 flex items-center justify-center group
+            hover:bg-accent/70 text-primary
+            ${location.pathname === "/search" ? "bg-primary text-primary-foreground" : "bg-bg-btn-secondary"}
+          `}
+        >
+          <Search
+            className={`h-7 w-7 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${
+              location.pathname === "/search"
+                ? "text-background"
+                : "text-primary/70"
+            }`}
+          />
+        </Link>
         <AdminNavbarBell />
         <div className="hidden md:block">
           <MCUserMenu />

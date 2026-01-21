@@ -25,24 +25,18 @@ export function MCFilterPopover({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          className={cn(
-            "flex items-center justify-center gap-1.5 sm:gap-2 text-primary font-medium transition-all duration-200",
-            "px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 lg:px-5 lg:py-3",
-            "text-sm sm:text-base",
-            "rounded-full sm:rounded-4xl",
-            "border-primary/20 bg-bg-btn-secondary hover:bg-bg-btn-secondary/80",
-            "w-full sm:w-auto",
+          variant={`outline`}
+          className={`flex w-full items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
             open
-              ? "ring-2 ring-accent/70 border-secondary"
-              : "opacity-100 hover:border-primary/30",
-          )}
-          aria-label={t("filters.popover.open")}
+              ? "opacity ring-2 ring-accent/70  border-secondary"
+              : "opacity-100"
+          }`}
+          aria-label="Abrir filtros"
         >
-          <SlidersHorizontal className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0" />
-          {!isMobile && <span>{t("filters.popover.filters")}</span>}
+          <SlidersHorizontal className="w-4.5 h-4.5" />
+          {t("filters.popover.filters")}
           {activeFiltersCount > 0 && (
-            <span className="ml-0.5 sm:ml-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium min-w-[20px] text-center">
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
               {activeFiltersCount}
             </span>
           )}

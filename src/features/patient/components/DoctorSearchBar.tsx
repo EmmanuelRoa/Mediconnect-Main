@@ -61,8 +61,8 @@ const DoctorSearchBar = () => {
   };
 
   return (
-    <motion.div {...fadeInUp} className="w-full max-w-4xl mx-auto">
-      <div className="bg-card rounded-2xl md:rounded-full shadow-search flex flex-col md:flex-row items-stretch md:items-center p-4 md:p-2 md:pl-6 relative border-2 border-foreground/10 gap-3 md:gap-0">
+    <motion.div {...fadeInUp} className="w-full max-w-5xl mx-auto">
+      <div className="bg-background rounded-2xl md:rounded-full shadow-search flex flex-col md:flex-row items-stretch md:items-center p-4 md:p-2 md:pl-6 relative border-1 border-primary/70 gap-3 md:gap-0">
         {/* Campo de búsqueda */}
         <div ref={searchRef} className="flex-1 py-2 relative">
           <label className="block text-xs md:text-sm font-medium text-foreground mb-1">
@@ -81,7 +81,7 @@ const DoctorSearchBar = () => {
               setShowSearchDropdown(true);
             }}
             onFocus={() => setShowSearchDropdown(true)}
-            className="w-full bg-transparent text-muted-foreground placeholder:text-muted-foreground/70 text-sm focus:outline-none"
+            className="w-full bg-background text-muted-foreground placeholder:text-muted-foreground/70 text-sm focus:outline-none"
           />
           {showSearchDropdown && debouncedSearch && (
             <SearchDropdown
@@ -125,7 +125,6 @@ const DoctorSearchBar = () => {
           )}
         </div>
 
-        {/* Botón de búsqueda */}
         <button
           onClick={handleSearch}
           className="w-full md:w-14 h-12 md:h-14 rounded-xl md:rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-colors md:ml-4"
