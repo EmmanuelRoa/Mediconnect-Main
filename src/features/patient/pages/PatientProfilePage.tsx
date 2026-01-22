@@ -60,8 +60,7 @@ const doctorsList = [
     languages: ["es", "fr"],
     insuranceAccepted: ["senasa", "mapfre", "yunen"],
     isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/8f/7a/9c/8f7a9cb4ea42e64fa5c7025a9918d62c.jpg",
+    urlImage: "",
   },
 ];
 
