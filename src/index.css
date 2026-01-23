@@ -135,13 +135,6 @@
   display: none; /* Chrome, Safari y Opera */
 }
 
-.mapboxgl-popup-content {
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
-  background-color: transparent;
-}
-
 .mapboxgl-popup-tip {
   display: none;
   background-color: transparent;
@@ -150,11 +143,32 @@
   backdrop-filter: blur(8px);
   background: rgba(255, 255, 255, 0.85);
 }
-
 /* Oculta el fondo y el borde del popup de Mapbox */
 .mapboxgl-popup-content {
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
   padding: 0 !important;
+}
+/* Asegurar que los popups de Mapbox tengan el z-index más alto */
+.mapbox-popup-high-z {
+  z-index: 9999 !important;
+}
+
+.mapboxgl-popup {
+  z-index: 9999 !important;
+}
+
+.mapboxgl-popup-content {
+  z-index: 10000 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Asegurar que el contenedor del mapa no bloquee los popups */
+.mapboxgl-map {
+  z-index: 1 !important;
+}
+
+.mapboxgl-canvas-container {
+  z-index: 1 !important;
 }
