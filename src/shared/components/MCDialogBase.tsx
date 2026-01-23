@@ -94,7 +94,7 @@ export function MCDialogBase({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`bg-white dark:bg-neutral-900 rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col overflow-hidden p-0`}
+        className={`bg-bg-secondary rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col overflow-hidden p-0`}
         style={{ zIndex }}
       >
         {/* Header */}

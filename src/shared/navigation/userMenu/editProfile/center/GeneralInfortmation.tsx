@@ -30,10 +30,10 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
   const [tempImage, setTempImage] = useState<string>("");
 
   const [bannerImage, setBannerImage] = useState<string>(
-    centerProfile?.banner?.url || ""
+    centerProfile?.banner?.url || "",
   );
   const [profileImage, setProfileImage] = useState<string>(
-    centerProfile?.avatar?.url || ""
+    centerProfile?.avatar?.url || "",
   );
 
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +44,7 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: CropType
+    type: CropType,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -159,8 +159,8 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
             } bg-accent/30 rounded-2xl overflow-hidden group`}
           >
             <label
+              htmlFor="banner-input"
               className="absolute inset-0 cursor-pointer"
-              onClick={() => bannerInputRef.current?.click()}
             >
               {bannerImage ? (
                 <img
@@ -176,13 +176,6 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
                   }
                 />
               )}
-              <input
-                ref={bannerInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handleImageChange(e, "banner")}
-              />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span
                   className={`text-white font-semibold ${
@@ -193,6 +186,14 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
                 </span>
               </div>
             </label>
+            <input
+              id="banner-input"
+              ref={bannerInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImageChange(e, "banner")}
+            />
             {bannerImage && (
               <button
                 type="button"
@@ -224,8 +225,8 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
             >
               <div className="w-full h-full rounded-full border-4">
                 <label
+                  htmlFor="profile-input"
                   className="absolute inset-0 cursor-pointer"
-                  onClick={() => profileInputRef.current?.click()}
                 >
                   {profileImage ? (
                     <img
@@ -243,13 +244,6 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
                       className="w-full h-full"
                     />
                   )}
-                  <input
-                    ref={profileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageChange(e, "profile")}
-                  />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                     <span
                       className={`text-white font-semibold ${
@@ -260,6 +254,14 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
                     </span>
                   </div>
                 </label>
+                <input
+                  id="profile-input"
+                  ref={profileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleImageChange(e, "profile")}
+                />
               </div>
               {profileImage && (
                 <button

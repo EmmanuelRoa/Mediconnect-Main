@@ -29,11 +29,11 @@ function ClinicalHistory() {
   const { t } = useTranslation("patient");
   const isMobile = useIsMobile();
   const setPatientClinicalHistory = useProfileStore(
-    (state) => state.setPatientClinicalHistory
+    (state) => state.setPatientClinicalHistory,
   );
 
   const patientClinicalHistory = useProfileStore(
-    (state) => state.patientClinicalHistory
+    (state) => state.patientClinicalHistory,
   );
 
   const allergies = patientClinicalHistory?.allergies || [];
@@ -60,17 +60,20 @@ function ClinicalHistory() {
     });
   }
 
+  function handleAddCondition(value: string) {
+    const newConditions = [...conditions, value];
+    setPatientClinicalHistory({
+      ...patientClinicalHistory,
+      conditions: newConditions,
+    });
+    setEditingIndex(newConditions.length - 1);
+    setEditingValue(value);
+  }
+
   function handleRemoveAllergy(value: string) {
     setPatientClinicalHistory({
       ...patientClinicalHistory,
       allergies: allergies.filter((a) => a !== value),
-    });
-  }
-
-  function handleAddCondition(value: string) {
-    setPatientClinicalHistory({
-      ...patientClinicalHistory,
-      conditions: [...conditions, value],
     });
   }
 
@@ -96,13 +99,18 @@ function ClinicalHistory() {
 
   function handleConditionBlur() {
     if (editingIndex !== null) {
-      const updatedConditions = [...conditions];
-      updatedConditions[editingIndex] = editingValue.trim();
+      const trimmedValue = editingValue.trim();
 
-      setPatientClinicalHistory({
-        ...patientClinicalHistory,
-        conditions: updatedConditions.filter((c) => c !== ""),
-      });
+      if (trimmedValue === "") {
+        handleRemoveCondition(editingIndex);
+      } else {
+        const updatedConditions = [...conditions];
+        updatedConditions[editingIndex] = trimmedValue;
+        setPatientClinicalHistory({
+          ...patientClinicalHistory,
+          conditions: updatedConditions,
+        });
+      }
 
       setEditingIndex(null);
       setEditingValue("");
@@ -199,7 +207,7 @@ function ClinicalHistory() {
           className="mb-4"
           placeholder={t("clinicalHistory.selectAllergy")}
           options={ALLERGY_OPTIONS.filter(
-            (opt) => !allergies.includes(opt.value)
+            (opt) => !allergies.includes(opt.value),
           )}
           onChange={(value) => {
             if (typeof value === "string") handleAddAllergy(value);
@@ -239,6 +247,8 @@ function ClinicalHistory() {
                     if (e.key === "Enter") {
                       e.preventDefault();
                       handleConditionBlur();
+                    } else if (e.key === "Escape") {
+                      handleRemoveCondition(idx);
                     }
                   }}
                   placeholder={t("clinicalHistory.conditionPlaceholder")}
@@ -246,10 +256,10 @@ function ClinicalHistory() {
                 <MCButton
                   size="s"
                   onClick={() => handleRemoveCondition(idx)}
-                  className="ml-1 rounded-full p-0.5 bg-transparent hover:bg-accent/70"
+                  className="rounded-full p-1 hover:bg-red-500 hover:opacity-80 bg-transparent"
                   aria-label={t("clinicalHistory.removeCondition")}
                 >
-                  <X size={isMobile ? 16 : 18} className="text-white" />
+                  <X size={isMobile ? 16 : 18} className="text-white " />
                 </MCButton>
               </div>
             ) : cond ? (
@@ -266,7 +276,7 @@ function ClinicalHistory() {
                     e.stopPropagation();
                     handleRemoveCondition(idx);
                   }}
-                  className="rounded-full p-1"
+                  className="rounded-full p-1 hover:bg-red-500 hover:opacity-80"
                   aria-label={t("clinicalHistory.removeCondition")}
                 >
                   <X size={isMobile ? 16 : 18} />
@@ -275,26 +285,15 @@ function ClinicalHistory() {
             ) : null;
           })}
         </div>
-        <div
-          className={`mb-1 ${
-            isMobile ? "text-base" : "text-lg"
-          } font-medium text-primary`}
+
+        <MCButton
+          variant="outline"
+          className="w-full"
+          size="l"
+          onClick={() => handleAddCondition("")}
         >
           {t("clinicalHistory.addCondition")}
-        </div>
-        <MCSelect
-          key={conditions.length}
-          name="condition"
-          searchable={true}
-          className="mb-4"
-          placeholder={t("clinicalHistory.conditionPlaceholder")}
-          options={CONDITION_OPTIONS.filter(
-            (opt) => !conditions.includes(opt.value)
-          )}
-          onChange={(value) => {
-            if (typeof value === "string") handleAddCondition(value);
-          }}
-        />
+        </MCButton>
       </div>
     </MCFormWrapper>
   );

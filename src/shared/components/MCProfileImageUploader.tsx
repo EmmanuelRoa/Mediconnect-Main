@@ -32,12 +32,12 @@ export interface ImageCropModalProps {
 function centerAspectCrop(
   mediaWidth: number,
   mediaHeight: number,
-  aspect: number
+  aspect: number,
 ) {
   return centerCrop(
     makeAspectCrop({ unit: "%", width: 90 }, aspect, mediaWidth, mediaHeight),
     mediaWidth,
-    mediaHeight
+    mediaHeight,
   );
 }
 
@@ -85,7 +85,7 @@ export default function MCProfileImageUploader({
         canvas.height / 2,
         Math.min(canvas.width, canvas.height) / 2,
         0,
-        2 * Math.PI
+        2 * Math.PI,
       );
       ctx.closePath();
       ctx.clip();
@@ -100,7 +100,7 @@ export default function MCProfileImageUploader({
       0,
       0,
       canvas.width,
-      canvas.height
+      canvas.height,
     );
 
     if (isCircular) ctx.restore();
@@ -123,28 +123,29 @@ export default function MCProfileImageUploader({
       <DialogContent
         className={
           isMobile
-            ? "w-[95vw] mx-auto p-0 overflow-hidden bg-card border-border rounded-3xl"
-            : "min-w-2xl max-w-3xl p-0 overflow-hidden bg-card border-border rounded-3xl"
+            ? "w-[95vw] mx-auto p-0 overflow-hidden   bg-bg-secondary  border-none  rounded-3xl"
+            : "min-w-2xl max-w-3xl p-0 overflow-hidden bg-bg-secondary  border-none rounded-3xl"
         }
       >
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="font-display text-xl">{title}</DialogTitle>
         </DialogHeader>
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 bg-transparent">
           {/* Crop Area */}
-          <div className="space-y-6">
+          <div className="space-y-6 bg-transparent">
             <div
-              className="relative rounded-4xl p-4 flex justify-center max-h-[400px] overflow-hidden border border-primary/5"
+              className="relative rounded-4xl p-4 flex justify-center bg-transparent max-h-[400px] overflow-hidden border border-primary/5"
               ref={cropContainerRef}
               tabIndex={0} // Para permitir foco si quieres
             >
-              <div className="rounded-4xl overflow-hidden">
+              <div className="rounded-4xl overflow-hidden bg-transparent">
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspectRatio}
                   circularCrop={isCircular}
+                  className="bg-transparent"
                 >
                   <img
                     ref={imgRef}
@@ -152,13 +153,13 @@ export default function MCProfileImageUploader({
                     alt="Crop preview"
                     onLoad={onImageLoad}
                     style={{ transform: `scale(${scale})`, maxHeight: "400px" }}
-                    className="max-w-full transition-transform origin-center"
+                    className="max-w-full transition-transform origin-center bg-transparent"
                   />
                 </ReactCrop>
               </div>
             </div>
             {/* Zoom Control */}
-            <div className="flex items-center gap-4 px-2 w-[95%] mx-auto">
+            <div className="flex items-center gap-4 bg-bg-secondary px-2 w-[95%] mx-auto">
               <ZoomOut
                 className="w-4 h-4 text-muted-foreground cursor-pointer"
                 onClick={() => setScale((prev) => Math.max(prev - 0.05, 0.5))}

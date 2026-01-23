@@ -31,10 +31,10 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
   const [tempImage, setTempImage] = useState<string>("");
 
   const [bannerImage, setBannerImage] = useState<string>(
-    doctorProfile?.banner?.url || ""
+    doctorProfile?.banner?.url || "",
   );
   const [profileImage, setProfileImage] = useState<string>(
-    doctorProfile?.avatar?.url || ""
+    doctorProfile?.avatar?.url || "",
   );
 
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +45,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: CropType
+    type: CropType,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -97,8 +97,8 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
         secondarySpecialties: Array.isArray(data.secondarySpecialties)
           ? data.secondarySpecialties
           : data.secondarySpecialties
-          ? [data.secondarySpecialties]
-          : [],
+            ? [data.secondarySpecialties]
+            : [],
         avatar: profileImage
           ? { url: profileImage, type: "image", name: "avatar" }
           : undefined,
@@ -169,8 +169,8 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
             } bg-accent/30 rounded-2xl overflow-hidden group`}
           >
             <label
+              htmlFor="banner-input"
               className="absolute inset-0 cursor-pointer"
-              onClick={() => bannerInputRef.current?.click()}
             >
               {bannerImage ? (
                 <img
@@ -186,13 +186,6 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
                   }
                 />
               )}
-              <input
-                ref={bannerInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handleImageChange(e, "banner")}
-              />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span
                   className={`text-white font-semibold ${
@@ -203,6 +196,14 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
                 </span>
               </div>
             </label>
+            <input
+              id="banner-input"
+              ref={bannerInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImageChange(e, "banner")}
+            />
             {bannerImage && (
               <button
                 type="button"
