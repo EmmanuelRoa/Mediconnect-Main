@@ -15,6 +15,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface DoctorCardsProps {
   doctor: Doctor;
@@ -33,6 +34,7 @@ export const DoctorCards = ({
   const [isConnected, setIsConnected] = useState(doctor.isConnected ?? false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { t } = useTranslation("common");
 
   const handleConnectToggle = () => {
     setIsConnected((prev) => !prev);
@@ -49,7 +51,6 @@ export const DoctorCards = ({
     >
       <div className="flex gap-3 sm:gap-4 h-full">
         {/* Doctor Image - Responsive sizing */}
-
         <div
           className={cn(
             "relative overflow-hidden rounded-2xl sm:rounded-3xl border border-primary/5 doctor-image flex-shrink-0",
@@ -113,7 +114,7 @@ export const DoctorCards = ({
                   </span>
                   {!isMobile && (
                     <span className="text-muted-foreground text-xs sm:text-sm">
-                      ({doctor.reviewCount} reseñas)
+                      ({doctor.reviewCount} {t("clinicCard.reviews")})
                     </span>
                   )}
                 </div>
@@ -166,7 +167,9 @@ export const DoctorCards = ({
                       : doctor.address[0]}
                     <span className="text-secondary ml-1">
                       {!isMobile &&
-                        `y otras ${doctor.address.length - 1} ubicaciones...`}
+                        t("clinicCard.andMore", {
+                          count: doctor.address.length - 1,
+                        })}
                     </span>
                   </span>
                 </TooltipTrigger>
@@ -207,7 +210,9 @@ export const DoctorCards = ({
                     <span className="cursor-pointer">
                       {doctor.languages[0]}
                       <span className="text-secondary ml-1">
-                        y otros {doctor.languages.length - 1} idiomas...
+                        {t("clinicCard.andOtherLanguages", {
+                          count: doctor.languages.length - 1,
+                        })}
                       </span>
                     </span>
                   </TooltipTrigger>
@@ -244,7 +249,9 @@ export const DoctorCards = ({
               )}
             />
             <span className="font-medium">
-              {isMobile ? "Seguros:" : "Seguros aceptados:"}
+              {isMobile
+                ? t("clinicCard.insurances")
+                : t("clinicCard.acceptedInsurances")}
             </span>
             {doctor.insurances.length > 2 ? (
               <Tooltip>
@@ -254,7 +261,9 @@ export const DoctorCards = ({
                       ? doctor.insurances[0]
                       : doctor.insurances.slice(0, 2).join(", ")}
                     <span className="text-secondary ml-1">
-                      y {doctor.insurances.length - (isMobile ? 1 : 2)} más...
+                      {t("clinicCard.andMore", {
+                        count: doctor.insurances.length - (isMobile ? 1 : 2),
+                      })}
                     </span>
                   </span>
                 </TooltipTrigger>
@@ -283,7 +292,9 @@ export const DoctorCards = ({
                   )}
                 />
                 <span>
-                  {isMobile ? "Disponibilidad:" : "Disponibilidad disponible:"}
+                  {isMobile
+                    ? t("doctorCard.availability")
+                    : t("doctorCard.availableAvailability")}
                 </span>
               </div>
               <div className="flex gap-1 sm:gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
@@ -320,10 +331,12 @@ export const DoctorCards = ({
                             : "text-primary dark:text-black",
                         )}
                       >
-                        {slot.slots === 0 ? "No" : slot.slots}
+                        {slot.slots === 0
+                          ? t("doctorCard.noSlots")
+                          : slot.slots}
                       </span>
                       <span className="text-muted-foreground text-[9px] sm:text-[10px]">
-                        Citas
+                        {t("doctorCard.appointments")}
                       </span>
                     </div>
                   ))}
@@ -338,7 +351,7 @@ export const DoctorCards = ({
                     "hover:bg-primary/10 hover:border-primary/40 hover:text-primary active:bg-primary/8 active:border-primary active:text-primary",
                   )}
                 >
-                  Más
+                  {t("doctorCard.more")}
                 </button>
               </div>
             </div>
@@ -363,7 +376,9 @@ export const DoctorCards = ({
                   )}
                   onClick={handleConnectToggle}
                 >
-                  {isConnected ? "Conectado" : "Conectar"}
+                  {isConnected
+                    ? t("clinicCard.connected")
+                    : t("clinicCard.connect")}
                 </MCButton>
                 <MCButton
                   variant="outline"
@@ -371,7 +386,7 @@ export const DoctorCards = ({
                   className={cn("flex-1", isMobile && "text-xs px-2")}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
-                  Ver Perfil
+                  {t("clinicCard.viewProfile")}
                 </MCButton>
               </>
             ) : (
@@ -382,7 +397,7 @@ export const DoctorCards = ({
                   className={cn("flex-1", isMobile && "text-xs px-2")}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
-                  Ver Perfil
+                  {t("clinicCard.viewProfile")}
                 </MCButton>
               )
             )}

@@ -18,5 +18,37 @@
     "patient": "Paciente",
     "center": "Centro",
     "admin": "Administrador"
+  },
+
+  "clinicCard": {
+    "connect": "Conectar",
+    "connected": "Conectado",
+    "viewProfile": "Ver perfil",
+    "insurances": "Seguros:",
+    "acceptedInsurances": "Seguros aceptados:",
+    "andOtherLanguages": "y otros {{count}} idiomas...",
+    "andMore": "y {{count}} más...",
+    "reviews": "reseñas"
+  },
+  "doctorCard": {
+    "availability": "Disponibilidad:",
+    "availableAvailability": "Disponibilidad disponible:",
+    "noSlots": "No",
+    "appointments": "Citas",
+    "more": "Más"
+  },
+  "search": {
+    "providerType": "Tipo de proveedor",
+    "specialty": "Especialidad",
+    "modality": "Modalidad",
+    "gender": "Género",
+    "languages": "Idiomas",
+    "schedule": "Horario",
+    "rating": "Calificación",
+    "selectedProviders": "{{count}} de {{max}} proveedores seleccionados para comparar",
+    "compare": "Comparar",
+    "providersFound": "{{count}} proveedores encontrados",
+    "noProvidersFound": "No se encontraron proveedores",
+    "noResultsDescription": "No hay resultados para los filtros seleccionados. Intenta cambiar los filtros o la búsqueda."
   }
 }

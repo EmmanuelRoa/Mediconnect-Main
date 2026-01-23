@@ -9,16 +9,15 @@ import {
   type Doctor,
   type Clinic,
 } from "@/data/providers";
-
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyTitle,
 } from "@/shared/ui/empty";
-
 import MapSearchProviders from "@/shared/components/maps/MapSearchProviders";
 import { Button } from "@/shared/ui/button";
+import { useTranslation } from "react-i18next";
 
 const tipoProveedorOptions = [
   { value: "doctor", label: "Doctor" },
@@ -64,6 +63,8 @@ const horarioOptions = [
 ];
 
 function Search() {
+  const { t } = useTranslation("common");
+
   // Estados para filtros y selección
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [connectedClinics, setConnectedClinics] = useState<string[]>([]);
@@ -102,38 +103,37 @@ function Search() {
         <div className="w-full flex max-w-5xl gap-2 justify-center">
           <MCFilterSelect
             name="tipoProveedor"
-            placeholder="Tipo de proveedor"
+            placeholder={t("search.providerType", "Tipo de proveedor")}
             options={tipoProveedorOptions}
           />
-
           <MCFilterSelect
             name="especialidad"
-            placeholder="Especialidad"
+            placeholder={t("search.specialty", "Especialidad")}
             options={especialidadOptions}
           />
           <MCFilterSelect
             name="modalidad"
-            placeholder="Modalidad"
+            placeholder={t("search.modality", "Modalidad")}
             options={modalidadOptions}
           />
           <MCFilterSelect
             name="genero"
-            placeholder="Género"
+            placeholder={t("search.gender", "Género")}
             options={generoOptions}
           />
           <MCFilterSelect
             name="idiomas"
-            placeholder="Idiomas"
+            placeholder={t("search.languages", "Idiomas")}
             options={idiomasOptions}
           />
           <MCFilterSelect
             name="horario"
-            placeholder="Horario"
+            placeholder={t("search.schedule", "Horario")}
             options={horarioOptions}
           />
           <MCFilterSelect
             name="calificacion"
-            placeholder="Calificación"
+            placeholder={t("search.rating", "Calificación")}
             options={calificacionOptions}
           />
         </div>
@@ -143,15 +143,18 @@ function Search() {
       {selectedProviders.length > 0 && (
         <div className="flex items-center justify-between bg-primary/10 p-3 rounded-lg w-full max-w-5xl mb-4">
           <span className="text-sm">
-            {selectedProviders.length} de 3 proveedores seleccionados para
-            comparar
+            {t("search.selectedProviders", {
+              count: selectedProviders.length,
+              max: 3,
+              defaultValue: "{{count}} of {{max}} providers selected for comparison",
+            })}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => console.log("Comparar:", selectedProviders)}
           >
-            Comparar
+            {t("search.compare", "Compare")}
           </Button>
         </div>
       )}
@@ -177,7 +180,10 @@ function Search() {
             </style>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium opacity-70">
-                {filteredProviders.length} proveedores encontrados
+                {t("search.providersFound", {
+                  count: filteredProviders.length,
+                  defaultValue: "{{count}} providers found",
+                })}
               </h2>
             </div>
 
@@ -185,10 +191,14 @@ function Search() {
               {filteredProviders.length === 0 ? (
                 <Empty>
                   <EmptyContent>
-                    <EmptyTitle>No se encontraron proveedores</EmptyTitle>
+                    <EmptyTitle>
+                      {t("search.noProvidersFound", "No providers found")}
+                    </EmptyTitle>
                     <EmptyDescription>
-                      No hay resultados para los filtros seleccionados. Intenta
-                      cambiar los filtros o la búsqueda.
+                      {t(
+                        "search.noResultsDescription",
+                        "No results for the selected filters. Try changing the filters or search."
+                      )}
                     </EmptyDescription>
                   </EmptyContent>
                 </Empty>

@@ -18,5 +18,36 @@
     "patient": "Patient",
     "center": "Medical Center",
     "admin": "Administrator"
+  },
+  "clinicCard": {
+    "connect": "Connect",
+    "connected": "Connected",
+    "viewProfile": "View profile",
+    "insurances": "Insurances:",
+    "acceptedInsurances": "Accepted insurances:",
+    "andOtherLanguages": "and {{count}} other languages...",
+    "andMore": "and {{count}} more...",
+    "reviews": "reviews"
+  },
+  "doctorCard": {
+    "availability": "Availability:",
+    "availableAvailability": "Available slots:",
+    "noSlots": "No",
+    "appointments": "Appointments",
+    "more": "More"
+  },
+  "search": {
+    "providerType": "Provider type",
+    "specialty": "Specialty",
+    "modality": "Modality",
+    "gender": "Gender",
+    "languages": "Languages",
+    "schedule": "Schedule",
+    "rating": "Rating",
+    "selectedProviders": "{{count}} of {{max}} providers selected for comparison",
+    "compare": "Compare",
+    "providersFound": "{{count}} providers found",
+    "noProvidersFound": "No providers found",
+    "noResultsDescription": "No results for the selected filters. Try changing the filters or search."
   }
 }

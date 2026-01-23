@@ -7,6 +7,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface ClinicCardProps {
   clinic: Clinic;
@@ -24,6 +25,7 @@ export const CenterCards = ({
   const userRole = useAppStore((state) => state.user?.role);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useTranslation("common");
 
   const handleProfile = () => {
     navigate(`/center/profile/${clinic.id}`);
@@ -85,7 +87,7 @@ export const CenterCards = ({
                   </span>
                   {!isMobile && clinic.reviewCount && (
                     <span className="text-muted-foreground text-xs sm:text-sm">
-                      ({clinic.reviewCount} reseñas)
+                      ({clinic.reviewCount} {t("clinicCard.reviews")})
                     </span>
                   )}
                 </div>
@@ -129,7 +131,9 @@ export const CenterCards = ({
                     <span className="cursor-pointer">
                       {clinic.languages[0]}
                       <span className="text-secondary ml-1">
-                        y otros {clinic.languages.length - 1} idiomas...
+                        {t("clinicCard.andOtherLanguages", {
+                          count: clinic.languages.length - 1,
+                        })}
                       </span>
                     </span>
                   </TooltipTrigger>
@@ -168,7 +172,9 @@ export const CenterCards = ({
               )}
             />
             <span className="font-medium">
-              {isMobile ? "Seguros:" : "Seguros aceptados:"}
+              {isMobile
+                ? t("clinicCard.insurances")
+                : t("clinicCard.acceptedInsurances")}
             </span>
             {clinic.insurances.length > 2 ? (
               <Tooltip>
@@ -178,7 +184,9 @@ export const CenterCards = ({
                       ? clinic.insurances[0]
                       : clinic.insurances.slice(0, 2).join(", ")}
                     <span className="text-secondary ml-1">
-                      y {clinic.insurances.length - (isMobile ? 1 : 2)} más...
+                      {t("clinicCard.andMore", {
+                        count: clinic.insurances.length - (isMobile ? 1 : 2),
+                      })}
                     </span>
                   </span>
                 </TooltipTrigger>
@@ -210,7 +218,9 @@ export const CenterCards = ({
                   )}
                   onClick={() => onConnect(clinic.id)}
                 >
-                  {isConnected ? "Conectado" : "Conectar"}
+                  {isConnected
+                    ? t("clinicCard.connected")
+                    : t("clinicCard.connect")}
                 </MCButton>
                 <MCButton
                   variant="outline"
@@ -218,7 +228,7 @@ export const CenterCards = ({
                   className={cn("flex-1", isMobile && "text-xs px-2")}
                   onClick={handleProfile}
                 >
-                  Ver Perfil
+                  {t("clinicCard.viewProfile")}
                 </MCButton>
               </>
             ) : (
@@ -228,7 +238,7 @@ export const CenterCards = ({
                 className={cn("flex-1", isMobile && "text-xs px-2")}
                 onClick={handleProfile}
               >
-                Ver Perfil
+                {t("clinicCard.viewProfile")}
               </MCButton>
             )}
           </div>
