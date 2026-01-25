@@ -32,28 +32,31 @@ interface Doctor {
 
 const VARIANT_STYLES = {
   s: {
-    imageHeight: "h-28",
-    title: "text-sm",
+    imageHeight: "h-32 sm:h-28",
+    title: "text-sm sm:text-base",
     subtitle: "text-xs",
-    gap: "gap-1",
-    buttonSize: "xs" as const,
-    showExtraInfo: false,
-  },
-  m: {
-    imageHeight: "h-48",
-    title: "text-base",
-    subtitle: "text-sm",
     gap: "gap-1.5",
     buttonSize: "xs" as const,
+    showExtraInfo: false,
+    padding: "pt-2 pb-2 px-3",
+  },
+  m: {
+    imageHeight: "h-40 sm:h-48",
+    title: "text-base sm:text-lg",
+    subtitle: "text-sm",
+    gap: "gap-2",
+    buttonSize: "xs" as const,
     showExtraInfo: true,
+    padding: "pt-3 pb-2 px-3 sm:px-4",
   },
   default: {
-    imageHeight: "h-64",
-    title: "text-xl",
-    subtitle: "text-lg",
+    imageHeight: "h-48 sm:h-56 md:h-64",
+    title: "text-lg sm:text-xl",
+    subtitle: "text-base sm:text-lg",
     gap: "gap-2",
     buttonSize: "s" as const,
     showExtraInfo: true,
+    padding: "pt-3 pb-3 px-4",
   },
 };
 
@@ -76,22 +79,22 @@ function MCDoctorsCards({
 
   const userRole = useAppStore((state) => state.user?.role);
 
-  const handleFavoriteClick = () => {};
-
   return (
-    <Card className="rounded-3xl bg-transparent border border-primary/10 shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/5">
+    <Card className="rounded-2xl sm:rounded-3xl bg-card dark:bg-card border border-border dark:border-border shadow-sm hover:shadow-md dark:hover:shadow-lg transition-all duration-300 h-full flex flex-col overflow-hidden">
+      {/* IMAGEN Y FAVORITO */}
+      <div className="relative overflow-hidden">
         {urlImage ? (
           <img
             src={urlImage}
             alt={name}
-            className={`w-full object-cover transition-transform duration-500 hover:scale-110 ${styles.imageHeight}`}
+            className={`w-full object-cover transition-transform duration-500 hover:scale-105 ${styles.imageHeight}`}
           />
         ) : (
           <div
             className={`
               flex items-center justify-center w-full
-              ${isMobile ? "h-48" : styles.imageHeight} bg-muted
+              ${styles.imageHeight} 
+              bg-muted dark:bg-muted
             `}
           >
             <div className="min-w-[96px] w-full">
@@ -107,115 +110,151 @@ function MCDoctorsCards({
                         ? 96
                         : 128
                 }
-                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-110"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
               />
             </div>
           </div>
         )}
 
-        {/* FAVORITE ICON SOLO PARA PACIENTES */}
+        {/* BOTÓN FAVORITO - Mejorado para dark mode */}
         {userRole === "PATIENT" && (
-          <div
-            className={`
-              absolute top-3 right-3
-              flex flex-col justify-center items-center
-              rounded-full border-none border-white/60
-              bg-black/20 backdrop-blur-xl shadow-2xl
-              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]
-              z-20 p-1.5
-            `}
-            style={{
-              backdropFilter: "blur(16px) saturate(180%) contrast(120%)",
-              WebkitBackdropFilter: "blur(16px) saturate(180%) contrast(120%)",
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite?.();
             }}
-            onClick={onToggleFavorite} // <-- Usa el prop
+            className={`
+              absolute top-2 right-2 sm:top-3 sm:right-3
+              flex items-center justify-center
+              w-9 h-9 sm:w-10 sm:h-10
+              rounded-full 
+              bg-white/80 dark:bg-black/60
+              backdrop-blur-md
+              border border-white/20 dark:border-white/10
+              shadow-lg
+              transition-all duration-300 ease-out
+              hover:scale-110 hover:bg-white dark:hover:bg-black/80
+              active:scale-95
+              z-20
+            `}
+            aria-label={
+              isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"
+            }
           >
             {isFavorite ? (
-              <HeartFilled size={20} fill="red" className="text-red-500" />
+              <HeartFilled
+                size={isMobile ? 18 : 20}
+                fill="#ef4444"
+                className="text-red-500"
+              />
             ) : (
-              <HeartOutlined size={20} className="text-white/50 stroke-2" />
+              <HeartOutlined
+                size={isMobile ? 18 : 20}
+                className="text-gray-600 dark:text-gray-300 stroke-2"
+              />
             )}
-          </div>
+          </button>
         )}
+
+        {/* BADGE DE RATING - Overlay en la imagen */}
+        <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-sm shadow-md">
+          <Star size={14} fill="#F7B500" className="text-[#F7B500]" />
+          <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
+            {rating}
+          </span>
+        </div>
       </div>
 
       {/* CONTENT */}
-      <CardContent className="pt-3 pb-2">
+      <CardContent className={styles.padding}>
         {/* HEADER */}
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className={`font-semibold text-primary ${styles.title}`}>
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle
+              className={`font-semibold text-foreground dark:text-foreground truncate ${styles.title}`}
+            >
               {name}
             </CardTitle>
-            <p className={`text-primary/80 ${styles.subtitle}`}>{specialty}</p>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Star size={16} fill="#F7B500" className="text-[#F7B500]" />
-            <span className="text-sm font-medium">{rating}</span>
+            <p
+              className={`text-muted-foreground dark:text-muted-foreground truncate ${styles.subtitle}`}
+            >
+              {specialty}
+            </p>
           </div>
         </div>
 
-        {/* DIVIDER */}
+        {/* DIVIDER - Solo en variant default */}
         {variant === "default" && (
-          <div className="my-3 h-[1.5px] w-full rounded-full bg-gradient-to-r from-primary/5 via-primary/30 to-primary/5" />
+          <div className="my-2 sm:my-3 h-px w-full bg-gradient-to-r from-transparent via-border dark:via-border to-transparent" />
         )}
 
-        {/* BODY */}
-        <div className={`flex flex-col text-primary ${styles.gap}`}>
-          {/* Mostrar lastAppointment en "s" y "m" */}
+        {/* BODY - Información adicional */}
+        <div
+          className={`flex flex-col text-foreground dark:text-foreground ${styles.gap}`}
+        >
+          {/* Last appointment para variantes s y m */}
           {(variant === "s" || variant === "m") && lastAppointment && (
-            <span className="text-xs text-primary/50 my-1">
-              {t("doctors.lastAppointment", "Last appointment")}:{" "}
-              {lastAppointment}
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+              {t("doctors.lastAppointment", "Última cita")}: {lastAppointment}
             </span>
           )}
 
-          {/* Mostrar experiencia, idiomas y seguros solo en "default" */}
+          {/* Información detallada solo en variant default */}
           {variant === "default" && (
             <>
-              <div className="flex items-center gap-2">
-                <Stethoscope size={16} className="text-secondary" />
-                <span className="text-sm">
-                  {yearsOfExperience
-                    ? t("doctors.experience", {
-                        count: yearsOfExperience,
-                        years: yearsOfExperience,
-                      })
-                    : t("doctors.noExperience", "Experience not specified")}
-                </span>
-              </div>
+              {/* Años de experiencia */}
+              {yearsOfExperience && (
+                <div className="flex items-center gap-2">
+                  <Stethoscope
+                    size={isMobile ? 14 : 16}
+                    className="text-primary dark:text-primary flex-shrink-0"
+                  />
+                  <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
+                    {t("doctors.experience", {
+                      count: yearsOfExperience,
+                      years: yearsOfExperience,
+                    })}
+                  </span>
+                </div>
+              )}
 
-              <div className="flex items-center gap-2">
-                <Languages size={16} className="text-secondary" />
-                <span className="text-sm truncate">
-                  {languages?.length
-                    ? languages.join(", ")
-                    : t("doctors.noLanguages", "Languages not specified")}
-                </span>
-              </div>
+              {/* Idiomas */}
+              {languages && languages.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Languages
+                    size={isMobile ? 14 : 16}
+                    className="text-primary dark:text-primary flex-shrink-0"
+                  />
+                  <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground truncate">
+                    {languages.join(", ")}
+                  </span>
+                </div>
+              )}
 
-              {insuranceAccepted && (
+              {/* Seguros aceptados */}
+              {insuranceAccepted && insuranceAccepted.length > 0 && (
                 <div className="flex items-start gap-2">
-                  <ShieldCheck size={16} className="text-secondary mt-0.5" />
+                  <ShieldCheck
+                    size={isMobile ? 14 : 16}
+                    className="text-primary dark:text-primary flex-shrink-0 mt-0.5"
+                  />
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="cursor-pointer">
-                          <span className="font-semibold text-sm">
-                            {t(
-                              "doctors.acceptedInsurances",
-                              "Accepted insurances",
-                            )}
-                            :
+                        <div className="cursor-pointer flex-1 min-w-0">
+                          <span className="font-semibold text-xs sm:text-sm text-foreground dark:text-foreground">
+                            {t("doctors.acceptedInsurances", "Seguros")}:
                           </span>
-                          <p className="text-sm truncate max-w-[220px]">
+                          <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground truncate">
                             {insuranceAccepted.join(", ")}
                           </p>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {insuranceAccepted.join(", ")}
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-xs">
+                          {insuranceAccepted.join(", ")}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -226,16 +265,33 @@ function MCDoctorsCards({
         </div>
       </CardContent>
 
-      <div className="grid grid-cols-3 gap-2 ">
-        <MCButton size={styles.buttonSize}>
-          {t("doctors.schedule", "Schedule")}
-        </MCButton>
-        <MCButton size={styles.buttonSize} variant="secondary">
-          {t("doctors.profile", "Profile")}
-        </MCButton>
-        <MCButton size={styles.buttonSize} variant="secondary">
-          {t("doctors.history", "History")}
-        </MCButton>
+      {/* BOTONES DE ACCIÓN */}
+      <div className="mt-auto px-3 pb-3 sm:px-4 sm:pb-4">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <MCButton size={styles.buttonSize} className="text-xs sm:text-sm">
+            {isMobile
+              ? t("doctors.scheduleShort", "Agendar")
+              : t("doctors.schedule", "Agendar")}
+          </MCButton>
+          <MCButton
+            size={styles.buttonSize}
+            variant="secondary"
+            className="text-xs sm:text-sm"
+          >
+            {isMobile
+              ? t("doctors.profileShort", "Perfil")
+              : t("doctors.profile", "Perfil")}
+          </MCButton>
+          <MCButton
+            size={styles.buttonSize}
+            variant="secondary"
+            className="text-xs sm:text-sm"
+          >
+            {isMobile
+              ? t("doctors.historyShort", "Historial")
+              : t("doctors.history", "Historial")}
+          </MCButton>
+        </div>
       </div>
     </Card>
   );

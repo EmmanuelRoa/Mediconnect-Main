@@ -22,6 +22,9 @@ import { fadeInUp, fadeInUpDelayed } from "@/lib/animations/commonAnimations";
 import { motion } from "framer-motion";
 import MCButton from "@/shared/components/forms/MCButton";
 import CompareModal from "../components/CompareModal";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { Map as MapIcon, List as ListIcon } from "lucide-react";
+
 const tipoProveedorOptions = [
   { value: "all", label: "Todos" },
   { value: "doctor", label: "Doctor" },
@@ -41,7 +44,6 @@ const especialidadOptions = [
   { value: "cardiologia", label: "Cardiología" },
   { value: "pediatria", label: "Pediatría" },
   { value: "dermatologia", label: "Dermatología" },
-  // Agrega más especialidades según sea necesario
 ];
 
 const modalidadOptions = [
@@ -62,7 +64,6 @@ const idiomasOptions = [
   { value: "espanol", label: "Español" },
   { value: "ingles", label: "Inglés" },
   { value: "frances", label: "Francés" },
-  // Agrega más idiomas según sea necesario
 ];
 
 const horarioOptions = [
@@ -74,6 +75,8 @@ const horarioOptions = [
 
 function Search() {
   const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
+  const [showMap, setShowMap] = useState(false);
 
   // Estados para filtros y selección
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
@@ -81,12 +84,11 @@ function Search() {
   const [filteredProviders, setFilteredProviders] =
     useState<Provider[]>(allProviders);
 
-  // Handlers de ejemplo (ajusta según tu lógica real)
   const handleProviderSelect = (id: string) => {
     setSelectedProviders((prev) =>
       prev.includes(id)
         ? prev.filter((pid) => pid !== id)
-        : prev.length < 5 // Cambia el máximo a 5
+        : prev.length < 5
           ? [...prev, id]
           : prev,
     );
@@ -99,152 +101,173 @@ function Search() {
   };
 
   const handleViewProfile = (id: string) => {
-    // Lógica para ver perfil
     console.log("Ver perfil de:", id);
   };
 
-  // Add handler for removing providers from comparison
   const handleRemoveFromComparison = (id: string) => {
     setSelectedProviders((prev) => prev.filter((pid) => pid !== id));
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 flex flex-col items-center bg-background rouneded-2xl md:rounded-4xl shadow-sm ">
-      {/* Barra de búsqueda */}
+    <div className="min-h-screen flex flex-col bg-background rounded-4xl">
+      {/* Barra de búsqueda - Mejorada para mobile */}
       <motion.div
         {...fadeInUp}
-        className="space-y-2  min-w-full rounded-2xl md:rounded-4xl p-6 md:p-12 flex flex-col items-center gap-2"
+        className=" top-0 z-20 bg-background rounded-t-4xl "
       >
-        <div className="w-full ">
-          <DoctorSearchBar />
-        </div>
-        <div className="w-full flex max-w-5xl gap-2 justify-center">
-          <MCFilterSelect
-            name="tipoProveedor"
-            placeholder={t("search.providerType", "Tipo de proveedor")}
-            options={tipoProveedorOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="especialidad"
-            placeholder={t("search.specialty", "Especialidad")}
-            options={especialidadOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="modalidad"
-            placeholder={t("search.modality", "Modalidad")}
-            options={modalidadOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="genero"
-            placeholder={t("search.gender", "Género")}
-            options={generoOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="idiomas"
-            placeholder={t("search.languages", "Idiomas")}
-            options={idiomasOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="horario"
-            placeholder={t("search.schedule", "Horario")}
-            options={horarioOptions}
-            multiple
-            noBadges
-          />
-          <MCFilterSelect
-            name="calificacion"
-            placeholder={t("search.rating", "Calificación")}
-            options={calificacionOptions}
-            multiple
-            noBadges
-          />
+        <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-12">
+          <div className="space-y-3 sm:space-y-4">
+            <DoctorSearchBar />
+
+            {/* Filtros - Grid responsivo */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              <MCFilterSelect
+                name="tipoProveedor"
+                placeholder={t("search.providerType", "Tipo")}
+                options={tipoProveedorOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="especialidad"
+                placeholder={t("search.specialty", "Especialidad")}
+                options={especialidadOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="modalidad"
+                placeholder={t("search.modality", "Modalidad")}
+                options={modalidadOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="genero"
+                placeholder={t("search.gender", "Género")}
+                options={generoOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="idiomas"
+                placeholder={t("search.languages", "Idiomas")}
+                options={idiomasOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="horario"
+                placeholder={t("search.schedule", "Horario")}
+                options={horarioOptions}
+                multiple
+                noBadges
+              />
+              <MCFilterSelect
+                name="calificacion"
+                placeholder={t("search.rating", "Calificación")}
+                options={calificacionOptions}
+                multiple
+                noBadges
+              />
+            </div>
+
+            {isMobile && (
+              <div className="flex justify-end pt-2">
+                <MCButton
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMap(!showMap)}
+                  className="flex items-center gap-2"
+                >
+                  {showMap ? <ListIcon size={16} /> : <MapIcon size={16} />}
+                  {showMap
+                    ? t("search.viewList", "Ver Lista")
+                    : t("search.viewMap", "Ver Mapa")}
+                </MCButton>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
 
-      {/* Contador de seleccionados */}
+      {/* Contador de seleccionados - Mejorado para mobile */}
       {selectedProviders.length > 0 && (
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 w-full z-10  bg-background dark:bg-bg-btn-secondary shadow-lg border border-primary/15  border-b-transparent flex items-center justify-between px-4 py-2.5 md:max-w-md md:left-1/2 md:-translate-x-1/2 rounded-t-2xl"
-          style={{ maxWidth: 480 }}
+          className="fixed bottom-0 left-0 right-0 z-30 bg-background dark:bg-bg-btn-secondary shadow-lg border-t border-primary/15 md:max-w-md md:left-1/2 md:right-auto md:-translate-x-1/2 md:rounded-t-2xl md:border md:border-b-0"
         >
-          <span className="text-sm  text-primary">
-            {t("search.selectedProviders", {
-              count: selectedProviders.length,
-              max: 5,
-              defaultValue: "{{count}} de {{max}} seleccionados para comparar",
-            })}
-          </span>
-          <CompareModal
-            selectedProviders={allProviders.filter((provider) =>
-              selectedProviders.includes(provider.id),
-            )}
-            onRemoveProvider={handleRemoveFromComparison}
-          >
-            <MCButton
-              className={selectedProviders.length < 2 ? "hidden" : ""}
-              size="sm"
-              onClick={() => console.log("Comparar:", selectedProviders)}
+          <div className="flex items-center justify-between px-3 py-2.5 sm:px-4">
+            <span className="text-xs sm:text-sm text-primary">
+              {t("search.selectedProviders", {
+                count: selectedProviders.length,
+                max: 5,
+                defaultValue: "{{count}}/{{max}} para comparar",
+              })}
+            </span>
+            <CompareModal
+              selectedProviders={allProviders.filter((provider) =>
+                selectedProviders.includes(provider.id),
+              )}
+              onRemoveProvider={handleRemoveFromComparison}
             >
-              {t("search.compare", "Comparar")}
-            </MCButton>
-          </CompareModal>
+              <MCButton
+                className={selectedProviders.length < 2 ? "hidden" : ""}
+                size="sm"
+              >
+                {t("search.compare", "Comparar")}
+              </MCButton>
+            </CompareModal>
+          </div>
         </motion.div>
       )}
 
       {/* Contenido principal */}
-      <main className="p-4 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-4 h-[calc(100vh-200px)]">
-          {/* Lista de proveedores - Izquierda */}
+      <main className="flex-1 p-3 sm:p-4 pb-20 sm:pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-4 lg:h-[calc(100vh-200px)]">
+          {/* Lista de proveedores */}
           <motion.div
             {...fadeInUp}
-            className="space-y-4 overflow-y-auto"
+            className={`space-y-3 sm:space-y-4 overflow-y-auto ${
+              isMobile && showMap ? "hidden" : "block"
+            }`}
             style={{
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // IE 10+
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
           >
             <style>
               {`
-                /* Chrome, Edge, Safari */
+                .space-y-3::-webkit-scrollbar,
                 .space-y-4::-webkit-scrollbar {
                   display: none;
                 }
               `}
             </style>
+
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium opacity-70">
+              <h2 className="text-xs sm:text-sm font-medium opacity-70">
                 {t("search.providersFound", {
                   count: filteredProviders.length,
-                  defaultValue: "{{count}} providers found",
+                  defaultValue: "{{count}} encontrados",
                 })}
               </h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredProviders.length === 0 ? (
                 <Empty>
                   <EmptyContent>
                     <EmptyTitle>
-                      {t("search.noProvidersFound", "No providers found")}
+                      {t("search.noProvidersFound", "Sin resultados")}
                     </EmptyTitle>
-                    <EmptyDescription>
+                    <EmptyDescription className="text-xs sm:text-sm">
                       {t(
                         "search.noResultsDescription",
-                        "No results for the selected filters. Try changing the filters or search.",
+                        "Intenta cambiar los filtros o la búsqueda.",
                       )}
                     </EmptyDescription>
                   </EmptyContent>
@@ -277,12 +300,14 @@ function Search() {
             </div>
           </motion.div>
 
-          {/* Mapa - Derecha */}
+          {/* Mapa */}
           <motion.div
             {...fadeInUp}
-            className="bg-card rounded-xl border border-border h-full"
+            className={`bg-card rounded-xl border border-border h-[500px] sm:h-[600px] lg:h-full ${
+              isMobile && !showMap ? "hidden" : "block"
+            }`}
           >
-            <div className="h-full">
+            <div className="h-full rounded-xl overflow-hidden">
               <MapSearchProviders
                 providers={filteredProviders}
                 selectedProviders={selectedProviders}

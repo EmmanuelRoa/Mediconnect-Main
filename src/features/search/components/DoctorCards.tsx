@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import { Heart as HeartFilled, Heart as HeartOutlined } from "lucide-react";
+
 interface DoctorCardsProps {
   doctor: Doctor;
   isSelected: boolean;
@@ -32,7 +33,7 @@ export const DoctorCards = ({
 }: DoctorCardsProps) => {
   const userRole = useAppStore((state) => state.user?.role);
   const [isConnected, setIsConnected] = useState(doctor.isConnected ?? false);
-  const [isFavorite, setIsFavorite] = useState(doctor.isFavorite ?? false); // <-- Nuevo estado
+  const [isFavorite, setIsFavorite] = useState(doctor.isFavorite ?? false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t } = useTranslation("common");
@@ -49,70 +50,98 @@ export const DoctorCards = ({
   return (
     <div
       className={cn(
-        "bg-background p-3 sm:p-4 border-b transition-all duration-200",
+        "bg-background border-b transition-all duration-200",
+        "p-3 sm:p-4 md:p-5",
         isSelected
-          ? "border-b-primary border-b-2 bg-primary/5 dark:bg-primary/10 rounded-t-2xl sm:rounded-t-4xl"
-          : "border-primary/15 hover:bg-muted/30",
+          ? "border-b-primary border-b-2 bg-primary/5 dark:bg-primary/10 rounded-t-2xl sm:rounded-t-3xl md:rounded-t-4xl"
+          : "border-primary/15 hover:bg-muted/30 active:bg-muted/40",
       )}
     >
-      <div className="flex gap-3 sm:gap-4 h-full">
-        {/* Doctor Image - Responsive sizing */}
+      <div className="flex gap-3 sm:gap-4 md:gap-5 h-full">
+        {/* Doctor Image - Responsive sizing con clases Tailwind */}
         <div
           className={cn(
-            "relative overflow-hidden rounded-2xl sm:rounded-3xl border border-primary/5 doctor-image flex-shrink-0",
-            isMobile ? "w-20 h-20 rounded-full" : "",
+            "relative flex-shrink-0",
+            "transition-transform duration-300 active:scale-95",
+            // Mobile: circular y pequeño
+            "w-20 h-20 rounded-full",
+            // Tablet: más grande y redondeado
+            "sm:w-28 sm:h-28 sm:rounded-2xl",
+            // Desktop: aún más grande
+            "md:w-32 md:h-32 md:rounded-3xl",
+            "lg:w-36 lg:h-36",
           )}
         >
           {/* Imagen del doctor */}
-          {doctor.image ? (
-            <img
-              src={doctor.image}
-              alt={doctor.name}
-              className="w-30 h-full md:w-45 md:h-full object-cover transition-transform duration-500 hover:scale-110"
-            />
-          ) : (
-            <img
-              src="https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg"
-              alt="Doctor por defecto"
-              className="w-30 h-full md:w-45 md:h-full object-cover transition-transform duration-500 hover:scale-110"
-            />
-          )}
+          <img
+            src={
+              doctor.image ||
+              "https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg"
+            }
+            alt={doctor.name}
+            className={cn(
+              "w-full h-full object-cover",
+              "transition-transform rounded-full duration-500",
+              "hover:scale-110 active:scale-105",
+            )}
+          />
 
-          {/* FAVORITE ICON SOLO PARA PACIENTES */}
+          {/* FAVORITE ICON - Solo para pacientes */}
           {userRole === "PATIENT" && (
-            <div
-              className={`
-                absolute top-3 right-3
-                flex flex-col justify-center items-center
-                rounded-full border-none border-white/60
-                bg-black/20 backdrop-blur-xl shadow-2xl
-                transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]
-                z-20 p-1.5
-              `}
+            <button
+              onClick={handleFavoriteToggle}
+              className={cn(
+                "absolute flex items-center justify-center",
+                "rounded-full ",
+                "bg-black/15 backdrop-blur-xl shadow-2xl",
+                "transition-all duration-300",
+                "active:scale-90 hover:scale-110",
+                "z-10",
+                // Posición y tamaño responsive
+                "top-0 right-0 p-0.5",
+                "sm:top-0 sm:right-0 sm:p-1.5",
+                "md:p-2",
+              )}
               style={{
                 backdropFilter: "blur(16px) saturate(180%) contrast(120%)",
                 WebkitBackdropFilter:
                   "blur(16px) saturate(180%) contrast(120%)",
               }}
-              onClick={handleFavoriteToggle} // <-- Toggle favorito
+              aria-label={
+                isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"
+              }
             >
               {isFavorite ? (
-                <HeartFilled size={20} fill="red" className="text-red-500" />
+                <HeartFilled
+                  className={cn(
+                    "fill-red-500 text-red-500",
+                    "w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6",
+                  )}
+                />
               ) : (
-                <HeartOutlined size={20} className="text-white/50 stroke-2" />
+                <HeartOutlined
+                  className={cn(
+                    "text-white/50 stroke-2",
+                    "w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6",
+                  )}
+                />
               )}
-            </div>
+            </button>
           )}
         </div>
+
         {/* Doctor Info - Flexible container */}
         <div className="flex-1 min-w-0">
-          {/* Header with name and selection */}
+          {/* Header con nombre y selección */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3
                 className={cn(
-                  "font-semibold text-foreground leading-tight hover:underline cursor-pointer",
-                  isMobile ? "text-sm" : "text-base md:text-lg",
+                  "font-semibold text-foreground leading-tight",
+                  "hover:underline cursor-pointer",
+                  "active:text-primary transition-colors",
+                  "text-sm sm:text-base md:text-lg lg:text-xl",
+                  "line-clamp-2 sm:line-clamp-1",
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -122,14 +151,19 @@ export const DoctorCards = ({
                 {doctor.name}
               </h3>
 
-              {/* Rating and specialty */}
+              {/* Rating y especialidad */}
               <div
                 className={cn(
                   "flex items-center gap-1.5 sm:gap-2 mt-1 flex-wrap",
-                  isMobile && "text-xs",
+                  "text-xs sm:text-sm",
                 )}
               >
-                <span className="text-primary text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                <span
+                  className={cn(
+                    "text-primary font-medium truncate",
+                    "max-w-[120px] sm:max-w-[180px] md:max-w-none",
+                  )}
+                >
                   {doctor.specialty}
                 </span>
                 <span className="text-muted-foreground hidden sm:inline">
@@ -139,22 +173,18 @@ export const DoctorCards = ({
                   <Star
                     className={cn(
                       "fill-amber-400 text-amber-400",
-                      isMobile ? "w-3 h-3" : "w-4 h-4",
+                      "w-3 h-3 sm:w-4 sm:h-4",
                     )}
                   />
-                  <span className="text-xs sm:text-sm font-medium">
-                    {doctor.rating}
+                  <span className="font-medium">{doctor.rating}</span>
+                  <span className="text-muted-foreground hidden sm:inline">
+                    ({doctor.reviewCount} {t("clinicCard.reviews")})
                   </span>
-                  {!isMobile && (
-                    <span className="text-muted-foreground text-xs sm:text-sm">
-                      ({doctor.reviewCount} {t("clinicCard.reviews")})
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
 
-            {/* Selection checkbox */}
+            {/* Checkbox de selección */}
             {userRole !== "DOCTOR" && userRole !== "CENTER" && (
               <button
                 onClick={(e) => {
@@ -162,47 +192,52 @@ export const DoctorCards = ({
                   onSelect(doctor.id);
                 }}
                 className={cn(
-                  "rounded-full border flex items-center justify-center transition-all flex-shrink-0",
-                  isMobile ? "w-5 h-5" : "w-6 h-6",
+                  "rounded-full border flex items-center justify-center",
+                  "transition-all duration-200 flex-shrink-0",
+                  "active:scale-90",
+                  "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7",
                   isSelected
                     ? "bg-primary border-primary text-primary-foreground scale-110"
                     : "border-primary/40 hover:border-primary hover:scale-105",
                 )}
+                aria-label={
+                  isSelected ? "Deseleccionar doctor" : "Seleccionar doctor"
+                }
               >
                 {isSelected && (
                   <Check
-                    className={cn(isMobile ? "w-3 h-3" : "w-4 h-4", "stroke-3")}
+                    className={cn(
+                      "stroke-3",
+                      "w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5",
+                    )}
                   />
                 )}
               </button>
             )}
           </div>
 
-          {/* Address */}
+          {/* Dirección */}
           <div
             className={cn(
               "flex items-start gap-1.5 mt-2 text-muted-foreground",
-              isMobile ? "text-xs" : "text-sm",
+              "text-xs sm:text-sm",
             )}
           >
             <MapPin
               className={cn(
                 "flex-shrink-0 mt-0.5 text-secondary",
-                isMobile ? "w-3 h-3" : "w-4 h-4",
+                "w-3 h-3 sm:w-4 sm:h-4",
               )}
             />
             {Array.isArray(doctor.address) && doctor.address.length > 1 ? (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="truncate cursor-pointer">
-                    {isMobile
-                      ? `${doctor.address[0].substring(0, 25)}...`
-                      : doctor.address[0]}
-                    <span className="text-secondary ml-1">
-                      {!isMobile &&
-                        t("clinicCard.andMore", {
-                          count: doctor.address.length - 1,
-                        })}
+                    {doctor.address[0]}
+                    <span className="text-secondary ml-1 hidden sm:inline">
+                      {t("clinicCard.andMore", {
+                        count: doctor.address.length - 1,
+                      })}
                     </span>
                   </span>
                 </TooltipTrigger>
@@ -223,19 +258,16 @@ export const DoctorCards = ({
             )}
           </div>
 
-          {/* Languages & Modality - Now visible on all devices */}
+          {/* Idiomas y Modalidad */}
           <div
             className={cn(
-              "flex flex-wrap items-center gap-x-4 gap-y-1 mt-2",
-              isMobile ? "text-xs" : "text-sm",
+              "flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 mt-2",
+              "text-xs sm:text-sm",
             )}
           >
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Globe
-                className={cn(
-                  "text-secondary",
-                  isMobile ? "w-3 h-3" : "w-4 h-4",
-                )}
+                className={cn("text-secondary", "w-3 h-3 sm:w-4 sm:h-4")}
               />
               {doctor.languages.length > 2 ? (
                 <Tooltip>
@@ -259,40 +291,39 @@ export const DoctorCards = ({
             </div>
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Monitor
-                className={cn(
-                  "text-secondary",
-                  isMobile ? "w-3 h-3" : "w-4 h-4",
-                )}
+                className={cn("text-secondary", "w-3 h-3 sm:w-4 sm:h-4")}
               />
               <span>{doctor.modality.join(" / ")}</span>
             </div>
           </div>
 
-          {/* Insurances - Simplified on mobile */}
+          {/* Seguros */}
           <div
             className={cn(
               "flex items-start gap-1.5 mt-2 text-muted-foreground",
-              isMobile ? "text-xs" : "text-sm",
+              "text-xs sm:text-sm",
             )}
           >
             <Shield
               className={cn(
                 "flex-shrink-0 mt-0.5 text-secondary",
-                isMobile ? "w-3 h-3" : "w-4 h-4",
+                "w-3 h-3 sm:w-4 sm:h-4",
               )}
             />
-            <span className="font-medium">
-              {isMobile
-                ? t("clinicCard.insurances")
-                : t("clinicCard.acceptedInsurances")}
+            <span className="font-medium shrink-0">
+              {t("clinicCard.insurances")}
+              <span className="hidden sm:inline">
+                {t("clinicCard.acceptedInsurances").replace(
+                  t("clinicCard.insurances"),
+                  "",
+                )}
+              </span>
             </span>
             {doctor.insurances.length > 2 ? (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-pointer truncate">
-                    {isMobile
-                      ? doctor.insurances[0]
-                      : doctor.insurances.slice(0, 2).join(", ")}
+                    {doctor.insurances.slice(0, isMobile ? 1 : 2).join(", ")}
                     <span className="text-secondary ml-1">
                       {t("clinicCard.andMore", {
                         count: doctor.insurances.length - (isMobile ? 1 : 2),
@@ -309,20 +340,17 @@ export const DoctorCards = ({
             )}
           </div>
 
-          {/* Availability - Adjusted for mobile */}
+          {/* Disponibilidad */}
           {userRole !== "DOCTOR" && userRole !== "CENTER" && (
-            <div className="mt-3">
+            <div className="mt-3 sm:mt-4">
               <div
                 className={cn(
-                  "flex items-center gap-1.5 text-muted-foreground mb-2",
-                  isMobile ? "text-xs" : "text-sm",
+                  "flex items-center gap-1.5 mb-2 text-muted-foreground",
+                  "text-xs sm:text-sm",
                 )}
               >
                 <Calendar
-                  className={cn(
-                    "text-secondary",
-                    isMobile ? "w-3 h-3" : "w-4 h-4",
-                  )}
+                  className={cn("text-secondary", "w-3 h-3 sm:w-4 sm:h-4")}
                 />
                 <span>
                   {isMobile
@@ -330,25 +358,40 @@ export const DoctorCards = ({
                     : t("doctorCard.availableAvailability")}
                 </span>
               </div>
-              <div className="flex gap-1 sm:gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              <div
+                className={cn(
+                  "flex gap-1.5 sm:gap-2 overflow-x-auto pb-1",
+                  "scrollbar-hide -mx-1 px-1",
+                  // Smooth scrolling en iOS
+                  "snap-x snap-mandatory",
+                )}
+              >
                 {doctor.availability
                   .slice(0, isMobile ? 4 : 6)
                   .map((slot, idx) => (
                     <div
                       key={idx}
                       className={cn(
-                        "flex flex-col items-center px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-xs doctor-slot flex-shrink-0",
-                        isMobile ? "min-w-[45px]" : "min-w-[50px]",
+                        "flex flex-col items-center rounded-lg border flex-shrink-0",
+                        "transition-all duration-200",
+                        "snap-start",
+                        // Tamaños responsive
+                        "px-2 py-1.5 min-w-[50px]",
+                        "sm:px-2.5 sm:py-2 sm:min-w-[60px]",
+                        "md:px-3 md:py-2.5 md:min-w-[70px]",
                         slot.slots === 0
                           ? "bg-primary/5 dark:bg-primary/10 border-primary/10 text-primary/25 cursor-not-allowed"
-                          : "bg-accent text-accent-foreground border-border cursor-pointer transition-colors hover:border-primary hover:bg-accent/80 active:bg-accent/70",
+                          : "bg-accent text-accent-foreground border-border cursor-pointer hover:border-primary hover:bg-accent/80 active:bg-accent/70 active:scale-95",
                       )}
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => slot.slots > 0 && e.preventDefault()}
                       tabIndex={slot.slots === 0 ? -1 : 0}
                       aria-disabled={slot.slots === 0}
                     >
                       <span
-                        className={cn("font-medium", isMobile && "text-[10px]")}
+                        className={cn(
+                          "font-medium",
+                          "text-[10px] sm:text-xs md:text-sm",
+                        )}
                       >
                         {isMobile ? slot.dayName.substring(0, 3) : slot.dayName}
                       </span>
@@ -358,7 +401,7 @@ export const DoctorCards = ({
                       <span
                         className={cn(
                           "mt-1 font-semibold",
-                          isMobile ? "text-xs" : "text-sm",
+                          "text-xs sm:text-sm md:text-base",
                           slot.slots === 0
                             ? "text-muted-foreground"
                             : "text-primary dark:text-black",
@@ -379,9 +422,15 @@ export const DoctorCards = ({
                     onViewProfile(doctor.id);
                   }}
                   className={cn(
-                    "flex items-center justify-center px-2 sm:px-3 py-1.5 rounded-lg border border-primary/5 font-medium text-foreground transition-colors flex-shrink-0",
-                    isMobile ? "min-w-[45px] text-xs" : "min-w-[50px] text-sm",
-                    "hover:bg-primary/10 hover:border-primary/40 hover:text-primary active:bg-primary/8 active:border-primary active:text-primary",
+                    "flex items-center justify-center rounded-lg border border-primary/5",
+                    "font-medium text-foreground transition-all flex-shrink-0",
+                    "hover:bg-primary/10 hover:border-primary/40 hover:text-primary",
+                    "active:bg-primary/20 active:scale-95",
+                    "snap-start",
+                    // Tamaños responsive
+                    "px-2.5 py-1.5 min-w-[50px] text-xs",
+                    "sm:px-3 sm:py-2 sm:min-w-[60px] sm:text-sm",
+                    "md:px-4 md:py-2.5 md:min-w-[70px]",
                   )}
                 >
                   {t("doctorCard.more")}
@@ -390,18 +439,17 @@ export const DoctorCards = ({
             </div>
           )}
 
-          {/* Action buttons - Responsive layout */}
-          <div
-            className={cn("flex gap-2 sm:gap-3", isMobile ? "mt-3" : "mt-4")}
-          >
+          {/* Botones de acción */}
+          <div className={cn("flex gap-2 sm:gap-3", "mt-3 sm:mt-4")}>
             {userRole === "CENTER" ? (
               <>
                 <MCButton
                   variant={isConnected ? "primary" : "outline"}
                   size={isMobile ? "xs" : "sm"}
                   className={cn(
-                    "flex-1",
-                    isMobile && "text-xs px-2",
+                    "flex-1 transition-all active:scale-95",
+                    "text-xs sm:text-sm",
+                    "px-3 sm:px-4",
                     isConnected &&
                       "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
                     !isConnected &&
@@ -416,7 +464,11 @@ export const DoctorCards = ({
                 <MCButton
                   variant="outline"
                   size={isMobile ? "xs" : "sm"}
-                  className={cn("flex-1", isMobile && "text-xs px-2")}
+                  className={cn(
+                    "flex-1 transition-all active:scale-95",
+                    "text-xs sm:text-sm",
+                    "px-3 sm:px-4",
+                  )}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
                   {t("clinicCard.viewProfile")}
@@ -427,7 +479,11 @@ export const DoctorCards = ({
                 <MCButton
                   variant="outline"
                   size={isMobile ? "xs" : "sm"}
-                  className={cn("flex-1", isMobile && "text-xs px-2")}
+                  className={cn(
+                    "flex-1 transition-all active:scale-95",
+                    "text-xs sm:text-sm",
+                    "px-3 sm:px-4",
+                  )}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
                   {t("clinicCard.viewProfile")}

@@ -157,7 +157,7 @@ export function MCModalBase({
               size === "wider"
                 ? "min-w-[220px] max-w-[1200px] overflow-x-auto overflow-y-hidden"
                 : ""
-            } ${actionOne ? "pb-0" : ""}`}
+            }`}
           >
             {children}
           </MorphingDialogDescription>
