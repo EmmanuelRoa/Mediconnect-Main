@@ -68,7 +68,7 @@ function CompareDoctorCards({
 
           <CardHeader className="text-center  ">
             <div className="flex flex-col items-center ">
-              <Avatar className="w-16 h-16 md:w-20 md:h-20 border border-primary/20">
+              <Avatar className="w-16 h-16 md:w-20 md:h-20 border border-primary/20 my-2">
                 <AvatarImage
                   src={doctor.image}
                   alt={doctor.name}
@@ -111,10 +111,10 @@ function CompareDoctorCards({
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-2 md:space-y-3 pb-3 md:pb-4 flex-1 overflow-y-auto">
+          <CardContent className="flex-1 overflow-y-auto space-y-4 pb-3 md:pb-4">
             {/* Years of Experience */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.experience", "Años de Experiencia")}
               </h4>
               <p className="text-xs md:text-sm">{doctor.experience} años</p>
@@ -122,7 +122,7 @@ function CompareDoctorCards({
 
             {/* Specialties */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.specialties", "Especialidades")}
               </h4>
               <div className="flex flex-wrap gap-1">
@@ -139,7 +139,7 @@ function CompareDoctorCards({
 
             {/* Languages */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.languages", "Idiomas")}
               </h4>
               <div className="flex flex-wrap gap-1">
@@ -156,7 +156,7 @@ function CompareDoctorCards({
 
             {/* Services */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.services", "Servicios Ofrecidos")}
               </h4>
               <div className="flex flex-wrap gap-1">
@@ -173,7 +173,7 @@ function CompareDoctorCards({
 
             {/* Insurance */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.insurance", "Seguros Aceptados")}
               </h4>
               <div className="flex flex-wrap gap-1">
@@ -214,7 +214,7 @@ function CompareDoctorCards({
 
             {/* Biography */}
             <div>
-              <h4 className="font-medium text-xs md:text-sm mb-1 md:mb-2">
+              <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">
                 {t("compare.biography", "Biografía")}
               </h4>
               <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-3">

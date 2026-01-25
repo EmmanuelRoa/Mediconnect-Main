@@ -112,7 +112,7 @@ export function MCModalBase({
       )}
       <MorphingDialogContainer className={paddingClasses}>
         <MorphingDialogContent
-          className={`bg-bg-secondary rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col`}
+          className={`bg-bg-secondary rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col dark:border dark:border-primary/15`}
           style={{
             overflowX: size === "wider" ? "auto" : undefined,
             overflowY: size === "wider" ? "hidden" : undefined,

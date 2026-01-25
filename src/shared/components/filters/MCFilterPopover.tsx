@@ -79,6 +79,9 @@ export function MCFilterPopover({
                 )}
               >
                 <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="inline sm:hidden">
+                  {t("filters.popover.clear")}
+                </span>
                 <span className="hidden sm:inline">
                   {t("filters.popover.clear")}
                 </span>

@@ -59,7 +59,7 @@ const DoctorSearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto">
       <div className="bg-background rounded-2xl md:rounded-full shadow-search flex flex-col md:flex-row items-stretch md:items-center p-4 md:p-2 md:pl-6 relative border-1 border-primary/70 gap-3 md:gap-0">
         {/* Campo de búsqueda */}
         <div ref={searchRef} className="flex-1 py-2 relative">
