@@ -31,7 +31,7 @@ interface MCModalBaseProps {
   zIndex?: number;
   borderHeader?: boolean;
   borderFooter?: boolean;
-  actionOne?: boolean; // NUEVA PROP
+  actionOne?: boolean;
 }
 
 export function MCModalBase({
@@ -52,7 +52,7 @@ export function MCModalBase({
   zIndex = 50,
   borderHeader = false,
   borderFooter = false,
-  actionOne = false, // NUEVO DEFAULT
+  actionOne = false,
 }: MCModalBaseProps) {
   const isControlled = isOpen !== undefined;
   const isMobile = useIsMobile();
@@ -70,7 +70,6 @@ export function MCModalBase({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isControlled, isOpen, onClose]);
 
-  // Sistema de tamaños con jerarquía clara y precisa
   const sizeClasses = {
     sm: isMobile
       ? "w-full max-w-[95vw] mx-2 max-h-[70vh]"
@@ -80,11 +79,10 @@ export function MCModalBase({
     xl: isMobile ? "w-[98vw] h-[85vh]" : "w-[896px] h-[800px]",
     "2xl": isMobile ? "w-[100vw] h-[90vh]" : "w-[1152px] h-[900px]",
     wider: isMobile
-      ? "min-w-[220px] max-w-[98vw] h-[80vh] overflow-x-auto overflow-y-hidden"
-      : "min-w-[320px] max-w-[1200px] h-[95vh] overflow-x-auto overflow-y-hidden",
+      ? "min-w-[220px] max-w-[98vw] h-[80vh]"
+      : "min-w-[320px] max-w-[1200px] h-[95vh]",
   };
 
-  // Espaciado adaptativo para móvil
   const paddingClasses = isMobile ? "p-3" : "p-4";
   const headerPadding = isMobile ? "px-4 pt-4 pb-3" : "px-6 pt-4 pb-3";
   const contentPadding = isMobile ? "px-4 py-2" : "px-6 py-2";
@@ -113,10 +111,6 @@ export function MCModalBase({
       <MorphingDialogContainer className={paddingClasses}>
         <MorphingDialogContent
           className={`bg-bg-secondary rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col dark:border dark:border-primary/15`}
-          style={{
-            overflowX: size === "wider" ? "auto" : undefined,
-            overflowY: size === "wider" ? "hidden" : undefined,
-          }}
         >
           {/* Header */}
           {(title || typeclose) && (
@@ -151,12 +145,12 @@ export function MCModalBase({
             </div>
           )}
 
-          {/* Content */}
+          {/* Content con scroll vertical oculto */}
           <MorphingDialogDescription
-            className={`${contentPadding} flex-1 min-h-0 scrollbar-hide text-gray-600 dark:text-gray-300 ${
+            className={`${contentPadding} flex-1 min-h-0 text-gray-600 dark:text-gray-300 ${
               size === "wider"
-                ? "min-w-[220px] max-w-[1200px] overflow-x-auto overflow-y-hidden"
-                : ""
+                ? "overflow-x-auto overflow-y-auto scrollbar-hide"
+                : "overflow-y-auto scrollbar-hide"
             }`}
           >
             {children}

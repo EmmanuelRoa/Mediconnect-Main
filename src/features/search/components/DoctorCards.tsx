@@ -17,6 +17,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import { Heart as HeartFilled, Heart as HeartOutlined } from "lucide-react";
+import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+
 interface DoctorCardsProps {
   doctor: Doctor;
   isSelected: boolean;
@@ -378,59 +380,117 @@ export const DoctorCards = ({
               <div className="flex gap-1 sm:gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
                 {doctor.availability
                   .slice(0, isMobile ? 4 : 6)
-                  .map((slot, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex flex-col items-center px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-xs doctor-slot flex-shrink-0",
-                        isMobile ? "min-w-[45px]" : "min-w-[50px]",
-                        slot.slots === 0
-                          ? "bg-primary/5 dark:bg-primary/10 border-primary/10 text-primary/25 cursor-not-allowed"
-                          : "bg-accent text-accent-foreground border-border cursor-pointer transition-colors hover:border-primary hover:bg-accent/80 active:bg-accent/70",
-                      )}
-                      onClick={(e) => e.preventDefault()}
-                      tabIndex={slot.slots === 0 ? -1 : 0}
-                      aria-disabled={slot.slots === 0}
-                    >
-                      <span
-                        className={cn("font-medium", isMobile && "text-[10px]")}
+                  .map((slot, idx) =>
+                    userRole === "PATIENT" && slot.slots !== 0 ? (
+                      <ScheduleAppointmentDialog
+                        key={idx}
+                        idProvider={doctor.id}
                       >
-                        {isMobile ? slot.dayName.substring(0, 3) : slot.dayName}
-                      </span>
-                      <span className="text-muted-foreground text-[9px] sm:text-[10px]">
-                        {slot.date}
-                      </span>
-                      <span
+                        <div
+                          className={cn(
+                            "flex flex-col items-center px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-xs doctor-slot flex-shrink-0 cursor-pointer",
+                            isMobile ? "min-w-[45px]" : "min-w-[50px]",
+                            "bg-accent text-accent-foreground border-border transition-colors hover:border-primary hover:bg-accent/80 active:bg-accent/70",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "font-medium",
+                              isMobile && "text-[10px]",
+                            )}
+                          >
+                            {isMobile
+                              ? slot.dayName.substring(0, 3)
+                              : slot.dayName}
+                          </span>
+                          <span className="text-muted-foreground text-[9px] sm:text-[10px]">
+                            {slot.date}
+                          </span>
+                          <span
+                            className={cn(
+                              "mt-1 font-semibold",
+                              isMobile ? "text-xs" : "text-sm",
+                              "text-primary dark:text-black",
+                            )}
+                          >
+                            {slot.slots}
+                          </span>
+                          <span className="text-muted-foreground text-[9px] sm:text-[10px]">
+                            {t("doctorCard.appointments")}
+                          </span>
+                        </div>
+                      </ScheduleAppointmentDialog>
+                    ) : (
+                      <div
+                        key={idx}
                         className={cn(
-                          "mt-1 font-semibold",
-                          isMobile ? "text-xs" : "text-sm",
-                          slot.slots === 0
-                            ? "text-muted-foreground"
-                            : "text-primary dark:text-black",
+                          "flex flex-col items-center px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-xs doctor-slot flex-shrink-0",
+                          isMobile ? "min-w-[45px]" : "min-w-[50px]",
+                          "bg-primary/5 dark:bg-primary/10 border-primary/10 text-primary/25 cursor-not-allowed",
                         )}
+                        tabIndex={-1}
+                        aria-disabled
                       >
-                        {slot.slots === 0
-                          ? t("doctorCard.noSlots")
-                          : slot.slots}
-                      </span>
-                      <span className="text-muted-foreground text-[9px] sm:text-[10px]">
-                        {t("doctorCard.appointments")}
-                      </span>
-                    </div>
-                  ))}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewProfile(doctor.id);
-                  }}
-                  className={cn(
-                    "flex items-center justify-center px-2 sm:px-3 py-1.5 rounded-lg border border-primary/5 font-medium text-foreground transition-colors flex-shrink-0",
-                    isMobile ? "min-w-[45px] text-xs" : "min-w-[50px] text-sm",
-                    "hover:bg-primary/10 hover:border-primary/40 hover:text-primary active:bg-primary/8 active:border-primary active:text-primary",
+                        <span
+                          className={cn(
+                            "font-medium",
+                            isMobile && "text-[10px]",
+                          )}
+                        >
+                          {isMobile
+                            ? slot.dayName.substring(0, 3)
+                            : slot.dayName}
+                        </span>
+                        <span className="text-muted-foreground text-[9px] sm:text-[10px]">
+                          {slot.date}
+                        </span>
+                        <span
+                          className={cn(
+                            "mt-1 font-semibold",
+                            isMobile ? "text-xs" : "text-sm",
+                            "text-muted-foreground",
+                          )}
+                        >
+                          {t("doctorCard.noSlots")}
+                        </span>
+                        <span className="text-muted-foreground text-[9px] sm:text-[10px]">
+                          {t("doctorCard.appointments")}
+                        </span>
+                      </div>
+                    ),
                   )}
-                >
-                  {t("doctorCard.more")}
-                </button>
+                {/* Botón "más" */}
+                {userRole === "PATIENT" ? (
+                  <ScheduleAppointmentDialog idProvider={doctor.id}>
+                    <button
+                      className={cn(
+                        "flex items-center justify-center px-2 sm:px-3 py-1.5 rounded-lg border border-primary/5 font-medium text-foreground transition-colors flex-shrink-0",
+                        isMobile
+                          ? "min-w-[45px] text-xs"
+                          : "min-w-[50px] text-sm",
+                        "hover:bg-primary/10 hover:border-primary/40 hover:text-primary active:bg-primary/8 active:border-primary active:text-primary",
+                      )}
+                    >
+                      {t("doctorCard.more")}
+                    </button>
+                  </ScheduleAppointmentDialog>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewProfile(doctor.id);
+                    }}
+                    className={cn(
+                      "flex items-center justify-center px-2 sm:px-3 py-1.5 rounded-lg border border-primary/5 font-medium text-foreground transition-colors flex-shrink-0",
+                      isMobile
+                        ? "min-w-[45px] text-xs"
+                        : "min-w-[50px] text-sm",
+                      "hover:bg-primary/10 hover:border-primary/40 hover:text-primary active:bg-primary/8 active:border-primary active:text-primary",
+                    )}
+                  >
+                    {t("doctorCard.more")}
+                  </button>
+                )}
               </div>
             </div>
           )}

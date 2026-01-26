@@ -46,7 +46,7 @@ function CompareDoctorCards({
 
   return (
     <div
-      className="flex flex-row flex-nowrap justify-center items-center gap-3 md:gap-4 lg:gap-4 overflow-x-auto overflow-y-hidden px-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 "
+      className="flex flex-row flex-nowrap justify-center items-center gap-3 md:gap-4 lg:gap-4 overflow-x-auto px-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
       style={{ height: "100%" }}
     >
       {doctors.map((doctor) => (
@@ -111,7 +111,7 @@ function CompareDoctorCards({
             </div>
           </CardHeader>
 
-          <CardContent className="flex-1 overflow-y-auto space-y-4 pb-3 md:pb-4">
+          <CardContent className="flex-1  space-y-4 pb-3 md:pb-4">
             {/* Years of Experience */}
             <div>
               <h4 className="font-semibold text-xs md:text-sm mb-2 text-primary">

@@ -22,10 +22,12 @@ function Calendar({
   formatters,
   components,
   appointmentCounts,
+  compact = false, // Añade la prop compact
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"];
   appointmentCounts?: Map<string, number>;
+  compact?: boolean; // Añade la prop compact
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -33,7 +35,9 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:1.75rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-background group/calendar",
+        compact ? "p-1" : "p-3", // Menos padding si compact
+        "[--cell-size:1.75rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
@@ -50,10 +54,20 @@ function Calendar({
           "flex gap-4 flex-col md:flex-row relative",
           defaultClassNames.months,
         ),
-        month: cn("flex flex-col w-full gap-1", defaultClassNames.month),
+        month: cn(
+          "flex flex-col w-full",
+          compact ? "gap-6" : "gap-1", // MÁS separación vertical en compact
+          defaultClassNames.month,
+        ),
         nav: cn(
           "flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between",
           defaultClassNames.nav,
+        ),
+        // Cambia la separación entre filas (semanas)
+        week: cn(
+          "flex w-full",
+          compact ? "gap-6" : "gap-0", // MÁS separación horizontal en compact
+          defaultClassNames.week,
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
@@ -86,12 +100,14 @@ function Calendar({
           defaultClassNames.caption_label,
         ),
         table: "w-full border-collapse",
-        weekdays: cn("flex mb-2 gap-0.5", defaultClassNames.weekdays),
+        weekdays: cn(
+          compact ? "flex mb-2 gap-6" : "flex mb-2 gap-0.5", // MÁS separación entre nombres de días
+          defaultClassNames.weekdays,
+        ),
         weekday: cn(
           "text-muted-foreground rounded-md flex-1 font-medium text-sm select-none uppercase tracking-wide",
           defaultClassNames.weekday,
         ),
-        week: cn("flex w-full", defaultClassNames.week),
         week_number_header: cn(
           "select-none w-(--cell-size)",
           defaultClassNames.week_number_header,
@@ -157,6 +173,7 @@ function Calendar({
           <CalendarDayButton
             {...dayButtonProps}
             appointmentCounts={appointmentCounts}
+            compact={compact} // Pasa la prop compact
           />
         ),
         WeekNumber: ({ children, ...props }) => {
@@ -180,9 +197,11 @@ function CalendarDayButton({
   day,
   modifiers,
   appointmentCounts,
+  compact = false, // Añade la prop compact
   ...props
 }: React.ComponentProps<typeof DayButton> & {
   appointmentCounts?: Map<string, number>;
+  compact?: boolean; // Añade la prop compact
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -230,7 +249,8 @@ function CalendarDayButton({
       )}
       {...props}
     >
-      {modifiers.today && (
+      {/* Solo muestra el dot si NO está en modo compacto */}
+      {modifiers.today && !compact && (
         <span className="w-2 h-2 rounded-full bg-primary absolute -top-4"></span>
       )}
       <span>{day.date.getDate()}</span>

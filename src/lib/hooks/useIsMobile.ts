@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 // Usa 1024px para incluir tablets y móviles
-export function useIsMobile(breakpoint = 1024): boolean {
+export function useIsMobile(breakpoint = 768): boolean {
   const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth < breakpoint : false
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false,
   );
 
   useEffect(() => {
