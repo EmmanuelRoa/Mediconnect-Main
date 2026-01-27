@@ -36,15 +36,11 @@ export default function MapSelectLocation({
       console.log("data de getlocation", data);
 
       if (data.features && data.features.length > 0) {
-        let address = "";
         let neighborhood = "";
         let zipCode = "";
 
         // Extraer información de los features
         for (const feature of data.features) {
-          if (feature.place_type.includes("address") && !address) {
-            address = feature.place_name;
-          }
           if (feature.place_type.includes("neighborhood") && !neighborhood) {
             neighborhood = feature.text;
           }
@@ -53,15 +49,8 @@ export default function MapSelectLocation({
           }
         }
 
-        // Si no encontramos dirección específica, usar el primer resultado
-        if (!address && data.features[0]) {
-          address = data.features[0].place_name;
-        }
-
-        // Parse the Dominican address
-        const parsedAddress = ParseDominicanAddress(
-          address || "Dirección no encontrada",
-        );
+        // Parse the Dominican address usando lat/lng
+        const parsedAddress = await ParseDominicanAddress(lat, lng);
 
         // Llamar al callback con los detalles parseados
         onLocationDetails?.({

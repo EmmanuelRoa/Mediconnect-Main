@@ -238,7 +238,7 @@ function CompareDoctorCards({
                 <ScheduleAppointmentDialog idProvider={doctor.id}>
                   <MCButton
                     className="w-full"
-                    size={isMobile ? "m" : "l"}
+                    size={isMobile ? "m" : "ml"}
                     onClick={() =>
                       console.log("Agendar cita con:", doctor.name)
                     }
@@ -250,7 +250,7 @@ function CompareDoctorCards({
 
               {userRole === "CENTER" && (
                 <MCButton
-                  size={isMobile ? "m" : "l"}
+                  size={isMobile ? "m" : "ml"}
                   variant={isConnected(doctor.id) ? "outline" : "primary"}
                   onClick={() =>
                     console.log(
@@ -269,7 +269,7 @@ function CompareDoctorCards({
 
               {/* Botón Ver Perfil visible para todos los usuarios */}
               <MCButton
-                size={isMobile ? "m" : "l"}
+                size={isMobile ? "m" : "ml"}
                 variant="secondary"
                 onClick={() => console.log("Ver perfil de:", doctor.name)}
               >

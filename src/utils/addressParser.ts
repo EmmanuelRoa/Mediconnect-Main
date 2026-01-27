@@ -4,36 +4,45 @@ export interface ParsedDominicanAddress {
   provincia: string;
 }
 
-export function ParseDominicanAddress(address: string): ParsedDominicanAddress {
-  // Remove "República Dominicana" from the end if present
-  const cleanAddress = address.replace(/, República Dominicana$/i, "").trim();
+export async function ParseDominicanAddress(
+  lat: number,
+  lng: number,
+): Promise<ParsedDominicanAddress> {
+  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&language=es&country=DO`;
 
-  // Split by commas and clean each part
-  const parts = cleanAddress
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-  if (parts.length >= 3) {
-    // Format: "Street, Municipality, Province"
-    return {
-      direccion: parts[0],
-      municipio: parts[1],
-      provincia: parts[2],
-    };
-  } else if (parts.length === 2) {
-    // Format: "Street, Municipality/Province"
-    return {
-      direccion: parts[0],
-      municipio: parts[1],
-      provincia: parts[1], // Use same for both if only 2 parts
-    };
-  } else {
-    // Fallback for single part
-    return {
-      direccion: parts[0] || address,
-      municipio: "",
-      provincia: "",
-    };
+    if (!data.features || data.features.length === 0) {
+      return { direccion: "", municipio: "", provincia: "" };
+    }
+
+    // Buscar los componentes relevantes
+    let direccion = "";
+    let municipio = "";
+    let provincia = "";
+
+    for (const feature of data.features) {
+      if (feature.place_type.includes("address") && !direccion) {
+        direccion = feature.text;
+      }
+      if (feature.place_type.includes("place") && !municipio) {
+        municipio = feature.text;
+      }
+      if (feature.place_type.includes("region") && !provincia) {
+        provincia = feature.text;
+      }
+    }
+
+    // Si no hay address, usar el primero como dirección
+    if (!direccion && data.features[0]) {
+      direccion = data.features[0].text;
+    }
+
+    return { direccion, municipio, provincia };
+  } catch {
+    return { direccion: "", municipio: "", provincia: "" };
   }
 }

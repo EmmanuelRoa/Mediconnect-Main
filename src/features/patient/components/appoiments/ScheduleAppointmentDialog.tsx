@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { useFormContext } from "react-hook-form";
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { MCModalBase } from "@/shared/components/MCModalBase";
@@ -29,9 +27,9 @@ import ServiceCards from "./ServiceCards";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import FilterAppointments from "@/features/patient/components/filters/FilterAppointments";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
-import type React from "react"; // Cambia el import de React
+import { useState, useMemo } from "react";
 
 interface Service {
   id: string;
@@ -109,43 +107,31 @@ interface ScheduleAppointmentDialogProps {
   children: React.ReactNode | React.ComponentType;
 }
 
-interface ScheduleAppointmentFormProps {
-  selectedDate: Date;
-  setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
-  weekStart: Date;
-  setWeekStart: React.Dispatch<React.SetStateAction<Date>>;
-  patients: number;
-  setPatients: React.Dispatch<React.SetStateAction<number>>;
-  selectedTimeSlots: Record<string, string>;
-  setSelectedTimeSlots: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
-  selectedModality: Record<string, "presencial" | "teleconsulta">;
-  setSelectedModality: React.Dispatch<
-    React.SetStateAction<Record<string, "presencial" | "teleconsulta">>
-  >;
-}
+// Función auxiliar para manejar fechas sin problemas de timezone
+const formatDateForStorage = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Función auxiliar para parsear fechas correctamente
+const parseDateFromStorage = (dateString: string): Date => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
 
 // Componente interno que usa el FormContext
-function ScheduleAppointmentForm({
-  selectedDate,
-  setSelectedDate,
-  weekStart,
-  setWeekStart,
-  patients,
-  setPatients,
-  selectedTimeSlots,
-  setSelectedTimeSlots,
-  selectedModality,
-  setSelectedModality,
-}: ScheduleAppointmentFormProps) {
+function ScheduleAppointmentForm() {
   const { t, i18n } = useTranslation("patient");
   const currentLocale = i18n.language === "es" ? es : enUS;
   const { filters, resetFilters } = useFiltersStore();
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Ahora podemos usar useFormContext porque estamos dentro del MCFormWrapper
-  const { setValue, watch } = useFormContext<scheduleAppointment>();
+  const appointment = useAppointmentStore((state) => state.appointment);
+  const setAppointmentField = useAppointmentStore(
+    (state) => state.setAppointmentField,
+  );
 
   const activeFiltersCount = [
     filters.serviceTypes.length,
@@ -155,13 +141,63 @@ function ScheduleAppointmentForm({
     filters.durations.length,
   ].reduce((a, b) => a + (b ? 1 : 0), 0);
 
+  // Obtener la fecha actual del store o usar hoy
+  const selectedDate = appointment.date
+    ? parseDateFromStorage(appointment.date)
+    : new Date();
+
+  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  // Crear un objeto para selectedTimeSlots basado en el store
+  const selectedTimeSlots = useMemo(() => {
+    if (appointment.serviceId && appointment.time) {
+      // Convertir el tiempo de formato 24h a formato display (a.m./p.m.)
+      const convertTo12Hour = (time24: string): string => {
+        const [hours, minutes] = time24.split(":");
+        let hour = parseInt(hours);
+        const period = hour >= 12 ? "p.m." : "a.m.";
+
+        if (hour > 12) hour -= 12;
+        if (hour === 0) hour = 12;
+
+        return `${hour}:${minutes} ${period}`;
+      };
+
+      return {
+        [appointment.serviceId]: convertTo12Hour(appointment.time),
+      };
+    }
+    return {};
+  }, [appointment.serviceId, appointment.time]);
+
+  // Crear un objeto para selectedModality basado en el store
+  const selectedModalityByService = useMemo(() => {
+    if (appointment.serviceId && appointment.selectedModality) {
+      return {
+        [appointment.serviceId]: appointment.selectedModality,
+      };
+    }
+    return {};
+  }, [appointment.serviceId, appointment.selectedModality]);
+
+  // Calculate if submit should be disabled
+  const isSubmitDisabled = useMemo(() => {
+    const hasTimeSlot = !!appointment.time;
+    const hasModality = !!appointment.selectedModality;
+    const hasRequiredFields =
+      appointment.date && appointment.insuranceProvider && appointment.reason;
+
+    return !hasRequiredFields || !hasTimeSlot || !hasModality;
+  }, [appointment]);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      setSelectedDate(date);
-      setWeekStart(startOfWeek(date, { weekStartsOn: 0 }));
-      setValue("date", format(date, "yyyy-MM-dd"));
+      const formattedDate = formatDateForStorage(date);
+
+      if (setAppointmentField) {
+        setAppointmentField("date", formattedDate);
+      }
       setCalendarOpen(false);
     }
   };
@@ -182,29 +218,25 @@ function ScheduleAppointmentForm({
 
   const handleTimeSlotSelect = (serviceId: string, time: string) => {
     if (time === "") {
-      setSelectedTimeSlots((prev) => {
-        const newSlots = { ...prev };
-        delete newSlots[serviceId];
-        return newSlots;
-      });
-      setSelectedModality((prev) => {
-        const newModality = { ...prev };
-        delete newModality[serviceId];
-        return newModality;
-      });
-      setValue("time", "");
-    } else {
-      const hasOtherSelection = Object.keys(selectedTimeSlots).some(
-        (id) => id !== serviceId && selectedTimeSlots[id],
-      );
-
-      if (hasOtherSelection) {
-        setSelectedTimeSlots({ [serviceId]: time });
-        setSelectedModality({});
-      } else {
-        setSelectedTimeSlots((prev) => ({ ...prev, [serviceId]: time }));
+      // Deseleccionar
+      if (setAppointmentField) {
+        setAppointmentField("time", "");
+        setAppointmentField("serviceId", "");
+        setAppointmentField("selectedModality", "presencial");
       }
-      setValue("time", convertTimeToHour(time));
+    } else {
+      // Seleccionar nuevo horario
+      const convertedTime = convertTimeToHour(time);
+
+      if (setAppointmentField) {
+        setAppointmentField("time", convertedTime);
+        setAppointmentField("serviceId", serviceId);
+
+        // Si cambiamos de servicio, resetear la modalidad
+        if (appointment.serviceId && appointment.serviceId !== serviceId) {
+          setAppointmentField("selectedModality", "presencial");
+        }
+      }
     }
   };
 
@@ -212,19 +244,16 @@ function ScheduleAppointmentForm({
     serviceId: string,
     modality: "presencial" | "teleconsulta",
   ) => {
-    setSelectedModality((prev) => ({ ...prev, [serviceId]: modality }));
-    setValue("selectedModality", modality);
+    if (setAppointmentField) {
+      setAppointmentField("selectedModality", modality);
+    }
   };
 
-  const isSubmitDisabled =
-    Object.keys(selectedTimeSlots).filter(
-      (serviceId) => selectedTimeSlots[serviceId],
-    ).length === 0 ||
-    Object.keys(selectedModality).filter(
-      (serviceId) => selectedModality[serviceId],
-    ).length === 0 ||
-    !watch("insuranceProvider") ||
-    (watch("reason")?.length || 0) < 10;
+  const handlePatientsChange = (newPatients: number) => {
+    if (setAppointmentField) {
+      setAppointmentField("numberOfSessions", newPatients);
+    }
+  };
 
   const DoctorHeader = () => {
     const doctorAvatar =
@@ -253,8 +282,10 @@ function ScheduleAppointmentForm({
   const PatientCounter = () => (
     <div className="flex items-center justify-between text-primary">
       <span className="font-medium">
-        {patients} {t("appointments.patient")}
-        {patients > 1 ? t("appointments.patient_plural") : ""}
+        {appointment.numberOfSessions} {t("appointments.patient")}
+        {appointment.numberOfSessions > 1
+          ? t("appointments.patient_plural")
+          : ""}
       </span>
       <div className="flex items-center gap-2">
         <MCButton
@@ -262,8 +293,10 @@ function ScheduleAppointmentForm({
           variant="outline"
           size="sm"
           className="h-8 w-8 rounded-full"
-          onClick={() => setPatients(Math.max(1, patients - 1))}
-          disabled={patients <= 1}
+          onClick={() =>
+            handlePatientsChange(Math.max(1, appointment.numberOfSessions - 1))
+          }
+          disabled={appointment.numberOfSessions <= 1}
           icon={<Minus className="h-4 w-4" />}
         />
         <MCButton
@@ -271,7 +304,7 @@ function ScheduleAppointmentForm({
           variant="outline"
           size="sm"
           className="h-8 w-8 rounded-full"
-          onClick={() => setPatients(patients + 1)}
+          onClick={() => handlePatientsChange(appointment.numberOfSessions + 1)}
           icon={<Plus className="h-4 w-4" />}
         />
       </div>
@@ -293,7 +326,7 @@ function ScheduleAppointmentForm({
               "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
               !isSameDay(day, selectedDate) && "hover:bg-time-slot-hover",
             )}
-            onClick={() => setSelectedDate(day)}
+            onClick={() => handleDateSelect(day)}
           >
             {format(day, "d")}
           </MCButton>
@@ -318,6 +351,14 @@ function ScheduleAppointmentForm({
           }))}
           placeholder={t("insurance.select")}
           required
+          onChange={(value) => {
+            if (setAppointmentField) {
+              const insuranceValue = Array.isArray(value)
+                ? (value[0] ?? "")
+                : value;
+              setAppointmentField("insuranceProvider", insuranceValue);
+            }
+          }}
         />
       </div>
 
@@ -330,6 +371,13 @@ function ScheduleAppointmentForm({
           placeholder={t("appointments.reasonPlaceholder")}
           charLimit={100}
           showCharCount
+          onChange={(value) => {
+            if (setAppointmentField) {
+              const reasonValue =
+                typeof value === "string" ? value : value?.target?.value;
+              setAppointmentField("reason", reasonValue);
+            }
+          }}
         />
       </div>
 
@@ -392,7 +440,7 @@ function ScheduleAppointmentForm({
       <ServiceCards
         services={SERVICES}
         selectedTimeSlots={selectedTimeSlots}
-        selectedModality={selectedModality}
+        selectedModality={selectedModalityByService}
         onTimeSlotSelect={handleTimeSlotSelect}
         onModalitySelect={handleModalitySelect}
       />
@@ -413,18 +461,7 @@ function ScheduleAppointmentDialog({
   const { t } = useTranslation("patient");
   const navigate = useNavigate();
   const addAppointment = useAppointmentStore((state) => state.addAppointment);
-
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [weekStart, setWeekStart] = useState<Date>(
-    startOfWeek(new Date(), { weekStartsOn: 0 }),
-  );
-  const [patients, setPatients] = useState(1);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<
-    Record<string, string>
-  >({});
-  const [selectedModality, setSelectedModality] = useState<
-    Record<string, "presencial" | "teleconsulta">
-  >({});
+  const appointment = useAppointmentStore((state) => state.appointment);
 
   const triggerNode = (
     <div className="w-full h-full">
@@ -439,50 +476,15 @@ function ScheduleAppointmentDialog({
     </div>
   );
 
-  const convertTimeToHour = (timeSlot: string): string => {
-    const time = timeSlot.replace(/\s*(a\.m\.|p\.m\.)/g, "");
-    const [hours, minutes] = time.split(":");
-    let hour24 = parseInt(hours);
-
-    if (timeSlot.includes("p.m.") && hour24 !== 12) {
-      hour24 += 12;
-    } else if (timeSlot.includes("a.m.") && hour24 === 12) {
-      hour24 = 0;
-    }
-
-    return `${hour24.toString().padStart(2, "0")}:${minutes}`;
-  };
-
   const onSubmit = (data: scheduleAppointment) => {
-    const selectedServices = Object.keys(selectedTimeSlots).filter(
-      (serviceId) => selectedTimeSlots[serviceId],
-    );
-
-    if (selectedServices.length === 0) {
-      toast.error(
-        t("appointments.noServiceSelected", "Please select a service"),
-      );
-      return;
-    }
-
-    const firstServiceWithTime = selectedServices[0];
-    const selectedTimeSlot = selectedTimeSlots[firstServiceWithTime];
-    const selectedModalityForService = selectedModality[firstServiceWithTime];
-
-    if (!selectedModalityForService) {
-      toast.error(
-        t("appointments.noModalitySelected", "Please select a modality"),
-      );
-      return;
-    }
-
     const appointmentData: scheduleAppointment = {
-      date: format(selectedDate, "yyyy-MM-dd"),
-      time: convertTimeToHour(selectedTimeSlot),
+      date: data.date,
+      time: data.time,
       reason: data.reason,
       insuranceProvider: data.insuranceProvider,
-      selectedModality: selectedModalityForService,
-      numberOfSessions: patients,
+      selectedModality: data.selectedModality,
+      numberOfSessions: data.numberOfSessions,
+      serviceId: data.serviceId,
     };
 
     addAppointment(appointmentData);
@@ -490,6 +492,20 @@ function ScheduleAppointmentDialog({
 
     navigate("/patient/schedule-appointment");
   };
+
+  // Crear defaultValues basados DIRECTAMENTE en el estado del store
+  const formDefaultValues = {
+    date: appointment.date || formatDateForStorage(new Date()),
+    time: appointment.time || "",
+    selectedModality: appointment.selectedModality || "presencial",
+    numberOfSessions: appointment.numberOfSessions || 1,
+    reason: appointment.reason || "",
+    insuranceProvider: appointment.insuranceProvider || "",
+    serviceId: appointment.serviceId || "",
+  };
+
+  // Crear un key único basado en TODOS los valores importantes del store
+  const formKey = `form-${appointment.date}-${appointment.time}-${appointment.selectedModality}-${appointment.insuranceProvider}-${appointment.numberOfSessions}-${appointment.serviceId}`;
 
   return (
     <MCModalBase
@@ -501,28 +517,12 @@ function ScheduleAppointmentDialog({
     >
       <MCFormWrapper
         schema={appointmentSchema(t)}
-        defaultValues={{
-          date: format(new Date(), "yyyy-MM-dd"),
-          time: "",
-          selectedModality: "presencial" as const,
-          numberOfSessions: 1,
-          reason: "",
-          insuranceProvider: "",
-        }}
+        defaultValues={formDefaultValues}
+        onValidationChange={() => {}}
         onSubmit={onSubmit}
+        key={formKey}
       >
-        <ScheduleAppointmentForm
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          weekStart={weekStart}
-          setWeekStart={setWeekStart}
-          patients={patients}
-          setPatients={setPatients}
-          selectedTimeSlots={selectedTimeSlots}
-          setSelectedTimeSlots={setSelectedTimeSlots}
-          selectedModality={selectedModality}
-          setSelectedModality={setSelectedModality}
-        />
+        <ScheduleAppointmentForm />
       </MCFormWrapper>
     </MCModalBase>
   );

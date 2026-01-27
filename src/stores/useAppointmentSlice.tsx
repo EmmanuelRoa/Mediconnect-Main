@@ -2,8 +2,18 @@ import { type StateCreator } from "zustand";
 import type { scheduleAppointment } from "@/types/AppointmentTypes";
 
 export interface AppointmentSlice {
-  appointment: scheduleAppointment;
-  addAppointment: (appointment: scheduleAppointment) => void;
+  isAppointmentInProgress?: boolean;
+  appointment: scheduleAppointment & { selectedServiceId?: string }; // Agrega selectedServiceId opcional
+  addAppointment: (
+    appointment: scheduleAppointment & { selectedServiceId?: string },
+  ) => void;
+  setAppointmentField?: <
+    K extends keyof (scheduleAppointment & { selectedServiceId?: string }),
+  >(
+    field: K,
+    value: (scheduleAppointment & { selectedServiceId?: string })[K],
+  ) => void;
+  setIsAppointmentInProgress?: (inProgress: boolean) => void;
   clearAppointments: () => void;
 }
 
@@ -17,8 +27,20 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
     insuranceProvider: "",
     selectedModality: "presencial",
     numberOfSessions: 1,
+    serviceId: "", // <-- Agrega aquí
   },
+  isAppointmentInProgress: false,
 
+  setIsAppointmentInProgress: (inProgress) =>
+    set({ isAppointmentInProgress: inProgress }),
+
+  setAppointmentField: (field, value) =>
+    set((state) => ({
+      appointment: {
+        ...state.appointment,
+        [field]: value,
+      },
+    })),
   addAppointment: (data) => set({ appointment: data }),
 
   clearAppointments: () =>
@@ -30,6 +52,7 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
         insuranceProvider: "",
         selectedModality: "presencial",
         numberOfSessions: 1,
+        serviceId: "", // <-- También aquí
       },
     }),
 });

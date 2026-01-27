@@ -43,7 +43,11 @@ function ServiceCards({
   };
 
   // Función para manejar la selección de horarios
-  const handleTimeSlotSelect = (serviceId: string, time: string) => {
+  const handleTimeSlotSelect = (
+    serviceId: string,
+    time: string,
+    service: Service,
+  ) => {
     // Si ya hay una hora seleccionada en este servicio y es la misma, la deseleccionamos
     if (selectedTimeSlots[serviceId] === time) {
       onTimeSlotSelect(serviceId, "");
@@ -57,6 +61,21 @@ function ServiceCards({
 
     // Seleccionar la nueva hora
     onTimeSlotSelect(serviceId, time);
+
+    // Auto-seleccionar modalidad si solo hay una opción disponible
+    const isMixta = service.modality.toLowerCase().includes("mixta");
+    const isPresencial = service.modality.toLowerCase().includes("presencial");
+    const isVirtual = service.modality.toLowerCase().includes("teleconsulta");
+
+    // Si solo hay presencial, seleccionarla automáticamente
+    if (isPresencial && !isMixta && !isVirtual) {
+      onModalitySelect(serviceId, "presencial");
+    }
+    // Si solo hay teleconsulta, seleccionarla automáticamente
+    else if (isVirtual && !isMixta && !isPresencial) {
+      onModalitySelect(serviceId, "teleconsulta");
+    }
+    // Si es mixta, no auto-seleccionar, dejar que el usuario elija
   };
 
   return (
@@ -122,7 +141,9 @@ function ServiceCards({
                         ? "cursor-not-allowed opacity-50"
                         : ""
                     }`}
-                    onClick={() => handleTimeSlotSelect(service.id, time)}
+                    onClick={() =>
+                      handleTimeSlotSelect(service.id, time, service)
+                    }
                     disabled={isBlocked && timeSelected !== time}
                   >
                     {time}
