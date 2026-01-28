@@ -24,7 +24,7 @@ function AccountActions({ items }: AccountActionsProps) {
             "group flex h-auto w-full items-center justify-between rounded-t-2xl px-4 py-4 border-b border-primary/10 transition-colors",
             item.isDestructive
               ? "hover:bg-[rgba(220,38,38,0.1)] active:bg-[rgba(220,38,38,0.15)]"
-              : "hover:bg-primary/5",
+              : "hover:bg-primary/5 dark:hover:bg-primary/10 active:bg-primary/10",
           )}
           onClick={item.onClick}
         >
@@ -35,7 +35,7 @@ function AccountActions({ items }: AccountActionsProps) {
                   "items-center justify-center rounded-full",
                   item.isDestructive
                     ? "bg-[rgba(220,38,38,0.1)] text-[#dc2626]"
-                    : "bg-accent/30 text-primary dark:text-card",
+                    : "bg-accent/75 text-primary dark:text-card",
                 )}
               >
                 <div className="p-3">{item.icon}</div>

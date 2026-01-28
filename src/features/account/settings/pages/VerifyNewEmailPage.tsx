@@ -37,10 +37,19 @@ function VerifyNewEmailPage() {
 
   // Redirige si no está en el contexto correcto o no tiene email pendiente
   useEffect(() => {
-    if (VerificationContext !== "CHANGE_EMAIL" || !changeEmailData?.newEmail) {
+    if (
+      VerificationContext !== "CHANGE_EMAIL" ||
+      !changeEmailData?.newEmail ||
+      VerificationContextStatus !== "VERIFIED"
+    ) {
       navigate("/settings");
     }
-  }, [VerificationContext, changeEmailData, navigate]);
+  }, [
+    VerificationContext,
+    changeEmailData,
+    VerificationContextStatus,
+    navigate,
+  ]);
 
   const handleSubmit = (data: { otp: string }) => {
     setChangeEmailData({

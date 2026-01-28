@@ -92,7 +92,7 @@ function MCButton({
       shadow-none
     `,
     tercero: `
-      bg-[var(--color-bg-btn-secondary)] text-black border border-[var(--color-bg-btn-secondary)]
+      bg-[var(--color-bg-btn-secondary)] text-primary border border-[var(--color-bg-btn-secondary)]
       hover:bg-[var(--color-bg-btn-secondary)]/90 hover:shadow-md
       active:bg-[var(--color-bg-btn-secondary)]/80
       disabled:opacity-50 disabled:cursor-not-allowed

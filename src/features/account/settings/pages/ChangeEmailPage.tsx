@@ -29,15 +29,21 @@ function ChangeEmailPage() {
     (state) => state.verificationContextStatus,
   );
 
-  // Redirige si no está en el contexto correcto o no está verificado
+  // Redirige si no está en el contexto correcto o no tiene email pendiente
   useEffect(() => {
     if (
       VerificationContext !== "CHANGE_EMAIL" ||
+      !changeEmailData?.newEmail ||
       VerificationContextStatus !== "VERIFIED"
     ) {
       navigate("/settings");
     }
-  }, [VerificationContext, VerificationContextStatus, navigate]);
+  }, [
+    VerificationContext,
+    changeEmailData,
+    VerificationContextStatus,
+    navigate,
+  ]);
 
   const hanbdleSubmit = (data: { newEmail: string }) => {
     setChangeEmailData({

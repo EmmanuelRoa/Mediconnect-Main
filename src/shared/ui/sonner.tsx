@@ -40,7 +40,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--background)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border":
-            "color-mix(in srgb, var(--primary), transparent 100%)", // 50% opacidad
+            "color-mix(in srgb, var(--primary), transparent 85%)", // 50% opacidad
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }

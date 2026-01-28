@@ -14,3 +14,17 @@ export const changeEmailSchema = z.object({
     .length(4, { message: "El código OTP debe tener 4 dígitos." })
     .regex(/^\d+$/, { message: "El código OTP debe ser numérico." }),
 });
+
+export const changePasswordSchema = z
+  .object({
+    newPassword: z.string().min(8, {
+      message: "La nueva contraseña debe tener al menos 8 caracteres.",
+    }),
+    confirmNewPassword: z
+      .string()
+      .min(8, { message: "Debes confirmar la nueva contraseña." }),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Las nuevas contraseñas no coinciden.",
+    path: ["confirmNewPassword"],
+  });

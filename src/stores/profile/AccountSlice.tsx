@@ -1,5 +1,9 @@
 import type { StateCreator } from "zustand";
-import type { VerifyAccount, ChangeEmail } from "@/types/AccountTypes";
+import type {
+  VerifyAccount,
+  ChangeEmail,
+  ChangePassword,
+} from "@/types/AccountTypes";
 
 export interface AccountSlice {
   verifyAccountPassword: VerifyAccount | null;
@@ -8,6 +12,9 @@ export interface AccountSlice {
   changeEmailData: ChangeEmail | null;
   setChangeEmailData: (data: ChangeEmail) => void;
   clearChangeEmailData: () => void;
+  changePasswordData: ChangePassword | null;
+  setChangePasswordData: (data: ChangePassword) => void;
+  clearChangePasswordData: () => void;
 }
 
 export const createAccountSlice: StateCreator<AccountSlice> = (set) => ({
@@ -17,4 +24,7 @@ export const createAccountSlice: StateCreator<AccountSlice> = (set) => ({
   changeEmailData: null,
   setChangeEmailData: (data) => set({ changeEmailData: data }),
   clearChangeEmailData: () => set({ changeEmailData: null }),
+  changePasswordData: null,
+  setChangePasswordData: (data) => set({ changePasswordData: data }),
+  clearChangePasswordData: () => set({ changePasswordData: null }),
 });

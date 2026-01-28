@@ -3,6 +3,7 @@ import MCNavbar from "@/shared/navigation/MCNavbar";
 import MCNavbarMobile from "@/shared/navigation/MCMobileNavbar";
 import { useAppointmentStore } from "@/stores/useAppointmentStore";
 import { useEffect } from "react";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore"; // Agrega este import
 
 function DashboardLayout() {
   const location = useLocation();
@@ -13,19 +14,32 @@ function DashboardLayout() {
     (state) => state.clearAppointments,
   );
 
-  useEffect(() => {
-    return () => {
-      const currentPath = window.location.pathname;
+  // Reset de verificación si sale de /settings
+  const resetVerificationContext = useGlobalUIStore(
+    (state) => state.resetVerificationContext,
+  );
 
-      if (
-        !currentPath.startsWith("/patient/schedule-appointment") &&
-        !currentPath.startsWith("/search")
-      ) {
-        resetAppointment();
-      }
-    };
-    // Add setIsAppointmentInProgress to dependency array for completeness
-  }, [location.pathname, resetAppointment, setIsAppointmentInProgress]);
+  useEffect(() => {
+    // Reset de appointments si sale de schedule-appointment o search
+    const currentPath = window.location.pathname;
+    if (
+      !currentPath.startsWith("/patient/schedule-appointment") &&
+      !currentPath.startsWith("/search")
+    ) {
+      resetAppointment();
+    }
+
+    // Reset de verificación si sale de settings
+    if (!currentPath.startsWith("/settings")) {
+      resetVerificationContext?.();
+    }
+    // eslint-disable-next-line
+  }, [
+    location.pathname,
+    resetAppointment,
+    setIsAppointmentInProgress,
+    resetVerificationContext,
+  ]);
 
   return (
     <div className="min-h-screen px-4 py-6 bg-bg-btn-secondary flex flex-col gap-6">
