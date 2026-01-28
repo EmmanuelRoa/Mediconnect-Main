@@ -16,7 +16,7 @@ function DashboardLayout() {
   useEffect(() => {
     return () => {
       const currentPath = window.location.pathname;
-      // Fix: Array.prototype.startsWith does not exist, use logical check
+
       if (
         !currentPath.startsWith("/patient/schedule-appointment") &&
         !currentPath.startsWith("/search")
@@ -29,11 +29,10 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen px-4 py-6 bg-bg-btn-secondary flex flex-col gap-6">
-      {/* Navbar móvil solo visible en pantallas pequeñas */}
       <div className="block md:hidden sticky top-0 z-30 animate-fade-in">
         <MCNavbarMobile />
       </div>
-      {/* Navbar escritorio solo visible en pantallas medianas o mayores */}
+
       <div className="hidden md:block sticky top-5 z-30 animate-fade-in">
         <MCNavbar />
       </div>

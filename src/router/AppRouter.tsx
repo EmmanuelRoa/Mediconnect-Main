@@ -25,11 +25,24 @@ import CenterDashboard from "@/features/center/pages/DashboardPage";
 import PatientProfilePage from "@/features/patient/pages/PatientProfilePage";
 import Search from "@/features/search/pages/Search";
 import ScheduleAppointment from "@/features/patient/pages/ScheduleAppointment";
+
+//Settings and Privacy Pages Imports
+import AccountOverviewPage from "@/features/account/settings/pages/AccountOverviewPage";
+import ChangeEmailPage from "@/features/account/settings/pages/ChangeEmailPage";
+import ChangePasswordPage from "@/features/account/settings/pages/ChangePasswordPage";
+import DeleteAccountPage from "@/features/account/settings/pages/DeleteAccountPage";
+import VerifyIdentityPage from "@/features/account/settings/pages/VerifyIdentityPage";
+
+import PrivacyOverviewPage from "@/features/account/privacy/pages/PrivacyOverviewPage";
+import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisibilityPage";
+import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
+import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivacyPage";
+
 function AppRouter() {
   return (
     <BrowserRouter>
       {" "}
-      <ScrollToTop /> {/* 👈 AQUÍ, dentro del Router real */}
+      <ScrollToTop />
       <Router>
         <Route path={ROUTES.LOGIN} index element={<Login />} />
         <Route element={<AuthLayout />}>
@@ -103,6 +116,50 @@ function AppRouter() {
 
             <Route path={ROUTES.DOCTOR.HOME} element={<DoctorDashboard />} />
             <Route path={ROUTES.CENTER.HOME} element={<CenterDashboard />} />
+
+            {/* SETTINGS */}
+            <Route
+              path={ROUTES.SETTINGS.ROOT}
+              element={<AccountOverviewPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.VERIFY_IDENTITY}
+              element={<VerifyIdentityPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.EMAIL.CHANGE}
+              element={<ChangeEmailPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.EMAIL.VERIFY}
+              element={<VerifyIdentityPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.PASSWORD.CHANGE}
+              element={<ChangePasswordPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.DELETE_ACCOUNT}
+              element={<DeleteAccountPage />}
+            />
+
+            {/* PRIVACY */}
+            <Route
+              path={ROUTES.PRIVACY.ROOT}
+              element={<PrivacyOverviewPage />}
+            />
+            <Route
+              path={ROUTES.PRIVACY.PROFILE_VISIBILITY}
+              element={<ProfileVisibilityPage />}
+            />
+            <Route
+              path={ROUTES.PRIVACY.MESSAGES}
+              element={<MessagesPrivacyPage />}
+            />
+            <Route
+              path={ROUTES.PRIVACY.BLOCKED_USERS}
+              element={<BlockedUsersPage />}
+            />
           </Route>
         </Route>
       </Router>

@@ -41,6 +41,7 @@ import flagSpain from "@/assets/flag-spain.png";
 import flagUSA from "@/assets/flag-usa.png";
 import type { Theme } from "@/stores/useGlobalUISlice";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/router/routes";
 
 const isMac =
   typeof window !== "undefined" &&
@@ -415,14 +416,24 @@ export function MCUserMenuContent({
 
         {/* Configuración y privacidad */}
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              navigate(ROUTES.SETTINGS.ROOT);
+              setOpen(false);
+            }}
+          >
             <Settings className="w-4 h-4 mr-2" />
             {t("userMenu.settings")}
             {!isMobile && (
               <DropdownMenuShortcut>{cmdOrCtrl}+S</DropdownMenuShortcut>
             )}
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              navigate(ROUTES.PRIVACY.ROOT);
+              setOpen(false);
+            }}
+          >
             <Shield className="w-4 h-4 mr-2" />
             {t("userMenu.privacy")}
             {!isMobile && (

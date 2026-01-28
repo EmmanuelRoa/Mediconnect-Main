@@ -11,6 +11,12 @@ const getSystemTheme = (): ResolvedTheme => {
     : "light";
 };
 
+export type VerificationContext =
+  | "CHANGE_EMAIL"
+  | "CHANGE_PASSWORD"
+  | "DELETE_ACCOUNT"
+  | null;
+
 export type GlobalUISlice = {
   isloading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -43,6 +49,9 @@ export type GlobalUISlice = {
   setModalOpen: (isOpen: boolean) => void;
   onboardingStep: number;
   setOnboardingStep: (step: number) => void;
+  verificationContext: VerificationContext;
+  setVerificationContext: (context: VerificationContext) => void;
+  resetVerificationContext: () => void;
 };
 
 export const createGlobalUISlice: StateCreator<GlobalUISlice> = (set, get) => ({
@@ -87,4 +96,7 @@ export const createGlobalUISlice: StateCreator<GlobalUISlice> = (set, get) => ({
   setModalOpen: (isOpen: boolean) => set({ modalOpen: isOpen }),
   onboardingStep: 0,
   setOnboardingStep: (step: number) => set({ onboardingStep: step }),
+  verificationContext: null,
+  setVerificationContext: (context) => set({ verificationContext: context }),
+  resetVerificationContext: () => set({ verificationContext: null }),
 });

@@ -61,6 +61,26 @@ export const ROUTES = {
     CENTER_PROFILE_PUBLIC: "/center/profile/:centerId",
   },
 
+  SETTINGS: {
+    ROOT: "/settings",
+    VERIFY_IDENTITY: "/settings/verify-identity",
+    EMAIL: {
+      CHANGE: "/settings/change-email",
+      VERIFY: "/settings/verify-email",
+    },
+    PASSWORD: {
+      CHANGE: "/settings/change-password",
+    },
+    DELETE_ACCOUNT: "/settings/delete-account",
+  },
+
+  PRIVACY: {
+    ROOT: "/privacy",
+    PROFILE_VISIBILITY: "/privacy/profile",
+    MESSAGES: "/privacy/messages",
+    BLOCKED_USERS: "/privacy/blocked-users",
+  },
+
   COMMON: {
     CHAT: "/chat",
     GLOBAL_SEARCH: "/search",
