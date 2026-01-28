@@ -111,10 +111,12 @@ function MCFileInput({
     <div className="w-full flex flex-col mb-4">
       {/* Label */}
       {label && (
-        <label className="text-left text-base sm:text-lg text-primary mb-2">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+        <div className="flex flex-row justify-between items-center mb-2 gap-2">
+          <span className="text-left text-base sm:text-lg text-primary">
+            {label}
+          </span>
+          {required && <span className="text-red-500">*</span>}
+        </div>
       )}
 
       {/* File Input Area */}
@@ -123,7 +125,7 @@ function MCFileInput({
           "relative border-2 border-dashed border-primary/30 rounded-4xl p-6 text-center transition-all duration-300 hover:border-primary/50 cursor-pointer",
           dragActive && "border-primary bg-primary/5",
           disabled && "opacity-50 cursor-not-allowed",
-          className
+          className,
         )}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}

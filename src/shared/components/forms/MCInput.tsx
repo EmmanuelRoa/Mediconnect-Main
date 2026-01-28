@@ -112,7 +112,7 @@ function MCInput({
     <div className="w-full flex flex-col mb-4 px-0">
       {/* Label and Password Toggle */}
       {label && (
-        <div className="flex flex-row justify-between items-center mb-1 gap-2">
+        <div className="flex flex-row justify-between items-center mb-2 gap-2">
           <label
             htmlFor={name}
             className="text-left text-base sm:text-lg text-primary"
@@ -124,8 +124,9 @@ function MCInput({
             <Button
               type="button"
               variant="ghost"
-              className="rounded-2xl text-gray-500 px-2 py-1"
+              className="rounded-2xl text-secondary/75 dark:text-accent/75 hover:bg-secondary/10 dark:accent-accent/10 dark:hover:text-accent hover:text-secondary px-2 py-1 active:bg-secondary/20 active:text-secondary dark:active:text-accent dark:active:bg-accent/20"
               onClick={handlePasswordToggle}
+              disabled={disabled} // <-- Deshabilita el botón si el input está deshabilitado
             >
               {passwordVisibility ? (
                 <span className="flex items-center gap-1">

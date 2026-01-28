@@ -16,17 +16,31 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        success: (
+          <CircleCheckIcon
+            className="size-4"
+            style={{ color: "var(--primary)" }}
+          />
+        ),
+        info: (
+          <InfoIcon className="size-4" style={{ color: "var(--secondary)" }} />
+        ),
+        warning: (
+          <TriangleAlertIcon className="size-4" style={{ color: "#E9B306" }} />
+        ),
+        error: (
+          <OctagonXIcon
+            className="size-4"
+            style={{ color: "var(--destructive)" }}
+          />
+        ),
       }}
       style={
         {
-          "--normal-bg": "var(--background-secondary)",
+          "--normal-bg": "var(--background)",
           "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          "--normal-border":
+            "color-mix(in srgb, var(--primary), transparent 100%)", // 50% opacidad
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }

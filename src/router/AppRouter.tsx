@@ -29,6 +29,7 @@ import ScheduleAppointment from "@/features/patient/pages/ScheduleAppointment";
 //Settings and Privacy Pages Imports
 import AccountOverviewPage from "@/features/account/settings/pages/AccountOverviewPage";
 import ChangeEmailPage from "@/features/account/settings/pages/ChangeEmailPage";
+import VerifyNewEmailPage from "@/features/account/settings/pages/VerifyNewEmailPage";
 import ChangePasswordPage from "@/features/account/settings/pages/ChangePasswordPage";
 import DeleteAccountPage from "@/features/account/settings/pages/DeleteAccountPage";
 import VerifyIdentityPage from "@/features/account/settings/pages/VerifyIdentityPage";
@@ -129,6 +130,10 @@ function AppRouter() {
             <Route
               path={ROUTES.SETTINGS.EMAIL.CHANGE}
               element={<ChangeEmailPage />}
+            />
+            <Route
+              path={ROUTES.SETTINGS.EMAIL.VERIFY}
+              element={<VerifyNewEmailPage />}
             />
             <Route
               path={ROUTES.SETTINGS.EMAIL.VERIFY}

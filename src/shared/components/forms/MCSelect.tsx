@@ -133,21 +133,21 @@ function MCSelect({
     <div className="w-full flex flex-col mb-4 px-0">
       {/* Label */}
       {label && (
-        <label
-          htmlFor={name}
-          className={cn(
-            "block text-primary mb-1",
-            size === "small"
-              ? "text-sm"
-              : size === "large"
-                ? "text-lg"
-                : "text-base",
-          )}
-          style={{ width: "100%" }}
-        >
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+        <div className="flex flex-row justify-between items-center mb-2 gap-2">
+          <span
+            className={cn(
+              "text-left text-base sm:text-lg text-primary",
+              size === "small"
+                ? "text-sm"
+                : size === "large"
+                  ? "text-lg"
+                  : "text-base",
+            )}
+          >
+            {label}
+          </span>
+          {required && <span className="text-red-500">*</span>}
+        </div>
       )}
 
       {/* Select Container */}

@@ -35,7 +35,7 @@ function AccountActions({ items }: AccountActionsProps) {
                   "items-center justify-center rounded-full",
                   item.isDestructive
                     ? "bg-[rgba(220,38,38,0.1)] text-[#dc2626]"
-                    : "bg-accent text-primary",
+                    : "bg-accent/30 text-primary dark:text-card",
                 )}
               >
                 <div className="p-3">{item.icon}</div>

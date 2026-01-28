@@ -33,7 +33,7 @@ function MCToast() {
     }
   }, [toastState, clearToast]);
 
-  return <Toaster position="top-center" />;
+  return <Toaster position="bottom-right" />;
 }
 
 export default MCToast;

@@ -9,6 +9,14 @@ import { useAppStore } from "@/stores/useAppStore";
 import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+
+// Rutas según contexto
+const CONTEXT_ROUTES: Record<string, string> = {
+  CHANGE_EMAIL: "/settings/change-email",
+  CHANGE_PASSWORD: "/settings/change-password",
+  DELETE_ACCOUNT: "/settings/delete-account",
+};
+
 function VerifyIdentityPage() {
   const navigate = useNavigate();
 
@@ -16,21 +24,38 @@ function VerifyIdentityPage() {
   const setVerifyAccountPassword = useProfileStore(
     (state) => state.setVerifyAccountPassword,
   );
-  const UserVerifying = useProfileStore((state) => state.verifyAccountPassword);
 
   const setToast = useGlobalUIStore((state) => state.setToast);
-  const toast = useGlobalUIStore((state) => state.toast);
 
-  useEffect(() => {
-    console.log(toast);
-  }, [toast]);
+  const verificationContext = useGlobalUIStore(
+    (state) => state.verificationContext,
+  );
+  const setVerificationStatus = useGlobalUIStore(
+    (state) => state.setVerificationContextStatus,
+  );
 
-  const handleSubmitSuccess = () => {
+  // Si no hay contexto, redirige fuera
+  React.useEffect(() => {
+    if (!verificationContext) {
+      navigate("/settings");
+    }
+  }, [verificationContext, navigate]);
+
+  const handleSubmitSuccess = (password: { password: string }) => {
     setToast({
-      type: "error",
+      type: "success",
       message: "Identidad verificada sin implementar lógica real.",
       open: true,
     });
+    // Marca como verificado
+    setVerificationStatus("VERIFIED");
+    setVerifyAccountPassword(password);
+    // Redirige según contexto
+    if (verificationContext && CONTEXT_ROUTES[verificationContext]) {
+      navigate(CONTEXT_ROUTES[verificationContext]);
+    } else {
+      navigate("/settings");
+    }
   };
 
   return (
@@ -46,7 +71,7 @@ function VerifyIdentityPage() {
             schema={verifyAccountSchema}
             onSubmit={handleSubmitSuccess}
             defaultValues={{
-              password: UserVerifying?.password || "",
+              password: "",
             }}
             className=" w-md mt-4 flex flex-col items-center gap-4 h-full "
           >
@@ -54,7 +79,7 @@ function VerifyIdentityPage() {
               label="Contraseña"
               type="password"
               name="password"
-              placeholder={`Ingresa la contraseña de ${sessionUser?.email}`}
+              placeholder={`Ingresa la contraseña de ${sessionUser?.name}`}
               className="w-full"
             />
             <MCButton
