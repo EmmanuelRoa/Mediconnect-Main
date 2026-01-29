@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
-import { Heart, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
@@ -17,7 +17,7 @@ import { type DoctorFiltersSlice } from "@/stores/filters/doctorFilters.slice";
 import { useFiltersStore } from "@/stores/useFiltersStore";
 import MedicalInfoCard from "@/features/patient/components/dashboard/MedicalInfoCard";
 import { fadeInUp } from "@/lib/animations/commonAnimations";
-
+import { useNavigate } from "react-router-dom";
 const doctorsList = [
   {
     name: "Alexander Gil",
@@ -81,6 +81,7 @@ function getActiveFilters(
 
 function PatientProfilePage() {
   const [openSheet, setOpenSheet] = useState(false);
+  const [searchName, setSearchName] = useState(""); // Nuevo estado para el filtro por nombre
   const { t } = useTranslation("patient");
 
   const user = useAppStore((state) => state.user);
@@ -98,9 +99,15 @@ function PatientProfilePage() {
 
   const doctorFilters = useFiltersStore((state) => state.doctorFilters);
   const setDoctorFilters = useFiltersStore((state) => state.setDoctorFilters);
+  const navigate = useNavigate();
 
-  // Filtrado de doctores usando doctorFilters
+  // Filtrado de doctores usando doctorFilters y searchName
   const filteredDoctors = doctorsList.filter((doctor) => {
+    if (
+      searchName &&
+      !doctor.name.toLowerCase().includes(searchName.toLowerCase())
+    )
+      return false;
     if (
       doctorFilters.specialty &&
       doctor.specialty.toLowerCase() !== doctorFilters.specialty.toLowerCase()
@@ -139,7 +146,7 @@ function PatientProfilePage() {
     >
       {!isMobile && (
         <aside>
-          <MCBackButton variant="background" />
+          <MCBackButton variant="background" onClick={() => navigate(-1)} />
         </aside>
       )}
 
@@ -149,7 +156,7 @@ function PatientProfilePage() {
       >
         {isMobile && (
           <div className="w-full px-2 py-3">
-            <MCBackButton variant="background" />
+            <MCBackButton variant="background" onClick={() => navigate(-1)} />
           </div>
         )}
 
@@ -233,7 +240,12 @@ function PatientProfilePage() {
               <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                 <div className="w-full sm:w-auto flex-1 sm:flex-none">
                   <MCFilterInput
-                    placeholder={t("filters.placeholders.specialty")}
+                    placeholder={t(
+                      "filters.placeholders.name",
+                      "Search by name",
+                    )}
+                    value={searchName}
+                    onChange={setSearchName}
                   />
                 </div>
                 <MCFilterPopover
@@ -260,9 +272,9 @@ function PatientProfilePage() {
           </CardHeader>
 
           <CardContent className={isMobile ? "p-4 pt-2" : "p-6 pt-4"}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-              {filteredDoctors.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8">
+            {filteredDoctors.length === 0 ? (
+              <div className="flex items-center justify-center w-full h-64">
+                <div className="flex flex-col items-center justify-center py-8 w-full rounded-lg gap-2">
                   <AlertTriangle className="w-10 h-10 text-muted-foreground mb-2" />
                   <span className="text-lg font-semibold text-muted-foreground">
                     {t("doctors.emptyTitle", "No doctors found")}
@@ -274,8 +286,10 @@ function PatientProfilePage() {
                     )}
                   </span>
                 </div>
-              ) : (
-                filteredDoctors.map((doctor, idx) => (
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {filteredDoctors.map((doctor, idx) => (
                   <MCDoctorsCards
                     key={idx}
                     name={doctor.name}
@@ -287,9 +301,9 @@ function PatientProfilePage() {
                     isFavorite={doctor.isFavorite}
                     urlImage={doctor.urlImage}
                   />
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

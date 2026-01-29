@@ -38,7 +38,7 @@ import PrivacyOverviewPage from "@/features/account/privacy/pages/PrivacyOvervie
 import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisibilityPage";
 import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
 import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivacyPage";
-
+import MyAppointmentsPage from "@/features/patient/pages/MyAppointmentsPage";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -146,6 +146,11 @@ function AppRouter() {
             <Route
               path={ROUTES.SETTINGS.DELETE_ACCOUNT}
               element={<DeleteAccountPage />}
+            />
+
+            <Route
+              path={ROUTES.PATIENT.APPOINTMENTS}
+              element={<MyAppointmentsPage />}
             />
 
             {/* PRIVACY */}
