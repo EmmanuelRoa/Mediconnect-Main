@@ -2,8 +2,11 @@ import React, { useState, useMemo } from "react";
 import { MyAppointmentsCards } from "../components/appoiments/MyAppointmentsCards";
 import { MyAppointmentsTable } from "../components/appoiments/MyAppointmentsTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
-import { LayoutGrid, List } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import MCPDFButton from "@/shared/components/forms/MCPDFButton";
+import MCToogle from "@/shared/components/forms/MCToogle";
+import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
+import MCFilterInput from "@/shared/components/filters/MCFilterInput";
+import FilterMyAppointments from "../components/filters/FilterMyAppointments";
 import {
   Pagination,
   PaginationContent,
@@ -26,6 +29,16 @@ export interface Appointment {
   appointmentType: "virtual" | "in_person";
   location?: string;
   status: "scheduled" | "pending" | "in_progress" | "completed" | "cancelled";
+}
+
+// Tipo para los filtros locales
+interface AppointmentFilters {
+  status: string[];
+  specialties: string[];
+  modalities: string[];
+  ServiceName: string[];
+  dateRange?: [Date, Date];
+  doctorName?: string;
 }
 
 // Datos de ejemplo
@@ -203,23 +216,123 @@ const mockAppointments: Appointment[] = [
 const ITEMS_PER_PAGE = 6;
 
 function MyAppointmentsPage() {
+  // Estados locales con useState
   const [showCards, setShowCards] = useState(true);
   const [upcomingPage, setUpcomingPage] = useState(1);
   const [historicalPage, setHistoricalPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Separar citas próximas e historial
+  // Estado de filtros local
+  const [filters, setFilters] = useState<AppointmentFilters>({
+    status: [],
+    specialties: [],
+    modalities: [],
+    ServiceName: [],
+    dateRange: undefined,
+    doctorName: undefined,
+  });
+
+  // Función para actualizar filtros
+  const updateFilters = (newFilters: Partial<AppointmentFilters>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  // Función para resetear filtros
+  const resetFilters = () => {
+    setFilters({
+      status: [],
+      specialties: [],
+      modalities: [],
+      ServiceName: [],
+      dateRange: undefined,
+      doctorName: undefined,
+    });
+    setSearchTerm("");
+  };
+
+  // Función para contar filtros activos
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.status.length > 0) count++;
+    if (filters.specialties.length > 0) count++;
+    if (filters.modalities.length > 0) count++;
+    if (filters.ServiceName.length > 0) count++;
+    if (filters.dateRange) count++;
+    if (searchTerm) count++;
+    return count;
+  };
+
+  // Función para filtrar las citas
+  const filterAppointments = (appointments: Appointment[]) => {
+    return appointments.filter((appointment) => {
+      // Filtro por búsqueda de doctor
+      if (
+        searchTerm &&
+        !appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Filtro por estado
+      if (
+        filters.status.length > 0 &&
+        !filters.status.includes(appointment.status)
+      ) {
+        return false;
+      }
+
+      // Filtro por especialidad
+      if (
+        filters.specialties.length > 0 &&
+        !filters.specialties.includes(appointment.doctorSpecialty)
+      ) {
+        return false;
+      }
+
+      // Filtro por modalidad
+      if (
+        filters.modalities.length > 0 &&
+        !filters.modalities.includes(appointment.appointmentType)
+      ) {
+        return false;
+      }
+
+      // Filtro por tipo de servicio
+      if (
+        filters.ServiceName.length > 0 &&
+        !filters.ServiceName.includes(appointment.evaluationType)
+      ) {
+        return false;
+      }
+
+      // Filtro por rango de fechas
+      if (filters.dateRange) {
+        const appointmentDate = new Date(appointment.date);
+        const [startDate, endDate] = filters.dateRange;
+        if (appointmentDate < startDate || appointmentDate > endDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  // Separar citas próximas e historial con filtros aplicados
   const { upcomingAppointments, historicalAppointments } = useMemo(() => {
-    const upcoming = mockAppointments.filter((apt) =>
+    const filteredAppointments = filterAppointments(mockAppointments);
+
+    const upcoming = filteredAppointments.filter((apt) =>
       ["scheduled", "pending", "in_progress"].includes(apt.status),
     );
-    const historical = mockAppointments.filter((apt) =>
+    const historical = filteredAppointments.filter((apt) =>
       ["completed", "cancelled"].includes(apt.status),
     );
     return {
       upcomingAppointments: upcoming,
       historicalAppointments: historical,
     };
-  }, []);
+  }, [filters, searchTerm]);
 
   // Calcular paginación para citas próximas
   const upcomingPagination = useMemo(() => {
@@ -333,10 +446,12 @@ function MyAppointmentsPage() {
               <MyAppointmentsCards
                 key={appointment.id}
                 appointment={appointment}
-                onViewDetails={handleViewDetails}
-                onReschedule={handleReschedule}
-                onCancel={handleCancel}
-                onJoin={handleJoin}
+                onViewDetails={() =>
+                  console.log("View details:", appointment.id)
+                }
+                onReschedule={() => console.log("Reschedule:", appointment.id)}
+                onCancel={() => console.log("Cancel:", appointment.id)}
+                onJoin={() => console.log("Join:", appointment.id)}
               />
             ))}
           </div>
@@ -348,45 +463,39 @@ function MyAppointmentsPage() {
     return <MyAppointmentsTable key={section} data={appointments} />;
   };
 
-  // Botón para cambiar la vista
+  // Componentes
   const toggleView = (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setShowCards((prev) => !prev)}
-      className="gap-2"
-    >
-      {showCards ? (
-        <>
-          <List className="h-4 w-4" />
-          <span className="hidden sm:inline">Tabla</span>
-        </>
-      ) : (
-        <>
-          <LayoutGrid className="h-4 w-4" />
-          <span className="hidden sm:inline">Tarjetas</span>
-        </>
-      )}
-    </Button>
+    <MCToogle
+      value={showCards ? "card" : "list"}
+      onChange={(val) => setShowCards(val === "card")}
+    />
   );
 
-  const searchComponent = (
-    <input
-      placeholder="Buscar cita"
-      className="border rounded-full px-4 py-2 w-full max-w-sm"
+  const pdfGeneratorComponent = (
+    <MCPDFButton
+      onClick={() => {
+        console.log("Generate PDF");
+      }}
     />
   );
 
   const filterComponent = (
-    <Button variant="outline" size="sm">
-      Filtros
-    </Button>
+    <MCFilterPopover
+      activeFiltersCount={getActiveFiltersCount()}
+      onClearFilters={resetFilters}
+    >
+      <FilterMyAppointments filters={filters} onFiltersChange={updateFilters} />
+    </MCFilterPopover>
   );
 
-  const pdfGeneratorComponent = (
-    <Button variant="outline" size="sm">
-      Descargar PDF
-    </Button>
+  const searchInput = (
+    <div className="w-full sm:w-auto sm:min-w-[200px] lg:min-w-[250px]">
+      <MCFilterInput
+        placeholder="Buscar por nombre de doctor..."
+        value={searchTerm}
+        onChange={(value: string) => setSearchTerm(value)}
+      />
+    </div>
   );
 
   // Componente principal con ambas secciones
@@ -415,7 +524,7 @@ function MyAppointmentsPage() {
       title="Mis Citas"
       tableComponent={tableComponent}
       toogleView={toggleView}
-      searchComponent={searchComponent}
+      searchComponent={searchInput}
       filterComponent={filterComponent}
       pdfGeneratorComponent={pdfGeneratorComponent}
     />

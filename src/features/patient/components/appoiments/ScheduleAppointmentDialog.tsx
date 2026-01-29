@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 import type { scheduleAppointment } from "@/types/AppointmentTypes";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import ServiceCards from "./ServiceCards";
-import { useFiltersStore } from "@/stores/useFiltersStore";
 import FilterAppointments from "@/features/patient/components/filters/FilterAppointments";
 import { useNavigate } from "react-router-dom";
 
@@ -43,6 +42,14 @@ interface Service {
   modality: string;
   location: string;
   timeSlots: string[];
+}
+
+// Interfaz para los filtros de citas
+interface AppointmentFilters {
+  serviceTypes: string[];
+  specialties: string[];
+  modalities: string[];
+  priceRange: [number, number];
 }
 
 const SERVICES: Service[] = [
@@ -128,22 +135,46 @@ const parseDateFromStorage = (dateString: string): Date => {
 function ScheduleAppointmentForm() {
   const { t, i18n } = useTranslation("patient");
   const currentLocale = i18n.language === "es" ? es : enUS;
-  const { filters, resetFilters } = useFiltersStore();
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Estados locales para filtros con useState
+  const [appointmentFilters, setAppointmentFilters] = useState<AppointmentFilters>({
+    serviceTypes: [],
+    specialties: [],
+    modalities: [],
+    priceRange: [0, 10000],
+  });
+
+  // Función para actualizar filtros
+  const updateAppointmentFilters = (newFilters: Partial<AppointmentFilters>) => {
+    setAppointmentFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  // Función para resetear filtros
+  const resetAppointmentFilters = () => {
+    setAppointmentFilters({
+      serviceTypes: [],
+      specialties: [],
+      modalities: [],
+      priceRange: [0, 10000],
+    });
+  };
+
+  // Función para contar filtros activos
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (appointmentFilters.serviceTypes.length > 0) count++;
+    if (appointmentFilters.specialties.length > 0) count++;
+    if (appointmentFilters.modalities.length > 0) count++;
+    if (appointmentFilters.priceRange[0] !== 0 || appointmentFilters.priceRange[1] !== 10000) count++;
+    return count;
+  };
 
   // Obtener valores del formulario (react-hook-form)
   const { watch, setValue } = useFormContext<scheduleAppointment>();
 
   // Watch todos los valores del formulario
   const formValues = watch();
-
-  const activeFiltersCount = [
-    filters.serviceTypes.length,
-    filters.specialties.length,
-    filters.modalities.length,
-    filters.priceRange[0] !== 0 || filters.priceRange[1] !== 10000 ? 1 : 0,
-    filters.durations.length,
-  ].reduce((a, b) => a + (b ? 1 : 0), 0);
 
   // Obtener la fecha del formulario o usar hoy
   const selectedDate = formValues.date
@@ -405,10 +436,13 @@ function ScheduleAppointmentForm() {
       {/* Filters */}
       <div className="flex gap-2">
         <MCFilterPopover
-          activeFiltersCount={activeFiltersCount}
-          onClearFilters={resetFilters}
+          activeFiltersCount={getActiveFiltersCount()}
+          onClearFilters={resetAppointmentFilters}
         >
-          <FilterAppointments />
+          <FilterAppointments
+            filters={appointmentFilters}
+            onFiltersChange={updateAppointmentFilters}
+          />
         </MCFilterPopover>
       </div>
 
