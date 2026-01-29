@@ -9,10 +9,10 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { changePasswordSchema } from "@/schema/account.schema";
-import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
+import { useTranslation } from "react-i18next";
 
 function ChangePasswordPage() {
-  const isMobile = useIsMobile(); // <-- Usa el hook
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const sessionUser = useAppStore((state) => state.user);
 
@@ -29,12 +29,14 @@ function ChangePasswordPage() {
   const VerificationContextStatus = useGlobalUIStore(
     (state) => state.verificationContextStatus,
   );
+  // Redirige si el usuario no está autenticado
   useEffect(() => {
     if (!sessionUser) {
       navigate("/settings");
     }
   }, [sessionUser, navigate]);
 
+  // Redirige si no está en el contexto correcto o no tiene datos pendientes
   useEffect(() => {
     if (
       VerificationContext !== "CHANGE_PASSWORD" ||
@@ -43,6 +45,9 @@ function ChangePasswordPage() {
       navigate("/settings");
     }
   }, [VerificationContext, VerificationContextStatus, navigate]);
+
+  // Usa t para el schema
+  const passwordSchema = changePasswordSchema(t);
 
   const handleSubmit = (data: {
     confirmNewPassword: string;
@@ -53,56 +58,50 @@ function ChangePasswordPage() {
       confirmNewPassword: data.confirmNewPassword,
       newPassword: data.newPassword,
     });
+    // Aquí deberías llamar a tu API para cambiar la contraseña
     navigate("/settings");
   };
 
   return (
-    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
-      <div
-        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
-      >
-        <div
-          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
-        >
-          <h1
-            className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
-          >
-            Cambiar contraseña
+    <MCDashboardContent mainWidth="max-w-2xl">
+      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
+        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
+          <h1 className="text-5xl font-medium mb-2">
+            {t("changePassword.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Ingresa tu contraseña actual y la nueva contraseña que deseas
-            establecer.
+            {t("changePassword.description")}
           </p>
           <MCFormWrapper
-            schema={changePasswordSchema}
+            schema={passwordSchema}
             onSubmit={handleSubmit}
             defaultValues={{
               newPassword: changePasswordData?.newPassword || "",
               confirmNewPassword: changePasswordData?.confirmNewPassword || "",
             }}
-            className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
+            className="w-md mt-4 flex flex-col items-center gap-4 h-full"
           >
             <MCInput
-              label="Contraseña actual"
+              label={t("changePassword.currentPasswordLabel")}
               name="newPassword"
               type="password"
-              placeholder="Ingresa tu contraseña actual"
+              placeholder={t("changePassword.currentPasswordPlaceholder")}
               className="w-full"
             />
             <MCInput
-              label="Nueva contraseña"
+              label={t("changePassword.newPasswordLabel")}
               name="confirmNewPassword"
               type="password"
-              placeholder="Ingresa tu nueva contraseña"
+              placeholder={t("changePassword.newPasswordPlaceholder")}
               className="w-full"
             />
             <MCButton
               type="submit"
-              className={isMobile ? "w-full" : "w-xs"}
+              className="w-xs"
               icon={<ArrowRight />}
               iconPosition="right"
             >
-              Cambiar contraseña
+              {t("changePassword.changeButton")}
             </MCButton>
           </MCFormWrapper>
         </div>

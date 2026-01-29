@@ -10,8 +10,10 @@ import {
   patientMessageConfigSchema,
 } from "@/schema/account.schema";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 function MessagesPrivacyPage() {
+  const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const userRole = useAppStore((state) => state.user?.role);
 
@@ -43,7 +45,7 @@ function MessagesPrivacyPage() {
   if (userRole === "DOCTOR") {
     configForm = (
       <MCFormWrapper
-        schema={doctorMessageConfigSchema}
+        schema={doctorMessageConfigSchema(t)}
         onSubmit={handleDoctorConfigSubmit}
         defaultValues={
           doctorConfig || { patientMessage: "NONE", centerMessage: "NONE" }
@@ -52,21 +54,33 @@ function MessagesPrivacyPage() {
       >
         <MCSelect
           name="patientMessage"
-          label="Mensajes a Pacientes"
+          label={t("messagesPrivacy.patientMessagesLabel")}
           options={[
-            { label: "Con cita", value: "WITH_APPOINTMENT" },
-            { label: "Previas", value: "PREVIOUS" },
-            { label: "Nadie", value: "NONE" },
+            {
+              label: t("messagesPrivacy.withAppointment"),
+              value: "WITH_APPOINTMENT",
+            },
+            {
+              label: t("messagesPrivacy.previous"),
+              value: "PREVIOUS",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
         <MCSelect
           name="centerMessage"
-          label="Mensajes a Centros"
+          label={t("messagesPrivacy.centerMessagesLabel")}
           options={[
-            { label: "Conexión establecida", value: "CONNECTION_ESTABLISHED" },
-            { label: "Cualquier centro", value: "ANY_CENTER" },
-            { label: "Nadie", value: "NONE" },
+            {
+              label: t("messagesPrivacy.connectionEstablished"),
+              value: "CONNECTION_ESTABLISHED",
+            },
+            {
+              label: t("messagesPrivacy.anyCenter"),
+              value: "ANY_CENTER",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
@@ -75,7 +89,7 @@ function MessagesPrivacyPage() {
   } else if (userRole === "CENTER") {
     configForm = (
       <MCFormWrapper
-        schema={centerMessageConfigSchema}
+        schema={centerMessageConfigSchema(t)}
         onSubmit={handleCenterConfigSubmit}
         defaultValues={
           centerConfig || { patientMessage: "NONE", doctorMessage: "NONE" }
@@ -84,21 +98,27 @@ function MessagesPrivacyPage() {
       >
         <MCSelect
           name="patientMessage"
-          label="Mensajes a Pacientes"
+          label={t("messagesPrivacy.patientMessagesLabel")}
           options={[
-            { label: "Cualquiera", value: "ANY" },
-            { label: "Con cita", value: "WITH_APPOINTMENT" },
-            { label: "Nadie", value: "NONE" },
+            { label: t("messagesPrivacy.any"), value: "ANY" },
+            {
+              label: t("messagesPrivacy.withAppointment"),
+              value: "WITH_APPOINTMENT",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
         <MCSelect
           name="doctorMessage"
-          label="Mensajes a Doctores"
+          label={t("messagesPrivacy.doctorMessagesLabel")}
           options={[
-            { label: "Cualquiera", value: "ANY" },
-            { label: "Afiliados", value: "AFFILIATED" },
-            { label: "Nadie", value: "NONE" },
+            { label: t("messagesPrivacy.any"), value: "ANY" },
+            {
+              label: t("messagesPrivacy.affiliated"),
+              value: "AFFILIATED",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
@@ -107,7 +127,7 @@ function MessagesPrivacyPage() {
   } else if (userRole === "PATIENT") {
     configForm = (
       <MCFormWrapper
-        schema={patientMessageConfigSchema}
+        schema={patientMessageConfigSchema(t)}
         onSubmit={handlePatientConfigSubmit}
         defaultValues={
           patientConfig || { doctorMessage: "NONE", centerMessage: "NONE" }
@@ -116,22 +136,31 @@ function MessagesPrivacyPage() {
       >
         <MCSelect
           name="doctorMessage"
-          label="Mensajes a Doctores"
+          label={t("messagesPrivacy.doctorMessagesLabel")}
           options={[
-            { label: "Cualquiera", value: "ANY" },
-            { label: "Mis doctores", value: "MY_DOCTORS" },
-            { label: "Con cita", value: "WITH_APPOINTMENT" },
-            { label: "Nadie", value: "NONE" },
+            { label: t("messagesPrivacy.any"), value: "ANY" },
+            {
+              label: t("messagesPrivacy.myDoctors"),
+              value: "MY_DOCTORS",
+            },
+            {
+              label: t("messagesPrivacy.withAppointment"),
+              value: "WITH_APPOINTMENT",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
         <MCSelect
           name="centerMessage"
-          label="Mensajes a Centros"
+          label={t("messagesPrivacy.centerMessagesLabel")}
           options={[
-            { label: "Cualquiera", value: "ANY" },
-            { label: "Con cita", value: "WITH_APPOINTMENT" },
-            { label: "Nadie", value: "NONE" },
+            { label: t("messagesPrivacy.any"), value: "ANY" },
+            {
+              label: t("messagesPrivacy.withAppointment"),
+              value: "WITH_APPOINTMENT",
+            },
+            { label: t("messagesPrivacy.none"), value: "NONE" },
           ]}
           className="w-full"
         />
@@ -148,10 +177,10 @@ function MessagesPrivacyPage() {
           <h1
             className={`${isMobile ? "text-3xl" : "text-5xl"} font-medium text-center mb-2`}
           >
-            Configuración de privacidad de mensajes
+            {t("messagesPrivacy.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Elige quién puede enviarte mensajes según tu tipo de cuenta.
+            {t("messagesPrivacy.description")}
           </p>
           {configForm}
         </div>

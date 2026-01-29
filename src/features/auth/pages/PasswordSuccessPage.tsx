@@ -14,7 +14,8 @@ function PasswordSuccessPage() {
 
   useEffect(() => {
     const hasValidAccess =
-      canAccessPage && allowedPages.includes("/auth/password-success");
+      canAccessPage &&
+      allowedPages.some((pageObj) => pageObj.page === "/auth/password-success");
 
     if (!hasValidAccess) {
       navigate("/auth/forgot-password", { replace: true });

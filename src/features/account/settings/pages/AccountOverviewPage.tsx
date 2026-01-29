@@ -6,10 +6,12 @@ import AccountActions, {
 import { Mail, RotateCcwKey, UserRoundX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
-import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next"; // <-- Importa useTranslation
 
 function AccountOverviewPage() {
-  const isMobile = useIsMobile(); // <-- Usa el hook
+  const { t } = useTranslation("common"); // <-- Usa useTranslation
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const setProcessState = useGlobalUIStore(
     (state) => state.setVerificationContext,
@@ -20,7 +22,7 @@ function AccountOverviewPage() {
   const actions: AccountAction[] = [
     {
       id: "change-email",
-      title: "Cambiar Correo",
+      title: t("account.changeEmail", "Change Email"),
       onClick: () => {
         setProcessState("CHANGE_EMAIL");
         setVerificationContextStatus("PENDING");
@@ -30,7 +32,7 @@ function AccountOverviewPage() {
     },
     {
       id: "change-password",
-      title: "Cambiar Contraseña",
+      title: t("account.changePassword", "Change Password"),
       onClick: () => {
         setProcessState("CHANGE_PASSWORD");
         setVerificationContextStatus("PENDING");
@@ -40,7 +42,7 @@ function AccountOverviewPage() {
     },
     {
       id: "delete-account",
-      title: "Eliminar Cuenta",
+      title: t("account.deleteAccount", "Delete Account"),
       onClick: () => {
         setProcessState("DELETE_ACCOUNT");
         setVerificationContextStatus("PENDING");
@@ -65,11 +67,13 @@ function AccountOverviewPage() {
           <h1
             className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
           >
-            Configuración
+            {t("account.title", "Settings")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Administra la información de tu cuenta, actualiza tus datos
-            personales o configura opciones de desactivación.
+            {t(
+              "account.description",
+              "Manage your account information, update your personal data, or configure deactivation options.",
+            )}
           </p>
         </div>
         <AccountActions items={actions} />

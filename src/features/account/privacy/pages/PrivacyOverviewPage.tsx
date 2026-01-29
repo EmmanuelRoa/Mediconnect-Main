@@ -5,27 +5,29 @@ import AccountActions, {
 import { ShieldCheck, MessageCircle, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 function PrivacyOverviewPage() {
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const actions: AccountAction[] = [
     {
       id: "profile-privacy",
-      title: "Privacidad del perfil",
+      title: t("privacy.profilePrivacy"),
       onClick: () => navigate("/privacy/profile"),
       icon: <ShieldCheck strokeWidth={1.5} />,
     },
     {
       id: "messages-privacy",
-      title: "Mensajes y Comunicación",
+      title: t("privacy.messagesPrivacy"),
       onClick: () => navigate("/privacy/messages"),
       icon: <MessageCircle strokeWidth={1.5} />,
     },
     {
       id: "blocked-users",
-      title: "Usuarios Bloqueados",
+      title: t("privacy.blockedUsers"),
       onClick: () => navigate("/privacy/blocked-users"),
       icon: <UserX strokeWidth={1.5} />,
     },
@@ -43,11 +45,10 @@ function PrivacyOverviewPage() {
           <h1
             className={`${isMobile ? "text-3xl" : "text-5xl"} font-medium mb-2`}
           >
-            Privacidad y Seguridad
+            {t("privacy.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Administra tu información, privacidad y seguridad para que
-            MediConnect funcione mejor para ti
+            {t("privacy.description")}
           </p>
         </div>
         <AccountActions items={actions} />

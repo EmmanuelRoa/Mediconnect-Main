@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import MCInput from "@/shared/components/forms/MCInput";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
@@ -9,7 +10,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
-import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 const CONTEXT_ROUTES: Record<string, string> = {
   CHANGE_EMAIL: "/settings/change-email",
@@ -18,7 +19,8 @@ const CONTEXT_ROUTES: Record<string, string> = {
 };
 
 function VerifyIdentityPage() {
-  const isMobile = useIsMobile(); // <-- Usa el hook
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   const sessionUser = useAppStore((state) => state.user);
@@ -44,7 +46,10 @@ function VerifyIdentityPage() {
   const handleSubmitSuccess = (password: { password: string }) => {
     setToast({
       type: "success",
-      message: "Identidad verificada sin implementar lógica real.",
+      message: t(
+        "verifyIdentity.successMessage",
+        "Identity verified without implementing real logic.",
+      ),
       open: true,
     });
     setVerificationStatus("VERIFIED");
@@ -73,14 +78,16 @@ function VerifyIdentityPage() {
               isMobile ? "text-3xl" : "text-5xl"
             }`}
           >
-            Verificar tu identidad
+            {t("verifyIdentity.title", "Verify your identity")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Por seguridad, necesitamos verificar que eres tú. Ingresa tu
-            contraseña actual.
+            {t(
+              "verifyIdentity.description",
+              "For security, we need to verify it's you. Enter your current password.",
+            )}
           </p>
           <MCFormWrapper
-            schema={verifyAccountSchema}
+            schema={verifyAccountSchema(t)}
             onSubmit={handleSubmitSuccess}
             defaultValues={{
               password: "",
@@ -90,19 +97,21 @@ function VerifyIdentityPage() {
             }`}
           >
             <MCInput
-              label="Contraseña"
+              label={t("verifyIdentity.passwordLabel", "Password")}
               type="password"
               name="password"
-              placeholder={`Ingresa la contraseña de ${sessionUser?.name}`}
+              placeholder={t("verifyIdentity.passwordPlaceholder", {
+                name: sessionUser?.name || "",
+              })}
               className="w-full"
             />
             <MCButton
               type="submit"
               className={isMobile ? "w-full" : "w-xs"}
-              icon={<ArrowRight size={isMobile ? 18 : 24} />}
+              icon={<ArrowRight size={isMobile ? 20 : 24} />}
               iconPosition="right"
             >
-              Verificar
+              {t("verifyIdentity.verifyButton", "Verify")}
             </MCButton>
           </MCFormWrapper>
         </div>

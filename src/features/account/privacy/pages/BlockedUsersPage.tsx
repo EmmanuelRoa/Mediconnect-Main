@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
-import MCInput from "@/shared/components/forms/MCInput";
-import { Search } from "lucide-react";
 import { Avatar, AvatarImage } from "@/shared/ui/avatar";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import MCButton from "@/shared/components/forms/MCButton";
@@ -13,7 +11,9 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from "@/shared/ui/pagination";
+import { useTranslation } from "react-i18next";
 
 // Badge component
 type BadgeProps = {
@@ -66,54 +66,140 @@ const blockedUsers: BlockedUser[] = [
   },
   {
     id: 4,
-    name: "Hospital Dario Contreras",
+    name: "Hospital San Rafael",
     userRole: "CENTER",
     avatar: "",
   },
   {
     id: 5,
-    name: "Hospital Dario Contreras",
-    userRole: "CENTER",
+    name: "Ana Martínez",
+    userRole: "PATIENT",
     avatar:
       "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
   },
   {
     id: 6,
-    name: "Carlos Pérez",
+    name: "Dr. Juan López",
     userRole: "DOCTOR",
     avatar:
       "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
   },
   {
     id: 7,
-    name: "Hospital Dario Contreras",
+    name: "Clínica Universal",
     userRole: "CENTER",
     avatar:
       "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
   },
-  // Puedes agregar hasta 15+ para probar la paginación
+  {
+    id: 8,
+    name: "Laura Fernández",
+    userRole: "PATIENT",
+    avatar: "",
+  },
+  {
+    id: 9,
+    name: "Centro Médico Dominicano",
+    userRole: "CENTER",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
+  {
+    id: 10,
+    name: "Dr. Roberto Sánchez",
+    userRole: "DOCTOR",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
+  {
+    id: 11,
+    name: "Hospital General",
+    userRole: "CENTER",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
+  {
+    id: 12,
+    name: "Pedro Ramírez",
+    userRole: "PATIENT",
+    avatar: "",
+  },
+  {
+    id: 13,
+    name: "Clínica del Este",
+    userRole: "CENTER",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
+  {
+    id: 14,
+    name: "Dra. Carmen Torres",
+    userRole: "DOCTOR",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
+  {
+    id: 15,
+    name: "José Méndez",
+    userRole: "PATIENT",
+    avatar: "",
+  },
+  {
+    id: 16,
+    name: "Hospital Metropolitano",
+    userRole: "CENTER",
+    avatar:
+      "https://i.pinimg.com/736x/ad/4b/28/ad4b28ca4a909fca01201660c00c83f2.jpg",
+  },
 ];
 
-const USERS_PER_PAGE = 10;
+const USERS_PER_PAGE = 7;
+
+// Helper para paginación con elipsis
+const getPageNumbers = (currentPage: number, totalPages: number) => {
+  const pages: (number | string)[] = [];
+  const maxVisible = 5;
+
+  if (totalPages <= maxVisible) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  pages.push(1);
+
+  if (currentPage > 3) {
+    pages.push("ellipsis-start");
+  }
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (currentPage < totalPages - 2) {
+    pages.push("ellipsis-end");
+  }
+
+  if (totalPages > 1) {
+    pages.push(totalPages);
+  }
+
+  return pages;
+};
 
 function BlockedUsersPage() {
+  const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
 
-  const filteredUsers = blockedUsers.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase()),
-  );
-  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
-  const paginatedUsers = filteredUsers.slice(
+  const totalPages = Math.ceil(blockedUsers.length / USERS_PER_PAGE);
+  const paginatedUsers = blockedUsers.slice(
     (page - 1) * USERS_PER_PAGE,
     page * USERS_PER_PAGE,
   );
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setPage(1);
-  };
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   return (
     <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-4xl"}>
@@ -126,22 +212,13 @@ function BlockedUsersPage() {
           <h1
             className={`${isMobile ? "text-3xl" : "text-5xl"} font-medium mb-2`}
           >
-            Usuarios bloqueados
+            {t("blockedUsers.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Administra las cuentas bloqueadas. Los usuarios bloqueados no pueden
-            enviarte mensajes ni ver tu perfil.
+            {t("blockedUsers.description")}
           </p>
         </div>
       </div>
-      <MCInput
-        name="search"
-        placeholder={" Buscar usuarios bloqueados"}
-        icon={<Search size={16} />}
-        value={search}
-        onChange={handleSearch}
-        className={isMobile ? "w-full" : "w-md"}
-      />
       <hr className="border-t border-primary/15 w-full my-2" />
 
       <div
@@ -149,13 +226,13 @@ function BlockedUsersPage() {
       >
         {paginatedUsers.length === 0 && (
           <div className="text-center text-muted-foreground py-8">
-            No hay usuarios bloqueados.
+            {t("blockedUsers.noUsers")}
           </div>
         )}
-        {paginatedUsers.map((user) => (
+        {paginatedUsers.map((user, index) => (
           <div
-            key={user.id}
-            className={`flex flex-col sm:flex-row items-center justify-between border-b border-primary/15 py-6 gap-4`}
+            key={`${user.id}-${index}`}
+            className="flex flex-col sm:flex-row items-center justify-between border-b border-primary/15 py-6 gap-4"
           >
             <div className="flex items-center gap-6 flex-1 w-full">
               <Avatar className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
@@ -177,19 +254,21 @@ function BlockedUsersPage() {
                 )}
               </Avatar>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center gap-3 mb-1 flex-wrap">
                   <span className="text-lg font-medium truncate">
                     {user.name}
                   </span>
                   <Badge role={user.userRole}>
                     {user.userRole === "PATIENT"
-                      ? "Paciente"
+                      ? t("blockedUsers.patient")
                       : user.userRole === "DOCTOR"
-                        ? "Doctor"
-                        : "Centro"}
+                        ? t("blockedUsers.doctor")
+                        : t("blockedUsers.center")}
                   </Badge>
                 </div>
-                <div className="text-sm text-gray-600">Bloqueado</div>
+                <div className="text-sm text-gray-600">
+                  {t("blockedUsers.blocked")}
+                </div>
               </div>
             </div>
             <MCButton
@@ -197,7 +276,7 @@ function BlockedUsersPage() {
               variant="outline"
               className="flex-shrink-0 w-full sm:w-auto"
             >
-              Desbloquear
+              {t("blockedUsers.unblockButton")}
             </MCButton>
           </div>
         ))}
@@ -216,16 +295,28 @@ function BlockedUsersPage() {
                   className={page === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              {[...Array(totalPages)].map((_, idx) => (
-                <PaginationItem key={idx}>
-                  <PaginationLink
-                    isActive={page === idx + 1}
-                    onClick={() => setPage(idx + 1)}
-                  >
-                    {idx + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {pageNumbers.map((pageNum, idx) => {
+                if (
+                  pageNum === "ellipsis-start" ||
+                  pageNum === "ellipsis-end"
+                ) {
+                  return (
+                    <PaginationItem key={`ellipsis-${idx}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      isActive={page === pageNum}
+                      onClick={() => setPage(pageNum as number)}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
               <PaginationItem>
                 <PaginationNext
                   onClick={

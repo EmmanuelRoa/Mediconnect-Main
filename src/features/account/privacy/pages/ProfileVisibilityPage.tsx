@@ -7,8 +7,10 @@ import { profileVisibilitySchema } from "@/schema/account.schema";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 function ProfileVisibilityPage() {
+  const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const profileVisibility = useProfileStore(
     (state) => state.profileVisibilityData,
@@ -39,13 +41,13 @@ function ProfileVisibilityPage() {
           <h1
             className={`${isMobile ? "text-3xl" : "text-5xl"} font-medium mb-2 text-center`}
           >
-            Privacidad del perfil profesional
+            {t("profileVisibility.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Controla quién puede ver tu perfil e información profesional
+            {t("profileVisibility.description")}
           </p>
           <MCFormWrapper
-            schema={profileVisibilitySchema}
+            schema={profileVisibilitySchema(t)}
             onSubmit={handleSubmitSuccess}
             defaultValues={{
               visibility: profileVisibility?.visibility || "PUBLIC",
@@ -55,9 +57,18 @@ function ProfileVisibilityPage() {
             <MCSelect
               name="visibility"
               options={[
-                { label: "Público", value: "PUBLIC" },
-                { label: "Solo relaciones", value: "RELATIONSHIPS_ONLY" },
-                { label: "Privado", value: "PRIVATE" },
+                {
+                  label: t("profileVisibility.public"),
+                  value: "PUBLIC",
+                },
+                {
+                  label: t("profileVisibility.relationshipsOnly"),
+                  value: "RELATIONSHIPS_ONLY",
+                },
+                {
+                  label: t("profileVisibility.private"),
+                  value: "PRIVATE",
+                },
               ]}
               className="w-full"
             />

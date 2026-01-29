@@ -9,13 +9,12 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { changeEmailSchema } from "@/schema/account.schema";
-import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
-
-// Alias solo para otp
-const newEmail = changeEmailSchema.pick({ newEmail: true });
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 function ChangeEmailPage() {
-  const isMobile = useIsMobile(); // <-- Usa el hook
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const sessionUser = useAppStore((state) => state.user);
 
@@ -24,6 +23,9 @@ function ChangeEmailPage() {
   );
   const VerificationContextStatus = useGlobalUIStore(
     (state) => state.verificationContextStatus,
+  );
+  const setVerificationContextStatus = useGlobalUIStore(
+    (state) => state.setVerificationContextStatus,
   );
   const setVerificationContext = useGlobalUIStore(
     (state) => state.setVerificationContext,
@@ -48,13 +50,19 @@ function ChangeEmailPage() {
     }
   }, [VerificationContext, VerificationContextStatus, navigate]);
 
+  // Usa t para el schema
+  const newEmailSchema = changeEmailSchema(t).pick({ newEmail: true });
+
   const handleSubmit = (data: { newEmail: string }) => {
     setChangeEmailData({
       ...changeEmailData,
       newEmail: data.newEmail,
       otp: changeEmailData?.otp ?? "",
     });
-    navigate("/settings");
+    setVerificationContextStatus("VERIFIED");
+    setVerificationContext("CHANGE_EMAIL");
+    // Redirige a la página de verificación de email, no a /settings
+    navigate("/settings/verify-email");
   };
 
   return (
@@ -68,14 +76,13 @@ function ChangeEmailPage() {
           <h1
             className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
           >
-            Cambiar correo electrónico
+            {t("changeEmail.title")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
-            Ingresa tu nueva dirección de correo. Te enviaremos un código de
-            verificación.
+            {t("changeEmail.description")}
           </p>
           <MCFormWrapper
-            schema={newEmail}
+            schema={newEmailSchema}
             onSubmit={handleSubmit}
             defaultValues={{
               newEmail: changeEmailData?.newEmail || "",
@@ -83,9 +90,9 @@ function ChangeEmailPage() {
             className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
           >
             <MCInput
-              label="Nuevo correo electrónico"
+              label={t("changeEmail.newEmailLabel")}
               name="newEmail"
-              placeholder="Ingresa tu nuevo correo electrónico"
+              placeholder={t("changeEmail.newEmailPlaceholder")}
               className="w-full"
             />
             <MCButton
@@ -94,7 +101,7 @@ function ChangeEmailPage() {
               icon={<ArrowRight />}
               iconPosition="right"
             >
-              Cambiar correo
+              {t("changeEmail.changeButton")}
             </MCButton>
           </MCFormWrapper>
         </div>

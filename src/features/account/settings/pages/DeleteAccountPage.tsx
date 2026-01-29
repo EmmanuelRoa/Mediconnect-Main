@@ -3,10 +3,12 @@ import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useNavigate } from "react-router-dom";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
-import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 function DeleteAccountPage() {
-  const isMobile = useIsMobile(); // <-- Usa el hook
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const VerificationContext = useGlobalUIStore(
     (state) => state.verificationContext,
@@ -39,30 +41,18 @@ function DeleteAccountPage() {
           <h1
             className={`font-medium mb-2 text-center text-destructive ${isMobile ? "text-3xl" : "text-5xl"}`}
           >
-            Eliminar cuenta
+            {t("deleteAccount.title")}
           </h1>
           <p className="text-base max-w-md text-center text-muted-foreground">
-            Esta acción eliminará tu cuenta de MediConnect de forma permanente.
-            Una vez confirmada, no podrás recuperarla ni acceder a tu
-            información nuevamente.
+            {t("deleteAccount.description")}
           </p>
           <div className="bg-destructive/10 border border-destructive rounded-3xl p-4 my-2 max-w-md text-sm text-destructive">
-            <b>¿Qué sucederá?</b>
+            <b>{t("deleteAccount.whatHappens")}</b>
             <ul className="list-disc ml-5 mt-2">
-              <li>
-                Tu perfil y todos tus datos personales serán eliminados del
-                sistema.
-              </li>
-              <li>No podrás iniciar sesión ni recuperar tu cuenta.</li>
-              <li>
-                Se cancelarán todas tus citas y conexiones con médicos o centros
-                de salud.
-              </li>
-              <li>
-                Los mensajes y registros asociados se eliminarán de manera
-                irreversible, siguiendo las políticas de privacidad de
-                MediConnect.
-              </li>
+              <li>{t("deleteAccount.consequence1")}</li>
+              <li>{t("deleteAccount.consequence2")}</li>
+              <li>{t("deleteAccount.consequence3")}</li>
+              <li>{t("deleteAccount.consequence4")}</li>
             </ul>
           </div>
           <div
@@ -74,7 +64,7 @@ function DeleteAccountPage() {
               className={isMobile ? "w-full" : ""}
               onClick={() => navigate("/settings")}
             >
-              Cancelar
+              {t("deleteAccount.cancelButton")}
             </MCButton>
             <MCButton
               type="submit"
@@ -82,7 +72,7 @@ function DeleteAccountPage() {
               className={isMobile ? "w-full" : ""}
               onClick={handleSubmit}
             >
-              Eliminar Cuenta
+              {t("deleteAccount.deleteButton")}
             </MCButton>
           </div>
         </div>

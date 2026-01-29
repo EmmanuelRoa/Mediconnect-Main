@@ -19,7 +19,6 @@
     "center": "Centro",
     "admin": "Administrador"
   },
-
   "clinicCard": {
     "connect": "Conectar",
     "connected": "Conectado",
@@ -53,5 +52,111 @@
     "noResultsDescription": "No hay resultados para los filtros seleccionados. Intenta cambiar los filtros o la búsqueda.",
     "viewList": "Ver Lista",
     "viewMap": "Ver Mapa"
+  },
+  "validation": {
+    "emailRequired": "El correo electrónico es obligatorio",
+    "emailInvalid": "El correo electrónico no es válido",
+    "passwordMin": "La contraseña debe tener al menos 8 caracteres",
+    "passwordRequired": "La contraseña es obligatoria",
+    "confirmPasswordRequired": "Debes confirmar la contraseña",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "otpLength": "El código OTP debe tener 4 dígitos",
+    "otpNumeric": "El código OTP debe ser numérico",
+    "visibilityRequired": "La visibilidad del perfil es obligatoria",
+    "privacyConsentRequired": "Debes aceptar la política de privacidad",
+    "invalidPatientMessageConfig": "Configuración de mensajes a pacientes inválida",
+    "invalidCenterMessageConfig": "Configuración de mensajes a centros inválida",
+    "invalidDoctorMessageConfig": "Configuración de mensajes a doctores inválida"
+  },
+  "account": {
+    "title": "Configuración",
+    "description": "Administra la información de tu cuenta, actualiza tus datos personales o configura opciones de desactivación.",
+    "changeEmail": "Cambiar Correo",
+    "changePassword": "Cambiar Contraseña",
+    "deleteAccount": "Eliminar Cuenta"
+  },
+  "privacy": {
+    "title": "Privacidad y Seguridad",
+    "description": "Administra tu información, privacidad y seguridad para que MediConnect funcione mejor para ti",
+    "profilePrivacy": "Privacidad del perfil",
+    "messagesPrivacy": "Mensajes y Comunicación",
+    "blockedUsers": "Usuarios Bloqueados"
+  },
+  "verifyIdentity": {
+    "title": "Verificar tu identidad",
+    "description": "Por seguridad, necesitamos verificar que eres tú. Ingresa tu contraseña actual.",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "verifyButton": "Verificar",
+    "successMessage": "Identidad verificada sin implementar lógica real."
+  },
+  "changeEmail": {
+    "title": "Cambiar correo electrónico",
+    "description": "Ingresa tu nueva dirección de correo. Te enviaremos un código de verificación.",
+    "newEmailLabel": "Nuevo correo electrónico",
+    "newEmailPlaceholder": "Ingresa tu nuevo correo electrónico",
+    "changeButton": "Cambiar correo"
+  },
+  "verifyEmail": {
+    "title": "Verifica tu nuevo correo",
+    "instructions": "Ingresa el código de verificación que enviamos a",
+    "tip": "¿No recibiste el código?:Revisa tu carpeta de spam o espera unos minutos.",
+    "resend": "Reenviar código",
+    "verify": "Verificar",
+    "currentOtp": "OTP actual:"
+  },
+  "changePassword": {
+    "title": "Cambiar contraseña",
+    "description": "Ingresa tu contraseña actual y la nueva contraseña que deseas establecer.",
+    "currentPasswordLabel": "Contraseña actual",
+    "currentPasswordPlaceholder": "Ingresa tu contraseña actual",
+    "newPasswordLabel": "Nueva contraseña",
+    "newPasswordPlaceholder": "Ingresa tu nueva contraseña",
+    "changeButton": "Cambiar contraseña"
+  },
+  "deleteAccount": {
+    "title": "Eliminar cuenta",
+    "description": "Esta acción eliminará tu cuenta de MediConnect de forma permanente. Una vez confirmada, no podrás recuperarla ni acceder a tu información nuevamente.",
+    "whatHappens": "¿Qué sucederá?",
+    "consequence1": "Tu perfil y todos tus datos personales serán eliminados del sistema.",
+    "consequence2": "No podrás iniciar sesión ni recuperar tu cuenta.",
+    "consequence3": "Se cancelarán todas tus citas y conexiones con médicos o centros de salud.",
+    "consequence4": "Los mensajes y registros asociados se eliminarán de manera irreversible, siguiendo las políticas de privacidad de MediConnect.",
+    "cancelButton": "Cancelar",
+    "deleteButton": "Eliminar Cuenta"
+  },
+  "profileVisibility": {
+    "title": "Privacidad del perfil profesional",
+    "description": "Controla quién puede ver tu perfil e información profesional",
+    "visibilityLabel": "Visibilidad",
+    "public": "Público",
+    "relationshipsOnly": "Solo relaciones",
+    "private": "Privado"
+  },
+  "messagesPrivacy": {
+    "title": "Configuración de privacidad de mensajes",
+    "description": "Elige quién puede enviarte mensajes según tu tipo de cuenta.",
+    "patientMessagesLabel": "Mensajes a Pacientes",
+    "centerMessagesLabel": "Mensajes a Centros",
+    "doctorMessagesLabel": "Mensajes a Doctores",
+    "withAppointment": "Con cita",
+    "previous": "Previas",
+    "none": "Nadie",
+    "connectionEstablished": "Conexión establecida",
+    "anyCenter": "Cualquier centro",
+    "any": "Cualquiera",
+    "affiliated": "Afiliados",
+    "myDoctors": "Mis doctores"
+  },
+  "blockedUsers": {
+    "title": "Usuarios bloqueados",
+    "description": "Administra las cuentas bloqueadas. Los usuarios bloqueados no pueden enviarte mensajes ni ver tu perfil.",
+    "searchPlaceholder": "Buscar usuarios bloqueados",
+    "noUsers": "No hay usuarios bloqueados.",
+    "blocked": "Bloqueado",
+    "unblockButton": "Desbloquear",
+    "patient": "Paciente",
+    "doctor": "Doctor",
+    "center": "Centro"
   }
 }

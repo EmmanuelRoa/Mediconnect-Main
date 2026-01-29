@@ -9,11 +9,15 @@ import {
   patientMessageConfigSchema,
 } from "@/schema/account.schema";
 
-export type VerifyAccount = z.infer<typeof verifyAccountSchema>;
-export type ChangeEmail = z.infer<typeof changeEmailSchema>;
-export type ChangePassword = z.infer<typeof changePasswordSchema>;
-export type ProfileVisibility = z.infer<typeof profileVisibilitySchema>;
+// Helper para extraer tipos sin necesidad de t
+type SchemaInfer<T extends (t: any) => z.ZodType> = z.infer<ReturnType<T>>;
 
-export type DoctorMessageConfig = z.infer<typeof doctorMessageConfigSchema>;
-export type CenterMessageConfig = z.infer<typeof centerMessageConfigSchema>;
-export type PatientMessageConfig = z.infer<typeof patientMessageConfigSchema>;
+export type VerifyAccount = SchemaInfer<typeof verifyAccountSchema>;
+export type ChangeEmail = SchemaInfer<typeof changeEmailSchema>;
+export type ChangePassword = SchemaInfer<typeof changePasswordSchema>;
+export type ProfileVisibility = SchemaInfer<typeof profileVisibilitySchema>;
+export type DoctorMessageConfig = SchemaInfer<typeof doctorMessageConfigSchema>;
+export type CenterMessageConfig = SchemaInfer<typeof centerMessageConfigSchema>;
+export type PatientMessageConfig = SchemaInfer<
+  typeof patientMessageConfigSchema
+>;

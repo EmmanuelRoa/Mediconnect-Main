@@ -12,12 +12,13 @@ import { changeEmailSchema } from "@/schema/account.schema";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
-const otpSchema = changeEmailSchema.pick({ otp: true });
-
 function VerifyNewEmailPage() {
   const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+
+  // Usa t para el schema
+  const otpSchema = changeEmailSchema(t).pick({ otp: true });
 
   const changeEmailData = useProfileStore((state) => state.changeEmailData);
   const setChangeEmailData = useProfileStore(
@@ -31,7 +32,6 @@ function VerifyNewEmailPage() {
   );
   const setToast = useGlobalUIStore((state) => state.setToast);
 
-  // Redirige si no está en el contexto correcto o no tiene email pendiente
   useEffect(() => {
     if (
       VerificationContext !== "CHANGE_EMAIL" ||
@@ -54,8 +54,6 @@ function VerifyNewEmailPage() {
       newEmail: changeEmailData?.newEmail || "",
     });
 
-    // Aquí deberías llamar a tu API para verificar el OTP
-
     setToast({
       message: `${changeEmailData?.otp} pero mandate`,
       type: "success",
@@ -64,9 +62,7 @@ function VerifyNewEmailPage() {
     navigate("/settings");
   };
 
-  // Simulación de función para reenviar OTP
   const handleResendOtp = () => {
-    // Aquí deberías llamar a tu API para reenviar el OTP
     alert("Código reenviado a " + changeEmailData?.newEmail);
   };
 
