@@ -6,7 +6,10 @@ import AccountActions, {
 import { Mail, RotateCcwKey, UserRoundX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
+
 function AccountOverviewPage() {
+  const isMobile = useIsMobile(); // <-- Usa el hook
   const navigate = useNavigate();
   const setProcessState = useGlobalUIStore(
     (state) => state.setVerificationContext,
@@ -17,7 +20,7 @@ function AccountOverviewPage() {
   const actions: AccountAction[] = [
     {
       id: "change-email",
-      title: "Cambiar Correo electrónico",
+      title: "Cambiar Correo",
       onClick: () => {
         setProcessState("CHANGE_EMAIL");
         setVerificationContextStatus("PENDING");
@@ -49,10 +52,21 @@ function AccountOverviewPage() {
   ];
 
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center  justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2  justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2">Configuración</h1>
+    <MCDashboardContent
+      mainWidth={isMobile ? "w-full" : "max-w-2xl"}
+      disabledBackButton={true}
+    >
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
+          >
+            Configuración
+          </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
             Administra la información de tu cuenta, actualiza tus datos
             personales o configura opciones de desactivación.

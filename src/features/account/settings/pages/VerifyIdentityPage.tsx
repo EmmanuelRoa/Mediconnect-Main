@@ -9,8 +9,8 @@ import { useAppStore } from "@/stores/useAppStore";
 import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
 
-// Rutas según contexto
 const CONTEXT_ROUTES: Record<string, string> = {
   CHANGE_EMAIL: "/settings/change-email",
   CHANGE_PASSWORD: "/settings/change-password",
@@ -18,6 +18,7 @@ const CONTEXT_ROUTES: Record<string, string> = {
 };
 
 function VerifyIdentityPage() {
+  const isMobile = useIsMobile(); // <-- Usa el hook
   const navigate = useNavigate();
 
   const sessionUser = useAppStore((state) => state.user);
@@ -34,7 +35,6 @@ function VerifyIdentityPage() {
     (state) => state.setVerificationContextStatus,
   );
 
-  // Si no hay contexto, redirige fuera
   React.useEffect(() => {
     if (!verificationContext) {
       navigate("/settings");
@@ -47,10 +47,8 @@ function VerifyIdentityPage() {
       message: "Identidad verificada sin implementar lógica real.",
       open: true,
     });
-    // Marca como verificado
     setVerificationStatus("VERIFIED");
     setVerifyAccountPassword(password);
-    // Redirige según contexto
     if (verificationContext && CONTEXT_ROUTES[verificationContext]) {
       navigate(CONTEXT_ROUTES[verificationContext]);
     } else {
@@ -59,10 +57,24 @@ function VerifyIdentityPage() {
   };
 
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2">Verificar tu identidad</h1>
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${
+          isMobile ? "px-4" : "px-0"
+        }`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${
+            isMobile ? "min-w-0" : "min-w-xl"
+          }`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center ${
+              isMobile ? "text-3xl" : "text-5xl"
+            }`}
+          >
+            Verificar tu identidad
+          </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
             Por seguridad, necesitamos verificar que eres tú. Ingresa tu
             contraseña actual.
@@ -73,7 +85,9 @@ function VerifyIdentityPage() {
             defaultValues={{
               password: "",
             }}
-            className=" w-md mt-4 flex flex-col items-center gap-4 h-full "
+            className={`mt-4 flex flex-col items-center gap-4 h-full ${
+              isMobile ? "w-full" : "w-md"
+            }`}
           >
             <MCInput
               label="Contraseña"
@@ -84,8 +98,8 @@ function VerifyIdentityPage() {
             />
             <MCButton
               type="submit"
-              className="w-xs"
-              icon={<ArrowRight />}
+              className={isMobile ? "w-full" : "w-xs"}
+              icon={<ArrowRight size={isMobile ? 18 : 24} />}
               iconPosition="right"
             >
               Verificar

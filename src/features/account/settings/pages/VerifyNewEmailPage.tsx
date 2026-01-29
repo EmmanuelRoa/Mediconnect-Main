@@ -9,16 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { changeEmailSchema } from "@/schema/account.schema";
-import { useTranslation } from "react-i18next"; // <-- Importa el hook
-import { set } from "zod";
+import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
-// Alias solo para otp
 const otpSchema = changeEmailSchema.pick({ otp: true });
 
 function VerifyNewEmailPage() {
-  const { t } = useTranslation("common"); // <-- Usa el hook aquí
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const sessionUser = useAppStore((state) => state.user);
 
   const changeEmailData = useProfileStore((state) => state.changeEmailData);
   const setChangeEmailData = useProfileStore(
@@ -30,10 +29,7 @@ function VerifyNewEmailPage() {
   const VerificationContextStatus = useGlobalUIStore(
     (state) => state.verificationContextStatus,
   );
-
   const setToast = useGlobalUIStore((state) => state.setToast);
-
-  const otpData = useAppStore((state) => state.otp);
 
   // Redirige si no está en el contexto correcto o no tiene email pendiente
   useEffect(() => {
@@ -71,14 +67,20 @@ function VerifyNewEmailPage() {
   // Simulación de función para reenviar OTP
   const handleResendOtp = () => {
     // Aquí deberías llamar a tu API para reenviar el OTP
-    alert("Código reenviado a " + changeEmailData?.otp);
+    alert("Código reenviado a " + changeEmailData?.newEmail);
   };
 
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2">
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
+          >
             {t("verifyEmail.title", "Verifica tu nuevo correo")}
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
@@ -94,11 +96,10 @@ function VerifyNewEmailPage() {
             defaultValues={{
               otp: changeEmailData?.otp || "",
             }}
-            className="w-md mt-4 flex flex-col items-center gap-4 h-full"
+            className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
           >
             <div className="flex flex-col items-center w-full max-w-md mx-auto">
               <MCOtpInput />
-
               {changeEmailData?.otp && (
                 <p className="text-center mt-2 w-full text-sm bg-red-400/10 rounded-md p-2">
                   OTP actual: {changeEmailData?.otp}
@@ -123,14 +124,18 @@ function VerifyNewEmailPage() {
                   ).split(":")[1]
                 }
               </p>
-
-              <MCButton variant="tercero" size="ml" onClick={handleResendOtp}>
+              <MCButton
+                variant="tercero"
+                size="ml"
+                onClick={handleResendOtp}
+                className={isMobile ? "w-full" : ""}
+              >
                 {t("verifyEmail.resend", "Reenviar código")}
               </MCButton>
             </div>
             <MCButton
               type="submit"
-              className="w-xs"
+              className={isMobile ? "w-full" : "w-xs"}
               icon={<ArrowRight />}
               iconPosition="right"
             >

@@ -3,8 +3,10 @@ import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useNavigate } from "react-router-dom";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
 
 function DeleteAccountPage() {
+  const isMobile = useIsMobile(); // <-- Usa el hook
   const navigate = useNavigate();
   const VerificationContext = useGlobalUIStore(
     (state) => state.verificationContext,
@@ -13,7 +15,6 @@ function DeleteAccountPage() {
     (state) => state.verificationContextStatus,
   );
 
-  // Redirige si no está en el contexto correcto
   useEffect(() => {
     if (
       VerificationContext !== "DELETE_ACCOUNT" ||
@@ -25,14 +26,19 @@ function DeleteAccountPage() {
 
   const handleSubmit = () => {
     // Aquí deberías llamar a tu API para eliminar la cuenta
-    // Redirigir o mostrar confirmación
   };
 
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2 text-destructive">
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center text-destructive ${isMobile ? "text-3xl" : "text-5xl"}`}
+          >
             Eliminar cuenta
           </h1>
           <p className="text-base max-w-md text-center text-muted-foreground">
@@ -59,15 +65,23 @@ function DeleteAccountPage() {
               </li>
             </ul>
           </div>
-          <div className="flex gap-4 mt-6">
+          <div
+            className={`flex gap-4 mt-6 ${isMobile ? "flex-col w-full" : ""}`}
+          >
             <MCButton
               type="button"
               variant="outline"
+              className={isMobile ? "w-full" : ""}
               onClick={() => navigate("/settings")}
             >
               Cancelar
             </MCButton>
-            <MCButton type="submit" variant="delete" onClick={handleSubmit}>
+            <MCButton
+              type="submit"
+              variant="delete"
+              className={isMobile ? "w-full" : ""}
+              onClick={handleSubmit}
+            >
               Eliminar Cuenta
             </MCButton>
           </div>

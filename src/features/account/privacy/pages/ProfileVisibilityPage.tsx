@@ -1,10 +1,69 @@
 import React from "react";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
+import MCSelect from "@/shared/components/forms/MCSelect";
+import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
+import { useProfileStore } from "@/stores/useProfileStore";
+import { profileVisibilitySchema } from "@/schema/account.schema";
+import { useNavigate } from "react-router-dom";
+import { useAppStore } from "@/stores/useAppStore";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 function ProfileVisibilityPage() {
+  const isMobile = useIsMobile();
+  const profileVisibility = useProfileStore(
+    (state) => state.profileVisibilityData,
+  );
+  const setProfileVisibility = useProfileStore(
+    (state) => state.setProfileVisibilityData,
+  );
+  const navigate = useNavigate();
+  const userRole = useAppStore((state) => state.user?.role);
+
+  const handleSubmitSuccess = (data: {
+    visibility: "PUBLIC" | "PRIVATE" | "RELATIONSHIPS_ONLY";
+  }) => {
+    setProfileVisibility({
+      ...profileVisibility,
+      visibility: data.visibility,
+    });
+    // Aquí deberías llamar a tu API para actualizar la visibilidad del perfil
+    navigate("/account");
+  };
+
   return (
-    <MCDashboardContent>
-      <h1 className="text-2xl font-bold">Visibilidad del perfil</h1>
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`${isMobile ? "text-3xl" : "text-5xl"} font-medium mb-2 text-center`}
+          >
+            Privacidad del perfil profesional
+          </h1>
+          <p className="text-muted-foreground text-base max-w-md text-center">
+            Controla quién puede ver tu perfil e información profesional
+          </p>
+          <MCFormWrapper
+            schema={profileVisibilitySchema}
+            onSubmit={handleSubmitSuccess}
+            defaultValues={{
+              visibility: profileVisibility?.visibility || "PUBLIC",
+            }}
+            className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
+          >
+            <MCSelect
+              name="visibility"
+              options={[
+                { label: "Público", value: "PUBLIC" },
+                { label: "Solo relaciones", value: "RELATIONSHIPS_ONLY" },
+                { label: "Privado", value: "PRIVATE" },
+              ]}
+              className="w-full"
+            />
+          </MCFormWrapper>
+        </div>
+      </div>
     </MCDashboardContent>
   );
 }

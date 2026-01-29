@@ -9,8 +9,10 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { changePasswordSchema } from "@/schema/account.schema";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
 
 function ChangePasswordPage() {
+  const isMobile = useIsMobile(); // <-- Usa el hook
   const navigate = useNavigate();
   const sessionUser = useAppStore((state) => state.user);
 
@@ -27,14 +29,12 @@ function ChangePasswordPage() {
   const VerificationContextStatus = useGlobalUIStore(
     (state) => state.verificationContextStatus,
   );
-  // Redirige si el usuario no está autenticado
   useEffect(() => {
     if (!sessionUser) {
       navigate("/settings");
     }
   }, [sessionUser, navigate]);
 
-  // Redirige si no está en el contexto correcto o no tiene datos pendientes
   useEffect(() => {
     if (
       VerificationContext !== "CHANGE_PASSWORD" ||
@@ -53,15 +53,22 @@ function ChangePasswordPage() {
       confirmNewPassword: data.confirmNewPassword,
       newPassword: data.newPassword,
     });
-    // Aquí deberías llamar a tu API para cambiar la contraseña
     navigate("/settings");
   };
 
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2">Cambiar contraseña</h1>
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
+          >
+            Cambiar contraseña
+          </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
             Ingresa tu contraseña actual y la nueva contraseña que deseas
             establecer.
@@ -73,7 +80,7 @@ function ChangePasswordPage() {
               newPassword: changePasswordData?.newPassword || "",
               confirmNewPassword: changePasswordData?.confirmNewPassword || "",
             }}
-            className="w-md mt-4 flex flex-col items-center gap-4 h-full"
+            className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
           >
             <MCInput
               label="Contraseña actual"
@@ -91,7 +98,7 @@ function ChangePasswordPage() {
             />
             <MCButton
               type="submit"
-              className="w-xs"
+              className={isMobile ? "w-full" : "w-xs"}
               icon={<ArrowRight />}
               iconPosition="right"
             >

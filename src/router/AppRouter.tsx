@@ -157,6 +157,7 @@ function AppRouter() {
               path={ROUTES.PRIVACY.PROFILE_VISIBILITY}
               element={<ProfileVisibilityPage />}
             />
+
             <Route
               path={ROUTES.PRIVACY.MESSAGES}
               element={<MessagesPrivacyPage />}

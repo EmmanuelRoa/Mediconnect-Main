@@ -22,6 +22,7 @@ function AccountActions({ items }: AccountActionsProps) {
           key={item.id}
           className={cn(
             "group flex h-auto w-full items-center justify-between rounded-t-2xl px-4 py-4 border-b border-primary/10 transition-colors",
+            "sm:px-6", // Responsive padding
             item.isDestructive
               ? "hover:bg-[rgba(220,38,38,0.1)] active:bg-[rgba(220,38,38,0.15)]"
               : "hover:bg-primary/5 dark:hover:bg-primary/10 active:bg-primary/10",
@@ -38,25 +39,25 @@ function AccountActions({ items }: AccountActionsProps) {
                     : "bg-accent/75 text-primary dark:text-card",
                 )}
               >
-                <div className="p-3">{item.icon}</div>
+                <div className="p-3 sm:p-4">{item.icon}</div>
               </div>
             )}
             <div
               className={cn(
                 "text-base font-medium flex flex-col items-start gap-1 text-foreground",
+                "sm:text-lg", // Responsive text
                 item.isDestructive && "text-[#dc2626]",
               )}
             >
               {item.title}
             </div>
           </div>
-          {/* Left */}
-
           {/* Right */}
           <div className="flex items-center gap-2">
             <ArrowRight
               className={cn(
                 "h-5 w-5 transition-transform duration-200 group-hover:translate-x-2",
+                "sm:h-6 sm:w-6", // Responsive icon size
                 item.isDestructive ? "text-[#dc2626]" : "text-primary/50",
               )}
             />

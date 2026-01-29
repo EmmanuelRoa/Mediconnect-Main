@@ -9,56 +9,66 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { ArrowRight } from "lucide-react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { changeEmailSchema } from "@/schema/account.schema";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // <-- Importa el hook
 
 // Alias solo para otp
 const newEmail = changeEmailSchema.pick({ newEmail: true });
 
 function ChangeEmailPage() {
+  const isMobile = useIsMobile(); // <-- Usa el hook
   const navigate = useNavigate();
   const sessionUser = useAppStore((state) => state.user);
 
+  const VerificationContext = useGlobalUIStore(
+    (state) => state.verificationContext,
+  );
+  const VerificationContextStatus = useGlobalUIStore(
+    (state) => state.verificationContextStatus,
+  );
+  const setVerificationContext = useGlobalUIStore(
+    (state) => state.setVerificationContext,
+  );
   const changeEmailData = useProfileStore((state) => state.changeEmailData);
   const setChangeEmailData = useProfileStore(
     (state) => state.setChangeEmailData,
   );
-  const VerificationContext = useGlobalUIStore(
-    (state) => state.verificationContext,
-  );
 
-  const VerificationContextStatus = useGlobalUIStore(
-    (state) => state.verificationContextStatus,
-  );
+  useEffect(() => {
+    if (!sessionUser) {
+      navigate("/settings");
+    }
+  }, [sessionUser, navigate]);
 
-  // Redirige si no está en el contexto correcto o no tiene email pendiente
   useEffect(() => {
     if (
       VerificationContext !== "CHANGE_EMAIL" ||
-      !changeEmailData?.newEmail ||
       VerificationContextStatus !== "VERIFIED"
     ) {
       navigate("/settings");
     }
-  }, [
-    VerificationContext,
-    changeEmailData,
-    VerificationContextStatus,
-    navigate,
-  ]);
+  }, [VerificationContext, VerificationContextStatus, navigate]);
 
-  const hanbdleSubmit = (data: { newEmail: string }) => {
+  const handleSubmit = (data: { newEmail: string }) => {
     setChangeEmailData({
       ...changeEmailData,
       newEmail: data.newEmail,
       otp: changeEmailData?.otp ?? "",
     });
-    navigate("/settings/verify-email");
+    navigate("/settings");
   };
+
   return (
-    <MCDashboardContent mainWidth="max-w-2xl">
-      <div className="flex flex-col gap-6 items-center justify-center w-full mb-8">
-        <div className="w-full min-w-xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-5xl font-medium mb-2">
-            Cambiar dirección de correo
+    <MCDashboardContent mainWidth={isMobile ? "w-full" : "max-w-2xl"}>
+      <div
+        className={`flex flex-col gap-6 items-center justify-center w-full mb-8 ${isMobile ? "px-4" : "px-0"}`}
+      >
+        <div
+          className={`w-full flex flex-col gap-2 justify-center items-center ${isMobile ? "min-w-0" : "min-w-xl"}`}
+        >
+          <h1
+            className={`font-medium mb-2 text-center ${isMobile ? "text-3xl" : "text-5xl"}`}
+          >
+            Cambiar correo electrónico
           </h1>
           <p className="text-muted-foreground text-base max-w-md text-center">
             Ingresa tu nueva dirección de correo. Te enviaremos un código de
@@ -66,11 +76,11 @@ function ChangeEmailPage() {
           </p>
           <MCFormWrapper
             schema={newEmail}
-            onSubmit={hanbdleSubmit}
+            onSubmit={handleSubmit}
             defaultValues={{
               newEmail: changeEmailData?.newEmail || "",
             }}
-            className=" w-md mt-4 flex flex-col items-center gap-4 h-full "
+            className={`mt-4 flex flex-col items-center gap-4 h-full ${isMobile ? "w-full" : "w-md"}`}
           >
             <MCInput
               label="Nuevo correo electrónico"
@@ -80,11 +90,11 @@ function ChangeEmailPage() {
             />
             <MCButton
               type="submit"
-              className="w-xs"
+              className={isMobile ? "w-full" : "w-xs"}
               icon={<ArrowRight />}
               iconPosition="right"
             >
-              Verificar
+              Cambiar correo
             </MCButton>
           </MCFormWrapper>
         </div>

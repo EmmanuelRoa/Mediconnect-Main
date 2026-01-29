@@ -21,8 +21,9 @@ interface MCInputProps {
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
   variant?: "edit" | "default";
-  // Nueva prop para modo standalone
   standalone?: boolean;
+  // Nueva prop para icono
+  icon?: React.ReactNode;
 }
 
 function MCInput({
@@ -41,6 +42,7 @@ function MCInput({
   statusMessage,
   variant = "default",
   standalone = false,
+  icon,
 }: MCInputProps) {
   // Obtener form context solo si NO está en modo standalone
   const formContext = standalone ? null : useFormContext();
@@ -70,6 +72,30 @@ function MCInput({
         return "h-16 px-6 text-lg";
       default:
         return "h-12 sm:h-[60px] px-3 sm:px-5";
+    }
+  };
+
+  const getIconPaddingClasses = () => {
+    if (!icon) return "";
+
+    switch (size) {
+      case "small":
+        return "pl-10";
+      case "large":
+        return "pl-14";
+      default:
+        return "pl-10 sm:pl-12";
+    }
+  };
+
+  const getIconSizeClasses = () => {
+    switch (size) {
+      case "small":
+        return "w-10 h-10";
+      case "large":
+        return "w-16 h-16";
+      default:
+        return "w-12 sm:w-[60px] h-12 sm:h-[60px]";
     }
   };
 
@@ -124,9 +150,9 @@ function MCInput({
             <Button
               type="button"
               variant="ghost"
-              className="rounded-2xl text-secondary/75 dark:text-accent/75 hover:bg-secondary/10 dark:accent-accent/10 dark:hover:text-accent hover:text-secondary px-2 py-1 active:bg-secondary/20 active:text-secondary dark:active:text-accent dark:active:bg-accent/20"
+              className="rounded-2xl text-secondary/75 dark:text-accent/75 hover:bg-secondary/10 dark:accent-accent/10 dark:hover:text-accent hover:text-secondary px-2 py-1 active:bg-secondary/20 active:text-secondary dark:active:text-accent"
               onClick={handlePasswordToggle}
-              disabled={disabled} // <-- Deshabilita el botón si el input está deshabilitado
+              disabled={disabled}
             >
               {passwordVisibility ? (
                 <span className="flex items-center gap-1">
@@ -146,6 +172,18 @@ function MCInput({
 
       {/* Input Container */}
       <div className="relative">
+        {/* Icon */}
+        {icon && (
+          <div
+            className={cn(
+              "absolute left-0 top-0 flex items-center justify-center pointer-events-none text-primary/60",
+              getIconSizeClasses(),
+            )}
+          >
+            {icon}
+          </div>
+        )}
+
         <Input
           id={name}
           placeholder={placeholder}
@@ -158,6 +196,7 @@ function MCInput({
             getSizeClasses(),
             handleStatusColor(),
             getVariantClasses(),
+            getIconPaddingClasses(),
             className,
           )}
         />

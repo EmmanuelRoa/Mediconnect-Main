@@ -11,6 +11,8 @@ import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { X, Search } from "lucide-react";
 
+type LabelPosition = "left" | "center" | "right";
+
 interface MCSelectProps {
   name: string;
   label?: string;
@@ -26,6 +28,7 @@ interface MCSelectProps {
   variant?: "edit";
   searchable?: boolean;
   onChange?: (value: string | string[]) => void;
+  labelPosition?: LabelPosition; // <-- Add this line
 }
 
 function MCSelect({
@@ -43,6 +46,7 @@ function MCSelect({
   variant,
   searchable = false,
   onChange,
+  labelPosition = "left", // <-- Add this line
 }: MCSelectProps) {
   const {
     register,
@@ -133,7 +137,16 @@ function MCSelect({
     <div className="w-full flex flex-col mb-4 px-0">
       {/* Label */}
       {label && (
-        <div className="flex flex-row justify-between items-center mb-2 gap-2">
+        <div
+          className={cn(
+            "flex flex-row justify-between items-center mb-2 gap-2",
+            labelPosition === "center"
+              ? "justify-center text-center"
+              : labelPosition === "right"
+                ? "justify-end text-right"
+                : "justify-start text-left",
+          )}
+        >
           <span
             className={cn(
               "text-left text-base sm:text-lg text-primary",

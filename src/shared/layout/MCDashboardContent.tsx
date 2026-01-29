@@ -9,6 +9,7 @@ interface Props {
   children: React.ReactNode;
   showBackButton?: boolean;
   onBack?: () => void;
+  disabledBackButton?: boolean;
   mainWidth?: string;
 }
 
@@ -16,6 +17,7 @@ const MCDashboardContent: React.FC<Props> = ({
   children,
   showBackButton = true,
   onBack,
+  disabledBackButton,
   mainWidth = "max-w-2xl",
 }) => {
   const isMobile = useIsMobile();
@@ -30,7 +32,10 @@ const MCDashboardContent: React.FC<Props> = ({
       >
         <aside className={isMobile ? "w-full mb-4" : ""}>
           {showBackButton && (
-            <MCBackButton onClick={onBack || (() => navigate(-1))} />
+            <MCBackButton
+              onClick={onBack || (() => navigate(-1))}
+              disabled={disabledBackButton}
+            />
           )}
         </aside>
         <motion.main

@@ -23,10 +23,10 @@ function OtpVerificationPage() {
     selectedRole === "Patient"
       ? basicInfo?.email
       : selectedRole === "Doctor"
-      ? doctorBasicInfo?.email
-      : selectedRole === "Center"
-      ? centerBasicInfo?.email
-      : undefined;
+        ? doctorBasicInfo?.email
+        : selectedRole === "Center"
+          ? centerBasicInfo?.email
+          : undefined;
 
   useEffect(() => {
     if (!selectedRole) {
