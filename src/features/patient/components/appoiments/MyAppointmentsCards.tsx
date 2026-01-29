@@ -1,10 +1,24 @@
 import { Clock, MapPin, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
+
 import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
+import {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/shared/ui/card";
+import MCButton from "@/shared/components/forms/MCButton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 export interface Appointment {
-  description: any;
   id: string;
   doctorName: string;
   doctorAvatar: string;
@@ -12,6 +26,7 @@ export interface Appointment {
   evaluationType: string;
   date: string;
   time: string;
+  description?: string;
   appointmentType: "virtual" | "in_person";
   location?: string;
   status: "scheduled" | "pending" | "in_progress" | "completed" | "cancelled";
@@ -24,6 +39,10 @@ interface MyAppointmentsCardsProps {
   onCancel?: (id: string) => void;
   onJoin?: (id: string) => void;
 }
+
+const truncate = (text: string, maxLength: number = 25): string => {
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
 
 export function MyAppointmentsCards({
   appointment,
@@ -39,11 +58,10 @@ export function MyAppointmentsCards({
   const isInProgress = appointment.status === "in_progress";
 
   return (
-    <div className="appointment-card flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-14 w-14 border-2 border-border">
+    <Card className="p-4 flex flex-col gap-3 min-h-[260px] border rounded-3xl bg-bg-secondary border-primary/15">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 p-0">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-20 w-20">
             <AvatarImage
               src={appointment.doctorAvatar}
               alt={appointment.doctorName}
@@ -56,104 +74,157 @@ export function MyAppointmentsCards({
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold text-foreground">
-              {appointment.doctorName}
-            </h3>
-            <p className="text-sm text-muted-foreground">
+            {appointment.doctorName.length > 20 ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <CardTitle className="text-base font-semibold cursor-help">
+                      {truncate(appointment.doctorName, 20)}
+                    </CardTitle>
+                  </TooltipTrigger>
+                  <TooltipContent>{appointment.doctorName}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <CardTitle className="text-base font-semibold">
+                {appointment.doctorName}
+              </CardTitle>
+            )}
+            <CardDescription className="text-xs">
               {appointment.doctorSpecialty}
-            </p>
+            </CardDescription>
           </div>
         </div>
-        <MCAppointmentsStatus status={appointment.status} />
-      </div>
+        <MCAppointmentsStatus variant="card" status={appointment.status} />
+      </CardHeader>
 
-      {/* Evaluation Type */}
-      <h4 className="font-medium text-foreground">
-        {appointment.evaluationType}
-      </h4>
+      <CardContent className="p-0">
+        {appointment.evaluationType.length > 30 ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="font-medium text-base mb-1 cursor-help">
+                  {truncate(appointment.evaluationType, 30)}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{appointment.evaluationType}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <div className="font-medium text-base mb-1">
+            {appointment.evaluationType}
+          </div>
+        )}
 
-      {/* Details */}
-      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-4 w-4" />
-          <span>{appointment.date}</span>
-          <span className="ml-1">{appointment.time}</span>
+        <div className="grid grid-cols-2 justify-between text-xs text-muted-foreground my-2 w-full">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              <p className="font-semibold text-sm">{appointment.date}</p>
+            </div>
+            <p className="font-medium text-sm">{appointment.time}</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div>
+              {isVirtual ? (
+                <div className="flex items-center gap-1.5">
+                  <Video className="h-4 w-4" />
+                  <span className="font-semibold text-sm">Virtual</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  <span className="font-semibold text-sm">Presencial</span>
+                </div>
+              )}
+              {!isVirtual && appointment.location && (
+                <>
+                  {appointment.location.length > 25 ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground mt-1 cursor-help">
+                            {truncate(appointment.location, 25)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>{appointment.location}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {appointment.location}
+                    </div>
+                  )}
+                </>
+              )}
+              {isVirtual && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  Virtual consultation platform
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          {isVirtual ? (
-            <>
-              <Video className="h-4 w-4" />
-              <span>Virtual</span>
-            </>
-          ) : (
-            <>
-              <MapPin className="h-4 w-4" />
-              <span>In person</span>
-            </>
-          )}
-        </div>
-      </div>
+      </CardContent>
 
-      {!isVirtual && appointment.location && (
-        <p className="text-sm text-muted-foreground pl-5">
-          {appointment.location}
-        </p>
-      )}
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2 mt-auto pt-2">
+      <CardFooter className="flex flex-wrap gap-2 pt-2 p-0 mt-auto">
         {isUpcoming ? (
           <>
             {isInProgress && isVirtual ? (
               <>
-                <Button
+                <MCButton
                   onClick={() => onJoin?.(appointment.id)}
                   className="flex-1"
+                  size="sm"
                 >
-                  Join
-                </Button>
-                <Button
+                  Unirse
+                </MCButton>
+                <MCButton
                   variant="outline"
                   onClick={() => onViewDetails?.(appointment.id)}
                   className="flex-1"
+                  size="sm"
                 >
-                  View Details
-                </Button>
+                  Ver detalles
+                </MCButton>
               </>
             ) : (
               <>
-                <Button
+                <MCButton
                   onClick={() => onViewDetails?.(appointment.id)}
                   className="flex-1"
+                  size="sm"
                 >
-                  View Details
-                </Button>
-                <Button
+                  Ver detalles
+                </MCButton>
+                <MCButton
                   variant="outline"
                   onClick={() => onReschedule?.(appointment.id)}
                   className="flex-1"
+                  size="sm"
                 >
-                  Reschedule
-                </Button>
-                <Button
-                  variant="outline"
+                  Reagendar
+                </MCButton>
+                <MCButton
+                  variant="outlineDelete"
                   onClick={() => onCancel?.(appointment.id)}
-                  className="flex-1 text-destructive border-destructive hover:bg-destructive/10"
+                  size="sm"
                 >
-                  Cancel
-                </Button>
+                  Cancelar
+                </MCButton>
               </>
             )}
           </>
         ) : (
-          <Button
+          <MCButton
             onClick={() => onViewDetails?.(appointment.id)}
             className="w-full"
+            size="sm"
           >
-            View Details
-          </Button>
+            Ver detalles
+          </MCButton>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

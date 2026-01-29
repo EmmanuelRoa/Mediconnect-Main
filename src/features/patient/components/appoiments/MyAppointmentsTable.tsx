@@ -1,127 +1,205 @@
-import { MoreHorizontal } from "lucide-react";
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/ui/table";
+import { Ellipsis } from "lucide-react";
 import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
-import type { Appointment } from "./MyAppointmentsCards"; // <--- Importa el tipado aquí
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationLink,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/shared/ui/pagination";
 
-interface AppointmentRowProps {
-  appointment: Appointment;
-  onViewDetails?: (id: string) => void;
-  onReschedule?: (id: string) => void;
-  onCancel?: (id: string) => void;
-  onJoin?: (id: string) => void;
+export interface Appointment {
+  id: string;
+  doctorName: string;
+  doctorAvatar: string;
+  doctorSpecialty: string;
+  evaluationType: string;
+  date: string;
+  time: string;
+  description?: string;
+  appointmentType: "virtual" | "in_person";
+  location?: string;
+  status: "scheduled" | "pending" | "in_progress" | "completed" | "cancelled";
 }
 
-export function AppointmentRow({
-  appointment,
-  onViewDetails,
-  onReschedule,
-  onCancel,
-  onJoin,
-}: AppointmentRowProps) {
-  const isUpcoming = ["scheduled", "pending", "in_progress"].includes(
-    appointment.status,
-  );
-  const isVirtual = appointment.appointmentType === "virtual";
-  const isInProgress = appointment.status === "in_progress";
+interface MyAppointmentsTableProps {
+  data: Appointment[];
+}
+
+const PAGE_SIZE = 5;
+
+const truncate = (text: string | undefined, maxLength: number = 30): string => {
+  if (!text) return "";
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
+
+export function MyAppointmentsTable({ data }: MyAppointmentsTableProps) {
+  const [page, setPage] = React.useState(1);
+
+  const totalPages = Math.ceil(data.length / PAGE_SIZE);
+  const startIndex = (page - 1) * PAGE_SIZE;
+  const endIndex = startIndex + PAGE_SIZE;
+  const paginatedData = data.slice(startIndex, endIndex);
+
+  // Reset page if data changes and current page is out of bounds
+  React.useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      setPage(1);
+    }
+  }, [data.length, page, totalPages]);
 
   return (
-    <div className="appointment-row flex items-center gap-4 py-2 border-b">
-      {/* Doctor Avatar */}
-      <Avatar className="h-12 w-12 shrink-0 border-2 border-border">
-        <AvatarImage
-          src={appointment.doctorAvatar}
-          alt={appointment.doctorName}
-        />
-        <AvatarFallback className="bg-muted text-muted-foreground text-sm">
-          {appointment.doctorName
-            .split(" ")
-            .map((n) => n[0])
-            .join("")}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Doctor Info */}
-      <div className="min-w-[160px]">
-        <p className="font-medium text-foreground">{appointment.doctorName}</p>
-        <p className="text-sm text-muted-foreground">
-          {appointment.doctorSpecialty}
-        </p>
-      </div>
-
-      {/* Evaluation */}
-      <div className="flex-1 min-w-[200px]">
-        <p className="font-medium text-foreground">
-          {appointment.evaluationType}
-        </p>
-        {appointment.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {appointment.description}
-          </p>
-        )}
-      </div>
-
-      {/* Date & Time */}
-      <div className="min-w-[100px] text-sm">
-        <p className="font-medium text-foreground">{appointment.date}</p>
-        <p className="text-muted-foreground">{appointment.time}</p>
-      </div>
-
-      {/* Location/Type */}
-      <div className="min-w-[160px] text-sm">
-        <p className="font-medium text-foreground">
-          {isVirtual ? "Virtual" : "In person"}
-        </p>
-        {!isVirtual && appointment.location && (
-          <p className="text-muted-foreground line-clamp-2">
-            {appointment.location}
-          </p>
-        )}
-      </div>
-
-      {/* Status */}
-      <div className="min-w-[120px]">
-        <MCAppointmentsStatus status={appointment.status} />
-      </div>
-
-      {/* Actions */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onViewDetails?.(appointment.id)}>
-            View Details
-          </DropdownMenuItem>
-          {isUpcoming && (
-            <>
-              {isInProgress && isVirtual && (
-                <DropdownMenuItem onClick={() => onJoin?.(appointment.id)}>
-                  Join
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onReschedule?.(appointment.id)}>
-                Reschedule
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onCancel?.(appointment.id)}
-                className="text-destructive focus:text-destructive"
-              >
-                Cancel
-              </DropdownMenuItem>
-            </>
+    <div className="w-full overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[250px]">Doctor</TableHead>
+            <TableHead className="w-[200px]">Evaluación</TableHead>
+            <TableHead className="w-[150px]">Fecha</TableHead>
+            <TableHead className="w-[180px]">Tipo / Ubicación</TableHead>
+            <TableHead className="w-[120px]">Estado</TableHead>
+            <TableHead className="w-[80px]">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {paginatedData.length > 0 ? (
+            paginatedData.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell className="w-[250px]">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage
+                        src={row.doctorAvatar}
+                        alt={row.doctorName}
+                      />
+                      <AvatarFallback>
+                        {row.doctorName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{row.doctorName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {row.doctorSpecialty}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="w-[200px]">
+                  <div className="font-medium">{row.evaluationType}</div>
+                  {row.description && row.description.length > 30 ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-xs text-muted-foreground cursor-help">
+                            {truncate(row.description)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>{row.description}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : row.description ? (
+                    <div className="text-xs text-muted-foreground">
+                      {row.description}
+                    </div>
+                  ) : null}
+                </TableCell>
+                <TableCell className="w-[150px]">
+                  <div className="font-medium">{row.date}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {row.time}
+                  </div>
+                </TableCell>
+                <TableCell className="w-[180px]">
+                  {row.appointmentType === "virtual" ? (
+                    "Virtual"
+                  ) : (
+                    <>
+                      Presencial
+                      {row.location && (
+                        <div className="text-xs text-muted-foreground">
+                          {row.location}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </TableCell>
+                <TableCell className="w-[120px]">
+                  <MCAppointmentsStatus status={row.status} />
+                </TableCell>
+                <TableCell className="w-[80px]">
+                  <Button variant="ghost" size="icon">
+                    <Ellipsis className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center">
+                No hay citas.
+              </TableCell>
+            </TableRow>
           )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </TableBody>
+      </Table>
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className={
+                  page === 1
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+            {[...Array(totalPages)].map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  isActive={page === i + 1}
+                  onClick={() => setPage(i + 1)}
+                  className="cursor-pointer"
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className={
+                  page === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }
