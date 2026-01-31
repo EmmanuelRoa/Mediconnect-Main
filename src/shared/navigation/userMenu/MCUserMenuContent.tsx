@@ -14,11 +14,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
-import {
-  Avatar as UiAvatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/shared/ui/avatar";
+
 import { MCUserAvatar } from "./MCUserAvatar";
 import {
   User,
@@ -30,7 +26,6 @@ import {
   LogOut,
   ChevronDown,
   Sun,
-  Monitor,
   X,
   FileCheck,
   Inbox,
@@ -145,11 +140,6 @@ export function MCUserMenuContent({
         value: "dark",
         label: t("userMenu.themeDark", { defaultValue: "Dark" }),
         icon: <Moon className="w-4 h-4 text-primary" />,
-      },
-      {
-        value: "system",
-        label: t("userMenu.themeSystem", { defaultValue: "System" }),
-        icon: <Monitor className="w-4 h-4 text-primary" />,
       },
     ];
   // Componente para submenú móvil
@@ -498,7 +488,7 @@ export function MCUserMenuContent({
                   key={option.value}
                   onClick={(e) => handleThemeChangeAndClose(option.value, e)}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent",
+                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent hover:cursor-pointer hover:text-background",
                     theme === option.value
                       ? "bg-primary/10 text-primary border border-primary/20"
                       : "border border-transparent",
