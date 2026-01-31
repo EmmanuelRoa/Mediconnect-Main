@@ -1,5 +1,6 @@
 import { Clock, MapPin, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+import { useTranslation } from "react-i18next";
 
 import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
 import {
@@ -20,6 +21,7 @@ import {
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import CancelAppointmentDialog from "@/features/patient/components/appoiments/CancelAppointmentDialog";
 import ViewDetailsAppointmentDialog from "./ViewDetailsAppointmentDialog";
+
 export interface Appointment {
   id: string;
   doctorId: string;
@@ -54,6 +56,8 @@ export function MyAppointmentsCards({
   onCancel,
   onJoin,
 }: MyAppointmentsCardsProps) {
+  const { t } = useTranslation("patient");
+
   const isUpcoming = ["scheduled", "pending", "in_progress"].includes(
     appointment.status,
   );
@@ -132,12 +136,16 @@ export function MyAppointmentsCards({
               {isVirtual ? (
                 <div className="flex items-center gap-1.5">
                   <Video className="h-4 w-4" />
-                  <span className="font-semibold text-sm">Virtual</span>
+                  <span className="font-semibold text-sm">
+                    {t("appointments.virtual")}
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
                   <MapPin className="h-4 w-4" />
-                  <span className="font-semibold text-sm">Presencial</span>
+                  <span className="font-semibold text-sm">
+                    {t("appointments.inPerson")}
+                  </span>
                 </div>
               )}
               {!isVirtual && appointment.location && (
@@ -162,7 +170,7 @@ export function MyAppointmentsCards({
               )}
               {isVirtual && (
                 <div className="text-sm text-muted-foreground mt-1">
-                  Virtual consultation platform
+                  {t("appointments.virtualPlatform")}
                 </div>
               )}
             </div>
@@ -177,29 +185,29 @@ export function MyAppointmentsCards({
               <>
                 <MCButton
                   onClick={() => onJoin?.(appointment.id)}
-                  className="flex-1"
+                  className="flex-1 w-full"
                   size="sm"
                 >
-                  Unirse
+                  {t("appointments.join")}
                 </MCButton>
                 <MCButton
                   variant="outline"
                   onClick={() => onViewDetails?.(appointment.id)}
-                  className="flex-1"
+                  className="flex-1 w-full"
                   size="sm"
                 >
-                  Ver detalles
+                  {t("appointments.viewDetails")}
                 </MCButton>
               </>
             ) : (
-              <div className="flex flex-1 gap-2">
+              <div className="flex w-full gap-2">
                 <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
                   <MCButton
                     onClick={() => onViewDetails?.(appointment.id)}
-                    className="flex-1"
                     size="sm"
+                    className="w-full flex-1  "
                   >
-                    Ver detalles
+                    {t("appointments.viewDetails")}
                   </MCButton>
                 </ViewDetailsAppointmentDialog>
 
@@ -207,8 +215,12 @@ export function MyAppointmentsCards({
                   idProvider={appointment.doctorId}
                   idAppointment={appointment.id}
                 >
-                  <MCButton variant="outline" className="flex-1" size="sm">
-                    Reagendar
+                  <MCButton
+                    variant="outline"
+                    size="sm"
+                    className="w-full flex-1"
+                  >
+                    {t("appointments.reschedule")}
                   </MCButton>
                 </ScheduleAppointmentDialog>
                 <CancelAppointmentDialog appointmentId={appointment.id}>
@@ -216,8 +228,9 @@ export function MyAppointmentsCards({
                     variant="outlineDelete"
                     onClick={() => onCancel?.(appointment.id)}
                     size="sm"
+                    className="w-full flex-1"
                   >
-                    Cancelar
+                    {t("appointments.cancel")}
                   </MCButton>
                 </CancelAppointmentDialog>
               </div>
@@ -227,10 +240,10 @@ export function MyAppointmentsCards({
           <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
             <MCButton
               onClick={() => onViewDetails?.(appointment.id)}
-              className="w-full"
+              className="w-full flex-1  "
               size="sm"
             >
-              Ver detalles
+              {t("appointments.viewDetails")}
             </MCButton>
           </ViewDetailsAppointmentDialog>
         )}
