@@ -19,6 +19,7 @@ import {
 } from "@/shared/ui/tooltip";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import CancelAppointmentDialog from "@/features/patient/components/appoiments/CancelAppointmentDialog";
+import ViewDetailsAppointmentDialog from "./ViewDetailsAppointmentDialog";
 export interface Appointment {
   id: string;
   doctorId: string;
@@ -192,13 +193,16 @@ export function MyAppointmentsCards({
               </>
             ) : (
               <div className="flex flex-1 gap-2">
-                <MCButton
-                  onClick={() => onViewDetails?.(appointment.id)}
-                  className="flex-1"
-                  size="sm"
-                >
-                  Ver detalles
-                </MCButton>
+                <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
+                  <MCButton
+                    onClick={() => onViewDetails?.(appointment.id)}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    Ver detalles
+                  </MCButton>
+                </ViewDetailsAppointmentDialog>
+
                 <ScheduleAppointmentDialog
                   idProvider={appointment.doctorId}
                   idAppointment={appointment.id}
@@ -220,13 +224,15 @@ export function MyAppointmentsCards({
             )}
           </>
         ) : (
-          <MCButton
-            onClick={() => onViewDetails?.(appointment.id)}
-            className="w-full"
-            size="sm"
-          >
-            Ver detalles
-          </MCButton>
+          <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
+            <MCButton
+              onClick={() => onViewDetails?.(appointment.id)}
+              className="w-full"
+              size="sm"
+            >
+              Ver detalles
+            </MCButton>
+          </ViewDetailsAppointmentDialog>
         )}
       </CardFooter>
     </Card>
