@@ -23,14 +23,8 @@ function MCMobileNavbar() {
   const effectiveRole = role || "PATIENT";
   const menuConfig = NAVBAR_CONFIG[effectiveRole as keyof typeof NAVBAR_CONFIG];
 
-  // Definir namespace según rol
-  const nsMap: Record<string, string> = {
-    PATIENT: "patient",
-    DOCTOR: "doctor",
-    CENTER: "center",
-  };
-  const ns = nsMap[effectiveRole] || "patient";
-  const { t } = useTranslation(ns);
+  // Cambiar a 'common' para usar las traducciones compartidas
+  const { t } = useTranslation("common");
 
   const handleNavigation = (href: string) => {
     navigate(href);
@@ -114,12 +108,12 @@ function MCMobileNavbar() {
                         }`}
                         onClick={() => handleNavigation(item.href)}
                       >
-                        {t(`navbar.${item.label.toLowerCase()}`)}
+                        {t(`patient:navbar.${item.label.toLowerCase()}`)}
                       </Button>
                     ))
                   ) : (
                     <div className="bg-yellow-100 px-4 py-2 rounded-full text-sm">
-                      No hay menú para el rol: {role || "sin rol"}
+                      {t("navbar.noMenuRole")}: {role || t("navbar.noRole")}
                     </div>
                   )}
                 </nav>
@@ -133,7 +127,7 @@ function MCMobileNavbar() {
                   className="w-full justify-start text-left h-12 px-4 rounded-xl transition-all duration-200 active:scale-95 text-red-600 hover:bg-red-600/10 hover:text-red-600 focus:bg-red-600/15 focus:text-red-600 [&_svg]:!text-red-600 dark:hover:bg-red-600/20 dark:hover:text-red-500 dark:focus:bg-red-600/30 dark:focus:text-red-500"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  {t("userMenu.logout", { ns: "dashboard" })}
+                  {t("userMenu.logout")}
                 </Button>
               </div>
             </div>

@@ -14,9 +14,22 @@ import ProfilePhotoUpload from "@/features/onboarding/components/center/ProfileP
 function CenterOnboardingPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
+  const verifyEmail = useAppStore((state) => state.verifyEmail);
   const centerOnboardingData = useAppStore(
-    (state) => state.centerOnboardingData
+    (state) => state.centerOnboardingData,
   );
+
+  // Validaciones de acceso - igual que en DoctorOnboardingPage
+  useEffect(() => {
+    if (!verifyEmail.verified) {
+      navigate("/auth/register", { replace: true });
+      return;
+    }
+
+    if (!verifyEmail.email || verifyEmail.email === "") {
+      navigate("/auth/reg-email-verification", { replace: true });
+    }
+  }, [verifyEmail.email, verifyEmail.verified, navigate]);
 
   // Calcula el estado de cada paso
   const completionStates = useMemo(() => {
@@ -27,7 +40,7 @@ function CenterOnboardingPage() {
       centerOnboardingData?.email;
 
     const isHealthCertificateComplete = Boolean(
-      centerOnboardingData?.healthCertificateFile
+      centerOnboardingData?.healthCertificateFile,
     );
 
     const isProfilePhotoComplete = Boolean(centerOnboardingData?.urlImg);
@@ -72,20 +85,20 @@ function CenterOnboardingPage() {
         trigger: <ProfilePhotoUpload />,
       },
     ];
-  }, [completionStates, navigate, t]);
+  }, [completionStates, t]);
 
   // Calcular progreso
   const progressStats = useMemo(() => {
     const requiredItemsCount = checklistItems.filter(
-      (item) => !item.optional
+      (item) => !item.optional,
     ).length;
 
     const completedRequiredItems = checklistItems.filter(
-      (item) => !item.optional && item.completed
+      (item) => !item.optional && item.completed,
     ).length;
 
     const completedOptionalItems = checklistItems.filter(
-      (item) => item.optional && item.completed
+      (item) => item.optional && item.completed,
     ).length;
 
     const progressPercentage =

@@ -16,7 +16,7 @@ function MCToogle({ value, onChange }: MCToogleProps) {
       type="single"
       value={value}
       onValueChange={(val) => onChange(val as "list" | "card")}
-      className="bg-bg-btn-secondary rounded-full border border-primary/20 py-0.5 px-2 flex gap-1"
+      className="bg-bg-btn-secondary rounded-full border border-primary/20 py-0.5 px-2 flex gap-1 w-full justify-center"
     >
       <ToggleGroupItem
         value="list"
