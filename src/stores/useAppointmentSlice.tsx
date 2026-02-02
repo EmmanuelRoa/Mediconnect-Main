@@ -16,13 +16,6 @@ export interface AppointmentSlice {
     appointment: scheduleAppointment & { selectedServiceId?: string },
   ) => void;
 
-  setAppointmentField?: <
-    K extends keyof (scheduleAppointment & { selectedServiceId?: string }),
-  >(
-    field: K,
-    value: (scheduleAppointment & { selectedServiceId?: string })[K],
-  ) => void;
-
   setIsAppointmentInProgress?: (inProgress: boolean) => void;
   clearAppointments: () => void;
 }
@@ -43,6 +36,8 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
     appointmentId: undefined,
   },
 
+  addAppointment: (data) => set({ appointment: data }),
+
   cancelAppointment: {
     cancellationReason: "",
   },
@@ -53,16 +48,6 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
 
   setIsAppointmentInProgress: (inProgress) =>
     set({ isAppointmentInProgress: inProgress }),
-
-  setAppointmentField: (field, value) =>
-    set((state) => ({
-      appointment: {
-        ...state.appointment,
-        [field]: value,
-      },
-    })),
-
-  addAppointment: (data) => set({ appointment: data }),
 
   clearAppointments: () =>
     set({

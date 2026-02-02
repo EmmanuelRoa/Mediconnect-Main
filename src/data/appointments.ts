@@ -1,3 +1,10 @@
+import analisisServicios from "@/assets/tryOuts/Analisis de Principales Servicios.pdf";
+import estatusProyecto from "@/assets/tryOuts/Estatus General del Proyecto.pdf";
+import grupo9Proyecto from "@/assets/tryOuts/grupo-9-proyectoF2SV.pdf";
+import foto1 from "@/assets/tryOuts/0a2523c730e041428f78c4cba0930230~tplv-jj85edgx6n-image-origin.jpeg";
+import foto2 from "@/assets/tryOuts/994847.jpg";
+import foto3 from "@/assets/tryOuts/1242061.jpg";
+
 export interface Appointment {
   id: string;
   doctorId: string;
@@ -21,16 +28,19 @@ export interface Appointment {
   patientName?: string;
 
   history?: {
+    id?: string;
     date: string;
     time: string;
     address: string;
     service: string;
-    diagnosis: string;
-    observations: string;
-    documents?: {
-      name: string;
-      url: string;
-    }[];
+    medicalPrescription?: {
+      diagnosis: string;
+      observations: string;
+      documents?: {
+        name: string;
+        url: string;
+      }[];
+    };
   }[];
 }
 
@@ -72,22 +82,36 @@ export const mockAppointments: Appointment[] = [
     patientName: "Juan Pérez",
     history: [
       {
+        id: "h1-1",
         date: "15 Sep, 2025",
         time: "09:00 AM",
         address: "Av. Principal 123",
         service: "Consulta Cardiológica",
-        diagnosis: "Hipertensión leve",
-        observations: "Recomendada dieta baja en sal.",
-        documents: [{ name: "Electrocardiograma.pdf", url: "/docs/ecg1.pdf" }],
+        medicalPrescription: {
+          diagnosis: "Hipertensión leve",
+          observations:
+            "Paciente con evolución estable. Se recomienda mantener dieta baja en sal y control regular de la presión arterial. Tratamiento actual bien tolerado, sin efectos adversos reportados. Continuar con hábitos saludables y seguimiento médico periódico.",
+
+          documents: [
+            {
+              name: "Análisis de Principales Servicios",
+              url: analisisServicios,
+            },
+            { name: "Foto de Diagnóstico", url: foto1 },
+          ],
+        },
       },
       {
+        id: "h1-2",
         date: "10 Jun, 2025",
         time: "11:00 AM",
         address: "Av. Principal 123",
         service: "Chequeo General",
-        diagnosis: "Sin novedades",
-        observations: "Paciente estable.",
-        documents: [],
+        medicalPrescription: {
+          diagnosis: "Sin novedades",
+          observations: "Paciente estable.",
+          documents: [],
+        },
       },
     ],
   },
@@ -112,31 +136,43 @@ export const mockAppointments: Appointment[] = [
     patientName: "Ana Gómez",
     history: [
       {
+        id: "h2-1",
         date: "20 Ago, 2025",
         time: "10:00 AM",
         address: "Calle Salud 456",
         service: "Consulta Cardiológica",
-        diagnosis: "Arritmia leve",
-        observations: "Control en 3 meses.",
-        documents: [{ name: "InformeArritmia.pdf", url: "/docs/arr1.pdf" }],
+        medicalPrescription: {
+          diagnosis: "Arritmia leve",
+          observations: "Control en 3 meses.",
+          documents: [
+            { name: "Estatus General del Proyecto", url: estatusProyecto },
+            { name: "Imagen de Consulta", url: foto2 },
+          ],
+        },
       },
       {
+        id: "h2-2",
         date: "15 May, 2025",
         time: "12:00 PM",
         address: "Calle Salud 456",
         service: "Chequeo General",
-        diagnosis: "Sin novedades",
-        observations: "Paciente estable.",
-        documents: [],
+        medicalPrescription: {
+          diagnosis: "Sin novedades",
+          observations: "Paciente estable.",
+          documents: [],
+        },
       },
       {
+        id: "h2-3",
         date: "01 Feb, 2025",
         time: "08:30 AM",
         address: "Calle Salud 456",
         service: "Consulta Nutricional",
-        diagnosis: "Sobrepeso leve",
-        observations: "Recomendada dieta y ejercicio.",
-        documents: [],
+        medicalPrescription: {
+          diagnosis: "Sobrepeso leve",
+          observations: "Recomendada dieta y ejercicio.",
+          documents: [{ name: "Captura de Pantalla", url: foto2 }],
+        },
       },
     ],
   },
@@ -161,41 +197,46 @@ export const mockAppointments: Appointment[] = [
     patientName: "Carlos Méndez",
     history: [
       {
+        id: "h3-1",
         date: "05 Sep, 2025",
         time: "14:00 PM",
         address: "Hospital Central, Piso 3",
         service: "Cirugía Cardíaca",
-        diagnosis: "Bypass coronario exitoso",
-        observations: "Recuperación favorable. Control en 30 días.",
-        documents: [
-          { name: "InformeQuirurgico.pdf", url: "/docs/surgery1.pdf" },
-          { name: "AnalisisPreOperatorio.pdf", url: "/docs/preop1.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Bypass coronario exitoso",
+          observations: "Recuperación favorable. Control en 30 días.",
+          documents: [
+            { name: "Grupo 9 Proyecto", url: grupo9Proyecto },
+            { name: "Imagen Post-Operatoria", url: foto3 },
+          ],
+        },
       },
       {
+        id: "h3-2",
         date: "20 Ago, 2025",
         time: "10:30 AM",
         address: "Hospital Central, Piso 3",
         service: "Consulta Pre-Operatoria",
-        diagnosis: "Obstrucción coronaria severa",
-        observations:
-          "Paciente candidato para cirugía. Preparación pre-quirúrgica.",
-        documents: [
-          { name: "Cateterismo.pdf", url: "/docs/cath1.pdf" },
-          { name: "ExamenesLaboratorio.xlsx", url: "/docs/labs1.xlsx" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Obstrucción coronaria severa",
+          observations:
+            "Paciente candidato para cirugía. Preparación pre-quirúrgica.",
+          documents: [
+            { name: "Análisis de Servicios", url: analisisServicios },
+          ],
+        },
       },
       {
+        id: "h3-3",
         date: "10 Jul, 2025",
         time: "09:00 AM",
         address: "Hospital Central, Piso 3",
         service: "Consulta Cardiológica",
-        diagnosis: "Angina de pecho",
-        observations: "Dolor torácico recurrente. Se solicita cateterismo.",
-        documents: [
-          { name: "Electrocardiograma.pdf", url: "/docs/ecg3.pdf" },
-          { name: "PruebaEsfuerzo.pdf", url: "/docs/stress1.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Angina de pecho",
+          observations: "Dolor torácico recurrente. Se solicita cateterismo.",
+          documents: [{ name: "Foto de Diagnóstico", url: foto1 }],
+        },
       },
     ],
   },
@@ -221,41 +262,44 @@ export const mockAppointments: Appointment[] = [
     patientName: "María Rodríguez",
     history: [
       {
+        id: "h4-1",
         date: "12 Sep, 2025",
         time: "11:00 AM",
         address: "Clínica Mujer, Consultorio 205",
         service: "Consulta Ginecológica",
-        diagnosis: "Control prenatal - segundo trimestre",
-        observations: "Embarazo evolutivo normal. Presión arterial elevada.",
-        documents: [
-          { name: "Ecografia20Semanas.pdf", url: "/docs/echo2.pdf" },
-          { name: "AnalisisSangre.pdf", url: "/docs/blood2.pdf" },
-          { name: "ControlPresion.xlsx", url: "/docs/bp-log.xlsx" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Control prenatal - segundo trimestre",
+          observations: "Embarazo evolutivo normal. Presión arterial elevada.",
+          documents: [
+            { name: "Estatus del Proyecto", url: estatusProyecto },
+            { name: "Captura de Pantalla", url: foto2 },
+          ],
+        },
       },
       {
+        id: "h4-2",
         date: "15 Ago, 2025",
         time: "09:30 AM",
         address: "Clínica Mujer, Consultorio 205",
         service: "Consulta Ginecológica",
-        diagnosis: "Control prenatal - primer trimestre",
-        observations:
-          "Paciente en buen estado. Vitaminas prenatales indicadas.",
-        documents: [
-          { name: "Ecografia12Semanas.pdf", url: "/docs/echo1.pdf" },
-          { name: "PruebaEmbarazo.pdf", url: "/docs/pregnancy-test.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Control prenatal - primer trimestre",
+          observations:
+            "Paciente en buen estado. Vitaminas prenatales indicadas.",
+          documents: [{ name: "Imagen de Consulta", url: foto2 }],
+        },
       },
       {
+        id: "h4-3",
         date: "20 Jul, 2025",
         time: "14:00 PM",
         address: "Clínica Mujer, Consultorio 205",
         service: "Chequeo Ginecológico Anual",
-        diagnosis: "Sin alteraciones",
-        observations: "Citología normal. Control en 1 año.",
-        documents: [
-          { name: "ResultadoCitologia.pdf", url: "/docs/pap-smear.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Sin alteraciones",
+          observations: "Citología normal. Control en 1 año.",
+          documents: [],
+        },
       },
     ],
   },
@@ -280,20 +324,17 @@ export const mockAppointments: Appointment[] = [
     patientName: "Pedro Sánchez",
     history: [
       {
+        id: "h5-1",
         date: "18 Sep, 2025",
         time: "10:00 AM",
         address: "Centro Médico Norte",
         service: "Consulta Cardiológica",
-        diagnosis: "Apto para cirugía",
-        observations:
-          "Función cardíaca normal. Autorizado para procedimiento quirúrgico.",
-        documents: [
-          {
-            name: "EvaluacionCardiacaPreOp.pdf",
-            url: "/docs/cardiac-preop.pdf",
-          },
-          { name: "Ecocardiograma.pdf", url: "/docs/echo-cardiac.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Apto para cirugía",
+          observations:
+            "Función cardíaca normal. Autorizado para procedimiento quirúrgico.",
+          documents: [{ name: "Imagen Post-Operatoria", url: foto3 }],
+        },
       },
     ],
   },
@@ -318,26 +359,29 @@ export const mockAppointments: Appointment[] = [
     patientName: "Lucía Fernández",
     history: [
       {
+        id: "h6-1",
         date: "25 Sep, 2025",
         time: "15:00 PM",
         address: "Hospital del Corazón",
         service: "Monitoreo Holter 24h",
-        diagnosis: "Arritmia sinusal leve",
-        observations:
-          "Episodios esporádicos. No requiere medicación por ahora.",
-        documents: [
-          { name: "ResultadoHolter.pdf", url: "/docs/holter1.pdf" },
-          { name: "GraficasRitmoCardiaco.png", url: "/docs/heart-rhythm.png" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Arritmia sinusal leve",
+          observations:
+            "Episodios esporádicos. No requiere medicación por ahora.",
+          documents: [{ name: "Grupo 9 Proyecto Final", url: grupo9Proyecto }],
+        },
       },
       {
+        id: "h6-2",
         date: "10 Sep, 2025",
         time: "11:30 AM",
         address: "Hospital del Corazón",
         service: "Consulta Cardiológica",
-        diagnosis: "Palpitaciones de origen desconocido",
-        observations: "Se solicita Holter 24 horas para diagnóstico.",
-        documents: [{ name: "ECGReposo.pdf", url: "/docs/ecg-rest.pdf" }],
+        medicalPrescription: {
+          diagnosis: "Palpitaciones de origen desconocido",
+          observations: "Se solicita Holter 24 horas para diagnóstico.",
+          documents: [{ name: "Foto de Diagnóstico", url: foto1 }],
+        },
       },
     ],
   },
@@ -402,16 +446,19 @@ export const mockAppointments: Appointment[] = [
     patientName: "Gabriela Peña",
     history: [
       {
+        id: "h9-1",
         date: "05 Ago, 2025",
         time: "16:00 PM",
         address: "Clínica DermaSalud",
         service: "Consulta Dermatológica",
-        diagnosis: "Dermatitis solar",
-        observations: "Protector solar SPF 50+. Evitar exposición directa.",
-        documents: [
-          { name: "FotografiasLesiones.jpg", url: "/docs/skin-photos.jpg" },
-          { name: "RecetaTratamiento.pdf", url: "/docs/prescription-derm.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Dermatitis solar",
+          observations: "Protector solar SPF 50+. Evitar exposición directa.",
+          documents: [
+            { name: "Imagen de Consulta", url: foto2 },
+            { name: "Captura de Pantalla", url: foto2 },
+          ],
+        },
       },
     ],
   },
@@ -436,37 +483,45 @@ export const mockAppointments: Appointment[] = [
     patientName: "Samuel Jiménez",
     history: [
       {
+        id: "h10-1",
         date: "15 Jul, 2025",
         time: "10:00 AM",
         address: "Centro Pediátrico Infantil",
         service: "Vacunación",
-        diagnosis: "Esquema de vacunación al día",
-        observations: "Aplicadas vacunas correspondientes a 6 años.",
-        documents: [
-          { name: "CarnetVacunacion.pdf", url: "/docs/vaccination-card.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Esquema de vacunación al día",
+          observations: "Aplicadas vacunas correspondientes a 6 años.",
+          documents: [
+            {
+              name: "Análisis de Principales Servicios",
+              url: analisisServicios,
+            },
+          ],
+        },
       },
       {
+        id: "h10-2",
         date: "10 May, 2025",
         time: "11:00 AM",
         address: "Centro Pediátrico Infantil",
         service: "Chequeo Pediátrico",
-        diagnosis: "Desarrollo normal para la edad",
-        observations: "Peso y talla dentro de percentiles normales.",
-        documents: [
-          { name: "CurvasCrecimiento.pdf", url: "/docs/growth-chart.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Desarrollo normal para la edad",
+          observations: "Peso y talla dentro de percentiles normales.",
+          documents: [{ name: "Imagen Post-Operatoria", url: foto3 }],
+        },
       },
       {
+        id: "h10-3",
         date: "20 Feb, 2025",
         time: "09:00 AM",
         address: "Centro Pediátrico Infantil",
         service: "Consulta por Gripe",
-        diagnosis: "Infección respiratoria viral",
-        observations: "Tratamiento sintomático. Reposo indicado.",
-        documents: [
-          { name: "RecetaMedica.pdf", url: "/docs/prescription-ped.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Infección respiratoria viral",
+          observations: "Tratamiento sintomático. Reposo indicado.",
+          documents: [],
+        },
       },
     ],
   },
@@ -491,30 +546,30 @@ export const mockAppointments: Appointment[] = [
     patientName: "Valeria Suárez",
     history: [
       {
+        id: "h11-1",
         date: "22 Sep, 2025",
         time: "14:30 PM",
         address: "Centro Oftalmológico",
         service: "Examen de la Vista",
-        diagnosis: "Miopía progresiva",
-        observations: "Actualización de lentes. Control en 6 meses.",
-        documents: [
-          { name: "RecetaLentes.pdf", url: "/docs/glasses-rx.pdf" },
-          { name: "ExamenRefraccion.pdf", url: "/docs/refraction-test.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Miopía progresiva",
+          observations: "Actualización de lentes. Control en 6 meses.",
+          documents: [
+            { name: "Estatus General del Proyecto", url: estatusProyecto },
+          ],
+        },
       },
       {
+        id: "h11-2",
         date: "10 Ago, 2025",
         time: "10:00 AM",
         address: "Centro Oftalmológico",
         service: "Consulta Oftalmológica",
-        diagnosis: "Fatiga visual por uso de pantallas",
-        observations: "Recomendado descansos visuales cada 20 minutos.",
-        documents: [
-          {
-            name: "RecomendacionesErgonomia.docx",
-            url: "/docs/ergonomics.docx",
-          },
-        ],
+        medicalPrescription: {
+          diagnosis: "Fatiga visual por uso de pantallas",
+          observations: "Recomendado descansos visuales cada 20 minutos.",
+          documents: [{ name: "Captura de Pantalla", url: foto2 }],
+        },
       },
     ],
   },
@@ -559,29 +614,30 @@ export const mockAppointments: Appointment[] = [
     patientName: "Andrea Morales",
     history: [
       {
+        id: "h13-1",
         date: "28 Sep, 2025",
         time: "17:00 PM",
         address: "Instituto Neurológico",
         service: "Resonancia Magnética",
-        diagnosis: "Migraña crónica sin complicaciones",
-        observations:
-          "Estudio sin hallazgos patológicos. Tratamiento preventivo indicado.",
-        documents: [
-          { name: "ResonanciaCerebral.pdf", url: "/docs/mri-brain.pdf" },
-          { name: "InformeRadiologia.pdf", url: "/docs/radiology-report.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Migraña crónica sin complicaciones",
+          observations:
+            "Estudio sin hallazgos patológicos. Tratamiento preventivo indicado.",
+          documents: [{ name: "Grupo 9 Proyecto Final", url: grupo9Proyecto }],
+        },
       },
       {
+        id: "h13-2",
         date: "12 Sep, 2025",
         time: "16:00 PM",
         address: "Instituto Neurológico",
         service: "Consulta Neurológica",
-        diagnosis: "Cefalea tensional recurrente",
-        observations:
-          "Se solicita resonancia magnética para descartar patología.",
-        documents: [
-          { name: "OrdenResonancia.pdf", url: "/docs/mri-order.pdf" },
-        ],
+        medicalPrescription: {
+          diagnosis: "Cefalea tensional recurrente",
+          observations:
+            "Se solicita resonancia magnética para descartar patología.",
+          documents: [{ name: "Foto de Diagnóstico", url: foto1 }],
+        },
       },
     ],
   },

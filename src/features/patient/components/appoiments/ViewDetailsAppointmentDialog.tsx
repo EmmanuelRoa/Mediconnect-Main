@@ -9,6 +9,7 @@ import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import { FolderClock } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import FilterHistoryAppointments from "../filters/FilterHistoryAppointments";
+import MedicalPrescriptionDialog from "./MedicalPrescriptionDialog";
 import {
   Empty,
   EmptyHeader,
@@ -135,41 +136,49 @@ function HistoryCard({
   index,
   active,
   onClick,
+  appointmentId,
 }: {
   historyItem: NonNullable<Appointment["history"]>[0];
   index: number;
   active: boolean;
   onClick: () => void;
+  appointmentId: string;
 }) {
   const isMobile = useIsMobile();
+  const { t } = useTranslation("patient");
 
   return (
-    <div
-      className={`flex bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-4 justify-starts p-4 items-center cursor-pointer transition
-        hover:bg-accent/50 dark:hover:bg-primary/70 
-        ${active ? "ring-2 ring-primary/60 bg-accent/60 dark:bg-primary/80" : "opacity-40 hover:opacity-100"}
-      `}
-      onClick={onClick}
+    <MedicalPrescriptionDialog
+      appointmentId={appointmentId}
+      historyId={historyItem.id || `${appointmentId}-${index}`}
     >
-      {/* Header con icono */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 bg-accent/60 dark:bg-primary/80 p-5 rounded-full w-fit">
-          <FolderClock
-            className="text-primary dark:text-background"
-            size={isMobile ? 20 : 28}
-          />
+      <div
+        className={`flex bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-4 justify-starts p-4 items-center cursor-pointer transition
+          hover:bg-accent/50 dark:hover:bg-primary/70 
+          ${active ? "ring-2 ring-primary/60 bg-accent/60 dark:bg-primary/80" : "opacity-40 hover:opacity-100"}
+        `}
+        onClick={onClick}
+      >
+        {/* Header con icono */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 bg-accent/60 dark:bg-primary/80 p-5 rounded-full w-fit">
+            <FolderClock
+              className="text-primary dark:text-background"
+              size={isMobile ? 20 : 28}
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col justify-start items-start">
-        <h1 className="text-lg font-semibold text-primary">
-          {historyItem.service}
-        </h1>
-        <div className="flex text-md text-primary/75 font-medium gap-2 items-center">
-          {historyItem.date} · {historyItem.time} · {historyItem.address}
+        <div className="flex flex-col justify-start items-start">
+          <h1 className="text-lg font-semibold text-primary">
+            {historyItem.service}
+          </h1>
+          <div className="flex text-md text-primary/75 font-medium gap-2 items-center">
+            {historyItem.date} · {historyItem.time} · {historyItem.address}
+          </div>
         </div>
       </div>
-    </div>
+    </MedicalPrescriptionDialog>
   );
 }
 
@@ -284,11 +293,12 @@ function HistoryTabContent({ appointment }: { appointment: Appointment }) {
         {filteredHistory.length > 0 ? (
           filteredHistory.map((histItem, index) => (
             <HistoryCard
-              key={index}
+              key={histItem.id || index}
               historyItem={histItem}
               index={index}
               active={activeIndex === index}
               onClick={() => setActiveIndex(index)}
+              appointmentId={appointment.id}
             />
           ))
         ) : appointment.history && appointment.history.length > 0 ? (
@@ -386,10 +396,10 @@ function ViewDetailsAppointmentDialog({
     >
       <Tabs defaultValue="details">
         <TabsList variant="line" className="mb-4">
-          <TabsTrigger value="details">
+          <TabsTrigger value="details" className="text-lg">
             {t("appointment.detailsTab")}
           </TabsTrigger>
-          <TabsTrigger value="hospital">
+          <TabsTrigger value="hospital" className="text-lg">
             {t("appointment.historyTab")}
           </TabsTrigger>
         </TabsList>

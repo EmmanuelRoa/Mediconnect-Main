@@ -27,9 +27,8 @@ import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import ServiceCards from "./ServiceCards";
 import FilterAppointments from "@/features/patient/components/filters/FilterAppointments";
 import { useNavigate } from "react-router-dom";
-
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import React from "react";
 
@@ -44,7 +43,6 @@ interface Service {
   timeSlots: string[];
 }
 
-// Interfaz para los filtros de citas
 interface AppointmentFilters {
   serviceTypes: string[];
   specialties: string[];
@@ -52,7 +50,6 @@ interface AppointmentFilters {
   priceRange: [number, number];
 }
 
-// Actualiza los servicios con traducciones
 const getServices = (t: any): Service[] => [
   {
     id: "1",
@@ -106,7 +103,6 @@ const getServices = (t: any): Service[] => [
   },
 ];
 
-// Actualiza las opciones de seguro con traducciones
 const getInsuranceOptions = (t: any) => [
   { value: "universal", label: t("insurance.universal") },
   { value: "humano", label: t("insurance.humano") },
@@ -120,7 +116,6 @@ interface ScheduleAppointmentDialogProps {
   children: React.ReactNode;
 }
 
-// Función auxiliar para manejar fechas sin problemas de timezone
 const formatDateForStorage = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -128,13 +123,11 @@ const formatDateForStorage = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Función auxiliar para parsear fechas correctamente
 const parseDateFromStorage = (dateString: string): Date => {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);
 };
 
-// Componente interno que usa el FormContext
 function ScheduleAppointmentForm({
   isRescheduling,
 }: {
@@ -143,12 +136,18 @@ function ScheduleAppointmentForm({
   const { t, i18n } = useTranslation("patient");
   const currentLocale = i18n.language === "es" ? es : enUS;
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const { watch, setValue } = useFormContext<scheduleAppointment>();
+  const formValues = watch();
+  const initialValuesRef = useRef<scheduleAppointment | null>(null);
 
-  // Obtener servicios y seguros traducidos
+  useEffect(() => {
+    if (isRescheduling && !initialValuesRef.current) {
+      initialValuesRef.current = { ...formValues };
+    }
+  }, [isRescheduling, formValues]);
+
   const SERVICES = useMemo(() => getServices(t), [t]);
   const INSURANCE_OPTIONS = useMemo(() => getInsuranceOptions(t), [t]);
-
-  // Estados locales para filtros con useState
   const [appointmentFilters, setAppointmentFilters] =
     useState<AppointmentFilters>({
       serviceTypes: [],
@@ -157,14 +156,12 @@ function ScheduleAppointmentForm({
       priceRange: [0, 10000],
     });
 
-  // Función para actualizar filtros
   const updateAppointmentFilters = (
     newFilters: Partial<AppointmentFilters>,
   ) => {
     setAppointmentFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  // Función para resetear filtros
   const resetAppointmentFilters = () => {
     setAppointmentFilters({
       serviceTypes: [],
@@ -174,12 +171,11 @@ function ScheduleAppointmentForm({
     });
   };
 
-  // Función para contar filtros activos
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (appointmentFilters.serviceTypes.length > 0) count++;
-    if (appointmentFilters.specialties.length > 0) count++;
-    if (appointmentFilters.modalities.length > 0) count++;
+    if (appointmentFilters.serviceTypes.length) count++;
+    if (appointmentFilters.specialties.length) count++;
+    if (appointmentFilters.modalities.length) count++;
     if (
       appointmentFilters.priceRange[0] !== 0 ||
       appointmentFilters.priceRange[1] !== 10000
@@ -188,66 +184,60 @@ function ScheduleAppointmentForm({
     return count;
   };
 
-  // Obtener valores del formulario (react-hook-form)
-  const { watch, setValue } = useFormContext<scheduleAppointment>();
-
-  // Watch todos los valores del formulario
-  const formValues = watch();
-
-  // Obtener la fecha del formulario o usar hoy
   const selectedDate = formValues.date
     ? parseDateFromStorage(formValues.date)
     : new Date();
-
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Crear un objeto para selectedTimeSlots basado en el formulario
   const selectedTimeSlots = useMemo(() => {
     if (formValues.serviceId && formValues.time) {
-      // Convertir el tiempo de formato 24h a formato display (a.m./p.m.)
       const convertTo12Hour = (time24: string): string => {
         const [hours, minutes] = time24.split(":");
         let hour = parseInt(hours);
         const period = hour >= 12 ? "p.m." : "a.m.";
-
         if (hour > 12) hour -= 12;
         if (hour === 0) hour = 12;
-
         return `${hour}:${minutes} ${period}`;
       };
-
-      return {
-        [formValues.serviceId]: convertTo12Hour(formValues.time),
-      };
+      return { [formValues.serviceId]: convertTo12Hour(formValues.time) };
     }
     return {};
   }, [formValues.serviceId, formValues.time]);
 
-  // Crear un objeto para selectedModality basado en el formulario
   const selectedModalityByService = useMemo(() => {
     if (formValues.serviceId && formValues.selectedModality) {
-      return {
-        [formValues.serviceId]: formValues.selectedModality,
-      };
+      return { [formValues.serviceId]: formValues.selectedModality };
     }
     return {};
   }, [formValues.serviceId, formValues.selectedModality]);
 
-  // Calculate if submit should be disabled
   const isSubmitDisabled = useMemo(() => {
     const hasTimeSlot = !!formValues.time;
     const hasModality = !!formValues.selectedModality;
     const hasRequiredFields =
       formValues.date && formValues.insuranceProvider && formValues.reason;
-
-    return !hasRequiredFields || !hasTimeSlot || !hasModality;
-  }, [formValues]);
+    if (!isRescheduling)
+      return !hasRequiredFields || !hasTimeSlot || !hasModality;
+    const hasAllFields = hasRequiredFields && hasTimeSlot && hasModality;
+    if (!initialValuesRef.current) return true;
+    const hasChanges =
+      formValues.date !== initialValuesRef.current.date ||
+      formValues.time !== initialValuesRef.current.time ||
+      formValues.selectedModality !==
+        initialValuesRef.current.selectedModality ||
+      formValues.numberOfSessions !==
+        initialValuesRef.current.numberOfSessions ||
+      formValues.reason !== initialValuesRef.current.reason ||
+      formValues.insuranceProvider !==
+        initialValuesRef.current.insuranceProvider ||
+      formValues.serviceId !== initialValuesRef.current.serviceId;
+    return !hasAllFields || !hasChanges;
+  }, [formValues, isRescheduling]);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      const formattedDate = formatDateForStorage(date);
-      setValue("date", formattedDate);
+      setValue("date", formatDateForStorage(date));
       setCalendarOpen(false);
     }
   };
@@ -256,37 +246,26 @@ function ScheduleAppointmentForm({
     const time = timeSlot.replace(/\s*(a\.m\.|p\.m\.)/g, "");
     const [hours, minutes] = time.split(":");
     let hour24 = parseInt(hours);
-
-    if (timeSlot.includes("p.m.") && hour24 !== 12) {
-      hour24 += 12;
-    } else if (timeSlot.includes("a.m.") && hour24 === 12) {
-      hour24 = 0;
-    }
-
+    if (timeSlot.includes("p.m.") && hour24 !== 12) hour24 += 12;
+    else if (timeSlot.includes("a.m.") && hour24 === 12) hour24 = 0;
     return `${hour24.toString().padStart(2, "0")}:${minutes}`;
   };
 
   const handleTimeSlotSelect = (serviceId: string, time: string) => {
     if (time === "") {
-      // Deseleccionar
       setValue("time", "");
       setValue("serviceId", "");
       setValue("selectedModality", "presencial");
     } else {
-      // Seleccionar nuevo horario
-      const convertedTime = convertTimeToHour(time);
-      setValue("time", convertedTime);
+      setValue("time", convertTimeToHour(time));
       setValue("serviceId", serviceId);
-
-      // Si cambiamos de servicio, resetear la modalidad
-      if (formValues.serviceId && formValues.serviceId !== serviceId) {
+      if (formValues.serviceId && formValues.serviceId !== serviceId)
         setValue("selectedModality", "presencial");
-      }
     }
   };
 
   const handleModalitySelect = (
-    serviceId: string,
+    _: string,
     modality: "presencial" | "teleconsulta",
   ) => {
     setValue("selectedModality", modality);
@@ -296,28 +275,23 @@ function ScheduleAppointmentForm({
     setValue("numberOfSessions", newPatients);
   };
 
-  const DoctorHeader = () => {
-    const doctorAvatar =
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop";
-
-    return (
-      <div className="flex items-center gap-4">
-        <img
-          src={doctorAvatar}
-          className="w-20 h-20 rounded-full object-cover"
-        />
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-primary">
-              {t("doctors.profile")}
-            </h3>
-            <BadgeCheck className="w-5 h-5 text-background" fill="#8bb1ca" />
-          </div>
-          <p className="text-primary">{t("doctors.specialty")}</p>
+  const DoctorHeader = () => (
+    <div className="flex items-center gap-4">
+      <img
+        src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop"
+        className="w-20 h-20 rounded-full object-cover"
+      />
+      <div>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-primary">
+            {t("doctors.profile")}
+          </h3>
+          <BadgeCheck className="w-5 h-5 text-background" fill="#8bb1ca" />
         </div>
+        <p className="text-primary">{t("doctors.specialty")}</p>
       </div>
-    );
-  };
+    </div>
+  );
 
   const PatientCounter = () => (
     <div className="flex items-center justify-between text-primary">
@@ -377,10 +351,7 @@ function ScheduleAppointmentForm({
 
   return (
     <div className="px-6 pb-6 space-y-6">
-      {/* Doctor Info */}
       <DoctorHeader />
-
-      {/* Insurance Selection */}
       <div className="space-y-2">
         <MCSelect
           name="insuranceProvider"
@@ -390,8 +361,6 @@ function ScheduleAppointmentForm({
           required
         />
       </div>
-
-      {/* Reason for Visit */}
       <div className="space-y-2">
         <MCTextArea
           name="reason"
@@ -402,11 +371,7 @@ function ScheduleAppointmentForm({
           showCharCount
         />
       </div>
-
-      {/* Patient Counter */}
       <PatientCounter />
-
-      {/* Date Selection */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="font-medium capitalize text-primary">
@@ -444,11 +409,8 @@ function ScheduleAppointmentForm({
             </MorphingPopover>
           </div>
         </div>
-
         <WeekDaySelector />
       </div>
-
-      {/* Filters */}
       <div className="flex gap-2">
         <MCFilterPopover
           activeFiltersCount={getActiveFiltersCount()}
@@ -460,8 +422,6 @@ function ScheduleAppointmentForm({
           />
         </MCFilterPopover>
       </div>
-
-      {/* Service Cards */}
       <ServiceCards
         services={SERVICES}
         selectedTimeSlots={selectedTimeSlots}
@@ -469,8 +429,6 @@ function ScheduleAppointmentForm({
         onTimeSlotSelect={handleTimeSlotSelect}
         onModalitySelect={handleModalitySelect}
       />
-
-      {/* Submit Button */}
       <MorphingDialogClose className="w-full">
         <MCButton type="submit" className="w-full" disabled={isSubmitDisabled}>
           {isRescheduling
@@ -490,42 +448,33 @@ function ScheduleAppointmentDialog({
 }: ScheduleAppointmentDialogProps) {
   const { t } = useTranslation("patient");
   const navigate = useNavigate();
-
   const addAppointment = useAppointmentStore((s) => s.addAppointment);
   const appointment = useAppointmentStore((s) => s.appointment);
   const resetAppointment = useAppointmentStore((s) => s.clearAppointments);
-
-  // Determinar si estamos en modo reagendar
   const isRescheduling = !!idAppointment;
+  const [shouldLoadData, setShouldLoadData] = useState(false);
 
-  // ✨ Esta función se ejecuta cada vez que se hace clic en el trigger
-  const handleTriggerClick = useCallback(async () => {
-    // MODO REAGENDAR: Cargar datos de la cita desde la API
+  const handleTriggerClick = useCallback(() => setShouldLoadData(true), []);
+  useEffect(() => {
+    if (!shouldLoadData) return;
     if (isRescheduling && idAppointment) {
-      // TODO: Aquí cargas los datos de la cita desde tu API
-      // const appointmentData = await fetchAppointment(idAppointment);
-
-      // Por ahora, usa datos de ejemplo o del store si ya existen
       addAppointment({
         ...appointment,
         doctorId: idProvider,
         appointmentId: idAppointment,
       });
+      setShouldLoadData(false);
       return;
     }
-
-    // MODO CREAR NUEVA CITA
-    // Si no hay doctor en el store, configurar el actual
     if (!appointment.doctorId) {
       addAppointment({
         ...appointment,
         doctorId: idProvider,
         appointmentId: undefined,
       });
+      setShouldLoadData(false);
       return;
     }
-
-    // Si el doctor es diferente, resetear y configurar el nuevo
     if (appointment.doctorId !== idProvider) {
       resetAppointment();
       addAppointment({
@@ -540,8 +489,9 @@ function ScheduleAppointmentDialog({
         appointmentId: undefined,
       });
     }
-    // Si es el mismo doctor, no hacer nada (mantener formulario)
+    setShouldLoadData(false);
   }, [
+    shouldLoadData,
     idProvider,
     appointment,
     addAppointment,
@@ -552,34 +502,22 @@ function ScheduleAppointmentDialog({
 
   const onSubmit = (data: scheduleAppointment) => {
     if (isRescheduling && data.appointmentId) {
-      // MODO EDITAR: Actualizar la cita existente
-      console.log("Actualizando cita:", data.appointmentId, data);
-
-      // TODO: Aquí integrarás la llamada API para actualizar
-      // await updateAppointment(data.appointmentId, data);
-
       addAppointment(data);
       navigate("/patient/appointments");
     } else {
-      // MODO CREAR: Flujo normal de crear nueva cita
       addAppointment(data);
       navigate("/patient/schedule-appointment");
     }
   };
 
-  // Determinar valores por defecto según el modo
   const formDefaultValues = useMemo(() => {
     if (isRescheduling && idAppointment) {
-      // En modo reagendar, usar los datos del store (que fueron cargados en handleTriggerClick)
-      // o valores por defecto si aún no se han cargado
       return {
         ...appointment,
         doctorId: idProvider,
         appointmentId: idAppointment,
       };
     }
-
-    // Valores por defecto para nueva cita
     return {
       date: appointment.date || formatDateForStorage(new Date()),
       time: appointment.time || "",
@@ -593,14 +531,12 @@ function ScheduleAppointmentDialog({
     };
   }, [isRescheduling, appointment, idProvider, idAppointment]);
 
-  // ✨ Envolver el trigger para agregar el onClick
   const triggerWithHandler = React.isValidElement(children)
     ? React.cloneElement(children as React.ReactElement<any>, {
         onClick: handleTriggerClick,
       })
     : children;
 
-  // Título dinámico según el modo
   const modalTitle = isRescheduling
     ? t("appointments.rescheduleTitle")
     : t("appointments.schedule");
@@ -618,6 +554,11 @@ function ScheduleAppointmentDialog({
       size="wider"
     >
       <MCFormWrapper
+        key={
+          isRescheduling
+            ? `reschedule-${idAppointment}-${appointment.date}`
+            : `new-appointment-${appointment.doctorId}`
+        }
         schema={appointmentSchema(t)}
         defaultValues={formDefaultValues}
         onValidationChange={() => {}}

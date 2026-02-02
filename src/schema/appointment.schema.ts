@@ -26,7 +26,6 @@ export const cancelAppointmentSchemaBase = z.object({
     }),
 });
 
-// Función que retorna el esquema con mensajes traducidos
 export const appointmentSchema = (t: (key: string) => string) =>
   z.object({
     date: z.string().refine((date) => !isNaN(Date.parse(date)), {
