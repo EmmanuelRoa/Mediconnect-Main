@@ -82,14 +82,14 @@ function DraggableExperienceCard({
             onReorder(startIndex, index);
           }
         },
-      })
+      }),
     );
   }, [index, onReorder]);
 
   return (
     <div
       ref={ref}
-      className={`relative rounded-3xl border p-4 bg-white transition-all ${
+      className={`relative rounded-3xl border p-4 bg-bg-secondary transition-all ${
         isDragging ? "opacity-50 scale-95" : ""
       } ${isOver ? "border-primary border-2 shadow-lg" : "border-primary/10"}`}
     >
@@ -249,7 +249,7 @@ function ExperienceFields() {
   const confirmRemoveExperience = () => {
     if (deleteIndex !== null && experiences.length > 0) {
       const newExperiences = experiences.filter(
-        (_: any, i: number) => i !== deleteIndex
+        (_: any, i: number) => i !== deleteIndex,
       );
       setValue("experiences", newExperiences);
       setDeleteIndex(null);
@@ -332,7 +332,7 @@ function ExperienceFields() {
 function Experience({ onOpenChange }: ExperienceProps) {
   const { t } = useTranslation("doctor");
   const setDoctorExperience = useProfileStore(
-    (state) => state.setDoctorExperience
+    (state) => state.setDoctorExperience,
   );
   const doctorExperience = useProfileStore((state) => state.doctorExperience);
 

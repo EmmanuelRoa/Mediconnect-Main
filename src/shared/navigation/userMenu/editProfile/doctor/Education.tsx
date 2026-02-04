@@ -82,14 +82,14 @@ function DraggableEducationCard({
             onReorder(startIndex, index);
           }
         },
-      })
+      }),
     );
   }, [index, onReorder]);
 
   return (
     <div
       ref={ref}
-      className={`relative rounded-3xl border p-4 bg-white transition-all ${
+      className={`relative rounded-3xl border p-4bg-bg-secondary  transition-all ${
         isDragging ? "opacity-50 scale-95" : ""
       } ${isOver ? "border-primary border-2 shadow-lg" : "border-primary/10"}`}
     >
@@ -237,7 +237,7 @@ function EducationFields() {
   const confirmRemoveEducation = () => {
     if (deleteIndex !== null && educations.length > 0) {
       const newEducations = educations.filter(
-        (_: any, i: number) => i !== deleteIndex
+        (_: any, i: number) => i !== deleteIndex,
       );
       setValue("educations", newEducations);
       setDeleteIndex(null);
@@ -320,7 +320,7 @@ function EducationFields() {
 function Education({ onOpenChange }: EducationProps) {
   const { t } = useTranslation("doctor");
   const setDoctorEducation = useProfileStore(
-    (state) => state.setDoctorEducation
+    (state) => state.setDoctorEducation,
   );
   const doctorEducation = useProfileStore((state) => state.doctorEducation);
 

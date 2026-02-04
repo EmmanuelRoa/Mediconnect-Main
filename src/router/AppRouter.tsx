@@ -22,7 +22,6 @@ import PatientDashboard from "@/features/patient/pages/DashboardPage";
 import DoctorDashboard from "@/features/doctor/pages/DashboardPage";
 import CenterDashboard from "@/features/center/pages/DashboardPage";
 import DoctorProfilePage from "@/features/doctor/pages/DoctorProfilePage";
-
 import PatientProfilePage from "@/features/patient/pages/PatientProfilePage";
 import Search from "@/features/search/pages/Search";
 import ScheduleAppointment from "@/features/patient/pages/ScheduleAppointment";
@@ -195,6 +194,10 @@ function AppRouter() {
             />
             <Route
               path={ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC}
+              element={<DoctorProfilePage />}
+            />
+            <Route
+              path={ROUTES.DOCTOR.DOCTOR_PROFILE_PRIVATE}
               element={<DoctorProfilePage />}
             />
           </Route>

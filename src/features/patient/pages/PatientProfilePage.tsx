@@ -208,7 +208,7 @@ function PatientProfilePage() {
 
         <div className={isMobile ? "w-full px-2" : "w-[90%]"}>
           <div
-            className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-[64%_34%]"} justify-between w-full`}
+            className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-[6.5fr_3.5fr]"} gap-4 w-full`}
           >
             <Card className="animate-fade-in rounded-4xl border-0 shadow-md bg-background">
               <CardContent className={isMobile ? "p-4" : "p-2"}>

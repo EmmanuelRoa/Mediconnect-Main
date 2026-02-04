@@ -514,6 +514,7 @@ function MyAppointmentsPage() {
                   variant="outline"
                   onClick={resetFilters}
                   className="px-6 py-2"
+                  size="sm"
                 >
                   {t("patient:myAppointments.clearFilters")}
                 </MCButton>
