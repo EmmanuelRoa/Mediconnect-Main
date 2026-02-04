@@ -1,5 +1,6 @@
 import { FileText, Download } from "lucide-react";
 import { MCDialogBase } from "@/shared/components/MCDialogBase";
+import { useTranslation } from "react-i18next";
 
 interface ViewerModalState {
   open: boolean;
@@ -22,17 +23,19 @@ export const FileViewerModal = ({
   onDownloadFile,
   getFileIcon,
 }: FileViewerModalProps) => {
+  const { t } = useTranslation("common");
+
   return (
     <MCDialogBase
       open={viewerModal.open}
       onOpenChange={onOpenChange}
       title={
         viewerModal.type === "image"
-          ? "Vista de imagen"
-          : viewerModal.fileName || "Vista de archivo"
+          ? t("fileViewer.imageTitle")
+          : viewerModal.fileName || t("fileViewer.fileTitle")
       }
       size="image-preview"
-      confirmText="Cerrar"
+      confirmText={t("fileViewer.close")}
       onConfirm={() => onOpenChange(false)}
       borderHeader
     >
@@ -41,7 +44,7 @@ export const FileViewerModal = ({
           <div className="flex items-center justify-center rounded-lg">
             <img
               src={viewerModal.content}
-              alt="Imagen"
+              alt={t("fileViewer.imageTitle")}
               className="max-w-full object-contain rounded-lg"
             />
           </div>
@@ -62,7 +65,7 @@ export const FileViewerModal = ({
                       className="text-muted-foreground mb-4"
                     />
                     <p className="text-sm text-muted-foreground mb-4">
-                      No se puede mostrar el PDF en este navegador
+                      {t("fileViewer.pdfNotSupported")}
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -71,7 +74,7 @@ export const FileViewerModal = ({
                         }
                         className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                       >
-                        Abrir en nueva pestaña
+                        {t("fileViewer.openInNewTab")}
                       </button>
                       <button
                         onClick={() =>
@@ -83,7 +86,7 @@ export const FileViewerModal = ({
                         className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors flex items-center gap-2"
                       >
                         <Download size={16} />
-                        Descargar
+                        {t("fileViewer.download")}
                       </button>
                     </div>
                   </div>
@@ -100,7 +103,7 @@ export const FileViewerModal = ({
                   {viewerModal.fileName}
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
-                  La vista previa no está disponible para este tipo de archivo
+                  {t("fileViewer.previewNotAvailable")}
                 </p>
                 <button
                   onClick={() =>
@@ -112,7 +115,7 @@ export const FileViewerModal = ({
                   className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
                 >
                   <Download size={18} />
-                  Descargar archivo
+                  {t("fileViewer.downloadFile")}
                 </button>
               </div>
             )}

@@ -7,6 +7,7 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MCDialogBase } from "@/shared/components/MCDialogBase"; // <-- Usa tu componente base
+import { useTranslation } from "react-i18next";
 
 const doctorAvatar =
   "https://i.pinimg.com/736x/6b/8b/0a/6b8b0aa412e8b2f5b7587c0e87a2f46e.jpg";
@@ -58,6 +59,7 @@ export const RatingModal = ({
   onClose,
   onSubmit,
 }: RatingModalProps) => {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -79,7 +81,7 @@ export const RatingModal = ({
     <MCDialogBase
       open={isOpen}
       onOpenChange={onClose}
-      title="Califica tu consulta"
+      title={t("ratingModal.title")}
       size="md"
       className="sm:max-w-md"
     >
@@ -94,14 +96,16 @@ export const RatingModal = ({
               <p className="font-semibold">{doctorName}</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              Especialista en Medicina Interna
+              {t("ratingModal.specialty")}
             </p>
           </div>
         </div>
 
         {/* Rating section */}
         <div className="w-full mb-6">
-          <p className="text-sm font-medium mb-3">Califica tu experiencia</p>
+          <p className="text-sm font-medium mb-3">
+            {t("ratingModal.rateExperience")}
+          </p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -126,12 +130,12 @@ export const RatingModal = ({
         {/* Comment section */}
         <div className="w-full mb-6">
           <p className="text-sm font-medium mb-2">
-            Deja un comentario (Opcional)
+            {t("ratingModal.leaveComment")}
           </p>
           <Textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Escribe tu comentario aquí..."
+            placeholder={t("ratingModal.commentPlaceholder")}
             className="min-h-[100px] rounded-2xl resize-none border-primary/15"
           />
         </div>
@@ -143,13 +147,13 @@ export const RatingModal = ({
             disabled={rating === 0}
             className="w-full"
           >
-            Enviar calificación
+            {t("ratingModal.submit")}
           </MCButton>
           <button
             onClick={handleSkip}
             className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Omitir por ahora
+            {t("ratingModal.skip")}
           </button>
         </div>
       </div>

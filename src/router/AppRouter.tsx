@@ -41,7 +41,8 @@ import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisib
 import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
 import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivacyPage";
 import MyAppointmentsPage from "@/features/patient/pages/MyAppointmentsPage";
-
+import MyDoctorsPage from "@/features/patient/pages/MyDoctorsPage";
+import CalendarPage from "@/features/patient/pages/CalendarPage";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -181,6 +182,14 @@ function AppRouter() {
             <Route
               path={ROUTES.TELECONSULT.ROOM}
               element={<TeleconsultRoomPage />}
+            />
+            <Route
+              path={ROUTES.PATIENT.MY_DOCTORS}
+              element={<MyDoctorsPage />}
+            />
+            <Route
+              path={ROUTES.PATIENT.MY_CALENDAR}
+              element={<CalendarPage />}
             />
           </Route>
         </Route>

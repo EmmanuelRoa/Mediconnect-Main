@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { RatingModal } from "@/features/teleconsultation/components/RatingModal";
+import { useTranslation } from "react-i18next";
 interface VideoCallProps {
   onEndCall: () => void;
   onToggleFullscreen?: () => void;
@@ -21,22 +22,22 @@ export const VideoCall = ({
   onToggleFullscreen,
   isFullscreen = false,
 }: VideoCallProps) => {
+  const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [showRating, setShowRating] = useState(false); // Nuevo estado
+  const [showRating, setShowRating] = useState(false);
   const isMobile = useIsMobile();
 
   const handleEndCall = () => {
-    setShowRating(true); // Mostrar modal
+    setShowRating(true);
   };
 
   const handleCloseRating = () => {
     setShowRating(false);
-    onEndCall(); // Lógica original de finalizar llamada
+    onEndCall();
   };
 
   const handleSubmitRating = (rating: number, comment: string) => {
-    // Aquí puedes manejar el envío de la calificación
     setShowRating(false);
     onEndCall();
   };
@@ -62,7 +63,9 @@ export const VideoCall = ({
           onClick={onToggleFullscreen}
           className="absolute top-4 right-4 p-3 rounded-full bg-black/30 hover:bg-black/50 transition-colors backdrop-blur-sm border border-white/10 z-10"
           title={
-            isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"
+            isFullscreen
+              ? t("videoCall.exitFullscreen")
+              : t("videoCall.fullscreen")
           }
         >
           {isFullscreen ? (
@@ -105,7 +108,7 @@ export const VideoCall = ({
               ? "bg-red-500 hover:bg-red-600 border-red-400/30"
               : "bg-black/40 hover:bg-black/60 border-white/10"
           }`}
-          title={isMuted ? "Activar micrófono" : "Silenciar"}
+          title={isMuted ? t("videoCall.unmute") : t("videoCall.mute")}
         >
           <MicOff
             className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}
@@ -121,7 +124,9 @@ export const VideoCall = ({
               ? "bg-red-500 hover:bg-red-600 border-red-400/30"
               : "bg-black/40 hover:bg-black/60 border-white/10"
           }`}
-          title={isVideoOff ? "Activar cámara" : "Apagar cámara"}
+          title={
+            isVideoOff ? t("videoCall.cameraOn") : t("videoCall.cameraOff")
+          }
         >
           <VideoOff
             className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}
@@ -133,7 +138,7 @@ export const VideoCall = ({
           className={`${
             isMobile ? "p-3" : "p-4"
           } rounded-full bg-red-600 hover:bg-red-700 transition-all shadow-lg border border-red-500/30`}
-          title="Finalizar llamada"
+          title={t("videoCall.endCall")}
         >
           <PhoneOff
             className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}

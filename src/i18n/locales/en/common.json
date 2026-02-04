@@ -209,5 +209,94 @@
     "successMessage": "The PDF document has been generated successfully",
     "error": "Error",
     "errorMessage": "Error generating PDF. Please try again."
+  },
+  "confirmationScreen": {
+    "title": "Teleconsultation Confirmation",
+    "subtitle": "You are about to start a video call",
+    "joinButton": "Join teleconsultation"
+  },
+  "consultationInfo": {
+    "title": "Consultation Information",
+    "additionalSections": "Additional Sections",
+    "pastAppointments": "Past Appointments",
+    "lastConsultation": "Last Consultation",
+    "patientDetail": "Patient Detail",
+    "appointmentDetails": "Appointment Details"
+  },
+  "ratingModal": {
+    "title": "Rate your consultation",
+    "rateExperience": "Rate your experience",
+    "leaveComment": "Leave a comment (Optional)",
+    "commentPlaceholder": "Write your comment here...",
+    "submit": "Submit rating",
+    "skip": "Skip for now",
+    "specialty": "Internal Medicine Specialist"
+  },
+  "videoCall": {
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "cameraOff": "Turn camera off",
+    "cameraOn": "Turn camera on",
+    "endCall": "End call"
+  },
+  "chatHeader": {
+    "typing": "typing...",
+    "online": "online",
+    "offline": "offline",
+    "doctorName": "Dr. Cristiano Ronaldo"
+  },
+  "chatInput": {
+    "recording": "Recording...",
+    "sendImage": "Send image",
+    "sendFile": "Send document",
+    "placeholder": "Type a message..."
+  },
+  "chatPanel": {
+    "noMessages": "No messages yet"
+  },
+  "filePreview": {
+    "imageAlt": "Image preview",
+    "fileAlt": "File preview"
+  },
+  "fileViewer": {
+    "imageTitle": "Image preview",
+    "fileTitle": "File preview",
+    "pdfNotSupported": "PDF cannot be displayed in this browser",
+    "openInNewTab": "Open in new tab",
+    "download": "Download",
+    "previewNotAvailable": "Preview is not available for this file type",
+    "downloadFile": "Download file",
+    "close": "Close"
+  },
+  "messageBubble": {
+    "imageAlt": "Sent image",
+    "download": "Download"
+  },
+  "prescription": {
+    "diagnosisTittle": "Diagnosis",
+    "diagnosisTittlePlaceholder": "Diagnosis title",
+    "diagnosisDescription": "Diagnosis description",
+    "diagnosisDescriptionPlaceholder": "Describe the diagnosis here...",
+    "documents": "Attached documents",
+    "uploadHintMobile": "Tap to upload",
+    "uploadHintDesktop": "Drag or click",
+    "uploadSubHint": "Images and documents",
+    "maxFiles": "Maximum {{count}} files",
+    "uploadedFiles": "{{count}} file uploaded",
+    "uploadedFiles_plural": "{{count}} files uploaded",
+    "removeFile": "Remove file",
+    "submit": "Save prescription"
+  },
+  "richText": {
+    "bold": "Bold (Ctrl+B)",
+    "italic": "Italic (Ctrl+I)",
+    "underline": "Underline (Ctrl+U)",
+    "heading": "Heading",
+    "bulletList": "Bullet List",
+    "orderedList": "Numbered List",
+    "undo": "Undo (Ctrl+Z)",
+    "redo": "Redo (Ctrl+Shift+Z)"
   }
 }

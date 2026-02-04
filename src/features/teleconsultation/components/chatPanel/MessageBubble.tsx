@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Check, CheckCheck, Download } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   id: number;
@@ -33,6 +34,7 @@ export const MessageBubble = ({
   formatFileSize,
   formatDuration,
 }: MessageBubbleProps) => {
+  const { t } = useTranslation("common");
   const messageVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     visible: {
@@ -87,7 +89,7 @@ export const MessageBubble = ({
           <div className="min-w-[200px] max-w-[280px]">
             <img
               src={message.content}
-              alt="Imagen enviada"
+              alt={t("messageBubble.imageAlt")}
               className="rounded-lg w-full h-auto max-h-[200px] cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => onViewFile(message)}
               style={{ objectFit: "cover" }}
@@ -127,7 +129,7 @@ export const MessageBubble = ({
                   );
                 }}
                 className="flex-shrink-0 p-2 hover:bg-background/50 rounded-full transition-colors"
-                title="Descargar"
+                title={t("messageBubble.download")}
               >
                 <Download size={16} />
               </button>

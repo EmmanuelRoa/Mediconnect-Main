@@ -209,5 +209,94 @@
     "successMessage": "El documento PDF ha sido generado exitosamente",
     "error": "Error",
     "errorMessage": "Error al generar el PDF. Por favor, intente nuevamente."
+  },
+  "confirmationScreen": {
+    "title": "Confirmación de Teleconsulta",
+    "subtitle": "Estás a punto de iniciar una videollamada",
+    "joinButton": "Unirse a la teleconsulta"
+  },
+  "consultationInfo": {
+    "title": "Información de la consulta",
+    "additionalSections": "Secciones Adicionales",
+    "pastAppointments": "Citas pasadas",
+    "lastConsultation": "Última Consulta",
+    "patientDetail": "Detalle del Paciente",
+    "appointmentDetails": "Detalles de la cita"
+  },
+  "ratingModal": {
+    "title": "Califica tu consulta",
+    "rateExperience": "Califica tu experiencia",
+    "leaveComment": "Deja un comentario (Opcional)",
+    "commentPlaceholder": "Escribe tu comentario aquí...",
+    "submit": "Enviar calificación",
+    "skip": "Omitir por ahora",
+    "specialty": "Especialista en Medicina Interna"
+  },
+  "videoCall": {
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa",
+    "mute": "Silenciar",
+    "unmute": "Activar micrófono",
+    "cameraOff": "Apagar cámara",
+    "cameraOn": "Activar cámara",
+    "endCall": "Finalizar llamada"
+  },
+  "chatHeader": {
+    "typing": "escribiendo...",
+    "online": "en línea",
+    "offline": "desconectado",
+    "doctorName": "Dr. Cristiano Ronaldo"
+  },
+  "chatInput": {
+    "recording": "Grabando...",
+    "sendImage": "Enviar imagen",
+    "sendFile": "Enviar documento",
+    "placeholder": "Escribe un mensaje..."
+  },
+  "chatPanel": {
+    "noMessages": "No hay mensajes aún"
+  },
+  "filePreview": {
+    "imageAlt": "Vista previa de imagen",
+    "fileAlt": "Vista previa de archivo"
+  },
+  "fileViewer": {
+    "imageTitle": "Vista de imagen",
+    "fileTitle": "Vista de archivo",
+    "pdfNotSupported": "No se puede mostrar el PDF en este navegador",
+    "openInNewTab": "Abrir en nueva pestaña",
+    "download": "Descargar",
+    "previewNotAvailable": "La vista previa no está disponible para este tipo de archivo",
+    "downloadFile": "Descargar archivo",
+    "close": "Cerrar"
+  },
+  "messageBubble": {
+    "imageAlt": "Imagen enviada",
+    "download": "Descargar"
+  },
+  "prescription": {
+    "diagnosisTittle": "Diagnóstico",
+    "diagnosisTittlePlaceholder": "Título del diagnóstico",
+    "diagnosisDescription": "Descripción del diagnóstico",
+    "diagnosisDescriptionPlaceholder": "Describe el diagnóstico aquí...",
+    "documents": "Documentos adjuntos",
+    "uploadHintMobile": "Toca para subir",
+    "uploadHintDesktop": "Arrastra o haz clic",
+    "uploadSubHint": "Imágenes y documentos",
+    "maxFiles": "Máximo {{count}} archivos",
+    "uploadedFiles": "{{count}} archivo subido",
+    "uploadedFiles_plural": "{{count}} archivos subidos",
+    "removeFile": "Eliminar archivo",
+    "submit": "Guardar receta"
+  },
+  "richText": {
+    "bold": "Negrita (Ctrl+B)",
+    "italic": "Cursiva (Ctrl+I)",
+    "underline": "Subrayado (Ctrl+U)",
+    "heading": "Encabezado",
+    "bulletList": "Lista con viñetas",
+    "orderedList": "Lista numerada",
+    "undo": "Deshacer (Ctrl+Z)",
+    "redo": "Rehacer (Ctrl+Shift+Z)"
   }
 }

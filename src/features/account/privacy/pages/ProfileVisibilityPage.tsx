@@ -1,4 +1,3 @@
-import React from "react";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";

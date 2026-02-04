@@ -17,7 +17,7 @@ interface MCTablesLayoutsProps {
   metrics?: Metric[];
   searchComponent?: React.ReactNode;
   filterComponent?: React.ReactNode;
-  tableComponent: React.ReactNode;
+  tableComponent?: React.ReactNode;
   toogleView?: React.ReactNode;
   filtersInlineWithTitle?: boolean;
   pdfGeneratorComponent?: React.ReactNode;

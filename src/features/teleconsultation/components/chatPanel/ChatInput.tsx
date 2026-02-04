@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Send, Mic, ImageIcon, Paperclip } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface ChatInputProps {
   inputValue: string;
@@ -36,6 +37,7 @@ export const ChatInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -66,7 +68,7 @@ export const ChatInput = ({
             className="w-2.5 h-2.5 md:w-3 md:h-3 bg-destructive rounded-full flex-shrink-0"
           />
           <span className="flex-1 font-medium text-destructive text-xs md:text-sm truncate">
-            Grabando... {formatDuration(recordingTime)}
+            {t("chatInput.recording")} {formatDuration(recordingTime)}
           </span>
           <button
             onClick={onStopRecording}
@@ -96,7 +98,7 @@ export const ChatInput = ({
           <button
             onClick={() => imageInputRef.current?.click()}
             className="bg-muted text-muted-foreground rounded-full p-1.5 md:p-2 hover:bg-muted/80 transition-all flex-shrink-0"
-            title="Enviar imagen"
+            title={t("chatInput.sendImage")}
           >
             <ImageIcon size={isMobile ? 16 : 18} />
           </button>
@@ -104,7 +106,7 @@ export const ChatInput = ({
           <button
             onClick={() => fileInputRef.current?.click()}
             className="bg-muted text-muted-foreground rounded-full p-1.5 md:p-2 hover:bg-muted/80 transition-all flex-shrink-0"
-            title="Enviar documento"
+            title={t("chatInput.sendFile")}
           >
             <Paperclip size={isMobile ? 16 : 18} />
           </button>
@@ -115,7 +117,7 @@ export const ChatInput = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Escribe un mensaje..."
+              placeholder={t("chatInput.placeholder")}
               rows={1}
               className="flex-1 bg-transparent outline-none resize-none text-xs md:text-sm py-1 max-h-[120px] overflow-y-auto placeholder:text-muted-foreground"
               style={{ scrollbarWidth: "thin" }}

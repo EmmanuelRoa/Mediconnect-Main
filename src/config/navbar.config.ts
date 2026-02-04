@@ -5,8 +5,8 @@ export const NAVBAR_CONFIG = {
     menu: [
       { label: "home", href: "/patient/dashboard" },
       { label: "appointments", href: "/patient/my-appointments" },
-      { label: "doctors", href: "/patient/find-doctor" },
-      { label: "calendar", href: "/patient/calendar" },
+      { label: "doctors", href: "/patient/my-doctors" },
+      { label: "calendar", href: "/patient/my-calendar" },
     ],
   },
 

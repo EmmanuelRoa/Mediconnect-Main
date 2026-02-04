@@ -15,6 +15,7 @@ import MedicalPrescriptionDialog from "@/features/patient/components/appoiments/
 import { useAppStore } from "@/stores/useAppStore";
 import { mockAppointments } from "@/data/appointments";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 const consultationData = {
   doctor: {
@@ -29,10 +30,10 @@ const consultationData = {
 };
 
 const additionalSections = [
-  { icon: History, label: "Citas pasadas" },
-  { icon: FileText, label: "Última Consulta" },
-  { icon: User, label: "Detalle del Paciente" },
-  { icon: File, label: "Detalles de la cita" },
+  { icon: History, labelKey: "consultationInfo.pastAppointments" },
+  { icon: FileText, labelKey: "consultationInfo.lastConsultation" },
+  { icon: User, labelKey: "consultationInfo.patientDetail" },
+  { icon: File, labelKey: "consultationInfo.appointmentDetails" },
 ];
 
 interface ConsultationInfoProps {
@@ -40,6 +41,7 @@ interface ConsultationInfoProps {
 }
 
 export const ConsultationInfo = (props: ConsultationInfoProps) => {
+  const { t } = useTranslation();
   const userRole = useAppStore((state) => state.user?.role);
   const isMobile = useIsMobile();
 
@@ -55,7 +57,7 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
         {/* Doctor Info Section */}
         <div>
           <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
-            Información de la consulta
+            {t("consultationInfo.title")}
           </h3>
 
           <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 bg-background border border-none rounded-2xl md:rounded-3xl">
@@ -116,11 +118,12 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
         {/* Additional Sections */}
         <div>
           <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
-            Secciones Adicionales
+            {t("consultationInfo.additionalSections")}
           </h3>
           <div className="space-y-1.5 md:space-y-2">
             {additionalSections.map((section, index) => {
-              if (section.label === "Detalles de la cita") {
+              const label = t(section.labelKey);
+              if (label === t("consultationInfo.appointmentDetails")) {
                 return (
                   <ViewDetailsAppointmentDialog
                     appointmentId={props.appointmentId}
@@ -129,12 +132,12 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
                   >
                     <button className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground hover:text-foreground hover:bg-bg-btn-secondary w-full p-2 transition-colors rounded-lg md:rounded-full text-left">
                       <section.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary flex-shrink-0" />
-                      <span className="truncate">{section.label}</span>
+                      <span className="truncate">{label}</span>
                     </button>
                   </ViewDetailsAppointmentDialog>
                 );
               }
-              if (section.label === "Citas pasadas") {
+              if (label === t("consultationInfo.pastAppointments")) {
                 return (
                   <ViewDetailsAppointmentDialog
                     appointmentId={props.appointmentId}
@@ -143,18 +146,21 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
                   >
                     <button className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground hover:text-foreground hover:bg-bg-btn-secondary w-full p-2 transition-colors rounded-lg md:rounded-full text-left">
                       <section.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary flex-shrink-0" />
-                      <span className="truncate">{section.label}</span>
+                      <span className="truncate">{label}</span>
                     </button>
                   </ViewDetailsAppointmentDialog>
                 );
               }
               if (
-                section.label === "Detalle del Paciente" &&
+                label === t("consultationInfo.patientDetail") &&
                 userRole === "PATIENT"
               ) {
                 return null;
               }
-              if (section.label === "Última Consulta" && mostRecentHistoryId) {
+              if (
+                label === t("consultationInfo.lastConsultation") &&
+                mostRecentHistoryId
+              ) {
                 return (
                   <MedicalPrescriptionDialog
                     appointmentId={props.appointmentId}
@@ -163,7 +169,7 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
                   >
                     <button className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground hover:text-foreground hover:bg-bg-btn-secondary w-full p-2 transition-colors rounded-lg md:rounded-full text-left">
                       <section.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary flex-shrink-0" />
-                      <span className="truncate">{section.label}</span>
+                      <span className="truncate">{label}</span>
                     </button>
                   </MedicalPrescriptionDialog>
                 );
@@ -174,7 +180,7 @@ export const ConsultationInfo = (props: ConsultationInfoProps) => {
                   className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground hover:text-foreground hover:bg-bg-btn-secondary w-full p-2 transition-colors rounded-lg md:rounded-full text-left"
                 >
                   <section.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary flex-shrink-0" />
-                  <span className="truncate">{section.label}</span>
+                  <span className="truncate">{label}</span>
                 </button>
               );
             })}

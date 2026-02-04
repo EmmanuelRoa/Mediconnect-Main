@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface FilePreview {
   file: File;
@@ -24,6 +25,8 @@ export const FilePreviewSection = ({
   getFileIcon,
   formatFileSize,
 }: FilePreviewSectionProps) => {
+  const { t } = useTranslation("common");
+
   return (
     <>
       {/* Vista previa de imagen */}
@@ -38,7 +41,7 @@ export const FilePreviewSection = ({
             <div className="relative inline-block">
               <img
                 src={previewImage}
-                alt="Preview"
+                alt={t("filePreview.imageAlt")}
                 className="h-20 rounded-lg shadow-md"
               />
               <button

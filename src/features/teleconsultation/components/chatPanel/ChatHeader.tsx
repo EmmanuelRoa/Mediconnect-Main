@@ -31,14 +31,14 @@ export const ChatHeader = ({
         </Avatar>
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-sm md:text-base truncate">
-            Dr. Cristiano Ronaldo
+            {t("chatHeader.doctorName")}
           </h3>
           <p className="text-xs text-muted-foreground truncate">
             {isTyping
-              ? "escribiendo..."
+              ? t("chatHeader.typing")
               : isOnline
-                ? "en línea"
-                : "desconectado"}
+                ? t("chatHeader.online")
+                : t("chatHeader.offline")}
           </p>
         </div>
       </div>

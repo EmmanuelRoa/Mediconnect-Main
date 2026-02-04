@@ -8,10 +8,7 @@ interface Props {
   mainWidth?: string;
 }
 
-const MCDashboardContentSimple: React.FC<Props> = ({
-  children,
-  mainWidth = "max-w-2xl",
-}) => {
+const MCDashboardContentSimple: React.FC<Props> = ({ children }) => {
   const isMobile = useIsMobile();
 
   return (

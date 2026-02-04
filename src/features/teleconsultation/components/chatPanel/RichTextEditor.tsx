@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useEffect, useCallback } from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -53,6 +54,7 @@ interface EditorToolbarProps {
 
 const EditorToolbar = ({ editor }: EditorToolbarProps) => {
   const isMobile = useIsMobile();
+  const { t } = useTranslation("common");
 
   if (!editor) return null;
 
@@ -68,7 +70,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}
-        title="Bold (Ctrl+B)"
+        title={t("richText.bold")}
         isMobile={isMobile}
       >
         <Bold className={iconSize} />
@@ -77,7 +79,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={editor.isActive("italic")}
-        title="Italic (Ctrl+I)"
+        title={t("richText.italic")}
         isMobile={isMobile}
       >
         <Italic className={iconSize} />
@@ -86,7 +88,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         isActive={editor.isActive("underline")}
-        title="Underline (Ctrl+U)"
+        title={t("richText.underline")}
         isMobile={isMobile}
       >
         <UnderlineIcon className={iconSize} />
@@ -99,7 +101,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive("heading", { level: 2 })}
-        title="Heading"
+        title={t("richText.heading")}
         isMobile={isMobile}
       >
         <Heading2 className={iconSize} />
@@ -108,7 +110,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive("bulletList")}
-        title="Bullet List"
+        title={t("richText.bulletList")}
         isMobile={isMobile}
       >
         <List className={iconSize} />
@@ -117,7 +119,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive("orderedList")}
-        title="Numbered List"
+        title={t("richText.orderedList")}
         isMobile={isMobile}
       >
         <ListOrdered className={iconSize} />
@@ -130,7 +132,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
-        title="Undo (Ctrl+Z)"
+        title={t("richText.undo")}
         isMobile={isMobile}
       >
         <Undo className={iconSize} />
@@ -139,7 +141,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       <ToolbarButton
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
-        title="Redo (Ctrl+Shift+Z)"
+        title={t("richText.redo")}
         isMobile={isMobile}
       >
         <Redo className={iconSize} />

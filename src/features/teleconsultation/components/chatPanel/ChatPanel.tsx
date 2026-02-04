@@ -7,6 +7,7 @@ import { ChatInput } from "./ChatInput";
 import { FilePreviewSection } from "./FilePreviewSection";
 import { FileViewerModal } from "./FileViewerModal";
 import Prescription from "./Prescription"; // <-- Importa el componente
+import { useTranslation } from "react-i18next";
 
 interface Message {
   id: number;
@@ -378,6 +379,8 @@ export const ChatPanel = () => {
     },
   };
 
+  const { t } = useTranslation("common");
+
   return (
     <div className="flex flex-col h-full bg-background rounded-xl border border-primary/15 shadow-sm">
       {/* Header */}
@@ -401,7 +404,7 @@ export const ChatPanel = () => {
             )}
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-                No hay mensajes aún
+                {t("chatPanel.noMessages")}
               </div>
             ) : (
               <div className="space-y-4">

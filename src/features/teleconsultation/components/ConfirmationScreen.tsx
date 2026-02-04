@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import MCButton from "@/shared/components/forms/MCButton";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmationScreenProps {
   onJoinCall: () => void;
@@ -20,6 +21,7 @@ export const ConfirmationScreen = ({
   onJoinCall,
   appointment,
 }: ConfirmationScreenProps) => {
+  const { t } = useTranslation();
   const doctorName = appointment?.doctorName || "Dr. Cristiano Ronaldo";
   const doctorAvatar = appointment?.doctorAvatar;
   const doctorSpecialty =
@@ -35,10 +37,10 @@ export const ConfirmationScreen = ({
         {/* Header */}
         <div className="w-full flex flex-col justify-center items-center text-primary text-center mb-6 md:mb-8">
           <h1 className="text-xl md:text-2xl lg:text-4xl font-semibold mb-2">
-            Confirmación de Teleconsulta
+            {t("confirmationScreen.title")}
           </h1>
           <p className="opacity-80 text-sm md:text-base lg:text-lg">
-            Estás a punto de iniciar una videollamada
+            {t("confirmationScreen.subtitle")}
           </p>
         </div>
 
@@ -153,7 +155,9 @@ export const ConfirmationScreen = ({
         {/* Join button */}
         <MCButton onClick={onJoinCall} className="w-full gap-2" size="l">
           <Video className="w-4 h-4 md:w-5 md:h-5" />
-          <span className="text-sm md:text-base">Unirse a la teleconsulta</span>
+          <span className="text-sm md:text-base">
+            {t("confirmationScreen.joinButton")}
+          </span>
         </MCButton>
       </div>
     </div>
