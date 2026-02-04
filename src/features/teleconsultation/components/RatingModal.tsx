@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { X, Star, CheckCircle } from "lucide-react";
+import { Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
+
 import { Textarea } from "@/shared/ui/textarea";
 import MCButton from "@/shared/components/forms/MCButton";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";

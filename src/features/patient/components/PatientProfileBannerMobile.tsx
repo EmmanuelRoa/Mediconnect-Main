@@ -82,7 +82,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
               <h3 className="text-lg font-semibold text-foreground">
                 {user?.name || "Ilia Topuria"}
               </h3>
-              <BadgeCheck className="w-4 h-4 text-primary" />
+              <BadgeCheck className="w-4 h-4 text-background" fill="#8bb1ca" />
             </div>
 
             <p className="text-sm text-muted-foreground">

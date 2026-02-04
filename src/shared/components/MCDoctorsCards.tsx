@@ -12,11 +12,14 @@ import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { Heart as HeartFilled, Heart as HeartOutlined } from "lucide-react";
 import { useAppStore } from "@/stores/useAppStore";
-
+import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import { useNavigate } from "react-router-dom";
+import HistoryDialog from "@/features/patient/components/doctors/HistoryDialog";
 export type DoctorCardVariant = "s" | "m" | "default";
 
 interface Doctor {
-  key?: number;
+  id?: number | string;
+
   name: string;
   specialty: string;
   rating: number;
@@ -58,6 +61,7 @@ const VARIANT_STYLES = {
 };
 
 function MCDoctorsCards({
+  id,
   name,
   specialty,
   rating,
@@ -73,10 +77,17 @@ function MCDoctorsCards({
   const styles = VARIANT_STYLES[variant];
   const isMobile = useIsMobile();
   const { t } = useTranslation("patient");
+  const navigate = useNavigate();
 
   const userRole = useAppStore((state) => state.user?.role);
 
   const handleFavoriteClick = () => {};
+
+  const handleProfileClick = () => {
+    if (id) {
+      navigate(`/doctor/profile/${id}`);
+    }
+  };
 
   return (
     <Card className="rounded-3xl bg-transparent border border-primary/10 shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
@@ -227,15 +238,24 @@ function MCDoctorsCards({
       </CardContent>
 
       <div className="grid grid-cols-3 gap-2 ">
-        <MCButton size={styles.buttonSize}>
-          {t("doctors.schedule", "Schedule")}
-        </MCButton>
-        <MCButton size={styles.buttonSize} variant="secondary">
+        <ScheduleAppointmentDialog idProvider={id?.toString() ?? ""}>
+          <MCButton size={styles.buttonSize}>
+            {t("doctors.schedule", "Schedule")}
+          </MCButton>
+        </ScheduleAppointmentDialog>
+
+        <MCButton
+          size={styles.buttonSize}
+          variant="secondary"
+          onClick={handleProfileClick}
+        >
           {t("doctors.profile", "Profile")}
         </MCButton>
-        <MCButton size={styles.buttonSize} variant="secondary">
-          {t("doctors.history", "History")}
-        </MCButton>
+        <HistoryDialog doctorId={id?.toString() ?? ""}>
+          <MCButton size={styles.buttonSize} variant="secondary">
+            {t("doctors.history", "History")}
+          </MCButton>{" "}
+        </HistoryDialog>
       </div>
     </Card>
   );

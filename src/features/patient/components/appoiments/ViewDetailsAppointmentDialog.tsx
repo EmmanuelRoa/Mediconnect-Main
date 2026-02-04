@@ -38,10 +38,11 @@ interface ViewDetailsAppointmentDialogProps {
 
 function DetailsTabContent({ appointment }: { appointment: Appointment }) {
   const { t } = useTranslation("patient");
+  const isMobile = useIsMobile();
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="grid grid-cols-4 grid-rows-2 gap-4 w-full">
+      <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-4 md:grid-rows-2 gap-4 w-full">
         <div className="flex flex-col items-start gap-1">
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.service")}
@@ -115,19 +116,36 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
           {appointment.description}
         </p>
       </div>
-      <div className="flex flex-col items-start gap-1 pb-4">
-        <h3 className="text-md text-primary/75 font-medium">
-          {t("appointment.location")}
-        </h3>
-        <div className="w-full rounded-lg overflow-hidden">
-          <MapScheduleLocation
-            initialLocation={{
-              lat: appointment.location.latitude,
-              lng: appointment.location.longitude,
-            }}
-          />
+      {!isMobile && (
+        <div className="flex flex-col items-start gap-1 pb-4">
+          <h3 className="text-md text-primary/75 font-medium">
+            {t("appointment.location")}
+          </h3>
+          <div className="w-full rounded-lg overflow-hidden">
+            <MapScheduleLocation
+              initialLocation={{
+                lat: appointment.location.latitude,
+                lng: appointment.location.longitude,
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
+      {isMobile && (
+        <div className="flex flex-col items-start gap-1 pt-2">
+          <h3 className="text-md text-primary/75 font-medium">
+            {t("appointment.location")}
+          </h3>
+          <div className="w-full rounded-lg overflow-hidden">
+            <MapScheduleLocation
+              initialLocation={{
+                lat: appointment.location.latitude,
+                lng: appointment.location.longitude,
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -154,7 +172,7 @@ function HistoryCard({
       historyId={historyItem.id || `${appointmentId}-${index}`}
     >
       <div
-        className={`flex bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-4 justify-starts p-4 items-center cursor-pointer transition
+        className={`flex flex-col md:flex-row bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-4 justify-starts p-4 items-center cursor-pointer transition
           hover:bg-accent/50 dark:hover:bg-primary/70 
           ${active ? "ring-2 ring-primary/60 bg-accent/60 dark:bg-primary/80" : "opacity-40 hover:opacity-100"}
         `}
@@ -267,7 +285,8 @@ function HistoryTabContent({ appointment }: { appointment: Appointment }) {
 
   return (
     <div className="w-full flex flex-col rounded-lg">
-      <div className="grid grid-cols-2 mb-4 flex-wrap gap-4 md:flex md:items-center md:justify-between">
+      {/* Cambia el grid para ser columna en mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-2 mb-4 flex-wrap gap-4 md:flex md:items-center md:justify-between">
         <div className="flex flex-1 justify-between items-center gap-2">
           <h3 className="text-xl font-semibold text-primary">
             {t("appointment.medicalHistory")}
@@ -415,7 +434,7 @@ function ViewDetailsAppointmentDialog({
           {appointmentDetails ? (
             appointmentDetails
           ) : (
-            <div className="mt-4 text-center text-muted-foreground">
+            <div className="mt-4 text-muted-foreground flex flex-col items-start">
               <DetailsTabContent
                 appointment={
                   mockAppointments.find((Q) => Q.id === appointmentId)!

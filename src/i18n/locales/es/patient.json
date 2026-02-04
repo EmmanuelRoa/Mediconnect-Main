@@ -372,5 +372,19 @@
     "successMessage": "El documento PDF ha sido generado exitosamente",
     "error": "Error",
     "errorMessage": "Error al generar el PDF. Por favor, intente nuevamente."
+  },
+  "myDoctors": {
+    "title": "Mis Doctores",
+    "searchPlaceholder": "Buscar por nombre...",
+    "pdfTitle": "Mis Doctores",
+    "pdfSubtitle": "Lista completa de doctores favoritos",
+    "pdfColumns": {
+      "name": "Nombre",
+      "specialty": "Especialidad",
+      "rating": "Calificación",
+      "yearsOfExperience": "Años de experiencia",
+      "languages": "Idiomas",
+      "insuranceAccepted": "Seguros aceptados"
+    }
   }
 }

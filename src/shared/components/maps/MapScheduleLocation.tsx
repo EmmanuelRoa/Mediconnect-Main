@@ -202,7 +202,11 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               {/* Dirección en la parte superior */}
               {address && (
                 <div
-                  className={`absolute ${isMobile ? "top-2 left-2 right-2" : "top-4 left-1/2 transform -translate-x-1/2"} z-[10001] bg-background shadow-lg rounded-full px-4 py-2 border border-primary/75`}
+                  className={`absolute ${
+                    isMobile
+                      ? "bottom-2 left-2 right-2"
+                      : "top-4 left-1/2 transform -translate-x-1/2"
+                  } z-[10001] bg-background shadow-lg rounded-full px-4 py-2 border border-primary/75`}
                 >
                   <p
                     className={`${isMobile ? "text-xs" : "text-sm"} text-foreground font-medium ${isMobile ? "truncate" : ""}`}
@@ -353,56 +357,77 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
           </motion.div>
         )}
         <div
-          className={`flex ${isMobile ? "justify-between" : "justify-between"} mt-4`}
+          className={`flex ${
+            isMobile ? "flex-wrap gap-4 justify-between" : "justify-between"
+          } mt-4`}
         >
-          <div className="flex flex-col items-start gap-2">
-            <div className="flex items-center gap-2">
-              <h5
-                className={`font-semibold text-primary ${isMobile ? "text-sm" : ""}`}
-              >
-                Address
-              </h5>
+          {isMobile ? (
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Address
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.direccion || "-"}
+                </span>
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Province
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.provincia || "-"}
+                </span>
+              </div>
+              <div className="flex flex-col items-start gap-2 col-span-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Municipality
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.municipio || "-"}
+                </span>
+              </div>
             </div>
-            <div>
-              <span
-                className={`text-primary opacity-75 ${isMobile ? "text-xs" : ""}`}
-              >
-                {address?.direccion || "-"}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col items-start gap-2">
-            <div className="flex items-center gap-2">
-              <h5
-                className={`font-semibold text-primary ${isMobile ? "text-sm" : ""}`}
-              >
-                Province
-              </h5>
-            </div>
-            <div>
-              <span
-                className={`text-primary opacity-75 ${isMobile ? "text-xs" : ""}`}
-              >
-                {address?.provincia || "-"}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col items-start gap-2">
-            <div className="flex items-center gap-2">
-              <h5
-                className={`font-semibold text-primary ${isMobile ? "text-sm" : ""}`}
-              >
-                Municipality
-              </h5>
-            </div>
-            <div>
-              <span
-                className={`text-primary opacity-75 ${isMobile ? "text-xs" : ""}`}
-              >
-                {address?.municipio || "-"}
-              </span>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Address
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.direccion || "-"}
+                </span>
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Province
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.provincia || "-"}
+                </span>
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <h5 className="text-md text-primary/75 font-medium">
+                    Municipality
+                  </h5>
+                </div>
+                <span className="text-lg text-primary font-medium break-words max-w-xs">
+                  {address?.municipio || "-"}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </AnimatePresence>
     </>

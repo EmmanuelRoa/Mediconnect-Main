@@ -21,6 +21,7 @@ import { ScrollToTop } from "@/shared/navigation/ScrollToTop";
 import PatientDashboard from "@/features/patient/pages/DashboardPage";
 import DoctorDashboard from "@/features/doctor/pages/DashboardPage";
 import CenterDashboard from "@/features/center/pages/DashboardPage";
+import DoctorProfilePage from "@/features/doctor/pages/DoctorProfilePage";
 
 import PatientProfilePage from "@/features/patient/pages/PatientProfilePage";
 import Search from "@/features/search/pages/Search";
@@ -43,6 +44,7 @@ import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivac
 import MyAppointmentsPage from "@/features/patient/pages/MyAppointmentsPage";
 import MyDoctorsPage from "@/features/patient/pages/MyDoctorsPage";
 import CalendarPage from "@/features/patient/pages/CalendarPage";
+
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -190,6 +192,10 @@ function AppRouter() {
             <Route
               path={ROUTES.PATIENT.MY_CALENDAR}
               element={<CalendarPage />}
+            />
+            <Route
+              path={ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC}
+              element={<DoctorProfilePage />}
             />
           </Route>
         </Route>

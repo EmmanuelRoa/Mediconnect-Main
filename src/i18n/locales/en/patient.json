@@ -350,6 +350,20 @@
       "status": "Status"
     }
   },
+  "myDoctors": {
+    "title": "My Doctors",
+    "searchPlaceholder": "Search by name...",
+    "pdfTitle": "My Doctors",
+    "pdfSubtitle": "Complete list of favorite doctors",
+    "pdfColumns": {
+      "name": "Name",
+      "specialty": "Specialty",
+      "rating": "Rating",
+      "yearsOfExperience": "Years of experience",
+      "languages": "Languages",
+      "insuranceAccepted": "Accepted insurances"
+    }
+  },
   "services": {
     "consultation": "General consultation",
     "treatment": "Treatment",

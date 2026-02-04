@@ -20,7 +20,15 @@ interface MCModalBaseProps {
   children: React.ReactNode;
   triggerClassName?: string;
   title?: string;
-  size?: "sm" | "smWide" | "md" | "lg" | "xl" | "2xl" | "wider";
+  size?:
+    | "sm"
+    | "smWide"
+    | "md"
+    | "lg"
+    | "xl"
+    | "2xl"
+    | "wider"
+    | "image-preview";
   className?: string;
   variant?: "warning" | "confirm" | "decide" | "info";
   onConfirm?: () => void;
@@ -104,6 +112,9 @@ export function MCModalBase({
     wider: isMobile
       ? "min-w-[220px] max-w-[98vw] h-[80vh]"
       : "min-w-[320px] max-w-[1200px] h-[95vh]",
+    "image-preview": isMobile
+      ? "w-auto max-w-[98vw] h-auto max-h-[90vh] p-0"
+      : "w-auto max-w-[800px] h-auto max-h-[90vh] p-0",
   };
 
   const paddingClasses = isMobile ? "p-3" : "p-4";

@@ -6,6 +6,7 @@ import {
   Copy,
   LogOut,
   Ellipsis,
+  BadgeCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -77,8 +78,12 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
 
             <div className="mt-25 w-full flex justify-between items-center px-6">
               <div className="flex flex-col">
-                <h3 className="text-primary font-semibold text-2xl">
+                <h3 className="text-primary font-semibold text-2xl flex items-center gap-2">
                   {user?.name || "Ilia Topuria"}
+                  <BadgeCheck
+                    className="w-6 h-6 text-background"
+                    fill="#8bb1ca"
+                  />
                 </h3>
                 <p className="text-primary">
                   <span className="font-medium">

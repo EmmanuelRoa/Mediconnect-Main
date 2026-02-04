@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
-import { AlertTriangle } from "lucide-react";
+
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
