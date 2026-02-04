@@ -550,7 +550,7 @@ function ScheduleAppointmentDialog({
       }
       title={modalTitle}
       trigger={triggerWithHandler}
-      triggerClassName="w-full  flex-1"
+      triggerClassName="w-full"
       size="wider"
     >
       <MCFormWrapper

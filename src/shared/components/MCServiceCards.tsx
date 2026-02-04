@@ -24,6 +24,7 @@ interface MCServiceCardProps {
   duration: string;
   type: string;
   onDetails?: () => void;
+  isOwner?: boolean; // <-- NUEVA PROP
 }
 
 const MCServiceCards = ({
@@ -37,6 +38,7 @@ const MCServiceCards = ({
   duration,
   type,
   onDetails,
+  isOwner = false, // <-- DEFAULT FALSE
 }: MCServiceCardProps) => {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
@@ -61,74 +63,81 @@ const MCServiceCards = ({
         />
         {/* Overlay para status y elipsis */}
         <div className="absolute top-0 left-0 w-full flex justify-between items-start p-2 pointer-events-none">
-          <MCServicesStatus
-            status={status}
-            variant="card"
-            className="pointer-events-auto"
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={`
-                  z-30 rounded-full border-none border-white/60
-                  bg-black/20 backdrop-blur-xl shadow-2xl
-                  transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]
-                  pointer-events-auto
-                  ${isMobile ? "p-1" : "p-1.5"}
-                `}
-                type="button"
-              >
-                <Ellipsis className="text-white" size={isMobile ? 18 : 20} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              className={`
-                p-1 flex flex-col gap-0.5 z-40 rounded-xl 
-                border border-primary/10 shadow-lg
-                ${isMobile ? "min-w-[140px] text-xs" : "min-w-[150px] text-sm"}
-              `}
-              align="end"
-              sideOffset={5}
-            >
-              <button
-                className={`
-                  text-left rounded-lg hover:bg-accent transition
-                  ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-                `}
-                type="button"
-              >
-                Ver servicio
-              </button>
-              <button
-                className={`
-                  text-left rounded-lg hover:bg-accent transition
-                  ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-                `}
-                type="button"
-              >
-                Editar servicio
-              </button>
-              <button
-                className={`
-                  text-left rounded-lg hover:bg-accent transition
-                  ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-                `}
-                type="button"
-              >
-                Desactivar servicio
-              </button>
-              <button
-                className={`
-                  text-left rounded-lg hover:bg-destructive/10 
-                  text-destructive transition
-                  ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-                `}
-                type="button"
-              >
-                Eliminar servicio
-              </button>
-            </PopoverContent>
-          </Popover>
+          {isOwner && (
+            <>
+              <MCServicesStatus
+                status={status}
+                variant="card"
+                className="pointer-events-auto"
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className={`
+              z-30 rounded-full border-none border-white/60
+              bg-black/20 backdrop-blur-xl shadow-2xl
+              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]
+              pointer-events-auto
+              ${isMobile ? "p-1" : "p-1.5"}
+            `}
+                    type="button"
+                  >
+                    <Ellipsis
+                      className="text-white"
+                      size={isMobile ? 18 : 20}
+                    />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className={`
+            p-1 flex flex-col gap-0.5 z-40 rounded-xl 
+            border border-primary/10 shadow-lg
+            ${isMobile ? "min-w-[140px] text-xs" : "min-w-[150px] text-sm"}
+          `}
+                  align="end"
+                  sideOffset={5}
+                >
+                  <button
+                    className={`
+              text-left rounded-lg hover:bg-accent transition
+              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
+            `}
+                    type="button"
+                  >
+                    Ver servicio
+                  </button>
+                  <button
+                    className={`
+              text-left rounded-lg hover:bg-accent transition
+              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
+            `}
+                    type="button"
+                  >
+                    Editar servicio
+                  </button>
+                  <button
+                    className={`
+              text-left rounded-lg hover:bg-accent transition
+              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
+            `}
+                    type="button"
+                  >
+                    Desactivar servicio
+                  </button>
+                  <button
+                    className={`
+              text-left rounded-lg hover:bg-destructive/10 
+              text-destructive transition
+              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
+            `}
+                    type="button"
+                  >
+                    Eliminar servicio
+                  </button>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
         </div>
       </div>
 
@@ -155,11 +164,11 @@ const MCServiceCards = ({
 
         <p
           className={`
-          text-muted-foreground mb-3 line-clamp-2
-          ${isMobile ? "text-xs min-h-[36px]" : "text-sm min-h-[44px]"}
-        `}
+    text-muted-foreground mb-3 line-clamp-2
+    ${isMobile ? "text-xs min-h-[36px]" : "text-sm min-h-[44px]"}
+  `}
         >
-          {description}
+          {description || "-"}
         </p>
 
         <div

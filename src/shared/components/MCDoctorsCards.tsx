@@ -81,8 +81,6 @@ function MCDoctorsCards({
 
   const userRole = useAppStore((state) => state.user?.role);
 
-  const handleFavoriteClick = () => {};
-
   const handleProfileClick = () => {
     if (id) {
       navigate(`/doctor/profile/${id}`);

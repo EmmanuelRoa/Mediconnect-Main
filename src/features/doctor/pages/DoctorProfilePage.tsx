@@ -15,6 +15,7 @@ import DoctorExperienceSection from "../components/DoctorExperienceSection";
 import DoctorInsurancesSection from "../components/DoctorInsurancesSection";
 import DoctorAboutSection from "../components/DoctorAboutSection";
 import DoctorServicesSection from "../components/DoctorServicesSection";
+import DoctorCentersSection from "../components/DoctorCentersSection";
 function DoctorProfilePage() {
   const { doctorId } = useParams();
   const { t } = useTranslation("doctor");
@@ -154,6 +155,46 @@ function DoctorProfilePage() {
     },
   ];
 
+  const centers = [
+    {
+      id: "1",
+      name: "Hospital Dario Contreras",
+      type: "Hospital General",
+      rating: 4.8,
+      reviewCount: 12,
+      phone: "809-093-2342",
+      urlImage:
+        "https://i.pinimg.com/736x/2d/79/92/2d799226aaefb127794b72128c3889cd.jpg",
+      isConnected: true,
+      description:
+        "Centro hospitalario de referencia nacional con atención 24/7.",
+    },
+    {
+      id: "2",
+      name: "Centro Médico Integral",
+      type: "Clínica",
+      rating: 4.6,
+      reviewCount: 8,
+      phone: "809-555-1234",
+      urlImage:
+        "https://i.pinimg.com/736x/5a/be/8f/5abe8ff7a562514b3a552a78369e0ed7.jpg",
+      isConnected: false,
+      // Sin descripción
+    },
+    {
+      id: "3",
+      name: "Clínica Familiar",
+      type: "Centro de Salud",
+      rating: 4.7,
+      reviewCount: 10,
+      phone: "809-222-5678",
+      urlImage:
+        "https://i.pinimg.com/736x/26/96/86/2696865c46c902b5a2a0cdd58b98ba95.jpg",
+      isConnected: false,
+      description: "Atención primaria y familiar para toda la comunidad.",
+    },
+  ];
+
   const isMyProfile = user?.id === doctorId;
 
   return (
@@ -199,6 +240,7 @@ function DoctorProfilePage() {
               <DoctorAboutSection doctor={doctor} />
               <DoctorInsurancesSection insurances={doctor.insurances} />
               <DoctorServicesSection services={services} />
+              <DoctorCentersSection centers={centers} />
             </div>
             <div
               className={`flex flex-col gap-6 ${!isMobile ? "sticky top-29.5 h-fit" : ""}`}
