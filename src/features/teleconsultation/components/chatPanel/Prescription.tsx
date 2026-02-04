@@ -8,6 +8,7 @@ import { Controller } from "react-hook-form";
 import { useState } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import { Upload, X, FileText } from "lucide-react";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 function Prescription() {
   const { t } = useTranslation();
@@ -15,27 +16,32 @@ function Prescription() {
     (state) => state.addPrescription,
   );
   const prescription = usePrescriptionStore((state) => state.prescription);
+  const isMobile = useIsMobile();
 
-  // Estado local para archivos y previews
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Maneja la subida de archivos
+  const MAX_FILES = 5;
+
   const handleFilesAdd = (
     newFiles: File[],
     onChange: (files: File[]) => void,
   ) => {
-    const updatedFiles = [...files, ...newFiles];
+    let updatedFiles = [...files, ...newFiles];
+    if (updatedFiles.length > MAX_FILES) {
+      updatedFiles = updatedFiles.slice(0, MAX_FILES);
+    }
     setFiles(updatedFiles);
     onChange(updatedFiles);
 
-    // Genera URLs para previsualización
     const newUrls = newFiles.map((file) => URL.createObjectURL(file));
-    setPreviews((prev) => [...prev, ...newUrls]);
+    setPreviews((prev) => {
+      const combined = [...prev, ...newUrls];
+      return combined.slice(0, MAX_FILES);
+    });
   };
 
-  // Elimina un archivo específico
   const handleRemoveFile = (
     index: number,
     onChange: (files: File[]) => void,
@@ -43,7 +49,6 @@ function Prescription() {
     const updatedFiles = files.filter((_, i) => i !== index);
     const updatedPreviews = previews.filter((_, i) => i !== index);
 
-    // Libera la URL del objeto
     URL.revokeObjectURL(previews[index]);
 
     setFiles(updatedFiles);
@@ -51,7 +56,6 @@ function Prescription() {
     onChange(updatedFiles);
   };
 
-  // Drag & Drop handlers
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -82,141 +86,146 @@ function Prescription() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full w-full rounded-xl md:rounded-2xl overflow-hidden overflow-y-auto">
       <MCFormWrapper schema={prescriptionSchema(t)} onSubmit={addPrescription}>
-        <div className="flex flex-col gap-4 p-4 overflow-y-auto h-full">
-          <MCInput
-            name="diagnosisTittle"
-            label={t("prescription.diagnosisTittle")}
-            placeholder={t("prescription.diagnosisTittlePlaceholder")}
-            size="medium"
-          />
+        <div className="flex flex-col gap-3 md:gap-4 p-3 md:p-4 overflow-y-auto h-full w-full items-center">
+          <div className="flex flex-col gap-3 md:gap-4 flex-1 overflow-y-auto w-full max-w-3xl">
+            <MCInput
+              name="diagnosisTittle"
+              label={t("prescription.diagnosisTittle")}
+              placeholder={t("prescription.diagnosisTittlePlaceholder")}
+              size="medium"
+            />
 
-          <Controller
-            name="diagnosisDescription"
-            defaultValue={prescription?.diagnosisDescription || ""}
-            render={({ field, fieldState }) => (
-              <RichTextEditor
-                value={field.value}
-                onChange={field.onChange}
-                label={t("prescription.diagnosisDescription")}
-                placeholder={t("prescription.diagnosisDescriptionPlaceholder")}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
+            <Controller
+              name="diagnosisDescription"
+              defaultValue={prescription?.diagnosisDescription || ""}
+              render={({ field, fieldState }) => (
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  label={t("prescription.diagnosisDescription")}
+                  placeholder={t(
+                    "prescription.diagnosisDescriptionPlaceholder",
+                  )}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
 
-          {/* Área de subida de documentos mejorada */}
-          <Controller
-            name="documents"
-            defaultValue={[]}
-            render={({ field }) => (
-              <div>
-                <label className="block text-base sm:text-lg text-primary mb-2 font-medium">
-                  {t("prescription.documents")}
-                </label>
+            {/* Document Upload Area */}
+            <Controller
+              name="documents"
+              defaultValue={[]}
+              render={({ field }) => (
+                <div>
+                  <label className="block text-sm md:text-base lg:text-lg text-primary mb-2 font-medium">
+                    {t("prescription.documents")}
+                  </label>
 
-                {/* Zona de Drop */}
-                <div
-                  onDragEnter={handleDragEnter}
-                  onDragLeave={handleDragLeave}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, field.onChange)}
-                  className={`
-                  relative border-2 border-dashed rounded-lg p-8 text-center
-                  transition-all duration-200 cursor-pointer
-                  ${
-                    isDragging
-                      ? "border-primary bg-primary/5"
-                      : "border-gray-300 hover:border-primary/50 bg-gray-50"
-                  }
-                `}
-                >
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*,application/pdf"
-                    onChange={(e) => {
-                      const selectedFiles = Array.from(e.target.files || []);
-                      handleFilesAdd(selectedFiles, field.onChange);
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                  {/* Drop Zone */}
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, field.onChange)}
+                    className={`
+                      relative border-2 border-dashed rounded-lg p-3 md:p-4 text-center
+                      transition-all duration-200 cursor-pointer
+                      ${
+                        isDragging
+                          ? "border-primary bg-primary/5"
+                          : "border-primary/15 hover:border-primary/50 bg-bg-btn-secondary"
+                      }
+                    `}
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*"
+                      onChange={(e) => {
+                        const selectedFiles = Array.from(e.target.files || []);
+                        handleFilesAdd(selectedFiles, field.onChange);
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={files.length >= MAX_FILES}
+                    />
 
-                  <div className="flex flex-col items-center gap-3">
-                    <Upload className="w-12 h-12 text-gray-400" />
-                    <div>
-                      <p className="text-lg font-medium text-gray-700">
-                        Arrastra y suelta archivos aquí
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                      <p className="text-xs md:text-sm font-medium text-primary">
+                        {isMobile ? "Toca para subir" : "Arrastra o haz clic"}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        o haz clic para seleccionar
+                      <p className="text-[10px] md:text-xs text-primary/75">
+                        Imágenes y documentos
                       </p>
+                      {files.length >= MAX_FILES && (
+                        <span className="text-xs text-red-500 mt-1">
+                          Máximo {MAX_FILES} archivos
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-400">
-                      Imágenes y PDFs permitidos
-                    </p>
                   </div>
-                </div>
 
-                {/* Vista previa de archivos con scroll interno */}
-                {previews.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-600 mb-3">
-                      {previews.length} archivo
-                      {previews.length !== 1 ? "s" : ""} subido
-                      {previews.length !== 1 ? "s" : ""}
-                    </p>
-                    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      {/* Aumenta la altura máxima si es necesario */}
-                      <div className="flex flex-wrap gap-3 overflow-y-auto max-h-[260px]">
-                        {previews.map((url, idx) => (
-                          <div
-                            key={idx}
-                            className="relative group w-20 h-20 flex-shrink-0 border-2 border-gray-200 rounded-lg overflow-hidden bg-white hover:border-primary transition-colors"
-                          >
-                            {/* Botón eliminar */}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleRemoveFile(idx, field.onChange)
-                              }
-                              className="absolute top-1 right-1 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                              aria-label="Eliminar archivo"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
+                  {/* File Previews */}
+                  {previews.length > 0 && (
+                    <div className="mt-3 md:mt-4">
+                      <p className="text-xs md:text-sm text-primary mb-2 md:mb-3">
+                        {previews.length} archivo
+                        {previews.length !== 1 ? "s" : ""} subido
+                        {previews.length !== 1 ? "s" : ""}
+                      </p>
+                      <div className="border bg-primary/15 rounded-lg p-2 md:p-3 bg-bg-secondary">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
+                          {previews.map((url, idx) => {
+                            const file = files[idx];
+                            const isImage = file?.type.startsWith("image/");
+                            return (
+                              <div
+                                key={idx}
+                                className="relative group aspect-square border-2 border-primary/15 rounded-lg overflow-hidden bg-bg-btn-secondary hover:border-primary transition-colors"
+                              >
+                                {/* Remove Button */}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveFile(idx, field.onChange)
+                                  }
+                                  className="absolute top-1 right-1 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                  aria-label="Eliminar archivo"
+                                >
+                                  <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                                </button>
 
-                            {/* Preview del archivo */}
-                            <div className="w-full h-full flex items-center justify-center p-1">
-                              {files[idx]?.type === "application/pdf" ? (
-                                <div className="flex flex-col items-center gap-1">
-                                  <FileText className="w-6 h-6 text-red-500" />
-                                  <span className="text-[10px] text-gray-600 text-center truncate w-full px-1">
-                                    {files[idx]?.name}
-                                  </span>
+                                {/* File Preview */}
+                                <div className="w-full h-full flex items-center justify-center p-1">
+                                  {isImage ? (
+                                    <img
+                                      src={url}
+                                      alt={`Preview ${idx + 1}`}
+                                      className="object-cover w-full h-full rounded-lg"
+                                    />
+                                  ) : (
+                                    <div className="flex flex-col items-center gap-1 w-full h-full justify-center">
+                                      <FileText className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <img
-                                  src={url}
-                                  alt={`Preview ${idx + 1}`}
-                                  className="object-cover w-full h-full"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-          />
+                  )}
+                </div>
+              )}
+            />
 
-          <MCButton type="submit" size="ml">
-            {t("prescription.submit")}
-          </MCButton>
+            <MCButton type="submit" size="ml" className="w-full md:w-auto">
+              {t("prescription.submit")}
+            </MCButton>
+          </div>
         </div>
       </MCFormWrapper>
     </div>

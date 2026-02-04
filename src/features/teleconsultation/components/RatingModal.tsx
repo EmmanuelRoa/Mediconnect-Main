@@ -3,19 +3,55 @@ import { X, Star, CheckCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Textarea } from "@/shared/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import doctorAvatar from "@/assets/doctor-avatar.jpg";
+import MCButton from "@/shared/components/forms/MCButton";
+import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MCDialogBase } from "@/shared/components/MCDialogBase"; // <-- Usa tu componente base
 
-interface RatingModalProps {
+const doctorAvatar =
+  "https://i.pinimg.com/736x/6b/8b/0a/6b8b0aa412e8b2f5b7587c0e87a2f46e.jpg";
+const doctorName = "Dr. Cristiano Ronaldo";
+
+export function getDoctorAvatar({
+  name,
+  avatarUrl,
+}: {
+  name: string;
+  avatarUrl?: string;
+}) {
+  if (avatarUrl) {
+    return (
+      <Avatar className="h-20 w-20 rounded-full overflow-hidden">
+        <AvatarImage
+          src={avatarUrl}
+          alt={name}
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+        />
+        <AvatarFallback className="bg-muted text-muted-foreground">
+          {name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")}
+        </AvatarFallback>
+      </Avatar>
+    );
+  } else {
+    return (
+      <MCUserAvatar
+        name={name}
+        square
+        size={96}
+        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+      />
+    );
+  }
+}
+
+type RatingModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (rating: number, comment: string) => void;
-}
+};
 
 export const RatingModal = ({
   isOpen,
@@ -25,6 +61,7 @@ export const RatingModal = ({
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
+  const isMobile = useIsMobile();
 
   const handleSubmit = () => {
     onSubmit(rating, comment);
@@ -39,87 +76,83 @@ export const RatingModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl">
-            Califica tu consulta
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col items-center py-4">
-          {/* Doctor info */}
-          <div className="flex items-center gap-3 mb-6">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={doctorAvatar} />
-              <AvatarFallback>CR</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold">Dr. Cristiano Ronaldo</p>
-                <CheckCircle className="w-4 h-4 text-primary fill-primary/20" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Especialista en Medicina Interna
-              </p>
-            </div>
+    <MCDialogBase
+      open={isOpen}
+      onOpenChange={onClose}
+      title="Califica tu consulta"
+      size="md"
+      className="sm:max-w-md"
+    >
+      <div className="flex flex-col items-center py-4">
+        {/* Doctor info */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden">
+            {getDoctorAvatar({ name: doctorName, avatarUrl: doctorAvatar })}
           </div>
-
-          {/* Rating section */}
-          <div className="w-full mb-6">
-            <p className="text-sm font-medium mb-3">Califica tu experiencia</p>
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onMouseEnter={() => setHoveredRating(star)}
-                  onMouseLeave={() => setHoveredRating(0)}
-                  onClick={() => setRating(star)}
-                  className="rating-star"
-                >
-                  <Star
-                    className={`w-10 h-10 ${
-                      star <= (hoveredRating || rating)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-muted stroke-muted-foreground/40"
-                    }`}
-                  />
-                </button>
-              ))}
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold">{doctorName}</p>
             </div>
-          </div>
-
-          {/* Comment section */}
-          <div className="w-full mb-6">
-            <p className="text-sm font-medium mb-2">
-              Deja un comentario (Opcional)
+            <p className="text-sm text-muted-foreground">
+              Especialista en Medicina Interna
             </p>
-            <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Escribe tu comentario aquí..."
-              className="min-h-[100px] resize-none"
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="w-full space-y-3">
-            <Button
-              onClick={handleSubmit}
-              disabled={rating === 0}
-              className="w-full"
-            >
-              Enviar calificación
-            </Button>
-            <button
-              onClick={handleSkip}
-              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Omitir por ahora
-            </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Rating section */}
+        <div className="w-full mb-6">
+          <p className="text-sm font-medium mb-3">Califica tu experiencia</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onMouseEnter={() => setHoveredRating(star)}
+                onMouseLeave={() => setHoveredRating(0)}
+                onClick={() => setRating(star)}
+                className="rating-star"
+              >
+                <Star
+                  className={`w-10 h-10 ${
+                    star <= (hoveredRating || rating)
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-primary/10 fill-transparent"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Comment section */}
+        <div className="w-full mb-6">
+          <p className="text-sm font-medium mb-2">
+            Deja un comentario (Opcional)
+          </p>
+          <Textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Escribe tu comentario aquí..."
+            className="min-h-[100px] rounded-2xl resize-none border-primary/15"
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="w-full space-y-3">
+          <MCButton
+            onClick={handleSubmit}
+            disabled={rating === 0}
+            className="w-full"
+          >
+            Enviar calificación
+          </MCButton>
+          <button
+            onClick={handleSkip}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Omitir por ahora
+          </button>
+        </div>
+      </div>
+    </MCDialogBase>
   );
 };

@@ -8,7 +8,8 @@ import {
   Minimize2,
 } from "lucide-react";
 import { useState } from "react";
-
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { RatingModal } from "@/features/teleconsultation/components/RatingModal";
 interface VideoCallProps {
   onEndCall: () => void;
   onToggleFullscreen?: () => void;
@@ -22,10 +23,31 @@ export const VideoCall = ({
 }: VideoCallProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [showRating, setShowRating] = useState(false); // Nuevo estado
+  const isMobile = useIsMobile();
+
+  const handleEndCall = () => {
+    setShowRating(true); // Mostrar modal
+  };
+
+  const handleCloseRating = () => {
+    setShowRating(false);
+    onEndCall(); // Lógica original de finalizar llamada
+  };
+
+  const handleSubmitRating = (rating: number, comment: string) => {
+    // Aquí puedes manejar el envío de la calificación
+    setShowRating(false);
+    onEndCall();
+  };
 
   return (
     <div
-      className={`relative ${isFullscreen ? "w-full h-full" : "w-full h-full rounded-xl overflow-hidden"} bg-black`}
+      className={`relative ${
+        isFullscreen
+          ? "w-full h-full"
+          : "w-full h-full rounded-xl overflow-hidden"
+      } bg-black`}
     >
       {/* Main video feed */}
       <img
@@ -34,7 +56,7 @@ export const VideoCall = ({
         className="w-full h-full object-cover"
       />
 
-      {/* Fullscreen button */}
+      {/* Fullscreen button - Hidden on mobile */}
       {onToggleFullscreen && (
         <button
           onClick={onToggleFullscreen}
@@ -51,9 +73,15 @@ export const VideoCall = ({
         </button>
       )}
 
-      {/* Self video preview */}
+      {/* Self video preview - Responsive sizing */}
       <div
-        className={`absolute ${isFullscreen ? "bottom-24 right-8 w-48 h-48" : "bottom-20 right-6 w-32 h-32"} rounded-lg overflow-hidden shadow-2xl border border-white/20 transition-all duration-300`}
+        className={`absolute ${
+          isFullscreen
+            ? "bottom-24 right-8 w-32 h-32 md:w-48 md:h-48"
+            : isMobile
+              ? "bottom-20 right-3 w-20 h-20"
+              : "bottom-20 right-6 w-32 h-32"
+        } rounded-lg overflow-hidden shadow-2xl border border-white/20 transition-all duration-300`}
       >
         <img
           src="https://i.pinimg.com/736x/6b/8b/0a/6b8b0aa412e8b2f5b7587c0e87a2f46e.jpg"
@@ -62,42 +90,63 @@ export const VideoCall = ({
         />
       </div>
 
-      {/* Video controls */}
+      {/* Video controls - Responsive sizing */}
       <div
-        className={`absolute ${isFullscreen ? "bottom-8" : "bottom-6"} left-1/2 -translate-x-1/2 flex gap-3`}
+        className={`absolute ${
+          isFullscreen ? "bottom-8" : isMobile ? "bottom-4" : "bottom-6"
+        } left-1/2 -translate-x-1/2 flex gap-2 md:gap-3`}
       >
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className={`p-4 rounded-full transition-all backdrop-blur-sm border ${
+          className={`${
+            isMobile ? "p-3" : "p-4"
+          } rounded-full transition-all backdrop-blur-sm border ${
             isMuted
               ? "bg-red-500 hover:bg-red-600 border-red-400/30"
               : "bg-black/40 hover:bg-black/60 border-white/10"
           }`}
           title={isMuted ? "Activar micrófono" : "Silenciar"}
         >
-          <MicOff className="w-5 h-5 text-white" />
+          <MicOff
+            className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}
+          />
         </button>
 
         <button
           onClick={() => setIsVideoOff(!isVideoOff)}
-          className={`p-4 rounded-full transition-all backdrop-blur-sm border ${
+          className={`${
+            isMobile ? "p-3" : "p-4"
+          } rounded-full transition-all backdrop-blur-sm border ${
             isVideoOff
               ? "bg-red-500 hover:bg-red-600 border-red-400/30"
               : "bg-black/40 hover:bg-black/60 border-white/10"
           }`}
           title={isVideoOff ? "Activar cámara" : "Apagar cámara"}
         >
-          <VideoOff className="w-5 h-5 text-white" />
+          <VideoOff
+            className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}
+          />
         </button>
 
         <button
-          onClick={onEndCall}
-          className="p-4 rounded-full bg-red-600 hover:bg-red-700 transition-all shadow-lg border border-red-500/30"
+          onClick={handleEndCall}
+          className={`${
+            isMobile ? "p-3" : "p-4"
+          } rounded-full bg-red-600 hover:bg-red-700 transition-all shadow-lg border border-red-500/30`}
           title="Finalizar llamada"
         >
-          <PhoneOff className="w-5 h-5 text-white" />
+          <PhoneOff
+            className={`${isMobile ? "w-4 h-4" : "w-5 h-5"} text-white`}
+          />
         </button>
       </div>
+
+      {/* Rating Modal */}
+      <RatingModal
+        isOpen={showRating}
+        onClose={handleCloseRating}
+        onSubmit={handleSubmitRating}
+      />
     </div>
   );
 };

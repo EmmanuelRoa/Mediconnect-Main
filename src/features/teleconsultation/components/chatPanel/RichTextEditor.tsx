@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useCallback } from "react";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -21,6 +22,7 @@ interface ToolbarButtonProps {
   disabled?: boolean;
   children: React.ReactNode;
   title: string;
+  isMobile?: boolean;
 }
 
 const ToolbarButton = ({
@@ -29,6 +31,7 @@ const ToolbarButton = ({
   disabled,
   children,
   title,
+  isMobile,
 }: ToolbarButtonProps) => (
   <button
     type="button"
@@ -36,7 +39,7 @@ const ToolbarButton = ({
     disabled={disabled}
     title={title}
     className={cn(
-      "p-2 rounded-md transition-colors hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed",
+      `${isMobile ? "p-1.5" : "p-2"} rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed`,
       isActive && "bg-accent text-accent-foreground",
     )}
   >
@@ -49,76 +52,97 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar = ({ editor }: EditorToolbarProps) => {
+  const isMobile = useIsMobile();
+
   if (!editor) return null;
 
+  const iconSize = isMobile ? "h-3.5 w-3.5" : "h-4 w-4";
+
   return (
-    <div className="flex items-center border-b border-primary/15 p-2 space-x-1 bg-background/50">
+    <div
+      className={cn(
+        "flex items-center border-b border-primary/15 space-x-0.5 md:space-x-1 bg-background/50",
+        isMobile ? "p-1.5 overflow-x-auto" : "p-2",
+      )}
+    >
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}
         title="Bold (Ctrl+B)"
+        isMobile={isMobile}
       >
-        <Bold className="h-4 w-4" />
+        <Bold className={iconSize} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={editor.isActive("italic")}
         title="Italic (Ctrl+I)"
+        isMobile={isMobile}
       >
-        <Italic className="h-4 w-4" />
+        <Italic className={iconSize} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         isActive={editor.isActive("underline")}
         title="Underline (Ctrl+U)"
+        isMobile={isMobile}
       >
-        <UnderlineIcon className="h-4 w-4" />
+        <UnderlineIcon className={iconSize} />
       </ToolbarButton>
 
-      <div className="w-px h-6 bg-border mx-1" />
+      <div
+        className={cn("w-px bg-border", isMobile ? "h-5 mx-0.5" : "h-6 mx-1")}
+      />
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive("heading", { level: 2 })}
         title="Heading"
+        isMobile={isMobile}
       >
-        <Heading2 className="h-4 w-4" />
+        <Heading2 className={iconSize} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive("bulletList")}
         title="Bullet List"
+        isMobile={isMobile}
       >
-        <List className="h-4 w-4" />
+        <List className={iconSize} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive("orderedList")}
         title="Numbered List"
+        isMobile={isMobile}
       >
-        <ListOrdered className="h-4 w-4" />
+        <ListOrdered className={iconSize} />
       </ToolbarButton>
 
-      <div className="w-px h-6 bg-border mx-1" />
+      <div
+        className={cn("w-px bg-border", isMobile ? "h-5 mx-0.5" : "h-6 mx-1")}
+      />
 
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
         title="Undo (Ctrl+Z)"
+        isMobile={isMobile}
       >
-        <Undo className="h-4 w-4" />
+        <Undo className={iconSize} />
       </ToolbarButton>
 
       <ToolbarButton
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
         title="Redo (Ctrl+Shift+Z)"
+        isMobile={isMobile}
       >
-        <Redo className="h-4 w-4" />
+        <Redo className={iconSize} />
       </ToolbarButton>
     </div>
   );
@@ -130,7 +154,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   error?: string;
   className?: string;
-  label?: string; // Agrega la prop label
+  label?: string;
 }
 
 export const RichTextEditor = ({
@@ -139,8 +163,10 @@ export const RichTextEditor = ({
   placeholder = "Enter your text here...",
   error,
   className,
-  label, // Recibe la prop label
+  label,
 }: RichTextEditorProps) => {
+  const isMobile = useIsMobile();
+
   const handleUpdate = useCallback(
     ({ editor }: { editor: Editor }) => {
       const html = editor.getHTML();
@@ -166,7 +192,10 @@ export const RichTextEditor = ({
     onUpdate: handleUpdate,
     editorProps: {
       attributes: {
-        class: "focus:outline-none min-h-[120px]",
+        class: cn(
+          "focus:outline-none",
+          isMobile ? "min-h-[100px] text-sm" : "min-h-[120px]",
+        ),
       },
     },
   });
@@ -182,7 +211,7 @@ export const RichTextEditor = ({
     <div className={cn("space-y-1", className)}>
       {label && (
         <div className="flex flex-row justify-between items-center mb-2 gap-2">
-          <label className="text-left text-base sm:text-lg text-primary">
+          <label className="text-left text-sm md:text-base lg:text-lg text-primary">
             {label}
           </label>
         </div>
@@ -191,16 +220,19 @@ export const RichTextEditor = ({
         className={cn(
           "overflow-hidden rounded-lg border border-primary/15 bg-background transition-all",
           error ? "border-destructive" : "border-primary/15",
-          "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
         )}
-        style={{ maxHeight: "250px", minHeight: "180px", overflowY: "auto" }} // altura fija y scroll interno
+        style={{
+          maxHeight: isMobile ? "200px" : "250px",
+          minHeight: isMobile ? "150px" : "180px",
+          overflowY: "auto",
+        }}
       >
         <EditorToolbar editor={editor} />
-        <div className="tiptap-editor">
+        <div className={cn("tiptap-editor", isMobile ? "p-2" : "p-3")}>
           <EditorContent editor={editor} />
         </div>
       </div>
-      {error && <p className="form-error">{error}</p>}
+      {error && <p className="form-error text-xs md:text-sm">{error}</p>}
     </div>
   );
 };

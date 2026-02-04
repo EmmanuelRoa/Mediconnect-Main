@@ -79,7 +79,7 @@ export function MCDialogBase({
     xl: isMobile ? "w-[98vw] h-[85vh]" : "w-[896px] h-[800px]",
     "2xl": isMobile ? "w-[100vw] h-[90vh]" : "w-[1152px] h-[900px]",
     "image-preview": isMobile
-      ? "w-auto max-w-[98vw] h-auto max-h-[80vh]"
+      ? "w-[95vw] h-[70vh] max-w-[95vw] max-h-[70vh]"
       : "w-auto max-w-[520px] h-auto max-h-[80vh]",
   };
 
@@ -97,7 +97,12 @@ export function MCDialogBase({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`bg-bg-secondary rounded-3xl  border-2 border-transparent  dark:border-white/15 shadow-lg ${sizeClasses[size]} ${className} flex flex-col overflow-hidden p-0`}
+        className={`bg-bg-secondary rounded-3xl border-2 border-transparent dark:border-white/15 shadow-lg
+          ${sizeClasses[size]} ${className}
+          flex flex-col overflow-hidden p-0
+          fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+          max-w-full max-h-full
+        `}
         style={{ zIndex }}
       >
         {/* Header */}
