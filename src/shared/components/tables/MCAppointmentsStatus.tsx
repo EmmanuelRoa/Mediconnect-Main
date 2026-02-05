@@ -22,23 +22,23 @@ function MCAppointmentsStatus({
   > = {
     scheduled: {
       label: t("appointment.status.scheduled"),
-      color: "bg-[#6A1B9A]/12 text-[#6A1B9A]",
+      color: "bg-[#6A1B9A]/15 text-[#6A1B9A]",
     }, // Morado
     pending: {
       label: t("appointment.status.pending"),
-      color: "bg-[#C77A1F]/12 text-[#C77A1F]",
+      color: "bg-[#C77A1F]/15 text-[#C77A1F]",
     }, // Amarillo
     in_progress: {
       label: t("appointment.status.in_progress"),
-      color: "bg-[#1565C0]/12 text-[#1565C0]",
+      color: "bg-[#1565C0]/15 text-[#1565C0]",
     }, // Azul
     completed: {
       label: t("appointment.status.completed"),
-      color: "bg-[#2E7D32]/12 text-[#2E7D32]",
+      color: "bg-[#2E7D32]/15 text-[#2E7D32]",
     }, // Verde
     cancelled: {
       label: t("appointment.status.cancelled"),
-      color: "bg-[#C62828]/12 text-[#C62828]",
+      color: "bg-[#C62828]/15 text-[#C62828]",
     }, // Rojo
   };
 

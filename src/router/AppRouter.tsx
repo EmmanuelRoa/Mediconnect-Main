@@ -42,7 +42,7 @@ import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage"
 import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivacyPage";
 import MyAppointmentsPage from "@/features/patient/pages/MyAppointmentsPage";
 import MyDoctorsPage from "@/features/patient/pages/MyDoctorsPage";
-import CalendarPage from "@/features/patient/pages/CalendarPage";
+import { CalendarPage } from "@/features/calendar/pages/CalendarPage";
 
 function AppRouter() {
   return (

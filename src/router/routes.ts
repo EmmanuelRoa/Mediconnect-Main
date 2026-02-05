@@ -91,5 +91,6 @@ export const ROUTES = {
   COMMON: {
     CHAT: "/chat",
     GLOBAL_SEARCH: "/search",
+    CALENDAR: "/calendar",
   },
 };

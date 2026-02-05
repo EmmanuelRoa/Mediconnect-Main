@@ -1,5 +1,6 @@
 import { Clock, MapPin, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { useTranslation } from "react-i18next";
 
 import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
@@ -36,7 +37,7 @@ export interface Appointment {
   location?: string;
   status: "scheduled" | "pending" | "in_progress" | "completed" | "cancelled";
 }
-import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
+
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/router/routes";
 interface MyAppointmentsCardsProps {

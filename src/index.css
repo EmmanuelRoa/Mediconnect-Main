@@ -186,3 +186,14 @@ iframe {
   padding: 0 !important;
   border-radius: 20px !important;
 }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: "Inter", sans-serif;
+  }
+}
