@@ -298,5 +298,53 @@
     "orderedList": "Numbered List",
     "undo": "Undo (Ctrl+Z)",
     "redo": "Redo (Ctrl+Shift+Z)"
+  },
+  "calendar": {
+    "today": "Today",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "list": "List",
+    "weekOf": "Week of",
+    "appointmentsScheduled": "{{count}} appointment scheduled",
+    "appointmentsScheduled_plural": "{{count}} appointments scheduled",
+    "noUpcomingAppointments": "No upcoming appointments",
+    "upcomingAppointmentsDescription": "Your upcoming appointments will appear here",
+    "available": "Available",
+    "more": "+{{count}} more",
+    "appointment": "appointment",
+    "appointments": "appointments",
+    "noAppointmentSelected": "No appointment selected",
+    "selectAppointmentDescription": "Select an appointment to view details",
+    "appointmentDetails": "Appointment Details",
+    "contact": "Contact",
+    "reason": "Reason",
+    "weekDays": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "modality": {
+      "virtual": "Virtual",
+      "presencial": "In-Person"
+    }
+  },
+  "appointments": {
+    "join": "Join",
+    "viewDetails": "View Details",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "openChat": "Open chat"
   }
 }

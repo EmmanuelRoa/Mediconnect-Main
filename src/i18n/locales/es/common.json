@@ -298,5 +298,53 @@
     "orderedList": "Lista numerada",
     "undo": "Deshacer (Ctrl+Z)",
     "redo": "Rehacer (Ctrl+Shift+Z)"
+  },
+  "calendar": {
+    "today": "Hoy",
+    "month": "Mes",
+    "week": "Semana",
+    "day": "Día",
+    "list": "Lista",
+    "weekOf": "Semana del",
+    "appointmentsScheduled": "{{count}} cita programada",
+    "appointmentsScheduled_plural": "{{count}} citas programadas",
+    "noUpcomingAppointments": "No hay citas próximas",
+    "upcomingAppointmentsDescription": "Las próximas citas aparecerán aquí",
+    "available": "Disponible",
+    "more": "+{{count}} más",
+    "appointment": "cita",
+    "appointments": "citas",
+    "noAppointmentSelected": "Sin cita seleccionada",
+    "selectAppointmentDescription": "Selecciona una cita para ver detalles",
+    "appointmentDetails": "Detalles de la cita",
+    "contact": "Contacto",
+    "reason": "Motivo",
+    "weekDays": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    },
+    "status": {
+      "scheduled": "Agendada",
+      "pending": "Pendiente",
+      "in_progress": "En curso",
+      "completed": "Completada",
+      "cancelled": "Cancelada"
+    },
+    "modality": {
+      "virtual": "Virtual",
+      "presencial": "Presencial"
+    }
+  },
+  "appointments": {
+    "join": "Unirse",
+    "viewDetails": "Ver detalles",
+    "reschedule": "Reagendar",
+    "cancel": "Cancelar",
+    "openChat": "Abrir chat"
   }
 }

@@ -1,5 +1,6 @@
 import { Clock } from "lucide-react";
 import type { Appointment } from "@/types/CalendarTypes";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface AppointmentBadgeProps {
   appointment: Appointment;
@@ -23,6 +24,11 @@ export const AppointmentBadge = ({
   onClick,
   compact = false,
 }: AppointmentBadgeProps) => {
+  const userRole = useAppStore((state) => state.user?.role);
+
+  const displayName =
+    userRole === "DOCTOR" ? appointment.patientName : appointment.doctorName;
+
   return (
     <button
       onClick={(e) => {
@@ -35,9 +41,7 @@ export const AppointmentBadge = ({
     >
       <Clock className="w-3 h-3 flex-shrink-0" />
       <span className="truncate">
-        {compact
-          ? appointment.time
-          : `${appointment.patientName} ${appointment.time}`}
+        {compact ? appointment.time : `${displayName} ${appointment.time}`}
       </span>
     </button>
   );

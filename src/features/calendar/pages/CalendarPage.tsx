@@ -9,11 +9,11 @@ import {
   subDays,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import type { CalendarView, Appointment } from "@/types/CalendarTypes";
 import { mockAppointments } from "@/data/mockAppointments";
-
+import { useTranslation } from "react-i18next";
 import { ViewSelector } from "../components/ViewSelector";
 import { MonthView } from "../components/MonthView";
 import { WeekView } from "../components/WeekView";
@@ -21,6 +21,8 @@ import { DayView } from "../components/DayView";
 import { ListView } from "../components/ListView";
 import { AppointmentDetails } from "../components/AppointmentDetails";
 import MCButton from "@/shared/components/forms/MCButton";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
 
 export const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +30,9 @@ export const CalendarPage = () => {
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [view, setView] = useState<CalendarView>("month");
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
 
   const navigatePrevious = () => {
     switch (view) {
@@ -72,6 +77,14 @@ export const CalendarPage = () => {
 
   const handleSelectAppointment = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
+    if (isMobile) {
+      setShowMobileDetails(true);
+    }
+  };
+
+  const handleCloseMobileDetails = () => {
+    setShowMobileDetails(false);
+    setSelectedAppointment(null);
   };
 
   const getTitle = () => {
@@ -79,99 +92,196 @@ export const CalendarPage = () => {
       case "month":
         return format(currentDate, "MMMM 'de' yyyy", { locale: es });
       case "week":
-        return `Semana del ${format(currentDate, "d 'de' MMMM", { locale: es })}`;
+        return t("calendar.weekOf", {
+          defaultValue: "Semana del {{date}}",
+          date: format(currentDate, "d 'de' MMMM", { locale: es }),
+        });
       case "day":
         return format(currentDate, "EEEE, d 'de' MMMM", { locale: es });
       default:
-        return "Próximas citas";
+        return t("calendar.noUpcomingAppointments", {
+          defaultValue: "Próximas citas",
+        });
     }
   };
 
   return (
-    <div className="min-h-100vh bg-background rounded-4xl h-screen">
-      <div className="flex h-[calc(100vh-40px)]">
+    <div className="min-h-screen rounded-4xl bg-background transition-all duration-300 ease-in-out">
+      <div
+        className={cn(
+          "flex h-screen transition-all  rounded-4xl  duration-300",
+          isMobile ? "flex-col" : "",
+        )}
+      >
         {/* Main content */}
-        <div className="flex-1 flex flex-col p-6">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold capitalize ">{getTitle()}</h1>
-              {view !== "list" && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={navigatePrevious}
-                    className="rounded-full"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={navigateNext}
-                    className="rounded-full"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
+        <div className="flex-1 flex flex-col transition-all   rounded-4xl  duration-300">
+          {/* Mobile Header */}
+          {isMobile && (
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm  rounded-4xl   p-4">
+              {/* Título arriba */}
+              <h1 className="text-lg font-semibold truncate max-w-full mb-2">
+                {getTitle()}
+              </h1>
+              <div className="flex items-center justify-between">
+                <ViewSelector currentView={view} onViewChange={setView} />
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-2">
+                  {view !== "list" && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={navigatePrevious}
+                        className="rounded-full h-8 w-8 p-0 hover:scale-105 transition-transform duration-200"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={navigateNext}
+                        className="rounded-full h-8 w-8 p-0 hover:scale-105 transition-transform duration-200"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
-              )}
+                <MCButton
+                  variant="outline"
+                  size="s"
+                  onClick={goToToday}
+                  className="hover:scale-105 transition-transform duration-200"
+                >
+                  {t("calendar.today", { defaultValue: "Hoy" })}
+                </MCButton>
+              </div>
+            </div>
+          )}
+
+          {/* Desktop Header */}
+          {!isMobile && (
+            <div className="p-6 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-2xl font-bold capitalize transition-all duration-300">
+                    {getTitle()}
+                  </h1>
+                  {view !== "list" && (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={navigatePrevious}
+                        className="rounded-full hover:scale-105 transition-transform duration-200"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={navigateNext}
+                        className="rounded-full hover:scale-105 transition-transform duration-200"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <MCButton
+                    variant="outline"
+                    size="s"
+                    onClick={goToToday}
+                    className="hover:scale-105 transition-transform duration-200"
+                  >
+                    {t("calendar.today", { defaultValue: "Hoy" })}
+                  </MCButton>
+                  <ViewSelector currentView={view} onViewChange={setView} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Calendar Views */}
+          <div
+            className={cn(
+              "flex flex-1 min-h-0 transition-all duration-300",
+              isMobile ? "flex-col px-4 pb-4" : "px-6",
+            )}
+          >
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-hidden rounded-2xl  backdrop-blur-sm">
+                {view === "month" && (
+                  <MonthView
+                    currentDate={currentDate}
+                    appointments={mockAppointments}
+                    onSelectDate={handleSelectDate}
+                    onSelectAppointment={handleSelectAppointment}
+                    selectedDate={selectedDate}
+                  />
+                )}
+                {view === "week" && (
+                  <WeekView
+                    currentDate={currentDate}
+                    appointments={mockAppointments}
+                    onSelectDate={handleSelectDate}
+                    onSelectAppointment={handleSelectAppointment}
+                    selectedDate={selectedDate}
+                  />
+                )}
+                {view === "day" && (
+                  <DayView
+                    currentDate={currentDate}
+                    appointments={mockAppointments}
+                    onSelectAppointment={handleSelectAppointment}
+                  />
+                )}
+                {view === "list" && (
+                  <ListView
+                    appointments={mockAppointments}
+                    onSelectAppointment={handleSelectAppointment}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <MCButton variant="outline" size="s" onClick={goToToday}>
-                Hoy
-              </MCButton>
-              <ViewSelector currentView={view} onViewChange={setView} />
-            </div>
-          </div>
-
-          {/* Calendar y detalles juntos */}
-          <div className="flex flex-1 min-h-0">
-            <div className="flex-1 flex flex-col">
-              {/* Calendar views */}
-              {view === "month" && (
-                <MonthView
-                  currentDate={currentDate}
-                  appointments={mockAppointments}
-                  onSelectDate={handleSelectDate}
-                  onSelectAppointment={handleSelectAppointment}
-                  selectedDate={selectedDate}
-                />
-              )}
-              {view === "week" && (
-                <WeekView
-                  currentDate={currentDate}
-                  appointments={mockAppointments}
-                  onSelectDate={handleSelectDate}
-                  onSelectAppointment={handleSelectAppointment}
-                  selectedDate={selectedDate}
-                />
-              )}
-              {view === "day" && (
-                <DayView
-                  currentDate={currentDate}
-                  appointments={mockAppointments}
-                  onSelectAppointment={handleSelectAppointment}
-                />
-              )}
-              {view === "list" && (
-                <ListView
-                  appointments={mockAppointments}
-                  onSelectAppointment={handleSelectAppointment}
-                />
-              )}
-            </div>
-            {/* Details panel */}
-            <div className="w-[380px] rounded-4xl h-full overflow-y-auto ml-4">
-              <AppointmentDetails
-                appointment={selectedAppointment}
-                onClose={() => setSelectedAppointment(null)}
-              />
-            </div>
+            {/* Desktop Details panel */}
+            {!isMobile && (
+              <div className="w-[380px] h-full ml-4">
+                <div className="h-full overflow-y-auto scrollbar-hide rounded-2xl  backdrop-blur-sm transition-all duration-300">
+                  <AppointmentDetails
+                    appointment={selectedAppointment}
+                    onClose={() => setSelectedAppointment(null)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Details Modal */}
+      {isMobile && showMobileDetails && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-x-0 bottom-0 h-[90vh] bg-background rounded-t-3xl animate-in slide-in-from-bottom duration-300 flex flex-col">
+            {selectedAppointment ? (
+              <AppointmentDetails
+                appointment={selectedAppointment}
+                onClose={handleCloseMobileDetails}
+              />
+            ) : (
+              <div className="flex flex-1 items-center justify-center p-6">
+                <span className="text-center text-muted-foreground">
+                  No hay cita seleccionada.
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

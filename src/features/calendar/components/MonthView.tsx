@@ -15,6 +15,8 @@ import { es } from "date-fns/locale";
 import type { Appointment } from "@/types/CalendarTypes";
 import { AppointmentBadge } from "./AppointmentBadge";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -24,8 +26,6 @@ interface MonthViewProps {
   selectedDate: Date | null;
 }
 
-const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
 export const MonthView = ({
   currentDate,
   appointments,
@@ -33,6 +33,19 @@ export const MonthView = ({
   onSelectAppointment,
   selectedDate,
 }: MonthViewProps) => {
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
+
+  const weekDays = [
+    t("calendar.weekDays.sun"),
+    t("calendar.weekDays.mon"),
+    t("calendar.weekDays.tue"),
+    t("calendar.weekDays.wed"),
+    t("calendar.weekDays.thu"),
+    t("calendar.weekDays.fri"),
+    t("calendar.weekDays.sat"),
+  ];
+
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
@@ -47,13 +60,13 @@ export const MonthView = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-2 sm:p-4">
       {/* Week day headers */}
-      <div className="grid grid-cols-7 mb-2">
+      <div className="grid grid-cols-7 mb-1 sm:mb-2">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="text-center py-3 text-sm font-semibold text-muted-foreground"
+            className="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-muted-foreground"
           >
             {day}
           </div>
@@ -61,7 +74,7 @@ export const MonthView = ({
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-2 flex-1">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 auto-rows-fr">
         {calendarDays.map((day) => {
           const dayAppointments = getAppointmentsForDay(day);
           const isCurrentMonth = isSameMonth(day, currentDate);
@@ -74,38 +87,57 @@ export const MonthView = ({
               key={day.toISOString()}
               onClick={() => onSelectDate(day)}
               className={cn(
-                "calendar-cell cursor-pointer rounded-2xl border border-primary/15", // border-primary/15 para todos los días
+                "calendar-cell cursor-pointer rounded-lg sm:rounded-2xl border border-primary/15 p-1 sm:p-2 min-h-[60px] sm:min-h-[100px] flex flex-col",
                 !isCurrentMonth && "opacity-40",
                 isWeekendDay &&
                   isCurrentMonth &&
-                  "bg-accent/40  dark:bg-accent/20", // bg-accent para sábados y domingos del mes actual
+                  "bg-accent/40 dark:bg-accent/20",
                 isDayToday && "calendar-cell-today",
                 isSelected && "ring-2 ring-primary ring-offset-2",
               )}
             >
-              <div className="flex justify-end mb-2 p-2">
+              <div className="flex justify-end mb-1 sm:mb-2">
                 <span
                   className={cn(
-                    "w-7 h-7 flex items-center justify-center  rounded-full text-sm font-medium",
-                    isDayToday && "bg-primary  text-primary-foreground",
+                    "w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-xs sm:text-sm font-medium",
+                    isDayToday && "bg-primary text-primary-foreground",
                   )}
                 >
                   {format(day, "d")}
                 </span>
               </div>
 
-              <div className="space-y-1 px-2">
-                {dayAppointments.slice(0, 2).map((apt) => (
-                  <AppointmentBadge
-                    key={apt.id}
-                    appointment={apt}
-                    onClick={() => onSelectAppointment(apt)}
-                  />
-                ))}
-                {dayAppointments.length > 2 && (
-                  <div className="text-xs text-muted-foreground text-center py-1">
-                    +{dayAppointments.length - 2} más
-                  </div>
+              <div className="space-y-0.5 sm:space-y-1 flex-1 overflow-hidden">
+                {isMobile ? (
+                  // Mobile: show dots for appointments
+                  dayAppointments.length > 0 && (
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      {dayAppointments.slice(0, 3).map((apt) => (
+                        <div
+                          key={apt.id}
+                          className="w-1.5 h-1.5 rounded-full bg-primary"
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  // Desktop: show appointment badges
+                  <>
+                    {dayAppointments.slice(0, 2).map((apt) => (
+                      <AppointmentBadge
+                        key={apt.id}
+                        appointment={apt}
+                        onClick={() => onSelectAppointment(apt)}
+                      />
+                    ))}
+                    {dayAppointments.length > 2 && (
+                      <div className="text-xs text-muted-foreground text-center py-1">
+                        {t("calendar.more", {
+                          count: dayAppointments.length - 2,
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -12,6 +12,8 @@ import { es } from "date-fns/locale";
 import type { Appointment } from "@/types/CalendarTypes";
 import { AppointmentBadge } from "./AppointmentBadge";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -30,6 +32,9 @@ export const WeekView = ({
   onSelectAppointment,
   selectedDate,
 }: WeekViewProps) => {
+  const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
+
   const weekDays = useMemo(() => {
     const weekStart = startOfWeek(currentDate);
     const weekEnd = endOfWeek(currentDate);
@@ -46,11 +51,11 @@ export const WeekView = ({
 
   return (
     <div className="flex-1 overflow-auto h-full">
-      <div className="min-w-[800px] ">
+      <div className="min-w-[600px] sm:min-w-[700px] md:min-w-[800px]">
         {/* Header with days */}
-        <div className="grid grid-cols-8 border-b border-primary/15 sticky top-0 bg-accent/40  dark:bg-accent/20 rounded-t-3xl z-10">
-          <div className="p-3 text-center text-sm text-muted-foreground rounded-tl-3xl">
-            Hora
+        <div className="grid grid-cols-8 border-b border-primary/15 sticky top-0 bg-accent/40 dark:bg-accent/20 rounded-t-3xl z-10">
+          <div className="p-2 sm:p-3 text-center text-xs sm:text-sm text-muted-foreground rounded-tl-3xl">
+            {t("calendar.today")}
           </div>
           {weekDays.map((day, idx) => {
             const isWeekendDay = isWeekend(day);
@@ -61,7 +66,7 @@ export const WeekView = ({
                 key={day.toISOString()}
                 onClick={() => onSelectDate(day)}
                 className={cn(
-                  "p-3 text-center cursor-pointer transition-colors",
+                  "p-2 sm:p-3 text-center cursor-pointer transition-colors",
                   isWeekendDay && "calendar-cell-weekend",
                   isDayToday && "calendar-cell-today",
                   selectedDate &&
@@ -70,12 +75,12 @@ export const WeekView = ({
                   isSaturday && "rounded-tr-3xl",
                 )}
               >
-                <div className="text-xs text-muted-foreground uppercase">
+                <div className="text-xs uppercase text-muted-foreground">
                   {format(day, "EEE", { locale: es })}
                 </div>
                 <div
                   className={cn(
-                    "text-lg font-semibold mt-1",
+                    "text-base sm:text-lg font-semibold mt-1",
                     isDayToday && "text-primary",
                   )}
                 >
@@ -89,8 +94,11 @@ export const WeekView = ({
         {/* Time grid */}
         <div className="divide-y divide-primary/10">
           {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-8 min-h-[80px]">
-              <div className="p-2 text-sm text-muted-foreground text-right pr-4 border-r border-primary/10 bg-muted/30">
+            <div
+              key={hour}
+              className="grid grid-cols-8 min-h-[70px] sm:min-h-[80px]"
+            >
+              <div className="p-2 text-xs sm:text-sm text-muted-foreground text-right pr-3 sm:pr-4 border-r border-primary/10 bg-muted/30">
                 {hour.toString().padStart(2, "0")}:00
               </div>
               {weekDays.map((day) => {
@@ -103,11 +111,11 @@ export const WeekView = ({
                   <div
                     key={`${day.toISOString()}-${hour}`}
                     className={cn(
-                      "p-1 border-r border-primary/10 transition-colors hover:bg-muted/50 flex flex-col h-20",
+                      "p-1 border-r border-primary/10 transition-colors hover:bg-muted/50 flex flex-col",
                       isWeekendDay && "calendar-cell-weekend",
                     )}
                   >
-                    <div className="space-y-1 flex-1">
+                    <div className="space-y-1 flex-1 overflow-hidden">
                       {hourAppointments.map((apt) => (
                         <AppointmentBadge
                           key={apt.id}
