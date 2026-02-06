@@ -5,7 +5,7 @@ import { Switch } from "@/shared/ui/switch";
 import { type JSX } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
-
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 interface CenterFilters {
   type: string;
   rating: number | null;
@@ -22,6 +22,7 @@ type OptionType = { value: string; label: string | JSX.Element };
 function FilterCenters({ filters, onFiltersChange }: FilterCentersProps) {
   const { t } = useTranslation("doctor");
   const userRole = useAppStore((state) => state.user?.role);
+  const isMobile = useIsMobile();
 
   const centerTypes: OptionType[] = [
     {
@@ -85,7 +86,11 @@ function FilterCenters({ filters, onFiltersChange }: FilterCentersProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
+    <div
+      className={`w-full h-full gap-4 ${
+        isMobile ? "grid grid-cols-2" : "grid grid-cols-1 sm:grid-cols-2"
+      }`}
+    >
       {/* Filtros que pueden ver todos los usuarios */}
       <MCFilterSelect
         name="type"
@@ -117,7 +122,9 @@ function FilterCenters({ filters, onFiltersChange }: FilterCentersProps) {
 
       {/* Filtro exclusivo para doctores */}
       {userRole === "DOCTOR" && (
-        <div className="flex items-center gap-2">
+        <div
+          className={`flex items-center gap-2 ${isMobile ? "col-span-1" : ""}`}
+        >
           <Switch
             checked={filters.isConnected === true}
             onCheckedChange={(v) =>

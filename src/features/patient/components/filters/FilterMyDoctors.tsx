@@ -5,7 +5,7 @@ import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { type JSX } from "react";
 import { useTranslation } from "react-i18next";
-
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 interface DoctorFilters {
   specialty: string;
   languages: string[];
@@ -24,6 +24,7 @@ type OptionType = { value: string; label: string | JSX.Element };
 
 function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
   const { t } = useTranslation("patient");
+  const isMobile = useIsMobile();
 
   const specialties: OptionType[] = [
     {
@@ -120,7 +121,11 @@ function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
+    <div
+      className={`w-full h-full gap-4 grid ${
+        isMobile ? "grid-cols-2" : "grid-cols-2"
+      }`}
+    >
       <MCFilterSelect
         name="specialty"
         label={t("filters.labels.specialty", "Especialidad")}

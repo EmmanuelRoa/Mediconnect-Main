@@ -126,7 +126,8 @@
       "insurances": "Accepted insurances",
       "experience": "Years of experience",
       "ranking": "Minimum ranking",
-      "onlyFavorites": "Only favorites"
+      "onlyFavorites": "Only favorites",
+      "price": "Price Range"
     },
     "placeholders": {
       "specialty": "Select specialty",

@@ -1,12 +1,13 @@
 import React from "react";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { useTranslation } from "react-i18next";
-
+import { Star } from "lucide-react";
 interface AppointmentFilters {
   serviceTypes: string[];
   specialties: string[];
   modalities: string[];
   priceRange: [number, number];
+  rating: number;
 }
 
 interface FilterAppointmentsProps {
@@ -20,41 +21,120 @@ function FilterAppointments({
 }: FilterAppointmentsProps) {
   const { t } = useTranslation("patient");
 
-  // Opciones traducidas
+  // Opciones de tipos de servicio
   const serviceTypeOptions = [
     {
-      value: "consulta",
-      label: t("filters.specialties.cardiology", "Consulta"),
+      value: "consultation",
+      label: t("filters.serviceTypes.consultation", "Consulta General"),
     },
-    { value: "terapia", label: t("filters.labels.languages", "Terapia") },
-    { value: "examen", label: t("filters.labels.experience", "Examen") },
+    {
+      value: "treatment",
+      label: t("filters.serviceTypes.treatment", "Tratamiento"),
+    },
+    {
+      value: "therapy",
+      label: t("filters.serviceTypes.therapy", "Terapia"),
+    },
+    {
+      value: "exam",
+      label: t("filters.serviceTypes.exam", "Examen"),
+    },
   ];
 
+  // Opciones de especialidades
   const specialtyOptions = [
     {
-      value: "cardiologia",
+      value: "cardiology",
       label: t("filters.specialties.cardiology", "Cardiología"),
     },
     {
-      value: "psicologia",
-      label: t("filters.specialties.dermatology", "Psicología"),
+      value: "dermatology",
+      label: t("filters.specialties.dermatology", "Dermatología"),
     },
     {
-      value: "nutricion",
-      label: t("filters.specialties.pediatrics", "Nutrición"),
+      value: "psychology",
+      label: t("filters.specialties.psychology", "Psicología"),
+    },
+    {
+      value: "nutrition",
+      label: t("filters.specialties.nutrition", "Nutrición"),
+    },
+    {
+      value: "pediatrics",
+      label: t("filters.specialties.pediatrics", "Pediatría"),
     },
   ];
 
+  // Opciones de modalidad
   const modalityOptions = [
-    { value: "presencial", label: t("serviceCards.inPerson", "Presencial") },
-    { value: "online", label: t("serviceCards.virtual", "Online") },
+    {
+      value: "presencial",
+      label: t("filters.modalities.inPerson", "Presencial"),
+    },
+    {
+      value: "teleconsulta",
+      label: t("filters.modalities.virtual", "Teleconsulta"),
+    },
+    {
+      value: "mixta",
+      label: t("filters.modalities.mixed", "Mixta"),
+    },
+  ];
+
+  // Opciones de rating
+  const rankingOptions = [
+    {
+      value: "4.5",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.ranking.4_5", "4.5+")}
+          <Star className="w-4 h-4 text-yellow-400" />
+        </span>
+      ),
+    },
+    {
+      value: "4",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.ranking.4", "4.0+")}
+          <Star className="w-4 h-4 text-yellow-400" />
+        </span>
+      ),
+    },
+    {
+      value: "3.5",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.ranking.3_5", "3.5+")}
+          <Star className="w-4 h-4 text-yellow-400" />
+        </span>
+      ),
+    },
+    {
+      value: "3",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.ranking.3", "3.0+")}
+          <Star className="w-4 h-4 text-yellow-400" />
+        </span>
+      ),
+    },
+    {
+      value: "0",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.ranking.all", "Todas las calificaciones")}
+        </span>
+      ),
+    },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-4">
+      {/* Filtro de Tipo de Servicio */}
       <MCFilterSelect
         name="serviceTypes"
-        label={t("filters.labels.specialty", "Tipo de servicio")}
+        label={t("filters.labels.serviceType", "Tipo de Servicio")}
         options={serviceTypeOptions}
         multiple
         noBadges
@@ -63,6 +143,7 @@ function FilterAppointments({
         searchable
       />
 
+      {/* Filtro de Especialidad */}
       <MCFilterSelect
         name="specialties"
         label={t("filters.labels.specialty", "Especialidad")}
@@ -74,6 +155,7 @@ function FilterAppointments({
         searchable
       />
 
+      {/* Filtro de Modalidad */}
       <MCFilterSelect
         name="modalities"
         label={t("filters.labels.modalities", "Modalidad")}
@@ -84,10 +166,19 @@ function FilterAppointments({
         onChange={(vals) => onFiltersChange({ modalities: vals as string[] })}
       />
 
-      {/* Filtro de rango de precio */}
-      <div>
-        <label className="block mb-1 text-primary">
-          {t("filters.labels.experience", "Precio")}
+      {/* Filtro de Rating */}
+      <MCFilterSelect
+        name="rating"
+        label={t("filters.labels.rating", "Calificación")}
+        options={rankingOptions}
+        value={filters.rating.toString()}
+        onChange={(val) => onFiltersChange({ rating: Number(val) })}
+      />
+
+      {/* Filtro de Rango de Precio */}
+      <div className="col-span-2">
+        <label className="block mb-2 text-sm font-medium text-primary">
+          {t("filters.labels.price", "Rango de Precio")}
         </label>
         <input
           type="range"
@@ -102,9 +193,9 @@ function FilterAppointments({
           }
           className="w-full accent-accent h-2 rounded-lg bg-primary/20"
         />
-        <div className="flex justify-between text-xs mt-1">
-          <span>${filters.priceRange[0]}</span>
-          <span>${filters.priceRange[1]}</span>
+        <div className="flex justify-between text-xs mt-2 text-primary/70">
+          <span>RD${filters.priceRange[0].toLocaleString()}</span>
+          <span>RD${filters.priceRange[1].toLocaleString()}</span>
         </div>
       </div>
     </div>

@@ -126,7 +126,8 @@
       "insurances": "Seguros aceptados",
       "experience": "Años de experiencia",
       "ranking": "Puntuación mínima",
-      "onlyFavorites": "Solo favoritos"
+      "onlyFavorites": "Solo favoritos",
+      "price": "Rango de precios"
     },
     "placeholders": {
       "specialty": "Seleccionar especialidad",

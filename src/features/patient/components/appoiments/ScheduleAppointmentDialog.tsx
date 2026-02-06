@@ -41,6 +41,10 @@ interface Service {
   modalityLabel: string;
   location: string;
   timeSlots: string[];
+  serviceType?: string; // Tipo de servicio
+  specialty?: string; // Especialidad
+  rating?: number; // Calificación
+  priceValue?: number; // Valor numérico del precio
 }
 
 interface AppointmentFilters {
@@ -48,6 +52,7 @@ interface AppointmentFilters {
   specialties: string[];
   modalities: string[];
   priceRange: [number, number];
+  rating: number;
 }
 
 const getServices = (t: any): Service[] => [
@@ -56,10 +61,14 @@ const getServices = (t: any): Service[] => [
     name: t("services.consultation"),
     description: t("services.evaluation"),
     price: "RD$1500",
+    priceValue: 1500,
     duration: `30 ${t("services.duration")}`,
     modality: "presencial",
     modalityLabel: t("services.presencial"),
     location: t("services.location"),
+    serviceType: "consultation",
+    specialty: "cardiology",
+    rating: 4.8,
     timeSlots: [
       "10:00 a.m.",
       "10:30 a.m.",
@@ -81,11 +90,15 @@ const getServices = (t: any): Service[] => [
     id: "2",
     name: t("services.treatment"),
     description: t("services.laser"),
-    price: "RD$1500",
-    duration: `30 ${t("services.duration")}`,
+    price: "RD$2500",
+    priceValue: 2500,
+    duration: `45 ${t("services.duration")}`,
     modality: "mixta",
     modalityLabel: t("services.mixed"),
     location: t("services.location"),
+    serviceType: "treatment",
+    specialty: "dermatology",
+    rating: 4.5,
     timeSlots: [
       "10:00 a.m.",
       "10:30 a.m.",
@@ -101,6 +114,28 @@ const getServices = (t: any): Service[] => [
       "3:30 p.m.",
       "4:00 p.m.",
       "4:30 p.m.",
+    ],
+  },
+  {
+    id: "3",
+    name: t("services.therapy", "Terapia Psicológica"),
+    description: t("services.therapyDesc", "Sesión de terapia individual"),
+    price: "RD$1800",
+    priceValue: 1800,
+    duration: `50 ${t("services.duration")}`,
+    modality: "teleconsulta",
+    modalityLabel: t("services.virtual"),
+    location: t("services.online"),
+    serviceType: "therapy",
+    specialty: "psychology",
+    rating: 4.9,
+    timeSlots: [
+      "9:00 a.m.",
+      "10:00 a.m.",
+      "11:00 a.m.",
+      "2:00 p.m.",
+      "3:00 p.m.",
+      "4:00 p.m.",
     ],
   },
 ];
@@ -153,12 +188,14 @@ function ScheduleAppointmentForm({
 
   const SERVICES = useMemo(() => getServices(t), [t]);
   const INSURANCE_OPTIONS = useMemo(() => getInsuranceOptions(t), [t]);
+
   const [appointmentFilters, setAppointmentFilters] =
     useState<AppointmentFilters>({
       serviceTypes: [],
       specialties: [],
       modalities: [],
       priceRange: [0, 10000],
+      rating: 0,
     });
 
   const updateAppointmentFilters = (
@@ -173,8 +210,58 @@ function ScheduleAppointmentForm({
       specialties: [],
       modalities: [],
       priceRange: [0, 10000],
+      rating: 0,
     });
   };
+
+  // Función para filtrar servicios
+  const filteredServices = useMemo(() => {
+    return SERVICES.filter((service) => {
+      // Filtro por tipo de servicio
+      if (
+        appointmentFilters.serviceTypes.length > 0 &&
+        !appointmentFilters.serviceTypes.includes(service.serviceType || "")
+      ) {
+        return false;
+      }
+
+      // Filtro por especialidad
+      if (
+        appointmentFilters.specialties.length > 0 &&
+        !appointmentFilters.specialties.includes(service.specialty || "")
+      ) {
+        return false;
+      }
+
+      // Filtro por modalidad
+      if (
+        appointmentFilters.modalities.length > 0 &&
+        !appointmentFilters.modalities.includes(service.modality)
+      ) {
+        return false;
+      }
+
+      // Filtro por rango de precio
+      if (
+        service.priceValue &&
+        (service.priceValue < appointmentFilters.priceRange[0] ||
+          service.priceValue > appointmentFilters.priceRange[1])
+      ) {
+        return false;
+      }
+
+      // Filtro por rating
+      if (
+        appointmentFilters.rating > 0 &&
+        service.rating &&
+        service.rating < appointmentFilters.rating
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [SERVICES, appointmentFilters]);
 
   const getActiveFiltersCount = () => {
     let count = 0;
@@ -186,6 +273,7 @@ function ScheduleAppointmentForm({
       appointmentFilters.priceRange[1] !== 10000
     )
       count++;
+    if (appointmentFilters.rating > 0) count++;
     return count;
   };
 
@@ -224,7 +312,6 @@ function ScheduleAppointmentForm({
       formValues.date && formValues.insuranceProvider && formValues.reason;
 
     if (!isRescheduling) {
-      // Para citas nuevas, requerir todos los campos incluyendo horario y modalidad
       return !hasRequiredFields || !hasTimeSlot || !hasModality;
     }
 
@@ -270,7 +357,6 @@ function ScheduleAppointmentForm({
     } else {
       setValue("time", convertTimeToHour(time));
       setValue("serviceId", serviceId);
-      // Establecer modalidad por defecto cuando se selecciona un horario
       if (!formValues.selectedModality || formValues.serviceId !== serviceId) {
         setValue("selectedModality", "presencial");
       }
@@ -435,13 +521,27 @@ function ScheduleAppointmentForm({
           />
         </MCFilterPopover>
       </div>
-      <ServiceCards
-        services={SERVICES}
-        selectedTimeSlots={selectedTimeSlots}
-        selectedModality={selectedModalityByService}
-        onTimeSlotSelect={handleTimeSlotSelect}
-        onModalitySelect={handleModalitySelect}
-      />
+
+      {/* Mostrar mensaje si no hay servicios que coincidan con los filtros */}
+      {filteredServices.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>
+            {t(
+              "filters.noResults",
+              "No hay servicios que coincidan con los filtros seleccionados",
+            )}
+          </p>
+        </div>
+      ) : (
+        <ServiceCards
+          services={filteredServices}
+          selectedTimeSlots={selectedTimeSlots}
+          selectedModality={selectedModalityByService}
+          onTimeSlotSelect={handleTimeSlotSelect}
+          onModalitySelect={handleModalitySelect}
+        />
+      )}
+
       <MorphingDialogClose className="w-full">
         <MCButton type="submit" className="w-full" disabled={isSubmitDisabled}>
           {isRescheduling
@@ -468,6 +568,7 @@ function ScheduleAppointmentDialog({
   const [shouldLoadData, setShouldLoadData] = useState(false);
 
   const handleTriggerClick = useCallback(() => setShouldLoadData(true), []);
+
   useEffect(() => {
     if (!shouldLoadData) return;
     if (isRescheduling && idAppointment) {
@@ -564,7 +665,7 @@ function ScheduleAppointmentDialog({
       title={modalTitle}
       trigger={triggerWithHandler}
       triggerClassName="w-full"
-      size="wider"
+      size="xl"
     >
       <MCFormWrapper
         key={
@@ -577,7 +678,10 @@ function ScheduleAppointmentDialog({
         onValidationChange={() => {}}
         onSubmit={onSubmit}
       >
-        <ScheduleAppointmentForm isRescheduling={isRescheduling} />
+        <ScheduleAppointmentForm
+          isRescheduling={isRescheduling}
+          idService={idService}
+        />
       </MCFormWrapper>
     </MCModalBase>
   );
