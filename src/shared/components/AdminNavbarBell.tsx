@@ -92,24 +92,24 @@ function AdminNavbarBell() {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "relative rounded-full p-3 transition-transform duration-300 h-14 w-14 flex items-center justify-center group",
-            "hover:bg-accent/70 text-primary  ", // Efecto hover
-            open ? "bg-primary" : "bg-bg-btn-secondary"
+            "relative rounded-full p-2.5 transition-transform duration-300 h-11 w-11 flex items-center justify-center group",
+            "hover:bg-accent/70 text-primary",
+            open ? "bg-primary" : "bg-bg-btn-secondary",
           )}
           aria-label="Notifications"
         >
           <Bell
             className={cn(
               "h-7 w-7 transition-colors duration-300 stroke-[1.5px]",
-              "group-hover:text-primary", // Cambia color al hacer hover
-              open ? "text-background" : "text-primary/70"
+              "group-hover:text-primary",
+              open ? "text-background" : "text-primary/70",
             )}
           />
           {unread.length > 0 && (
             <Badge
               className={cn(
-                "absolute -top-2 -right-2 transition-transform duration-300", // Efecto hover en badge
-                open ? "" : "opacity-80 "
+                "absolute -top-2 -right-2 transition-transform duration-300",
+                open ? "" : "opacity-80 ",
               )}
               variant="destructive"
             >
@@ -146,7 +146,7 @@ function AdminNavbarBell() {
               <TabsTrigger
                 value="unread"
                 className={cn(
-                  "flex-1 text-xs font-medium py-3 rounded-md transition-all duration-200"
+                  "flex-1 text-xs font-medium py-3 rounded-md transition-all duration-200",
                 )}
               >
                 Unread
@@ -154,7 +154,7 @@ function AdminNavbarBell() {
               <TabsTrigger
                 value="read"
                 className={cn(
-                  "flex-1 text-xs font-medium py-3 px-3 rounded-md transition-all duration-200"
+                  "flex-1 text-xs font-medium py-3 px-3 rounded-md transition-all duration-200",
                 )}
               >
                 Read
@@ -185,7 +185,7 @@ function AdminNavbarBell() {
                             "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
                             notification.type === "user"
                               ? "bg-accent text-accent-foreground"
-                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(var(--notification-warning))]"
+                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(var(--notification-warning))]",
                           )}
                         >
                           {typeIcon[notification.type]}
@@ -208,7 +208,7 @@ function AdminNavbarBell() {
                             className={cn(
                               "p-1.5 rounded-full transition-all",
                               " text-primary/70  ",
-                              "hover:bg-red-500/10 hover:text-red-500 "
+                              "hover:bg-red-500/10 hover:text-red-500 ",
                             )}
                             title="Delete"
                           >
@@ -244,7 +244,7 @@ function AdminNavbarBell() {
                             "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
                             notification.type === "user"
                               ? "bg-accent text-accent-foreground"
-                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(var(--notification-warning))]"
+                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(var(--notification-warning))]",
                           )}
                         >
                           {typeIcon[notification.type]}
@@ -268,7 +268,7 @@ function AdminNavbarBell() {
                             className={cn(
                               "p-1.5 rounded-full transition-all",
                               " text-primary/70  ",
-                              "hover:bg-red-500/10 hover:text-red-500 "
+                              "hover:bg-red-500/10 hover:text-red-500 ",
                             )}
                             title="Delete"
                           >

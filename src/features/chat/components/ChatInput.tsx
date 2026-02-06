@@ -86,7 +86,7 @@ export const ChatInput = ({
         </motion.div>
       ) : (
         // Modo normal
-        <div className="flex items-end gap-2 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Hidden file inputs */}
           <input
             ref={imageInputRef}
@@ -123,7 +123,7 @@ export const ChatInput = ({
           </button>
 
           {/* Textarea que crece automáticamente */}
-          <div className="flex-1 bg-muted rounded-3xl px-3 md:px-4 py-1.5 md:py-2 flex items-end gap-2 border border-primary/15">
+          <div className="flex-1 bg-muted rounded-3xl px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2 border border-primary/15">
             <textarea
               ref={textareaRef}
               value={inputValue}

@@ -3,6 +3,7 @@ import { ChatSidebar } from "../components/ChatSidebar";
 import { ChatPanel } from "../components/ChatPanel";
 import { mockConversations } from "@/data/mockConversations";
 import type { Conversation, Message } from "@/types/ChatTypes";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 const ChatPage = () => {
   const [conversations, setConversations] =
@@ -10,6 +11,8 @@ const ChatPage = () => {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(mockConversations[0]?.id || null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
 
   const activeConversation =
     conversations.find((c) => c.id === activeConversationId) || null;
@@ -100,17 +103,38 @@ const ChatPage = () => {
     }
   };
 
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleBackToList = () => {
+    if (isMobile) {
+      setSidebarOpen(true);
+    }
+  };
+
   return (
-    <div className="h-full w-full flex bg-background rounded-4xl overflow-hidden">
+    <div className="h-full w-full flex bg-background rounded-2xl md:rounded-4xl overflow-hidden relative">
+      {/* Sidebar - En mobile se muestra solo cuando no hay conversación activa o cuando sidebarOpen es true */}
       <ChatSidebar
         conversations={conversations}
         activeConversationId={activeConversationId}
-        onSelectConversation={setActiveConversationId}
+        onSelectConversation={handleSelectConversation}
+        isOpen={isMobile ? sidebarOpen : true}
+        onClose={() => setSidebarOpen(false)}
       />
-      <ChatPanel
-        conversation={activeConversation}
-        onSendMessage={handleSendMessage}
-      />
+
+      {/* Panel de chat - En mobile se muestra solo cuando hay conversación activa */}
+      {(!isMobile || (isMobile && activeConversationId && !sidebarOpen)) && (
+        <ChatPanel
+          conversation={activeConversation}
+          onSendMessage={handleSendMessage}
+          onBack={isMobile ? handleBackToList : undefined}
+        />
+      )}
     </div>
   );
 };

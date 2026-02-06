@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChatAvatar } from "./ChatAvatar";
 import { Download, Check, CheckCheck, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface MessageBubbleProps {
   message: Message;
@@ -23,6 +24,8 @@ export function MessageBubble({
   formatDuration,
 }: MessageBubbleProps) {
   const { t } = useTranslation("common");
+  const isMobile = useIsMobile();
+
   const messageVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     visible: {
@@ -42,14 +45,17 @@ export function MessageBubble({
       animate="visible"
       exit="exit"
       className={cn(
-        "flex items-start gap-3",
+        "flex items-start gap-2 md:gap-3",
         message.sender === "user" ? "flex-row-reverse" : "",
       )}
     >
-      <ChatAvatar name={message.sender === "user" ? "User" : "Doctor"} />
+      <ChatAvatar
+        name={message.sender === "user" ? "User" : "Doctor"}
+        size="sm"
+      />
       <div
         className={cn(
-          "max-w-[75%] rounded-2xl px-4 py-2",
+          "max-w-[85%] md:max-w-[75%] rounded-2xl px-3 md:px-4 py-2",
           message.sender === "user"
             ? "bg-accent/75 text-primary rounded-br-sm"
             : "bg-bg-btn-secondary text-primary rounded-bl-sm",
@@ -57,17 +63,17 @@ export function MessageBubble({
       >
         {/* Mensaje de texto */}
         {message.type === "text" && (
-          <p className="text-sm break-words">{message.content}</p>
+          <p className="text-xs md:text-sm break-words">{message.content}</p>
         )}
 
         {/* Mensaje de imagen */}
         {message.type === "image" && (
-          <div className="min-w-[200px] max-w-[280px]">
+          <div className="min-w-[150px] md:min-w-[200px] max-w-[250px] md:max-w-[280px]">
             <div className="relative group">
               <img
                 src={message.content}
                 alt={t("messageBubble.imageAlt") || "Imagen"}
-                className="rounded-lg w-full h-auto max-h-[200px] cursor-pointer hover:opacity-90 transition-opacity"
+                className="rounded-lg w-full h-auto max-h-[180px] md:max-h-[200px] cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => onViewFile?.(message)}
                 style={{ objectFit: "cover" }}
               />
@@ -77,30 +83,32 @@ export function MessageBubble({
                   e.stopPropagation();
                   onDownloadFile?.(message.content, `imagen_${message.id}.jpg`);
                 }}
-                className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 md:p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
                 title={t("messageBubble.download") || "Descargar"}
               >
-                <Download size={14} />
+                <Download size={isMobile ? 12 : 14} />
               </button>
             </div>
             {message.caption && (
-              <p className="text-sm break-words mt-2">{message.caption}</p>
+              <p className="text-xs md:text-sm break-words mt-2">
+                {message.caption}
+              </p>
             )}
           </div>
         )}
 
         {/* Mensaje de archivo */}
         {message.type === "file" && (
-          <div className="min-w-[200px]">
+          <div className="min-w-[180px] md:min-w-[200px]">
             <div
-              className="flex items-center gap-3 p-3 bg-background/30 rounded-lg cursor-pointer hover:bg-background/50 transition-colors group"
+              className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3 bg-background/30 rounded-lg cursor-pointer hover:bg-background/50 transition-colors group"
               onClick={() => onViewFile?.(message)}
             >
-              <div className="text-3xl">
+              <div className="text-2xl md:text-3xl flex-shrink-0">
                 {getFileIcon?.(message.fileType || "other")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
+                <p className="text-xs md:text-sm font-medium truncate">
                   {message.fileName}
                 </p>
                 <p className="text-xs opacity-70">
@@ -115,28 +123,34 @@ export function MessageBubble({
                     message.fileName || "archivo",
                   );
                 }}
-                className="flex-shrink-0 p-2 hover:bg-background/70 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                className="flex-shrink-0 p-1.5 md:p-2 hover:bg-background/70 rounded-full transition-colors opacity-0 group-hover:opacity-100"
                 title={t("messageBubble.download") || "Descargar"}
               >
-                <Download size={16} />
+                <Download size={isMobile ? 14 : 16} />
               </button>
             </div>
             {message.caption && (
-              <p className="text-sm break-words mt-2">{message.caption}</p>
+              <p className="text-xs md:text-sm break-words mt-2">
+                {message.caption}
+              </p>
             )}
           </div>
         )}
 
         {/* Mensaje de voz */}
         {message.type === "voice" && (
-          <div className="flex items-center gap-3 min-w-[180px]">
-            <button className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/20 hover:bg-primary/30 transition-colors">
-              <Play size={16} className="ml-0.5" fill="currentColor" />
+          <div className="flex items-center gap-2 md:gap-3 min-w-[160px] md:min-w-[180px]">
+            <button className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center bg-primary/20 hover:bg-primary/30 transition-colors flex-shrink-0">
+              <Play
+                size={isMobile ? 14 : 16}
+                className="ml-0.5"
+                fill="currentColor"
+              />
             </button>
             <div className="flex-1 h-1 bg-primary/20 rounded-full overflow-hidden">
               <div className="h-full bg-primary/40 w-0 rounded-full" />
             </div>
-            <span className="text-xs font-medium">
+            <span className="text-xs font-medium flex-shrink-0">
               {formatDuration?.(message.duration || 0)}
             </span>
           </div>
@@ -153,13 +167,13 @@ export function MessageBubble({
           {message.sender === "user" && message.status && (
             <span className="ml-1">
               {message.status === "sent" && (
-                <Check className="inline w-4 h-4 text-black/80" />
+                <Check className="inline w-3 h-3 md:w-4 md:h-4 text-black/80" />
               )}
               {message.status === "delivered" && (
-                <CheckCheck className="inline w-4 h-4 text-black/50" />
+                <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-black/50" />
               )}
               {message.status === "read" && (
-                <CheckCheck className="inline w-4 h-4 text-black" />
+                <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-black" />
               )}
             </span>
           )}

@@ -254,7 +254,14 @@
     "placeholder": "Type a message..."
   },
   "chatPanel": {
-    "noMessages": "No messages yet"
+    "noMessages": "No messages yet",
+    "selectConversation": "Select a conversation to get started",
+    "back": "Back",
+    "menu": "Menu",
+    "conversations": "Conversations",
+    "searchChats": "Search Chats",
+    "noConversationsFound": "No conversations found",
+    "microphoneError": "Could not access microphone. Check permissions."
   },
   "filePreview": {
     "imageAlt": "Image preview",

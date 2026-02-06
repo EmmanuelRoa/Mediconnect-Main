@@ -4,10 +4,11 @@ import { MessageBubble } from "./MessageBubble";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChatInput } from "./ChatInput";
-
 import { useRef, useEffect } from "react";
 import { FilePreviewSection } from "@/features/teleconsultation/components/chatPanel/FilePreviewSection";
 import { FileViewerModal } from "@/features/teleconsultation/components/chatPanel/FileViewerModal";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { ArrowLeft, MoreVertical } from "lucide-react";
 
 interface ChatPanelProps {
   conversation: Conversation | null;
@@ -19,6 +20,7 @@ interface ChatPanelProps {
   ) => void;
   isTyping?: boolean;
   isOnline?: boolean;
+  onBack?: () => void;
 }
 
 export function ChatPanel({
@@ -26,6 +28,7 @@ export function ChatPanel({
   onSendMessage,
   isTyping = false,
   isOnline = false,
+  onBack,
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState("");
@@ -54,8 +57,9 @@ export function ChatPanel({
   );
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const isMobile = useIsMobile();
 
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   // Auto-scroll cuando llegan nuevos mensajes
   useEffect(() => {
@@ -134,7 +138,10 @@ export function ChatPanel({
       }, 1000);
     } catch (error) {
       console.error("Error al acceder al micrófono:", error);
-      alert("No se pudo acceder al micrófono. Verifica los permisos.");
+      alert(
+        t("chatPanel.microphoneError") ||
+          "No se pudo acceder al micrófono. Verifica los permisos.",
+      );
     }
   };
 
@@ -204,10 +211,11 @@ export function ChatPanel({
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
+      <div className="flex-1 flex items-center justify-center bg-background p-4">
         <div className="text-center">
-          <p className="text-muted-foreground text-lg">
-            Selecciona una conversación para comenzar
+          <p className="text-muted-foreground text-sm md:text-lg">
+            {t("chatPanel.selectConversation") ||
+              "Selecciona una conversación para comenzar"}
           </p>
         </div>
       </div>
@@ -217,14 +225,25 @@ export function ChatPanel({
   return (
     <div className="flex-1 flex flex-col bg-background h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-primary/15 bg-accent/50 rounded-tr-4xl flex-shrink-0">
+      <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 border-b border-primary/15 bg-accent/50 rounded-tr-2xl md:rounded-tr-4xl flex-shrink-0">
+        {/* Botón de volver (solo mobile) */}
+        {isMobile && onBack && (
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-accent/70 rounded-full transition-colors flex-shrink-0"
+            aria-label={t("chatPanel.back") || "Volver"}
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
+
         <ChatAvatar
           name={conversation.name}
           avatar={conversation.avatar}
           size="lg"
         />
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
             {conversation.name}
           </h2>
           <p className="text-xs text-muted-foreground truncate">
@@ -235,14 +254,22 @@ export function ChatPanel({
                 : t("chatHeader.offline")}
           </p>
         </div>
+
+        {/* Botón de menú (opcional) */}
+        <button
+          className="p-2 hover:bg-accent/70 rounded-full transition-colors flex-shrink-0"
+          aria-label={t("chatPanel.menu") || "Menú"}
+        >
+          <MoreVertical size={20} />
+        </button>
       </div>
 
       {/* Messages - Con overflow correcto */}
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 scrollbar-hide"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-3 md:py-4 scrollbar-hide"
         ref={scrollRef}
       >
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {conversation.messages.map((message) => (
             <MessageBubble
               key={message.id}

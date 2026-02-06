@@ -10,7 +10,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { NAVBAR_CONFIG } from "@/config/navbar.config";
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Search, MessageCircle } from "lucide-react";
 
 function MCMobileNavbar() {
   const [open, setOpen] = useState(false);
@@ -49,7 +49,39 @@ function MCMobileNavbar() {
       </div>
 
       {/* Right side - Notifications + Menu */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        {/* Search */}
+        <Link
+          to="/search"
+          className={`relative rounded-full p-2.5 transition-transform duration-300 h-11 w-11 flex items-center justify-center group
+            hover:bg-accent/70 text-primary
+            ${location.pathname === "/search" ? "bg-primary text-primary-foreground" : "bg-bg-btn-secondary"}
+          `}
+        >
+          <Search
+            className={`h-6 w-6 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${
+              location.pathname === "/search"
+                ? "text-background"
+                : "text-primary/70"
+            }`}
+          />
+        </Link>
+        {/* Messages */}
+        <Link
+          to="/chat"
+          className={`relative rounded-full p-2.5 transition-transform duration-300 h-11 w-11 flex items-center justify-center group
+            hover:bg-accent/70 text-primary
+            ${location.pathname.startsWith("/chat") ? "bg-primary text-primary-foreground" : "bg-bg-btn-secondary"}
+          `}
+        >
+          <MessageCircle
+            className={`h-6 w-6 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${
+              location.pathname.startsWith("/chat")
+                ? "text-background"
+                : "text-primary/70"
+            }`}
+          />
+        </Link>
         {/* Notifications Bell */}
         <AdminNavbarBell />
 
@@ -59,7 +91,7 @@ function MCMobileNavbar() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full bg-bg-btn-secondary border-none shadow-none h-14 w-14 hover:bg-bg-btn-secondary/80 active:scale-95 transition-all duration-200"
+              className="rounded-full bg-bg-btn-secondary border-none shadow-none h-11 w-11 p-2.5 hover:bg-bg-btn-secondary/80 active:scale-95 transition-all duration-200"
             >
               <Menu className="h-6 w-6 text-primary" />
             </Button>

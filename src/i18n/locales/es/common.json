@@ -254,7 +254,14 @@
     "placeholder": "Escribe un mensaje..."
   },
   "chatPanel": {
-    "noMessages": "No hay mensajes aún"
+    "noMessages": "No hay mensajes aún",
+    "selectConversation": "Selecciona una conversación para comenzar",
+    "back": "Volver",
+    "menu": "Menú",
+    "conversations": "Conversaciones",
+    "searchChats": "Buscar Chats",
+    "noConversationsFound": "No se encontraron conversaciones",
+    "microphoneError": "No se pudo acceder al micrófono. Verifica los permisos."
   },
   "filePreview": {
     "imageAlt": "Vista previa de imagen",
