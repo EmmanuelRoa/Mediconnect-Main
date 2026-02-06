@@ -228,6 +228,34 @@
     }
   },
 
+  "service": {
+    "title": "Consulta de Medicina Familiar",
+    "share": "Compartir",
+    "copied": "¡Copiado!",
+    "edit": "Editar",
+    "photoAlt": "Consulta médica",
+    "reviewCount": "12 reseñas",
+    "specialty": "Medicina Familiar",
+    "duration": "60 minutos",
+    "type": "Presencial / mixta",
+    "meetDoctor": "Conoce a tu Doctor",
+    "viewProfile": "Ver perfil",
+    "contactDoctor": "Contactar Doctor",
+    "about": "Acerca de este servicio",
+    "description": "Atención integral para toda la familia, enfocada en prevenir, diagnosticar y tratar enfermedades comunes. Nuestro médico de familia acompaña a cada paciente en todas las etapas de la vida, considerando su bienestar físico, emocional y social.",
+    "perPatient": "por paciente",
+    "schedule": "Agendar",
+    "showAllReviews": "Mostrar todas las reseñas",
+    "stats": {
+      "reviews": "Reseñas",
+      "rating": "Calificación",
+      "experience": "Años de experiencia"
+    },
+    "reviews": {
+      "title": "Reseñas"
+    }
+  },
+
   "filters": {
     "labels": {
       "serviceType": "Tipo de servicio",

@@ -34,7 +34,7 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
   const { t } = useTranslation("patient");
 
   return (
-    <div className="w-[90%] shadow-md rounded-4xl border-0 mx-auto">
+    <div className="shadow-md rounded-4xl border-0 mx-auto">
       <div className="relative h-60 flex items-end rounded-t-4xl bg-background ">
         {user?.banner ? (
           <img

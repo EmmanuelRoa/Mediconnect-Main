@@ -189,9 +189,7 @@ const MCServiceCards = ({
               className="text-[#F7B500]"
             />
             <span className="font-medium">{rating}</span>
-            <span className="text-muted-foreground">
-              ({reviews} {t("profile.services.reviews", "reseñas")})
-            </span>
+            <span className="text-muted-foreground"></span>
           </div>
 
           {!isMobile && <span className="mx-2 text-muted-foreground">•</span>}

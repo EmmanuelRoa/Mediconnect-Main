@@ -1,10 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
-
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { fadeInUp } from "@/lib/animations/commonAnimations";
 import { useNavigate, useParams } from "react-router-dom";
@@ -14,8 +13,9 @@ import DoctorEducationSection from "../components/profile/DoctorEducationSection
 import DoctorExperienceSection from "../components/profile/DoctorExperienceSection";
 import DoctorInsurancesSection from "../components/profile/DoctorInsurancesSection";
 import DoctorAboutSection from "../components/profile/DoctorAboutSection";
-import DoctorServicesSection from ".././components/profile/DoctorServicesSection";
-import DoctorCentersSection from ".././components/profile/DoctorCentersSection";
+import DoctorServicesSection from "../components/profile/DoctorServicesSection";
+import DoctorCentersSection from "../components/profile/DoctorCentersSection";
+import MCDashboardContent from "@/shared/layout/MCDashboardContent"; // <-- importa tu layout
 
 function DoctorProfilePage() {
   const { doctorId } = useParams();
@@ -198,87 +198,54 @@ function DoctorProfilePage() {
   const isMyProfile = user?.id === doctorId;
 
   return (
-    <div className="w-full min-h-screen">
-      {/* Layout container */}
-      <div className="flex flex-col lg:grid lg:grid-cols-[5%_95%] w-full">
-        {/* Sidebar con botón back - solo desktop */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-4">
-            <MCBackButton variant="background" onClick={() => navigate(-1)} />
-          </div>
-        </aside>
-
-        {/* Contenido principal */}
-        <motion.main
-          {...fadeInUp}
-          className="w-full flex flex-col items-center"
-        >
-          {/* Back button mobile */}
-          {isMobile && (
-            <div className="w-full px-4 py-3 sm:px-6">
-              <MCBackButton variant="background" onClick={() => navigate(-1)} />
-            </div>
+    <MCDashboardContent mainWidth="w-[100%]" noBg>
+      <div className="min-h-screen w-full">
+        {/* Banner del doctor */}
+        <div className="w-full">
+          {isMobile ? (
+            <DoctorProfileBannerMobile
+              doctor={doctor}
+              setOpenSheet={setOpenSheet}
+              isMyProfile={isMyProfile}
+            />
+          ) : (
+            <DoctorProfileBanner
+              doctor={doctor}
+              setOpenSheet={setOpenSheet}
+              isMyProfile={isMyProfile}
+            />
           )}
+        </div>
 
-          {/* Banner del doctor */}
-          <div className="w-full">
-            {isMobile ? (
-              <DoctorProfileBannerMobile
-                doctor={doctor}
-                setOpenSheet={setOpenSheet}
-                isMyProfile={isMyProfile}
-              />
-            ) : (
-              <DoctorProfileBanner
-                doctor={doctor}
-                setOpenSheet={setOpenSheet}
-                isMyProfile={isMyProfile}
-              />
-            )}
-          </div>
-
-          {/* Contenido de perfil */}
-          <div className="w-full lg:w-[90%] mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 lg:gap-6">
-              {/* Columna principal - orden 1 en mobile, orden 1 en desktop */}
-              <div className="flex flex-col gap-4 lg:gap-6 order-1">
-                {/* Acerca del doctor - siempre primero */}
-                <DoctorAboutSection doctor={doctor} />
-
-                {/* Seguros */}
-                <DoctorInsurancesSection insurances={doctor.insurances} />
-
-                {/* Servicios */}
-                <DoctorServicesSection services={services} />
-
-                {/* Centros */}
-                <DoctorCentersSection centers={centers} />
-
-                {/* Educación y Experiencia - solo en mobile, después de todo */}
-                <div className="flex flex-col gap-4 lg:hidden">
-                  <DoctorEducationSection education={doctor.education} />
-                  <DoctorExperienceSection experience={doctor.experience} />
-                </div>
+        {/* Contenido de perfil */}
+        <div className="w-full  mt-6 mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[8fr_2fr] gap-4 lg:gap-4">
+            {/* Columna principal */}
+            <div className="flex flex-col gap-4 lg:gap-6 order-1">
+              <DoctorAboutSection doctor={doctor} />
+              <DoctorInsurancesSection insurances={doctor.insurances} />
+              <DoctorServicesSection services={services} />
+              <DoctorCentersSection centers={centers} />
+              {/* Educación y Experiencia - solo en mobile */}
+              <div className="flex flex-col gap-4 lg:hidden">
+                <DoctorEducationSection education={doctor.education} />
+                <DoctorExperienceSection experience={doctor.experience} />
               </div>
-
-              {/* Columna lateral - sticky en desktop, oculta en mobile */}
-              <div className="hidden lg:flex flex-col gap-6 order-2">
-                <div className="sticky top-24 space-y-6">
-                  <DoctorEducationSection education={doctor.education} />
-                  <DoctorExperienceSection experience={doctor.experience} />
-                </div>
+            </div>
+            {/* Columna lateral - sticky en desktop, oculta en mobile */}
+            <div className="hidden lg:flex flex-col gap-6 order-2">
+              <div className="sticky top-24 space-y-6">
+                <DoctorEducationSection education={doctor.education} />
+                <DoctorExperienceSection experience={doctor.experience} />
               </div>
             </div>
           </div>
-
-          {/* Espacio inferior */}
-          <div className="h-8 lg:h-12" />
-        </motion.main>
+        </div>
+        <div className="h-8 lg:h-12" />
+        {/* Sheet de perfil */}
+        <MCSheetProfile open={openSheet} onOpenChange={setOpenSheet} />
       </div>
-
-      {/* Sheet de perfil */}
-      <MCSheetProfile open={openSheet} onOpenChange={setOpenSheet} />
-    </div>
+    </MCDashboardContent>
   );
 }
 

@@ -61,7 +61,7 @@ function DoctorProfileBanner({
   const { t } = useTranslation("doctor");
 
   return (
-    <div className="w-[90%] shadow-md rounded-4xl border-0 mx-auto">
+    <div className="shadow-md rounded-4xl border-0 mx-auto">
       <div className="relative h-60 flex items-end rounded-t-4xl  ">
         {doctor?.banner ? (
           <img

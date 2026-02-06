@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import MCBackButton from "@/shared/components/forms/MCBackButton";
-
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
@@ -25,6 +24,7 @@ import {
 } from "@/shared/ui/empty";
 import MCButton from "@/shared/components/forms/MCButton";
 import { Filter } from "lucide-react";
+import MCDashboardContent from "@/shared/layout/MCDashboardContent"; // <-- importa el layout
 
 // Interfaz para los filtros de doctores
 interface DoctorFilters {
@@ -87,7 +87,6 @@ function PatientProfilePage() {
   const [searchName, setSearchName] = useState("");
   const { t } = useTranslation("patient");
 
-  // Estados locales para filtros de doctores con useState
   const [doctorFilters, setDoctorFilters] = useState<DoctorFilters>({
     specialty: "",
     languages: [],
@@ -112,12 +111,10 @@ function PatientProfilePage() {
 
   const navigate = useNavigate();
 
-  // Función para actualizar filtros
   const updateDoctorFilters = (newFilters: Partial<DoctorFilters>) => {
     setDoctorFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  // Función para resetear filtros
   const resetDoctorFilters = () => {
     setDoctorFilters({
       specialty: "",
@@ -130,7 +127,6 @@ function PatientProfilePage() {
     setSearchName("");
   };
 
-  // Función para contar filtros activos
   const getActiveFiltersCount = () => {
     let count = 0;
     if (doctorFilters.specialty) count++;
@@ -143,7 +139,6 @@ function PatientProfilePage() {
     return count;
   };
 
-  // Filtrado de doctores usando doctorFilters y searchName
   const filteredDoctors = doctorsList.filter((doctor) => {
     if (
       searchName &&
@@ -181,32 +176,22 @@ function PatientProfilePage() {
   });
 
   return (
-    <div
-      className={`w-full ${isMobile ? "flex flex-col" : "grid grid-cols-[5%_95%]"} justify-between items-start `}
-    >
-      {!isMobile && (
-        <aside>
-          <MCBackButton variant="background" onClick={() => navigate(-1)} />
-        </aside>
-      )}
+    <MCDashboardContent mainWidth="w-[100%]" noBg>
+      <div className="min-h-screen w-full flex flex-col gap-4">
+        {/* Banner del paciente */}
+        <div className="w-full">
+          {isMobile ? (
+            <PatientProfileBannerMobile
+              user={user}
+              setOpenSheet={setOpenSheet}
+            />
+          ) : (
+            <PatientProfileBanner user={user} setOpenSheet={setOpenSheet} />
+          )}
+        </div>
 
-      <motion.main
-        {...fadeInUp}
-        className="w-full flex flex-col justify-center items-center gap-4 "
-      >
-        {isMobile && (
-          <div className="w-full px-2 py-3">
-            <MCBackButton variant="background" onClick={() => navigate(-1)} />
-          </div>
-        )}
-
-        {isMobile ? (
-          <PatientProfileBannerMobile user={user} setOpenSheet={setOpenSheet} />
-        ) : (
-          <PatientProfileBanner user={user} setOpenSheet={setOpenSheet} />
-        )}
-
-        <div className={isMobile ? "w-full px-2" : "w-[90%]"}>
+        {/* Info de seguros y datos médicos */}
+        <div className={isMobile ? "w-full px-2" : "w-full"}>
           <div
             className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-[6.5fr_3.5fr]"} gap-4 w-full`}
           >
@@ -267,8 +252,9 @@ function PatientProfilePage() {
           </div>
         </div>
 
+        {/* Doctores */}
         <Card
-          className={`animate-fade-in rounded-4xl border-0 shadow-md bg-background ${isMobile ? "w-full" : "w-[90%]"}`}
+          className={`animate-fade-in rounded-4xl border-0 shadow-md bg-background ${isMobile ? "w-full" : "w-full"}`}
         >
           <CardHeader className={isMobile ? "p-4 pb-2" : "p-6 pb-4"}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -334,6 +320,7 @@ function PatientProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {filteredDoctors.map((doctor, idx) => (
                   <MCDoctorsCards
+                    id={idx}
                     key={idx}
                     name={doctor.name}
                     specialty={doctor.specialty}
@@ -351,8 +338,8 @@ function PatientProfilePage() {
         </Card>
 
         <MCSheetProfile open={openSheet} onOpenChange={setOpenSheet} />
-      </motion.main>
-    </div>
+      </div>
+    </MCDashboardContent>
   );
 }
 

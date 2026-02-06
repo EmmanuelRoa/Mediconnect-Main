@@ -228,6 +228,34 @@
     }
   },
 
+  "service": {
+    "title": "Family Medicine Consultation",
+    "share": "Share",
+    "copied": "Copied!",
+    "edit": "Edit",
+    "photoAlt": "Medical consultation",
+    "reviewCount": "12 reviews",
+    "specialty": "Family Medicine",
+    "duration": "60 minutes",
+    "type": "In-person / mixed",
+    "meetDoctor": "Meet Your Doctor",
+    "viewProfile": "View profile",
+    "contactDoctor": "Contact Doctor",
+    "about": "About this service",
+    "description": "Comprehensive care for the whole family, focused on preventing, diagnosing and treating common diseases. Our family doctor accompanies each patient through all stages of life, considering their physical, emotional and social well-being.",
+    "perPatient": "per patient",
+    "schedule": "Schedule",
+    "showAllReviews": "Show all reviews",
+    "stats": {
+      "reviews": "Reviews",
+      "rating": "Rating",
+      "experience": "Years of experience"
+    },
+    "reviews": {
+      "title": "Reviews"
+    }
+  },
+
   "filters": {
     "labels": {
       "serviceType": "Service type",

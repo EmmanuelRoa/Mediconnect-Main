@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ImageCarouselModal } from "./ImageCarouselModal";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 interface PhotoGalleryProps {
   images: string[];
@@ -12,6 +13,7 @@ const PhotoGallery = ({
 }: PhotoGalleryProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
+  const isMobile = useIsMobile();
 
   const openModal = (index: number) => {
     setStartIndex(index);
@@ -42,7 +44,7 @@ const PhotoGallery = ({
         />
         {showOverlay && showOverlay > 0 && (
           <div className="absolute inset-0 gallery-overlay flex items-center justify-center transition-opacity">
-            <span className="text-white text-2xl font-semibold font-body">
+            <span className="text-white text-lg sm:text-2xl font-semibold font-body">
               +{showOverlay} más
             </span>
           </div>
@@ -55,8 +57,14 @@ const PhotoGallery = ({
   if (count === 1) {
     return (
       <>
-        <div className="w-full h-[400px]">
-          {renderImage(images[0], 0, "w-full h-full", undefined, "rounded-3xl")}
+        <div className="w-full h-[250px] sm:h-[350px] md:h-[400px]">
+          {renderImage(
+            images[0],
+            0,
+            "w-full h-full",
+            undefined,
+            "rounded-2xl sm:rounded-3xl",
+          )}
         </div>
         <ImageCarouselModal
           images={images}
@@ -72,20 +80,20 @@ const PhotoGallery = ({
   if (count === 2) {
     return (
       <>
-        <div className="grid grid-cols-2 gap-1 h-[400px]">
+        <div className="grid grid-cols-2 gap-0.5 sm:gap-1 h-[250px] sm:h-[350px] md:h-[400px]">
           {renderImage(
             images[0],
             0,
             "w-full h-full",
             undefined,
-            "rounded-l-3xl",
+            "rounded-l-2xl sm:rounded-l-3xl",
           )}
           {renderImage(
             images[1],
             1,
             "w-full h-full",
             undefined,
-            "rounded-r-3xl",
+            "rounded-r-2xl sm:rounded-r-3xl",
           )}
         </div>
         <ImageCarouselModal
@@ -98,8 +106,39 @@ const PhotoGallery = ({
     );
   }
 
-  // Layout for 3 images
+  // Layout for 3 images - Simplified for mobile
   if (count === 3) {
+    if (isMobile) {
+      // Mobile: Show 2 images, third has overlay
+      return (
+        <>
+          <div className="grid grid-cols-2 gap-0.5 h-[250px]">
+            {renderImage(
+              images[0],
+              0,
+              "w-full h-full",
+              undefined,
+              "rounded-l-2xl",
+            )}
+            {renderImage(
+              images[1],
+              1,
+              "w-full h-full",
+              1, // Overlay showing +1 more
+              "rounded-r-2xl",
+            )}
+          </div>
+          <ImageCarouselModal
+            images={images}
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            startIndex={startIndex}
+          />
+        </>
+      );
+    }
+
+    // Desktop: Original layout
     return (
       <>
         <div className="grid grid-cols-2 gap-1 h-[400px]">
@@ -139,6 +178,37 @@ const PhotoGallery = ({
 
   // Layout for 4 images
   if (count === 4) {
+    if (isMobile) {
+      // Mobile: Show 2 images, overlay on second
+      return (
+        <>
+          <div className="grid grid-cols-2 gap-0.5 h-[250px]">
+            {renderImage(
+              images[0],
+              0,
+              "w-full h-full",
+              undefined,
+              "rounded-l-2xl",
+            )}
+            {renderImage(
+              images[1],
+              1,
+              "w-full h-full",
+              2, // Overlay showing +2 more
+              "rounded-r-2xl",
+            )}
+          </div>
+          <ImageCarouselModal
+            images={images}
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            startIndex={startIndex}
+          />
+        </>
+      );
+    }
+
+    // Desktop: Original layout
     return (
       <>
         <div className="grid grid-cols-3 gap-1 h-[400px]">
@@ -183,6 +253,38 @@ const PhotoGallery = ({
   const visibleImages = images.slice(0, 5);
   const remaining = count - 5;
 
+  if (isMobile) {
+    // Mobile: Show only 2 images with overlay
+    const mobileRemaining = count - 2;
+    return (
+      <>
+        <div className="grid grid-cols-2 gap-0.5 h-[250px]">
+          {renderImage(
+            images[0],
+            0,
+            "w-full h-full",
+            undefined,
+            "rounded-l-2xl",
+          )}
+          {renderImage(
+            images[1],
+            1,
+            "w-full h-full",
+            mobileRemaining > 0 ? mobileRemaining : undefined,
+            "rounded-r-2xl",
+          )}
+        </div>
+        <ImageCarouselModal
+          images={images}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          startIndex={startIndex}
+        />
+      </>
+    );
+  }
+
+  // Desktop: Original 5-image layout
   return (
     <>
       <div className="grid grid-cols-4 grid-rows-2 gap-1 h-[400px]">

@@ -9,7 +9,7 @@ import {
   Monitor,
   Share2,
   Pencil,
-  BadgeCheck, // <-- Agrega este import
+  BadgeCheck,
 } from "lucide-react";
 
 import { Card } from "@/shared/ui/card";
@@ -27,6 +27,8 @@ import doctorAvatar from "@/assets/Register-Doctor.png";
 import MapScheduleLocation from "@/shared/components/maps/MapScheduleLocation";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile"; // Asume que existe este hook
 
 const galleryImages = [
   gallery1,
@@ -36,6 +38,7 @@ const galleryImages = [
   gallery5,
   gallery6,
 ];
+
 const PATIENT_PROFILE_PUBLIC = "/patient/profile/:patientId";
 const DOCTOR_PROFILE_PUBLIC = "/doctor/profile/:doctorId";
 const CHAT_WITH = "/chat/:conversationId";
@@ -106,9 +109,12 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 function ServicesPage() {
   const { serviceId } = useParams();
+  const { t } = useTranslation("doctor");
+  const isMobile = useIsMobile();
 
   const isOwner = true;
   const [copied, setCopied] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -117,82 +123,87 @@ function ServicesPage() {
     });
   };
 
-  const [showAllReviews, setShowAllReviews] = useState(false);
-
   const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 4);
 
   // Simulación de IDs para ejemplo
   const doctorId = "1";
-  const getPatientId = (name: string) => name.toLowerCase().replace(/\s/g, "-"); // Simula un id
+  const getPatientId = (name: string) => name.toLowerCase().replace(/\s/g, "-");
 
   return (
     <MCDashboardContent mainWidth="w-[100%]" noBg>
-      <div className="min-h-screen w-full px-4 md:px-8 lg:px-16 space-y-8">
+      <div className="min-h-screen w-full">
         {/* Header */}
-        <div className="max-w-6xl mx-auto ">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl md:text-4xl font-heading font-semibold text-foreground mb-4">
-              Consulta de Medicina Familiar
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-semibold text-foreground">
+              {t("service.title", "Consulta de Medicina Familiar")}
             </h1>
-            <div className="flex  gap-4">
+            <div className="flex gap-3 sm:gap-4">
               <button
                 className="flex items-center gap-1.5 text-sm text-foreground hover:text-secondary transition-colors font-body"
                 onClick={handleShare}
               >
                 <Share2 className="w-4 h-4" />
-                {copied ? "¡Copiado!" : "Compartir"}
+                {copied
+                  ? t("service.copied", "¡Copiado!")
+                  : t("service.share", "Compartir")}
               </button>
               {!isOwner && (
                 <button className="flex items-center gap-1.5 text-sm text-foreground hover:text-secondary transition-colors font-body">
                   <Pencil className="w-4 h-4" />
-                  Editar
+                  {t("service.edit", "Editar")}
                 </button>
               )}
             </div>
           </div>
 
           {/* Photo Gallery */}
-          <PhotoGallery images={galleryImages} alt="Consulta médica" />
+          <div className="mt-4 sm:mt-6">
+            <PhotoGallery
+              images={galleryImages}
+              alt={t("service.photoAlt", "Consulta médica")}
+            />
+          </div>
 
           {/* Service meta */}
-          <div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-muted-foreground bg  font-body">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 text-xs sm:text-sm text-muted-foreground font-body">
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
               <span className="font-semibold text-foreground">4.8</span>
-              <span>(12 reseñas)</span>
+              <span>({t("service.reviewCount", "12 reseñas")})</span>
             </div>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <div className="flex items-center gap-1">
-              <Stethoscope className="w-4 h-4 text-secondary" />
-              <span>Medicina Familiar</span>
+              <Stethoscope className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" />
+              <span>{t("service.specialty", "Medicina Familiar")}</span>
             </div>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4 text-secondary" />
-              <span>60 minutos</span>
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" />
+              <span>{t("service.duration", "60 minutos")}</span>
             </div>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <div className="flex items-center gap-1">
-              <Monitor className="w-4 h-4 text-secondary" />
-              <span>Presencial / mixta</span>
+              <Monitor className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" />
+              <span>{t("service.type", "Presencial / mixta")}</span>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-6xl mx-auto pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mt-6 sm:mt-8">
             {/* Left column */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Doctor info */}
               <div>
-                <h2 className="text-xl font-heading font-semibold  text-foreground mb-4">
-                  Conoce a tu Doctor
+                <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-4">
+                  {t("service.meetDoctor", "Conoce a tu Doctor")}
                 </h2>
-                <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center flex-shrink-0">
                     {doctorAvatar ? (
-                      <Avatar className="h-20 w-20 rounded-full overflow-hidden">
+                      <Avatar className="h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden">
                         <AvatarImage
                           src={doctorAvatar}
                           alt="Dr. Cristiano Ronaldo"
@@ -206,15 +217,15 @@ function ServicesPage() {
                       <MCUserAvatar
                         name="Dr. Cristiano Ronaldo"
                         square
-                        size={80}
+                        size={isMobile ? 64 : 80}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 w-full sm:w-auto">
                     <Link
                       to={DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctorId)}
-                      className="font-semibold text-foreground font-body text-lg hover:underline flex items-center gap-1"
+                      className="font-semibold text-foreground font-body text-base sm:text-lg hover:underline flex items-center gap-1"
                     >
                       Dr. Cristiano Ronaldo
                       <BadgeCheck
@@ -222,42 +233,52 @@ function ServicesPage() {
                         fill="#8bb1ca"
                       />
                     </Link>
-                    <p className="text-sm text-muted-foreground font-body">
-                      Medicina Familiar
+                    <p className="text-xs sm:text-sm text-muted-foreground font-body mt-0.5">
+                      {t("service.specialty", "Medicina Familiar")}
                     </p>
-                    <div className="flex gap-6 mt-2 text-sm text-muted-foreground font-body">
+                    <div className="grid grid-cols-3 gap-3 sm:gap-6 mt-3 text-xs sm:text-sm text-muted-foreground font-body">
                       <div>
-                        <div>Reseñas</div>
-                        <div className="text-foreground font-semibold">23</div>
+                        <div>{t("service.stats.reviews", "Reseñas")}</div>
+                        <div className="text-foreground font-semibold mt-0.5">
+                          23
+                        </div>
                       </div>
                       <div>
-                        <div>Calificación</div>
-                        <div className="text-foreground font-semibold flex items-center gap-0.5">
+                        <div>{t("service.stats.rating", "Calificación")}</div>
+                        <div className="text-foreground font-semibold flex items-center gap-0.5 mt-0.5">
                           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 inline" />
                           4.9
                         </div>
                       </div>
                       <div>
-                        <div className="">Años de experiencia</div>
-                        <div className="text-foreground font-semibold">2</div>
+                        <div>
+                          {t("service.stats.experience", "Años de experiencia")}
+                        </div>
+                        <div className="text-foreground font-semibold mt-0.5">
+                          2
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
                     <Link
                       to={DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctorId)}
+                      className="flex-1 sm:flex-none"
                     >
                       <MCButton
                         variant="outline"
                         size="sm"
                         className="font-body text-xs w-full"
                       >
-                        Ver perfil
+                        {t("service.viewProfile", "Ver perfil")}
                       </MCButton>
                     </Link>
-                    <Link to={CHAT_WITH.replace(":conversationId", doctorId)}>
+                    <Link
+                      to={CHAT_WITH.replace(":conversationId", doctorId)}
+                      className="flex-1 sm:flex-none"
+                    >
                       <MCButton size="sm" className="font-body text-xs w-full">
-                        Contactar Doctor
+                        {t("service.contactDoctor", "Contactar Doctor")}
                       </MCButton>
                     </Link>
                   </div>
@@ -268,18 +289,19 @@ function ServicesPage() {
 
               {/* About */}
               <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground mb-3">
-                  Acerca de este servicio
+                <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-3">
+                  {t("service.about", "Acerca de este servicio")}
                 </h2>
-                <p className="text-muted-foreground font-body leading-relaxed text-justify">
-                  Atención integral para toda la familia, enfocada en prevenir,
-                  diagnosticar y tratar enfermedades comunes. Nuestro médico de
-                  familia acompaña a cada paciente en todas las etapas de la
-                  vida, considerando su bienestar físico, emocional y social.
+                <p className="text-sm sm:text-base text-muted-foreground font-body leading-relaxed text-justify">
+                  {t(
+                    "service.description",
+                    "Atención integral para toda la familia, enfocada en prevenir, diagnosticar y tratar enfermedades comunes. Nuestro médico de familia acompaña a cada paciente en todas las etapas de la vida, considerando su bienestar físico, emocional y social.",
+                  )}
                 </p>
               </div>
 
               <Separator />
+
               <MapScheduleLocation
                 fontSizeVariant="s"
                 initialLocation={{
@@ -287,29 +309,38 @@ function ServicesPage() {
                   lng: -69.94101,
                 }}
               />
+
               <Separator />
+
               {/* Reviews */}
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl font-heading font-semibold text-foreground">
-                    Reseñas
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+                  <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground">
+                    {t("service.reviews.title", "Reseñas")}
                   </h2>
-                  <span className="text-muted-foreground font-body">•</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium text-foreground font-body">
-                      4.8
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground font-body hidden sm:inline">
+                      •
                     </span>
-                    <span className="text-muted-foreground font-body">
-                      (12 reseñas)
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium text-foreground font-body text-sm sm:text-base">
+                        4.8
+                      </span>
+                      <span className="text-muted-foreground font-body text-xs sm:text-sm">
+                        ({t("service.reviewCount", "12 reseñas")})
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {displayedReviews.map((review, i) => (
-                    <div key={i} className="space-y-2">
+                    <div
+                      key={i}
+                      className="space-y-2 p-4 sm:p-0 bg-muted/30 sm:bg-transparent rounded-lg sm:rounded-none"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className="relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center">
+                        <div className="relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center flex-shrink-0">
                           {review.avatar ? (
                             <Avatar className="w-10 h-10">
                               <AvatarImage
@@ -333,19 +364,19 @@ function ServicesPage() {
                             />
                           )}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <Link
                             to={PATIENT_PROFILE_PUBLIC.replace(
                               ":patientId",
                               getPatientId(review.id),
                             )}
-                            className="font-medium text-sm text-foreground font-body hover:underline"
+                            className="font-medium text-sm text-foreground font-body hover:underline block truncate"
                           >
                             {review.name}
                           </Link>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <StarRating rating={review.rating} />
-                            <span className="text-xs text-muted-foreground font-body">
+                            <span className="text-xs text-muted-foreground font-body whitespace-nowrap">
                               • {review.time}
                             </span>
                           </div>
@@ -360,33 +391,33 @@ function ServicesPage() {
                 {!showAllReviews && (
                   <MCButton
                     variant="outline"
-                    className="mt-6 font-body"
+                    className="mt-6 font-body w-full sm:w-auto"
                     onClick={() => setShowAllReviews(true)}
                   >
-                    Mostrar todas las reseñas
+                    {t("service.showAllReviews", "Mostrar todas las reseñas")}
                   </MCButton>
                 )}
               </div>
             </div>
 
             {/* Right column - Booking card */}
-            <div className="lg:col-span-1">
-              <Card className="p-6 sticky top-6 shadow-lg border-border">
+            <div className="lg:col-span-1 order-first lg:order-last">
+              <Card className="p-4 sm:p-6 lg:sticky lg:top-6 shadow-lg border-border">
                 <div className="text-center space-y-4">
                   <div>
-                    <span className="text-2xl font-heading text-foreground">
+                    <span className="text-xl sm:text-2xl font-heading text-foreground">
                       RD$1500
                     </span>
-                    <span className="text-muted-foreground font-body text-sm ml-1">
-                      por paciente
+                    <span className="text-muted-foreground font-body text-xs sm:text-sm ml-1">
+                      {t("service.perPatient", "por paciente")}
                     </span>
                   </div>
                   <ScheduleAppointmentDialog
                     idProvider={doctorId}
                     idService={serviceId || ""}
                   >
-                    <MCButton className="w-full font-body text-base py-6">
-                      Agendar
+                    <MCButton className="w-full font-body text-sm sm:text-base py-5 sm:py-6">
+                      {t("service.schedule", "Agendar")}
                     </MCButton>
                   </ScheduleAppointmentDialog>
                 </div>
