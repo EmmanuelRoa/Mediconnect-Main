@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ROUTES } from "@/router/routes";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import { VideoCall } from "../components/VideoCall";
-import { teleconsultAppointment } from "@/data/teleconsult";
+
 import { ConsultationInfo } from "../components/ConsultationInfo";
 import { ChatPanel } from "../components/chatPanel/ChatPanel";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";

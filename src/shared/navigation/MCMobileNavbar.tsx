@@ -4,7 +4,7 @@ import LogoImgdDark from "@/assets/MediConnectLanding.png";
 import MCUserMenu from "./userMenu/MCUserMenu";
 import { Button } from "@/shared/ui/button";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import AdminNavbarBell from "../components/AdminNavbarBell";
+import NavbarBell from "../components/NavbarBell";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
@@ -83,7 +83,7 @@ function MCMobileNavbar() {
           />
         </Link>
         {/* Notifications Bell */}
-        <AdminNavbarBell />
+        <NavbarBell />
 
         {/* Mobile Menu */}
         <Sheet open={open} onOpenChange={setOpen}>

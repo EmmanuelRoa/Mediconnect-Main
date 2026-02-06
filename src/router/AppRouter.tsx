@@ -28,7 +28,7 @@ import ScheduleAppointment from "@/features/patient/pages/ScheduleAppointment";
 import TeleconsultConfirmPage from "@/features/teleconsultation/pages/TeleconsultConfirmPage";
 import TeleconsultRoomPage from "@/features/teleconsultation/pages/TeleconsultRoomPage";
 import ChatPage from "@/features/chat/pages/ChatPage";
-
+import ServicesPage from "@/features/doctor/pages/ServicesPage";
 //Settings and Privacy Pages Imports
 import AccountOverviewPage from "@/features/account/settings/pages/AccountOverviewPage";
 import ChangeEmailPage from "@/features/account/settings/pages/ChangeEmailPage";
@@ -202,6 +202,7 @@ function AppRouter() {
               element={<DoctorProfilePage />}
             />
             <Route path={ROUTES.COMMON.CHAT} element={<ChatPage />} />
+            <Route path={ROUTES.COMMON.SERVICE} element={<ServicesPage />} />
           </Route>
         </Route>
       </Router>

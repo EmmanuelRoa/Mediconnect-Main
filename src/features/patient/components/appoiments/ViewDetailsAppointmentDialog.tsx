@@ -42,7 +42,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-4 md:grid-rows-2 gap-4 w-full">
+      <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-3 md:grid-rows-3 gap-4 w-full">
         <div className="flex flex-col items-start gap-1">
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.service")}
@@ -97,6 +97,14 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
             {appointment.appointmentType}
+          </p>
+        </div>{" "}
+        <div className="flex flex-col items-start gap-1">
+          <h3 className="text-md text-primary/75 font-medium">
+            {t("appointment.insure")}
+          </h3>
+          <p className="text-lg text-primary font-medium break-words max-w-xs">
+            pon los seguros aqui
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">

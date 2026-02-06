@@ -12,6 +12,7 @@ import MCButton from "./forms/MCButton";
 import { useTranslation } from "react-i18next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useNavigate } from "react-router-dom";
 
 interface MCServiceCardProps {
   image: string;
@@ -24,7 +25,8 @@ interface MCServiceCardProps {
   duration: string;
   type: string;
   onDetails?: () => void;
-  isOwner?: boolean; // <-- NUEVA PROP
+  isOwner?: boolean;
+  serviceId: string; // <-- NUEVA PROP
 }
 
 const MCServiceCards = ({
@@ -38,10 +40,12 @@ const MCServiceCards = ({
   duration,
   type,
   onDetails,
-  isOwner = false, // <-- DEFAULT FALSE
+  isOwner = false,
+  serviceId, // <-- NUEVA PROP
 }: MCServiceCardProps) => {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
+  const navigate = useNavigate(); // <-- NAVEGAR
 
   const getTypeIcon = () => {
     if (type.toLowerCase().includes("mixta"))
@@ -103,6 +107,7 @@ const MCServiceCards = ({
               ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
             `}
                     type="button"
+                    onClick={() => navigate(`/service/${serviceId}`)} // <-- NAVEGAR
                   >
                     Ver servicio
                   </button>
@@ -207,7 +212,7 @@ const MCServiceCards = ({
         <MCButton
           className="w-full rounded-full mt-auto"
           variant="primary"
-          onClick={onDetails}
+          onClick={() => navigate(`/service/${serviceId}`)}
           size={isMobile ? "xs" : "sm"}
         >
           {t("profile.services.details", "Ver detalles")}

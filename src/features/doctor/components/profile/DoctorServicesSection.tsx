@@ -165,6 +165,7 @@ function DoctorServicesSection({ services }: Props) {
                 }
                 title={service.title}
                 price={service.price}
+                serviceId={service.id}
                 description={service.description}
                 rating={service.rating}
                 reviews={service.reviews}

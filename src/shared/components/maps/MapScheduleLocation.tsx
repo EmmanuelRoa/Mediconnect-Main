@@ -10,6 +10,7 @@ import {
   type ParsedDominicanAddress,
 } from "@/utils/addressParser";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 interface mapScheduleLocationProps {
   initialLocation?: { lat: number; lng: number };
@@ -26,6 +27,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
   const isdarkMode = useGlobalUIStore((state) => state.theme);
   const [address, setAddress] = useState<ParsedDominicanAddress | null>(null);
   const isMobile = useIsMobile();
+  const { t } = useTranslation("common");
 
   // Coordenadas por defecto (Santo Domingo, RD)
   const defaultLocation = { lat: 18.48, lng: -69.93 };
@@ -366,7 +368,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Address
+                    {t("search.address", "Address")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">
@@ -376,7 +378,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Province
+                    {t("search.province", "Province")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">
@@ -386,7 +388,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2 col-span-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Municipality
+                    {t("search.municipality", "Municipality")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">
@@ -399,7 +401,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Address
+                    {t("search.address", "Address")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">
@@ -409,7 +411,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Province
+                    {t("search.province", "Province")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">
@@ -419,7 +421,7 @@ function MapScheduleLocation({ initialLocation }: mapScheduleLocationProps) {
               <div className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
                   <h5 className="text-md text-primary/75 font-medium">
-                    Municipality
+                    {t("search.municipality", "Municipality")}
                   </h5>
                 </div>
                 <span className="text-lg text-primary font-medium break-words max-w-xs">

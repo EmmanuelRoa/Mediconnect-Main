@@ -92,5 +92,6 @@ export const ROUTES = {
     CHAT: "/chat",
     GLOBAL_SEARCH: "/search",
     CALENDAR: "/calendar",
+    SERVICE: "/service/:serviceId",
   },
 };

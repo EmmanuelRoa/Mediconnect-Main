@@ -10,7 +10,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/shared/ui/navigation-menu";
 import { Link, useLocation } from "react-router-dom";
-import AdminNavbarBell from "../components/AdminNavbarBell";
+import NavbarBell from "../components/NavbarBell";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
@@ -105,7 +105,7 @@ function MCNavbar() {
             }`}
           />
         </Link>
-        <AdminNavbarBell />
+        <NavbarBell />
         <div className="hidden md:block">
           <MCUserMenu />
         </div>

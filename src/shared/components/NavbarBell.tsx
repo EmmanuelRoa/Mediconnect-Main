@@ -70,7 +70,7 @@ const typeIcon: Record<string, React.ReactNode> = {
   report: <FileText className="w-4 h-4" />,
 };
 
-function AdminNavbarBell() {
+function NavbarBell() {
   const [open, setOpen] = useState(false);
   const [notis, setNotis] = useState(notifications);
 
@@ -92,9 +92,10 @@ function AdminNavbarBell() {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "relative rounded-full p-2.5 transition-transform duration-300 h-11 w-11 flex items-center justify-center group",
+            "relative rounded-full transition-transform duration-300 flex items-center justify-center group",
             "hover:bg-accent/70 text-primary",
             open ? "bg-primary" : "bg-bg-btn-secondary",
+            "h-11 w-11 p-2.5 md:h-14 md:w-14 md:p-3",
           )}
           aria-label="Notifications"
         >
@@ -160,7 +161,7 @@ function AdminNavbarBell() {
                 Read
               </TabsTrigger>
             </TabsList>
-            <div className="border-b border-border my-1" />
+            <div className="border-b border-border/50 my-1" />
 
             <TabsContent value="unread">
               <div className="max-h-72 overflow-y-auto">
@@ -288,4 +289,4 @@ function AdminNavbarBell() {
   );
 }
 
-export default AdminNavbarBell;
+export default NavbarBell;
