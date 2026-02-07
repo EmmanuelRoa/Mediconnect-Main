@@ -14,7 +14,7 @@ const appointmentsData: Appointment[] = [
   {
     id: "1",
     date: new Date(2026, 0, 20),
-    clientName: "Alexander Gil",
+    clientName: "Juan Pérez",
     service: "Consulta interna",
     startTime: "9:00 AM",
     endTime: "10:00 AM",
@@ -24,7 +24,7 @@ const appointmentsData: Appointment[] = [
   {
     id: "2",
     date: new Date(2026, 0, 20),
-    clientName: "Clay Gomera",
+    clientName: "Ana García",
     clientImage:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
     service: "Fisioterapia",

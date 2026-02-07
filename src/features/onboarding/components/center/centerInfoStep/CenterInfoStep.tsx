@@ -55,7 +55,7 @@ function CenterInfoStep({ children }: CenterInfoDialogProps) {
       triggerClassName="w-full"
     >
       <div className="w-full flex flex-col items-center justify-center mt-10">
-        <h1 className="text-3xl font-semibold text-center">
+        <h1 className="text-3xl font-semibold text-center text-primary">
           {t("centerInfoStep.title")}
         </h1>
         <div className="w-full flex flex-col items-center flex-1">

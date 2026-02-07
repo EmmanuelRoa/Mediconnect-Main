@@ -57,7 +57,7 @@
     "email": "Email",
     "emailPlaceholder": "example@email.com",
     "phone": "Phone",
-    "phonePlaceholder": "+1 (809) 555-1234",
+    "phonePlaceholder": "(809) 555-1234",
     "yearsExperience": "Years of Experience",
     "yearsExperiencePlaceholder": "15",
     "licenseNumber": "License Number",

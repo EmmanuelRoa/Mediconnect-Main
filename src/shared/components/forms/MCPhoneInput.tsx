@@ -1,62 +1,83 @@
 import { Input } from "@/shared/ui/input";
 import { useFormContext } from "react-hook-form";
-import { EyeIcon } from "@/shared/ui/eye";
-import { EyeOffIcon } from "@/shared/ui/eye-off";
-import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-interface MCInputProps {
+
+interface MCPhoneInputProps {
   name: string;
   label?: string;
-  type?: string;
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   required?: boolean;
   disabled?: boolean;
-  showPasswordToggle?: boolean;
   size?: "small" | "medium" | "large";
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
-  variant?: "edit" | "default" | "cedula";
+  variant?: "edit" | "default";
   standalone?: boolean;
-  // Nueva prop para icono
   icon?: React.ReactNode;
+  // Formato específico del teléfono
+  format?: "us" | "do" | "international"; // US: (XXX) XXX-XXXX, DO: XXX-XXX-XXXX
+  countryCode?: string; // Ej: "+1", "+1-809"
 }
 
-function formatCedula(value: string) {
-  // Solo números, máximo 11 dígitos
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  // Formato visual: 000-0000000-0
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 10)}-${digits.slice(10)}`;
-}
-
-function MCInput({
+function MCPhoneInput({
   name,
   label,
-  type = "text",
-  placeholder,
+  placeholder = "000-000-0000",
   value,
   onChange,
   className,
   required = false,
   disabled = false,
-  showPasswordToggle = false,
   size = "medium",
   status = "default",
   statusMessage,
   variant = "default",
   standalone = false,
   icon,
-}: MCInputProps) {
+  format = "do",
+  countryCode,
+}: MCPhoneInputProps) {
   const formContext = standalone ? null : useFormContext();
+  const [displayValue, setDisplayValue] = useState("");
 
-  const { t } = useTranslation("common");
-  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const formatPhoneNumber = (input: string): string => {
+    // Remover todo excepto números
+    const numbers = input.replace(/\D/g, "");
+
+    // Aplicar formato según el tipo
+    if (format === "us") {
+      // Formato US: (XXX) XXX-XXXX
+      if (numbers.length === 0) return "";
+      if (numbers.length <= 3) return numbers;
+      if (numbers.length <= 6)
+        return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+      return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+    } else if (format === "do") {
+      // Formato DO: XXX-XXX-XXXX
+      if (numbers.length === 0) return "";
+      if (numbers.length <= 3) return numbers;
+      if (numbers.length <= 6)
+        return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+    } else {
+      // Formato internacional genérico
+      if (numbers.length === 0) return "";
+      if (numbers.length <= 3) return numbers;
+      if (numbers.length <= 6)
+        return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+      if (numbers.length <= 9)
+        return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 9)}-${numbers.slice(9, 13)}`;
+    }
+  };
+
+  const getUnformattedValue = (formatted: string): string => {
+    return formatted.replace(/\D/g, "");
+  };
 
   const handleStatusColor = () => {
     switch (status) {
@@ -108,10 +129,6 @@ function MCInput({
     }
   };
 
-  const handlePasswordToggle = () => {
-    setPasswordVisibility(!passwordVisibility);
-  };
-
   const getVariantClasses = () => {
     if (variant === "edit") {
       return "border-none bg-accent text-primary/80 placeholder:text-primary/60";
@@ -119,54 +136,55 @@ function MCInput({
     return "";
   };
 
-  // Detectar si es campo de cédula
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formatted = formatPhoneNumber(inputValue);
+    const unformatted = getUnformattedValue(formatted);
 
-  // Estado local solo para mostrar la cédula formateada
-  const [cedulaValue, setCedulaValue] = useState(value || "");
+    setDisplayValue(formatted);
 
-  const isCedulaVariant = variant === "cedula";
+    // Crear un evento sintético con el valor sin formato para el form
+    const syntheticEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: unformatted,
+        name: name,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
 
-  const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCedula(e.target.value);
-    setCedulaValue(formatted);
-    // Enviar solo los números al formulario
-    const onlyDigits = formatted.replace(/\D/g, "");
     if (standalone) {
-      onChange?.({ ...e, target: { ...e.target, value: onlyDigits } });
-    } else {
-      formContext?.setValue(name, onlyDigits, { shouldValidate: true });
+      onChange?.(syntheticEvent);
+    } else if (formContext) {
+      const field = formContext.register(name);
+      field.onChange(syntheticEvent);
+      onChange?.(syntheticEvent);
     }
   };
 
-  // Props del input dependiendo del modo y variante
-  const inputProps = isCedulaVariant
+  // Props del input
+  const inputProps = standalone
     ? {
-        value: cedulaValue,
-        onChange: handleCedulaChange,
+        value: displayValue || formatPhoneNumber(value || ""),
+        onChange: handlePhoneChange,
       }
-    : standalone
-      ? {
-          value: value || "",
-          onChange: onChange,
-        }
-      : (() => {
-          if (!formContext) return {};
-          const field = formContext.register(name);
-          return {
-            ...field,
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-              field.onChange(e);
-              onChange?.(e);
-            },
-          };
-        })();
+    : (() => {
+        if (!formContext) return {};
 
-  // Obtener errores solo si está en un form
+        const field = formContext.register(name);
+        return {
+          ...field,
+          value:
+            displayValue || formatPhoneNumber(formContext.watch(name) || ""),
+          onChange: handlePhoneChange,
+        };
+      })();
+
   const error = !standalone && formContext?.formState?.errors?.[name];
 
   return (
     <div className="w-full flex flex-col mb-4 px-0">
-      {/* Label and Password Toggle */}
+      {/* Label */}
       {label && (
         <div className="flex flex-row justify-between items-center mb-2 gap-2">
           <label
@@ -176,26 +194,8 @@ function MCInput({
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
           </label>
-          {(type === "password" || showPasswordToggle) && (
-            <Button
-              type="button"
-              variant="ghost"
-              className="rounded-2xl text-secondary/75 dark:text-accent/75 hover:bg-secondary/10 dark:accent-accent/10 dark:hover:text-accent hover:text-secondary px-2 py-1 active:bg-secondary/20 active:text-secondary dark:active:text-accent"
-              onClick={handlePasswordToggle}
-              disabled={disabled}
-            >
-              {passwordVisibility ? (
-                <span className="flex items-center gap-1">
-                  <EyeOffIcon size={18} />
-                  <p className="hidden sm:inline">{t("validation.hide")}</p>
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <EyeIcon size={18} />
-                  <p className="hidden sm:inline">{t("validation.show")}</p>
-                </span>
-              )}
-            </Button>
+          {countryCode && (
+            <span className="text-sm text-primary/60">{countryCode}</span>
           )}
         </div>
       )}
@@ -217,9 +217,10 @@ function MCInput({
         <Input
           id={name}
           placeholder={placeholder}
-          type={type === "password" && passwordVisibility ? "text" : type}
+          type="tel"
           required={required}
           disabled={disabled}
+          inputMode="numeric"
           {...inputProps}
           className={cn(
             "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary placeholder:text-md",
@@ -252,7 +253,7 @@ function MCInput({
         </span>
       )}
 
-      {/* Form Errors (solo si NO es standalone) */}
+      {/* Form Errors */}
       {error && (
         <span className="text-red-500 text-sm mt-1">
           {String(error?.message)}
@@ -262,4 +263,4 @@ function MCInput({
   );
 }
 
-export default MCInput;
+export default MCPhoneInput;

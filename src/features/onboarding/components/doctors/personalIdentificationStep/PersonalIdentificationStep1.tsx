@@ -6,6 +6,7 @@ import { type DoctorBasicInfoSchemaType } from "@/types/OnbordingTypes";
 import { DoctorBasicInfoSchema } from "@/schema/OnbordingSchema";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
 
 type PersonalIdentificationStep1Props = {
   children?: React.ReactNode;
@@ -20,7 +21,7 @@ function PersonalIdentificationStep1({
 }: PersonalIdentificationStep1Props) {
   const { t } = useTranslation("auth");
   const doctorOnboardingData = useAppStore(
-    (state) => state.doctorOnboardingData
+    (state) => state.doctorOnboardingData,
   );
   const setDoctorField = useAppStore((state) => state.setDoctorField);
 
@@ -87,7 +88,7 @@ function PersonalIdentificationStep1({
       </div>
 
       <MCFormWrapper
-        schema={DoctorBasicInfoSchema((t) => t)}
+        schema={DoctorBasicInfoSchema((key: string) => t(key))}
         onSubmit={handleSubmit}
         defaultValues={doctorOnboardingData}
         onValidationChange={onValidationChange}
@@ -119,7 +120,7 @@ function PersonalIdentificationStep1({
               onChange={(value) =>
                 setDoctorField?.(
                   "gender",
-                  Array.isArray(value) ? value[0] : value
+                  Array.isArray(value) ? value[0] : value,
                 )
               }
             />
@@ -138,21 +139,22 @@ function PersonalIdentificationStep1({
               name="nationality"
               label={t("personalIdentificationStep.nationalityLabel")}
               placeholder={t(
-                "personalIdentificationStep.nationalityPlaceholder"
+                "personalIdentificationStep.nationalityPlaceholder",
               )}
               options={nationalityOptions}
               onChange={(value) =>
                 setDoctorField?.(
                   "nationality",
-                  Array.isArray(value) ? value[0] : value
+                  Array.isArray(value) ? value[0] : value,
                 )
               }
             />
             <MCInput
               name="identityDocument"
+              variant="cedula"
               label={t("personalIdentificationStep.identityDocumentLabel")}
               placeholder={t(
-                "personalIdentificationStep.identityDocumentPlaceholder"
+                "personalIdentificationStep.identityDocumentPlaceholder",
               )}
               onChange={(e) =>
                 setDoctorField?.("identityDocument", e.target.value)
@@ -161,10 +163,9 @@ function PersonalIdentificationStep1({
           </div>
 
           {/* Teléfono móvil */}
-          <MCInput
+          <MCPhoneInput
             name="phone"
             label={t("personalIdentificationStep.phoneLabel")}
-            type="tel"
             placeholder={t("personalIdentificationStep.phonePlaceholder")}
             onChange={(e) => setDoctorField?.("phone", e.target.value)}
           />

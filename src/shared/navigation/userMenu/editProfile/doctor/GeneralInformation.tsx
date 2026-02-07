@@ -13,7 +13,7 @@ import { MCDialogBase } from "@/shared/components/MCDialogBase";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useState, useRef } from "react";
 import { doctorProfileSchema } from "@/schema/profile.schema";
-
+import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
 type CropType = "banner" | "profile";
 
 interface GeneralInformationProps {
@@ -335,10 +335,9 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
           placeholder={t("profileForm.emailPlaceholder")}
         />
 
-        <MCInput
+        <MCPhoneInput
           name="phone"
           label={t("profileForm.phone")}
-          type="tel"
           placeholder={t("profileForm.phonePlaceholder")}
         />
 
@@ -359,7 +358,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
         <MCInput
           name="identityDocument"
           label={t("profileForm.identityDocument")}
-          type="text"
+          variant="cedula"
           placeholder={t("profileForm.identityDocumentPlaceholder")}
         />
 

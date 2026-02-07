@@ -2,6 +2,7 @@ import MCInput from "@/shared/components/forms/MCInput";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCTextArea from "@/shared/components/forms/MCTextArea";
+import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
 import { useAppStore } from "@/stores/useAppStore";
 import { CenterBasicInfoSchema } from "@/schema/OnbordingSchema";
 import { useEffect } from "react";
@@ -20,7 +21,7 @@ function CenterInfoStep1({
 }: CenterInfoStep1Props) {
   const { t } = useTranslation("auth");
   const centerOnboardingData = useAppStore(
-    (state) => state.centerOnboardingData
+    (state) => state.centerOnboardingData,
   );
   const setCenterField = useAppStore((state) => state.setCenterField);
 
@@ -59,7 +60,7 @@ function CenterInfoStep1({
       </div>
 
       <MCFormWrapper
-        schema={CenterBasicInfoSchema((t) => t)}
+        schema={CenterBasicInfoSchema((key: string) => t(key))}
         onSubmit={handleSubmit}
         defaultValues={centerOnboardingData}
         onValidationChange={onValidationChange}
@@ -81,7 +82,7 @@ function CenterInfoStep1({
               onChange={(value) =>
                 setCenterField?.(
                   "centerType",
-                  Array.isArray(value) ? value[0] : value
+                  Array.isArray(value) ? value[0] : value,
                 )
               }
             />
@@ -105,6 +106,7 @@ function CenterInfoStep1({
             />
             <MCInput
               name="rnc"
+              variant="cedula"
               label={t("centerInfoStep.rncLabel")}
               placeholder={t("centerInfoStep.rncPlaceholder")}
               onChange={(e) => setCenterField?.("rnc", e.target.value)}
@@ -112,10 +114,9 @@ function CenterInfoStep1({
           </div>
 
           {/* Teléfono */}
-          <MCInput
+          <MCPhoneInput
             name="phone"
             label={t("centerInfoStep.phoneLabel")}
-            type="tel"
             placeholder={t("centerInfoStep.phonePlaceholder")}
             onChange={(e) => setCenterField?.("phone", e.target.value)}
           />

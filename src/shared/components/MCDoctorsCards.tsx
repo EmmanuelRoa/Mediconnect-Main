@@ -238,7 +238,7 @@ function MCDoctorsCards({
       <div className=" flex justify-between  gap-3">
         <ScheduleAppointmentDialog idProvider={id?.toString() ?? ""}>
           <MCButton size={styles.buttonSize} className=" w-full">
-            {t("doctors.schedule", "Schedule")}
+            {t("doctors.schedule")}
           </MCButton>
         </ScheduleAppointmentDialog>
 
@@ -248,7 +248,7 @@ function MCDoctorsCards({
           className=" w-full"
           onClick={handleProfileClick}
         >
-          {t("doctors.profile", "Profile")}
+          {t("doctors.profile")}
         </MCButton>
         <HistoryDialog doctorId={id?.toString() ?? ""}>
           <MCButton
@@ -256,7 +256,7 @@ function MCDoctorsCards({
             className="w-full"
             variant="secondary"
           >
-            {t("doctors.history", "History")}
+            {t("doctors.history")}
           </MCButton>{" "}
         </HistoryDialog>
       </div>

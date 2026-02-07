@@ -38,15 +38,14 @@ interface DoctorFilters {
 
 const doctorsList = [
   {
-    name: "Alexander Gil",
+    name: "Cristiano Ronaldo",
     specialty: "cardiology",
     rating: 4.8,
     yearsOfExperience: 15,
     languages: ["es", "en", "fr"],
     insuranceAccepted: ["senasa", "universal", "humano"],
     isFavorite: false,
-    urlImage:
-      "https://i.pinimg.com/736x/58/8b/f4/588bf4e2b04c192c96b297d7627b31e6.jpg",
+    urlImage: "",
   },
   {
     name: "María López",
@@ -56,8 +55,7 @@ const doctorsList = [
     languages: ["es", "en"],
     insuranceAccepted: ["palic", "humano"],
     isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/22/1f/d5/221fd565c4175235f7ae93d2ba80c641.jpg",
+    urlImage: "",
   },
   {
     name: "Carlos Méndez",
@@ -67,8 +65,7 @@ const doctorsList = [
     languages: ["es"],
     insuranceAccepted: ["universal"],
     isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/b5/09/6b/b5096bf449df00f2f3fc52d8a4de5c70.jpg",
+    urlImage: "",
   },
   {
     name: "Sofía Ramírez",

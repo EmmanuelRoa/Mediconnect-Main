@@ -27,7 +27,7 @@ function DoctorProfilePage() {
 
   // Mock data - en producción esto vendría de una API
   const doctor = {
-    name: "Alexander Gil",
+    name: "LeBron James",
     avatar: "",
     banner: "",
     specialty: "Cardiología",
@@ -36,7 +36,7 @@ function DoctorProfilePage() {
     languages: ["es", "en", "fr"],
     isFavorite: false,
     about:
-      "Alexander integra toda la familia, enfocándose en prevenir, diagnosticar y tratar enfermedades comunes. Nuestro médico de familia acompaña a cada paciente en todas las etapas de su vida, considerando su bienestar físico, emocional y social.",
+      "LeBron James integra toda la familia, enfocándose en prevenir, diagnosticar y tratar enfermedades comunes. Nuestro médico de familia acompaña a cada paciente en todas las etapas de su vida, considerando su bienestar físico, emocional y social.",
     education: [
       {
         degree: "Medicina General",

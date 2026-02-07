@@ -22,8 +22,8 @@ function PersonalIdentificationDialog({
     { title: t("personalIdentificationDialog.steps.professional") },
   ];
 
-  const current = useGlobalUIStore((s) => s.onboardingStep);
-  const setCurrent = useGlobalUIStore((s) => s.setOnboardingStep);
+  const current = useGlobalUIStore((s) => s.doctorOnboardingStep);
+  const setCurrent = useGlobalUIStore((s) => s.setDoctorOnboardingStep);
   const [step1Valid, setStep1Valid] = useState(false);
   const doctorsteps = useAppStore((state) => state.doctorOnboardingData);
 
@@ -53,7 +53,7 @@ function PersonalIdentificationDialog({
       triggerClassName="w-full"
     >
       <div className="w-full flex flex-col items-center justify-center  mt-10 ">
-        <h1 className="text-3xl font-semibold text-center">
+        <h1 className="text-3xl font-semibold text-center text-primary">
           {t("personalIdentificationDialog.title")}
         </h1>
         <div className="w-full flex flex-col items-center gap- flex-1">

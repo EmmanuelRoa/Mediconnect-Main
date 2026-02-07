@@ -3,6 +3,7 @@ import MCInput from "@/shared/components/forms/MCInput";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCProfileImageUploader from "@/shared/components/MCProfileImageUploader";
 import MCTextArea from "@/shared/components/forms/MCTextArea";
+import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "../../MCUserBanner";
@@ -306,10 +307,9 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
           placeholder={t("centerForm.centerTypePlaceholder")}
         />
 
-        <MCInput
+        <MCPhoneInput
           name="phone"
           label={t("profileForm.phone")}
-          type="tel"
           placeholder={t("profileForm.phonePlaceholder")}
         />
 
@@ -323,7 +323,7 @@ function GeneralInfortmation({ onOpenChange }: GeneralInfortmationProps) {
         <MCInput
           name="taxId"
           label={t("centerForm.taxId")}
-          type="text"
+          variant="cedula"
           placeholder={t("centerForm.taxIdPlaceholder")}
         />
 

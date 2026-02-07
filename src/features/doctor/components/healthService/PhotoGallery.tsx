@@ -178,66 +178,25 @@ const PhotoGallery = ({
 
   // Layout for 4 images
   if (count === 4) {
-    if (isMobile) {
-      // Mobile: Show 2 images, overlay on second
-      return (
-        <>
-          <div className="grid grid-cols-2 gap-0.5 h-[250px]">
-            {renderImage(
-              images[0],
-              0,
-              "w-full h-full",
-              undefined,
-              "rounded-l-2xl",
-            )}
-            {renderImage(
-              images[1],
-              1,
-              "w-full h-full",
-              2, // Overlay showing +2 more
-              "rounded-r-2xl",
-            )}
-          </div>
-          <ImageCarouselModal
-            images={images}
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
-            startIndex={startIndex}
-          />
-        </>
-      );
-    }
-
-    // Desktop: Original layout
     return (
       <>
-        <div className="grid grid-cols-3 gap-1 h-[400px]">
-          <div className="col-span-2 row-span-2">
-            {renderImage(
-              images[0],
-              0,
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 h-[400px]">
+          {images.map((img, idx) =>
+            renderImage(
+              img,
+              idx,
               "w-full h-full",
               undefined,
-              "rounded-l-3xl",
-            )}
-          </div>
-          {renderImage(
-            images[1],
-            1,
-            "w-full h-full",
-            undefined,
-            "rounded-tr-3xl",
+              // Esquinas redondeadas solo en las esquinas del grid
+              idx === 0
+                ? "rounded-tl-3xl"
+                : idx === 1
+                  ? "rounded-tr-3xl"
+                  : idx === 2
+                    ? "rounded-bl-3xl"
+                    : "rounded-br-3xl",
+            ),
           )}
-          <div className="grid grid-cols-2 gap-1">
-            {renderImage(images[2], 2, "w-full h-full", undefined, "")}
-            {renderImage(
-              images[3],
-              3,
-              "w-full h-full",
-              undefined,
-              "rounded-br-3xl",
-            )}
-          </div>
         </div>
         <ImageCarouselModal
           images={images}

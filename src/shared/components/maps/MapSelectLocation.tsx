@@ -400,10 +400,6 @@ export default function MapSelectLocation({
           </motion.div>
         )}
       </AnimatePresence>
-
-      <p className="text-sm text-primary py-4">
-        {t("ui.map.clickInstructions")}
-      </p>
     </>
   );
 }

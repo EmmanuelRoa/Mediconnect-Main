@@ -14,12 +14,18 @@ import { useTranslation } from "react-i18next";
 import LanguageDropDown from "../components/LanguageDropDown";
 import { useNavigate } from "react-router-dom";
 import OAuthProvider from "../components/OAuthProvider";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import EnIMG from "@/assets/flag-usa.png";
+import EsIMG from "@/assets/flag-spain.png";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 function LoginPage() {
   const { t } = useTranslation("auth");
   const isMobile = useIsMobile();
   const loginCredentials = useAppStore((state) => state.loginCredentials);
   const setLoginCredentials = useAppStore((state) => state.setLoginCredentials);
   const navigate = useNavigate();
+  const setLanguage = useGlobalUIStore((state) => state.setLanguage);
+  const currentLanguage = useGlobalUIStore((state) => state.language);
 
   const containerRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
@@ -33,22 +39,22 @@ function LoginPage() {
       tl.fromTo(
         logoRef.current,
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
       )
         .fromTo(
           headingRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
-          "-=0.3"
+          "-=0.3",
         )
         .fromTo(
           formRef.current,
           { y: 30, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
-          "-=0.3"
+          "-=0.3",
         );
     },
-    { scope: containerRef }
+    { scope: containerRef },
   );
 
   const handleSubmit = (data: LoginSchemaType) => {
@@ -69,7 +75,32 @@ function LoginPage() {
       >
         {/* SOLO DESKTOP: main vacío para el grid */}
         {!isMobile && (
-          <main className="relative flex flex-col justify-center items-center px-8"></main>
+          <main className="relative flex flex-col justify-center items-center px-8">
+            {/* Toggle de idiomas en la esquina superior izquierda */}
+            <div className="absolute top-6 left-6 z-20">
+              <ToggleGroup
+                type="single"
+                value={currentLanguage}
+                onValueChange={setLanguage}
+                aria-label="Language selector"
+              >
+                <ToggleGroupItem
+                  value="en"
+                  aria-label="English"
+                  className={currentLanguage !== "en" ? "opacity-50" : ""}
+                >
+                  <img src={EnIMG} alt="English" className="w-6 h-6" />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="es"
+                  aria-label="Español"
+                  className={currentLanguage !== "es" ? "opacity-50" : ""}
+                >
+                  <img src={EsIMG} alt="Español" className="w-6 h-6" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </main>
         )}
 
         {/* MAIN PRINCIPAL: cambia clases según mobile/desktop */}
@@ -97,8 +128,6 @@ function LoginPage() {
                 {t("login.subtitle", "Sign in to MediConnect")}
               </p>
             </div>
-
-            <LanguageDropDown />
           </div>
           <div ref={formRef} className="w-full max-w-xs sm:max-w-md mx-auto">
             <MCFormWrapper

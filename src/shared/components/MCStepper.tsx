@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +24,7 @@ export interface MCStepperProps {
 const getStepStatus = (
   index: number,
   current: number,
-  itemStatus?: StepStatus
+  itemStatus?: StepStatus,
 ): StepStatus => {
   if (itemStatus) return itemStatus;
   if (index < current) return "finish";
@@ -36,7 +35,6 @@ const getStepStatus = (
 function MCStepper({
   items,
   current = 0,
-
   size = "large",
   showLabels = false,
   className,
@@ -49,7 +47,6 @@ function MCStepper({
         const status = getStepStatus(index, current, item.status);
         const isLast = index === items.length - 1;
 
-        // Colores personalizados
         const bubbleBg =
           status === "finish" || status === "process"
             ? "bg-[#D7E3C9]"
@@ -62,9 +59,8 @@ function MCStepper({
           <React.Fragment key={index}>
             <div className="flex flex-col items-center flex-shrink-0">
               {/* Step Circle */}
-              <motion.button
+              <button
                 type="button"
-                // Quita el onClick y siempre deshabilitado
                 disabled
                 className={cn(
                   "relative flex items-center justify-center rounded-full transition-all",
@@ -72,34 +68,28 @@ function MCStepper({
                   bubbleBg,
                   bubbleText,
                   ringAccent,
-                  "cursor-default" // Siempre cursor default
+                  "cursor-default",
                 )}
                 style={{
                   boxShadow: undefined,
                 }}
-                layout
               >
                 {item.icon ? (
                   item.icon
                 ) : status === "finish" ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
+                  <div>
                     <Check
                       className={cn(
                         "h-8 w-8 stroke-2",
-                        // Si el paso está terminado pero no es el actual, baja opacidad
-                        current !== index && "opacity-60"
+                        current !== index && "opacity-60",
                       )}
                       strokeWidth={3}
                     />
-                  </motion.div>
+                  </div>
                 ) : (
                   <span>{index + 1}</span>
                 )}
-              </motion.button>
+              </button>
 
               {/* Labels below circle */}
               {showLabels && (item.title || item.subTitle) && (
@@ -110,7 +100,7 @@ function MCStepper({
                         "font-medium transition-colors",
                         isLarge ? "text-base" : "text-sm",
                         "text-[#0B2C12]",
-                        status === "wait" && "opacity-50"
+                        status === "wait" && "opacity-50",
                       )}
                     >
                       {item.title}
@@ -121,7 +111,7 @@ function MCStepper({
                       className={cn(
                         "mt-1",
                         isLarge ? "text-sm" : "text-xs",
-                        "text-[#0B2C12] opacity-40"
+                        "text-[#0B2C12] opacity-40",
                       )}
                     >
                       {item.subTitle}
@@ -136,15 +126,19 @@ function MCStepper({
               <div
                 className={cn(
                   "flex-1 h-0.5 mx-1 relative overflow-hidden",
-                  "mt-10"
+                  "mt-10",
                 )}
               >
                 <div className="absolute inset-0 bg-[#D7E3C9]/30" />
-                <motion.div
-                  className="absolute inset-0 origin-left bg-[#D7E3C9]"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: index < current ? 1 : 0 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                <div
+                  className={cn(
+                    "absolute inset-0 origin-left bg-[#D7E3C9]",
+                    index < current ? "scale-x-100" : "scale-x-0",
+                  )}
+                  style={{
+                    transform: index < current ? "scaleX(1)" : "scaleX(0)",
+                    transition: "none",
+                  }}
                 />
               </div>
             )}

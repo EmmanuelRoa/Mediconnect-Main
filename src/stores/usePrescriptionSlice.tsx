@@ -11,7 +11,7 @@ export const createPrescriptionSlice: StateCreator<PrescriptionSlice> = (
   set,
 ) => ({
   prescription: {
-    diagnosisTittle: "",
+    diagnosisTitle: "",
     diagnosisDescription: "",
     documents: [],
   },
@@ -19,7 +19,7 @@ export const createPrescriptionSlice: StateCreator<PrescriptionSlice> = (
   clearPrescription: () =>
     set({
       prescription: {
-        diagnosisTittle: "",
+        diagnosisTitle: "",
         diagnosisDescription: "",
         documents: [],
       },

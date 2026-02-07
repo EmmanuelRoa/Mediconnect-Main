@@ -238,12 +238,12 @@ export function MyAppointmentsCards({
               )
             ) : (
               // Otros estados: todos los botones
-              <div className="flex w-full gap-2">
+              <div className="grid grid-cols-3 w-full gap-2">
                 <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
                   <MCButton
                     onClick={() => onViewDetails?.(appointment.id)}
                     size="sm"
-                    className="w-full flex-1"
+                    className="w-full "
                   >
                     {t("appointments.viewDetails")}
                   </MCButton>
@@ -252,11 +252,7 @@ export function MyAppointmentsCards({
                   idProvider={appointment.doctorId}
                   idAppointment={appointment.id}
                 >
-                  <MCButton
-                    variant="outline"
-                    size="sm"
-                    className="w-full flex-1"
-                  >
+                  <MCButton variant="outline" size="sm" className="w-full ">
                     {t("appointments.reschedule")}
                   </MCButton>
                 </ScheduleAppointmentDialog>
@@ -265,7 +261,7 @@ export function MyAppointmentsCards({
                     variant="outlineDelete"
                     onClick={() => onCancel?.(appointment.id)}
                     size="sm"
-                    className="w-full flex-1"
+                    className="w-full "
                   >
                     {t("appointments.cancel")}
                   </MCButton>

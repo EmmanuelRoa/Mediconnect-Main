@@ -13,8 +13,10 @@ import { useTranslation } from "react-i18next";
 import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useNavigate } from "react-router-dom";
-
+import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import { useAppStore } from "@/stores/useAppStore";
 interface MCServiceCardProps {
+  idProvider?: string | number;
   image: string;
   status?: "active" | "inactive";
   title: string;
@@ -30,6 +32,7 @@ interface MCServiceCardProps {
 }
 
 const MCServiceCards = ({
+  idProvider,
   image,
   status = "active",
   title,
@@ -46,6 +49,12 @@ const MCServiceCards = ({
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
   const navigate = useNavigate(); // <-- NAVEGAR
+  const currentUser = useAppStore((state) => state.user?.role);
+
+  if (currentUser === "PATIENT") {
+    // El usuario es paciente
+    // Puedes agregar lógica específica aquí
+  }
 
   const getTypeIcon = () => {
     if (type.toLowerCase().includes("mixta"))
@@ -207,14 +216,31 @@ const MCServiceCards = ({
           </div>
         </div>
 
-        <MCButton
-          className="w-full rounded-full mt-auto"
-          variant="primary"
-          onClick={() => navigate(`/service/${serviceId}`)}
-          size={isMobile ? "xs" : "sm"}
+        <div
+          className={`grid w-full gap-3 mt-auto ${
+            isMobile ? "grid-cols-2" : "grid-cols-2"
+          }`}
         >
-          {t("profile.services.details", "Ver detalles")}
-        </MCButton>
+          <MCButton
+            className="w-full rounded-full mt-auto"
+            variant="primary"
+            onClick={() => navigate(`/service/${serviceId}`)}
+            size="sm"
+          >
+            {t("profile.services.details", "Ver detalles")}
+          </MCButton>
+          <ScheduleAppointmentDialog
+            idProvider={idProvider ? String(idProvider) : ""}
+          >
+            <MCButton
+              className="w-full rounded-full mt-auto"
+              variant="outline"
+              size="sm"
+            >
+              Agendar
+            </MCButton>
+          </ScheduleAppointmentDialog>
+        </div>
       </CardContent>
     </Card>
   );

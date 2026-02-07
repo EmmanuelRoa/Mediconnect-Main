@@ -32,11 +32,11 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile"; // Asume que existe este 
 
 const galleryImages = [
   gallery1,
-  gallery2,
-  gallery3,
-  gallery4,
-  gallery5,
-  gallery6,
+  gallery1,
+  gallery1,
+  gallery1,
+  gallery1,
+  gallery1,
 ];
 
 const PATIENT_PROFILE_PUBLIC = "/patient/profile/:patientId";

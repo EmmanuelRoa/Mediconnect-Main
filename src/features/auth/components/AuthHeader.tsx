@@ -4,6 +4,10 @@ import LogoWhite from "@/assets/MediConnectLanding.png";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { MCModalBase } from "@/shared/components/MCModalBase";
+import EnIMG from "@/assets/flag-usa.png";
+import EsIMG from "@/assets/flag-spain.png";
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 function AuthHeader() {
   const navigate = useNavigate();
@@ -12,6 +16,8 @@ function AuthHeader() {
   const otp = useAppStore((state) => state.otp);
   const selectedRole = useAppStore((state) => state.selectedRole);
   const hasProgress = email || otp || selectedRole;
+  const setLanguage = useGlobalUIStore((state) => state.setLanguage);
+  const currentLanguage = useGlobalUIStore((state) => state.language);
 
   const handleConfirmCancel = () => {
     navigate("/login", { replace: true });
@@ -70,8 +76,30 @@ function AuthHeader() {
             />
           </div>
 
-          {/* Right: Empty for spacing */}
-          <div className="w-20"></div>
+          {/* Right: Toggle de idiomas */}
+          <div>
+            <ToggleGroup
+              type="single"
+              value={currentLanguage}
+              onValueChange={setLanguage}
+              aria-label="Language selector"
+            >
+              <ToggleGroupItem
+                value="en"
+                aria-label="English"
+                className={currentLanguage !== "en" ? "opacity-70" : ""}
+              >
+                <img src={EnIMG} alt="English" className="w-6 h-6" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="es"
+                aria-label="Español"
+                className={currentLanguage !== "es" ? "opacity-70" : ""}
+              >
+                <img src={EsIMG} alt="Español" className="w-6 h-6" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
       </div>
     </>

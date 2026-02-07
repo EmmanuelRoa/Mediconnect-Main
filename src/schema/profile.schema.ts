@@ -18,20 +18,27 @@ export function profileSchema(t: (key: string) => string) {
 export function doctorProfileSchema(t: (key: string) => string) {
   return profileSchema(t).extend({
     specialty: z.string().min(1, t("validation.specialtyRequired")),
-    phone: z.string().min(1, t("validation.phoneRequired")).optional(),
+    phone: z.coerce
+      .string()
+      .regex(/^\d{10}$/, t("validation.phoneInvalid"))
+      .optional(),
     yearsExperience: z.string().min(0, t("validation.yearsPositive")),
-    biography: z.string().min(1, t("validation.biographyRequired")).optional(),
+    biography: z.string().optional(),
     secondarySpecialties: z
       .array(z.string().min(1, t("validation.secondarySpecialtyRequired")))
       .optional(),
     licenseNumber: z.string().min(1, t("validation.licenseNumberRequired")),
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
-      .min(1, t("validation.identityDocumentRequired")),
+      .min(1, t("validation.identityDocumentRequired"))
+      .refine((val) => ValidateDominicanID(val), {
+        message: t("validation.identityDocumentInvalid"),
+      }),
     nationality: z.string().min(1, t("validation.nationalityRequired")),
     birthDate: z.string().min(1, t("validation.birthDateRequired")),
   });
 }
+
 export function doctorEducationSchema(t: (key: string) => string) {
   return z.object({
     educations: z
@@ -43,7 +50,7 @@ export function doctorEducationSchema(t: (key: string) => string) {
           startYear: z.string().min(1, t("validation.startYearRequired")),
           endMonth: z.string().min(1, t("validation.endMonthRequired")),
           endYear: z.string().min(1, t("validation.endYearRequired")),
-        })
+        }),
       )
       .min(1, t("validation.educationAtLeastOne")),
   });
@@ -60,11 +67,12 @@ export function doctorExperienceSchema(t: (key: string) => string) {
           startYear: z.string().min(1, t("validation.startYearRequired")),
           endMonth: z.string().min(1, t("validation.endMonthRequired")),
           endYear: z.string().min(1, t("validation.endYearRequired")),
-        })
+        }),
       )
       .min(1, t("validation.experienceAtLeastOne")),
   });
 }
+
 export function doctorLanguageSchema(t: (key: string) => string) {
   return z.object({
     languages: z
@@ -83,13 +91,16 @@ export function doctorInsuranceSchema(t: (key: string) => string) {
 
 export function patientProfileSchema(t: (key: string) => string) {
   return profileSchema(t).extend({
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
       .min(1, t("validation.identityDocumentRequired"))
       .refine((val) => ValidateDominicanID(val), {
         message: t("validation.identityDocumentInvalid"),
       }),
-    phone: z.string().min(1, t("validation.phoneRequired")).optional(),
+    phone: z.coerce
+      .string()
+      .regex(/^\d{10}$/, t("validation.phoneInvalid"))
+      .optional(),
     age: z
       .number()
       .min(0, t("validation.agePositive"))
@@ -144,13 +155,16 @@ export function patientInsuranceSchema(t: (key: string) => string) {
 export function centerProfileSchema(t: (key: string) => string) {
   return profileSchema(t).extend({
     centerType: z.string().min(1, t("validation.centerTypeRequired")),
-    phone: z.string().min(1, t("validation.phoneRequired")).optional(),
+    phone: z.coerce
+      .string()
+      .regex(/^\d{10}$/, t("validation.phoneInvalid"))
+      .optional(),
     website: z
       .string()
       .url(t("validation.websiteInvalid"))
       .optional()
       .or(z.literal("")),
-    taxId: z
+    taxId: z.coerce
       .string()
       .min(1, t("validation.taxIdRequired"))
       .refine((val) => ValidateDominicanRNC(val), {

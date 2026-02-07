@@ -66,7 +66,9 @@
     "privacyConsentRequired": "You must accept the privacy policy",
     "invalidPatientMessageConfig": "Invalid patient message configuration",
     "invalidCenterMessageConfig": "Invalid center message configuration",
-    "invalidDoctorMessageConfig": "Invalid doctor message configuration"
+    "invalidDoctorMessageConfig": "Invalid doctor message configuration",
+    "show": "Show",
+    "hide": "Hide"
   },
   "account": {
     "title": "Settings",

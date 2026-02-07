@@ -43,7 +43,8 @@ function PatientBasicInfoPage() {
         email: basicInfo.email,
         password: basicInfo.password ?? "",
         confirmPassword: basicInfo.confirmPassword ?? "",
-        urlImg: typeof basicInfo.urlImg === "string" ? undefined : basicInfo.urlImg,
+        urlImg:
+          typeof basicInfo.urlImg === "string" ? undefined : basicInfo.urlImg,
       });
       navigate("/auth/patient-onboarding/password-setup", { replace: true });
     }
@@ -85,6 +86,7 @@ function PatientBasicInfoPage() {
           <MCInput
             label={t("patientBasicInfo.identityDocumentLabel")}
             name="identityDocument"
+            variant="cedula"
             placeholder={t("patientBasicInfo.identityDocumentPlaceholder")}
           />
         </div>

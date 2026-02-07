@@ -237,7 +237,9 @@
     "noLanguages": "Languages not specified",
     "acceptedInsurances": "Accepted insurances",
     "schedule": "Schedule",
-    "clearFilters": "Clear"
+    "clearFilters": "Clear",
+    "profile": "Profile",
+    "history": "History"
   },
   "appointment": {
     "detailsTitle": "Appointment Details",

@@ -1,4 +1,3 @@
-import React from "react";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent";
 import AccountActions, {
   type AccountAction,

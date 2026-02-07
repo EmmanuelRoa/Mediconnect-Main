@@ -41,39 +41,36 @@ type DoctorFilters = {
 const doctorsList = [
   {
     id: "d1",
-    name: "Alexander Gil",
+    name: "Stephen Curry",
     specialty: "Cardiólogo",
     rating: 4.8,
     yearsOfExperience: 15,
     languages: ["es", "en", "fr"],
     insuranceAccepted: ["senasa", "universal", "humano"],
     isFavorite: false,
-    urlImage:
-      "https://i.pinimg.com/736x/58/8b/f4/588bf4e2b04c192c96b297d7627b31e6.jpg",
+    urlImage: "",
   },
   {
     id: "d2",
-    name: "María López",
+    name: "LeBron James",
     specialty: "Dermatóloga",
     rating: 4.9,
     yearsOfExperience: 10,
     languages: ["es", "en"],
     insuranceAccepted: ["palic", "humano"],
     isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/22/1f/d5/221fd565c4175235f7ae93d2ba80c641.jpg",
+    urlImage: "",
   },
   {
     id: "d3",
-    name: "Carlos Méndez",
+    name: "Conor McGregor",
     specialty: "Pediatra",
     rating: 4.7,
     yearsOfExperience: 8,
     languages: ["es"],
     insuranceAccepted: ["universal"],
     isFavorite: true,
-    urlImage:
-      "https://i.pinimg.com/736x/b5/09/6b/b5096bf449df00f2f3fc52d8a4de5c70.jpg",
+    urlImage: "",
   },
   {
     id: "d4",

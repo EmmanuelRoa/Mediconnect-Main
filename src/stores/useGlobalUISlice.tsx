@@ -50,6 +50,8 @@ export type GlobalUISlice = {
   ) => void;
   modalOpen: boolean;
   setModalOpen: (isOpen: boolean) => void;
+  doctorOnboardingStep: number;
+  setDoctorOnboardingStep: (step: number) => void;
   onboardingStep: number;
   setOnboardingStep: (step: number) => void;
   verificationContext: VerificationContext;
@@ -100,6 +102,9 @@ export const createGlobalUISlice: StateCreator<GlobalUISlice> = (set, get) => ({
     set({ canAccessPage: canAccess, allowedPages: pages }),
   modalOpen: false,
   setModalOpen: (isOpen: boolean) => set({ modalOpen: isOpen }),
+  doctorOnboardingStep: 0,
+  setDoctorOnboardingStep: (step: number) =>
+    set({ doctorOnboardingStep: step }),
   onboardingStep: 0,
   setOnboardingStep: (step: number) => set({ onboardingStep: step }),
   verificationContext: null,

@@ -26,7 +26,6 @@ import { Map as MapIcon, List as ListIcon } from "lucide-react";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import FiltersSearchProviders from "../components/filters/FiltersSearchProviders";
 
-// Interfaz para filtros de búsqueda
 interface SearchProviderFilters {
   name: string;
   insuranceAccepted: string[];
@@ -101,20 +100,16 @@ const YEARS_OF_EXPERIENCE_OPTIONS = [
   { value: "10", label: "10 años o más" },
 ];
 
-// ✅ OPTIMIZACIÓN 2: Función pura para filtrar (fuera del componente)
 const filterProvider = (
   provider: Provider,
   searchFilters: SearchProviderFilters,
 ): boolean => {
-  // Filtro por nombre
   if (
     searchFilters.name &&
     !provider.name.toLowerCase().includes(searchFilters.name.toLowerCase())
   ) {
     return false;
   }
-
-  // Filtro por tipo de proveedor
   if (
     searchFilters.providerType?.length > 0 &&
     !searchFilters.providerType.includes("all") &&
@@ -122,8 +117,6 @@ const filterProvider = (
   ) {
     return false;
   }
-
-  // Filtro por especialidad (solo para doctores)
   if (
     searchFilters.specialty?.length > 0 &&
     !searchFilters.specialty.includes("all") &&
@@ -137,8 +130,6 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por modalidad
   if (
     searchFilters.modality?.length > 0 &&
     !searchFilters.modality.includes("all")
@@ -151,8 +142,6 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por género (solo para doctores)
   if (
     searchFilters.gender?.length > 0 &&
     !searchFilters.gender.includes("all") &&
@@ -163,8 +152,6 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por idiomas
   if (
     searchFilters.languages?.length > 0 &&
     !searchFilters.languages.includes("all")
@@ -177,8 +164,6 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por horarios disponibles
   if (
     searchFilters.scheduledAppointments?.length > 0 &&
     !searchFilters.scheduledAppointments.includes("all")
@@ -191,13 +176,10 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por calificación
   if (searchFilters.rating !== null && searchFilters.rating !== undefined) {
     const ratingArray = Array.isArray(searchFilters.rating)
       ? searchFilters.rating
       : [String(searchFilters.rating)];
-
     if (!ratingArray.includes("all") && ratingArray.length > 0) {
       const minRating = Math.min(
         ...ratingArray
@@ -209,8 +191,6 @@ const filterProvider = (
       }
     }
   }
-
-  // Filtro por años de experiencia (solo para doctores)
   if (searchFilters.yearsOfExperience !== null && provider.type === "doctor") {
     const doctorExperience = (provider as any).yearsOfExperience;
     if (
@@ -220,8 +200,6 @@ const filterProvider = (
       return false;
     }
   }
-
-  // Filtro por seguros aceptados
   if (
     searchFilters.insuranceAccepted?.length > 0 &&
     !searchFilters.insuranceAccepted.includes("all")
@@ -234,11 +212,9 @@ const filterProvider = (
       return false;
     }
   }
-
   return true;
 };
 
-// ✅ OPTIMIZACIÓN 3: Memoizar componente de lista vacía
 const EmptyState = memo(() => {
   const { t } = useTranslation("common");
   return (
@@ -259,7 +235,6 @@ const EmptyState = memo(() => {
 });
 EmptyState.displayName = "EmptyState";
 
-// ✅ OPTIMIZACIÓN 4: Memoizar componente de card individual
 const ProviderCard = memo(
   ({
     provider,
@@ -299,7 +274,6 @@ const ProviderCard = memo(
 );
 ProviderCard.displayName = "ProviderCard";
 
-// ✅ OPTIMIZACIÓN 5: Memoizar barra de comparación
 const ComparisonBar = memo(
   ({
     selectedCount,
@@ -311,9 +285,7 @@ const ComparisonBar = memo(
     onRemove: (id: string) => void;
   }) => {
     const { t } = useTranslation("common");
-
     if (selectedCount === 0) return null;
-
     return (
       <motion.div
         initial={{ y: 100, opacity: 0 }}
@@ -345,7 +317,6 @@ const ComparisonBar = memo(
 );
 ComparisonBar.displayName = "ComparisonBar";
 
-// ✅ OPTIMIZACIÓN 6: Memoizar filtros de desktop
 const DesktopFilters = memo(
   ({
     searchFilters,
@@ -485,12 +456,8 @@ function Search() {
   const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const [showMap, setShowMap] = useState(false);
-
-  // Estados para selección
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [connectedClinics, setConnectedClinics] = useState<string[]>([]);
-
-  // Estados locales para filtros con useState
   const [searchFilters, setSearchFilters] = useState<SearchProviderFilters>({
     name: "",
     insuranceAccepted: ["all"],
@@ -503,8 +470,6 @@ function Search() {
     scheduledAppointments: ["all"],
     rating: null,
   });
-
-  // ✅ OPTIMIZACIÓN 7: Memoizar conteo de filtros activos
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     Object.entries(searchFilters).forEach(([key, value]) => {
@@ -515,8 +480,6 @@ function Search() {
     });
     return count;
   }, [searchFilters]);
-
-  // ✅ OPTIMIZACIÓN 8: useCallback para limpiar filtros
   const handleClearFilters = useCallback(() => {
     setSearchFilters({
       name: "",
@@ -531,23 +494,17 @@ function Search() {
       rating: null,
     });
   }, []);
-
-  // Función para actualizar filtros
   const updateSearchFilters = useCallback(
     (newFilters: Partial<SearchProviderFilters>) => {
       setSearchFilters((prev) => ({ ...prev, ...newFilters }));
     },
     [],
   );
-
-  // ✅ OPTIMIZACIÓN 9: Memoizar proveedores filtrados
   const filteredProviders = useMemo(() => {
     return allProviders.filter((provider) =>
       filterProvider(provider, searchFilters),
     );
   }, [searchFilters]);
-
-  // ✅ OPTIMIZACIÓN 10: useCallback para handlers
   const handleProviderSelect = useCallback((id: string) => {
     setSelectedProviders((prev) =>
       prev.includes(id)
@@ -557,21 +514,17 @@ function Search() {
           : prev,
     );
   }, []);
-
   const handleClinicConnect = useCallback((id: string) => {
     setConnectedClinics((prev) =>
       prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
     );
   }, []);
-
   const handleViewProfile = useCallback((id: string) => {
     console.log("Ver perfil de:", id);
   }, []);
-
   const handleRemoveFromComparison = useCallback((id: string) => {
     setSelectedProviders((prev) => prev.filter((pid) => pid !== id));
   }, []);
-
   const handleFilterChange = useCallback(
     (filterKey: string, values: string[]) => {
       updateSearchFilters({
@@ -580,7 +533,6 @@ function Search() {
     },
     [updateSearchFilters],
   );
-
   const handleYearsChange = useCallback(
     (value: number | null) => {
       updateSearchFilters({
@@ -589,12 +541,9 @@ function Search() {
     },
     [updateSearchFilters],
   );
-
   const toggleMapView = useCallback(() => {
     setShowMap((prev) => !prev);
   }, []);
-
-  // ✅ OPTIMIZACIÓN 11: Memoizar proveedores seleccionados
   const selectedProvidersData = useMemo(
     () =>
       allProviders.filter((provider) =>
@@ -602,10 +551,8 @@ function Search() {
       ),
     [selectedProviders],
   );
-
   return (
     <div className="min-h-screen flex flex-col bg-background rounded-4xl">
-      {/* Barra de búsqueda */}
       <motion.div
         {...fadeInUp}
         className="top-0 z-20 bg-background rounded-t-4xl"
@@ -613,8 +560,6 @@ function Search() {
         <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-12">
           <div className="flex flex-col gap-4 justify-center items-center">
             <DoctorSearchBar />
-
-            {/* Filtros - Mobile usa popover, Desktop usa grid */}
             {isMobile ? (
               <div className="flex gap-2 w-full">
                 <MCFilterPopover
@@ -649,18 +594,13 @@ function Search() {
           </div>
         </div>
       </motion.div>
-
-      {/* Contador de seleccionados */}
       <ComparisonBar
         selectedCount={selectedProviders.length}
         providers={selectedProvidersData}
         onRemove={handleRemoveFromComparison}
       />
-
-      {/* Contenido principal */}
       <main className="flex-1 p-3 sm:p-4 pb-20 sm:pb-4">
         <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-4 lg:h-[calc(100vh-200px)]">
-          {/* Lista de proveedores */}
           <motion.div
             {...fadeInUp}
             className={`space-y-3 sm:space-y-4 overflow-y-auto ${
@@ -679,7 +619,6 @@ function Search() {
                 })}
               </h2>
             </div>
-
             <div className="space-y-3 sm:space-y-4">
               {filteredProviders.length === 0 ? (
                 <EmptyState />
@@ -698,8 +637,6 @@ function Search() {
               )}
             </div>
           </motion.div>
-
-          {/* Mapa */}
           <motion.div
             {...fadeInUp}
             className={`bg-card rounded-xl border border-border h-[500px] sm:h-[600px] lg:h-full ${

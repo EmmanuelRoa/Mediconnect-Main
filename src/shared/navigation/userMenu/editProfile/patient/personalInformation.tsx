@@ -296,7 +296,7 @@ function PersonalInformation({
         <MCInput
           name="identityDocument"
           label={t("profileForm.identityDocument")}
-          type="text"
+          variant="cedula"
           placeholder={t("profileForm.identityDocumentPlaceholder")}
         />
 

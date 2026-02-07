@@ -4,6 +4,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { CenterLocationInfoSchema } from "@/schema/OnbordingSchema";
 import MapSelectLocation from "@/shared/components/maps/MapSelectLocation";
 import { useTranslation } from "react-i18next";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 
 type CenterInfoStep2Props = {
   children?: React.ReactNode;
@@ -18,11 +19,16 @@ function CenterInfoStep2({
 }: CenterInfoStep2Props) {
   const { t } = useTranslation("auth");
   const centerOnboardingData = useAppStore(
-    (state) => state.centerOnboardingData
+    (state) => state.centerOnboardingData,
+  );
+  const setOnboardingStep = useGlobalUIStore(
+    (state) => state.setOnboardingStep,
   );
   const setCenterField = useAppStore((state) => state.setCenterField);
 
   const handleSubmit = (data: any) => {
+    console.log("Step 2 submitted with data:", data);
+    setOnboardingStep?.(0);
     onValidationChange?.(true);
     onNext?.();
   };
@@ -64,11 +70,10 @@ function CenterInfoStep2({
       </div>
 
       <MCFormWrapper
-        schema={CenterLocationInfoSchema((t) => t)}
+        schema={CenterLocationInfoSchema((key: string) => t(key))}
         onSubmit={handleSubmit}
         defaultValues={centerOnboardingData}
         onValidationChange={onValidationChange}
-        key={`${centerOnboardingData?.address}-${centerOnboardingData?.province}-${centerOnboardingData?.municipality}`}
       >
         <div className="space-y-4 py-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -76,12 +81,14 @@ function CenterInfoStep2({
               name="address"
               label={t("centerInfoStep.addressLabel")}
               placeholder={t("centerInfoStep.addressPlaceholder")}
+              value={centerOnboardingData?.address}
               onChange={(e) => setCenterField?.("address", e.target.value)}
             />
             <MCInput
               name="province"
               label={t("centerInfoStep.provinceLabel")}
               placeholder={t("centerInfoStep.provincePlaceholder")}
+              value={centerOnboardingData?.province}
               onChange={(e) => setCenterField?.("province", e.target.value)}
             />
           </div>
@@ -90,6 +97,7 @@ function CenterInfoStep2({
             name="municipality"
             label={t("centerInfoStep.municipalityLabel")}
             placeholder={t("centerInfoStep.municipalityPlaceholder")}
+            value={centerOnboardingData?.municipality}
             onChange={(e) => setCenterField?.("municipality", e.target.value)}
           />
         </div>

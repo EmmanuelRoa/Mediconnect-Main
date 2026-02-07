@@ -20,18 +20,16 @@ function PersonalIdentificationStep2({
 }: PersonalIdentificationStep2Props) {
   const { t } = useTranslation("auth");
   const doctorOnboardingData = useAppStore(
-    (state) => state.doctorOnboardingData
+    (state) => state.doctorOnboardingData,
   );
   const setDoctorField = useAppStore((state) => state.setDoctorField);
-  const setOnboardingStep = useGlobalUIStore(
-    (state) => state.setOnboardingStep
-  );
+  const setCurrent = useGlobalUIStore((s) => s.setDoctorOnboardingStep);
 
   const specialtyOptions = [
     {
       value: "medicina_general",
       label: t(
-        "professionalIdentificationStep.specialtyOptions.medicina_general"
+        "professionalIdentificationStep.specialtyOptions.medicina_general",
       ),
     },
     {
@@ -57,7 +55,7 @@ function PersonalIdentificationStep2({
   ];
 
   const handleSubmit = (data: any) => {
-    setOnboardingStep(0);
+    setCurrent(0);
     onValidationChange?.(true);
     onNext?.();
   };
@@ -76,7 +74,7 @@ function PersonalIdentificationStep2({
       </div>
 
       <MCFormWrapper
-        schema={DoctorProfessionalInfoSchema((t) => t)}
+        schema={DoctorProfessionalInfoSchema((key: string) => t(key))}
         onSubmit={handleSubmit}
         defaultValues={doctorOnboardingData}
         onValidationChange={onValidationChange}
@@ -86,16 +84,13 @@ function PersonalIdentificationStep2({
             name="exequatur"
             label={t("professionalIdentificationStep.exequaturLabel")}
             placeholder={t(
-              "professionalIdentificationStep.exequaturPlaceholder"
+              "professionalIdentificationStep.exequaturPlaceholder",
             )}
             onChange={(e) => setDoctorField?.("exequatur", e.target.value)}
           />
           <MCSelect
             name="mainSpecialty"
             label={t("professionalIdentificationStep.mainSpecialtyLabel")}
-            placeholder={t(
-              "professionalIdentificationStep.selectSpecialtyPlaceholder"
-            )}
             options={specialtyOptions}
             onChange={(value) => {
               if (Array.isArray(value)) {
@@ -108,10 +103,7 @@ function PersonalIdentificationStep2({
           <MCSelect
             name="secondarySpecialties"
             label={t(
-              "professionalIdentificationStep.secondarySpecialtiesLabel"
-            )}
-            placeholder={t(
-              "professionalIdentificationStep.selectSpecialtiesPlaceholder"
+              "professionalIdentificationStep.secondarySpecialtiesLabel",
             )}
             options={specialtyOptions}
             multiple

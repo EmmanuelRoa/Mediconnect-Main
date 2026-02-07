@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { ValidateDominicanID } from "@/utils/ValidateDominicanID";
 import { ValidateDominicanRNC } from "@/utils/ValidateDominicanRNC";
-import { validatePassport } from "@/utils/validatePassport";
 
 // Schema para archivos subidos
 export const UploadedFileSchema = z.object({
   url: z.string(),
   name: z.string().optional(),
-  type: z.string(), // "image" | "pdf"
+  type: z.string(),
 });
 
 // Base schemas
@@ -19,7 +18,7 @@ export const BasePatientSchema = z.object({
   email: z.string(),
   password: z.string(),
   confirmPassword: z.string(),
-  urlImg: UploadedFileSchema.optional(), // Cambiado aquí
+  urlImg: UploadedFileSchema.optional(),
 });
 
 export const BaseDoctorSchema = z.object({
@@ -35,7 +34,7 @@ export const BaseDoctorSchema = z.object({
   secondarySpecialties: z.array(z.string()).optional(),
   phone: z.string(),
   email: z.string(),
-  urlImg: UploadedFileSchema.optional(), // Cambiado aquí
+  urlImg: UploadedFileSchema.optional(),
   identityDocumentFile: UploadedFileSchema.optional(),
   certifications: z.array(UploadedFileSchema).optional(),
   academicTitle: UploadedFileSchema.optional(),
@@ -49,9 +48,7 @@ export const BaseCenterSchema = z.object({
   website: z.string().optional(),
   address: z.string(),
   province: z.string(),
-  rnc: z.string().refine((val) => ValidateDominicanRNC(val), {
-    message: "RNC inválido",
-  }),
+  rnc: z.string(),
   municipality: z.string(),
   coordinates: z.object({
     latitude: z.number(),
@@ -60,7 +57,7 @@ export const BaseCenterSchema = z.object({
   centerType: z.string(),
   phone: z.string(),
   email: z.string().email(),
-  urlImg: UploadedFileSchema.optional(), // Cambiado aquí
+  urlImg: UploadedFileSchema.optional(),
   healthCertificateFile: UploadedFileSchema.optional(),
   password: z.string(),
   confirmPassword: z.string(),
@@ -71,9 +68,12 @@ export function PatientOnboardingSchema(t: (key: string) => string) {
   return BasePatientSchema.extend({
     name: z.string().min(1, t("validation.nameRequired")),
     lastName: z.string().min(1, t("validation.lastNameRequired")),
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
-      .min(1, t("validation.identityDocumentRequired")),
+      .min(1, t("validation.identityDocumentRequired"))
+      .refine((val) => ValidateDominicanID(val), {
+        message: t("validation.identityDocumentInvalid"),
+      }),
     email: z
       .string()
       .min(1, t("validation.emailRequired"))
@@ -99,9 +99,12 @@ export function PatientBasicInfoSchema(t: (key: string) => string) {
   }).extend({
     name: z.string().min(1, t("validation.nameRequired")),
     lastName: z.string().min(1, t("validation.lastNameRequired")),
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
-      .min(1, t("validation.identityDocumentRequired")),
+      .min(1, t("validation.identityDocumentRequired"))
+      .refine((val) => ValidateDominicanID(val), {
+        message: t("validation.identityDocumentInvalid"),
+      }),
   });
 }
 
@@ -125,7 +128,6 @@ export function CreatePasswordSchema(t: (key: string) => string) {
     });
 }
 
-// Doctor schema con validaciones
 export function DoctorOnboardingSchema(t: (key: string) => string) {
   return BaseDoctorSchema.extend({
     name: z.string().min(1, t("validation.nameRequired")),
@@ -136,16 +138,19 @@ export function DoctorOnboardingSchema(t: (key: string) => string) {
       .min(1, t("validation.birthDateRequired"))
       .regex(/^\d{4}-\d{2}-\d{2}$/, t("validation.birthDateFormat")),
     nationality: z.string().min(1, t("validation.nationalityRequired")),
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
       .min(1, t("validation.identityDocumentRequired"))
-      .refine((val) => ValidateDominicanID(val) || validatePassport(val), {
+      .refine((val) => ValidateDominicanID(val), {
         message: t("validation.identityDocumentInvalid"),
       }),
     exequatur: z.string().min(1, t("validation.exequaturRequired")),
     mainSpecialty: z.string().min(1, t("validation.mainSpecialtyRequired")),
     secondarySpecialties: z.array(z.string()).optional(),
-    phone: z.string().min(1, t("validation.phoneRequired")),
+    phone: z.coerce
+      .string()
+      .min(1, t("validation.phoneRequired"))
+      .regex(/^\d{10}$/, t("validation.phoneInvalid")),
     email: z
       .string()
       .min(1, t("validation.emailRequired"))
@@ -183,12 +188,18 @@ export function DoctorBasicInfoSchema(t: (key: string) => string) {
     birthDate: z
       .string()
       .min(1, t("validation.birthDateRequired"))
-      .regex(/^\d{4}-\d{2}-\d{2}$/, t("validation.birthDateFormat")), // formato ISO requerido
+      .regex(/^\d{4}-\d{2}-\d{2}$/, t("validation.birthDateFormat")),
     nationality: z.string().min(1, t("validation.nationalityRequired")),
-    identityDocument: z
+    identityDocument: z.coerce
       .string()
-      .min(1, t("validation.identityDocumentRequired")),
-    phone: z.string(),
+      .min(1, t("validation.identityDocumentRequired"))
+      .refine((val) => ValidateDominicanID(val), {
+        message: t("validation.identityDocumentInvalid"),
+      }),
+    phone: z.coerce
+      .string()
+      .min(1, t("validation.phoneRequired"))
+      .regex(/^\d{10}$/, t("validation.phoneInvalid")),
   });
 }
 
@@ -208,26 +219,29 @@ export function CenterOnboardingSchema(t: (key: string) => string) {
   return BaseCenterSchema.extend({
     name: z.string().min(1, t("validation.centerNameRequired")),
     Description: z.string().min(1, t("validation.descriptionRequired")),
-    website: z.string().url(t("validation.websiteInvalid")).optional(),
+    website: z
+      .string()
+      .url(t("validation.websiteInvalid"))
+      .optional()
+      .or(z.literal("")),
     address: z.string().min(1, t("validation.addressRequired")),
     province: z.string().min(1, t("validation.provinceRequired")),
     municipality: z.string().min(1, t("validation.municipalityRequired")),
-    rnc: z
+    rnc: z.coerce
       .string()
       .min(1, t("validation.rncRequired"))
       .refine((val) => ValidateDominicanRNC(val), {
         message: t("validation.rncInvalid"),
       }),
-
     coordinates: z.object({
       latitude: z.number(),
       longitude: z.number(),
     }),
     centerType: z.string().min(1, t("validation.centerTypeRequired")),
-    phone: z
+    phone: z.coerce
       .string()
       .min(1, t("validation.phoneRequired"))
-      .regex(/^\+1\s?\(\d{3}\)\s?\d{3}-\d{4}$/, t("validation.phoneInvalid")),
+      .regex(/^\d{10}$/, t("validation.phoneInvalid")),
     email: z
       .string()
       .min(1, t("validation.emailRequired"))
@@ -241,6 +255,7 @@ export function CenterOnboardingSchema(t: (key: string) => string) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: t("validation.passwordsMustMatch"),
+        path: ["confirmPassword"],
       });
     }
   });
@@ -257,17 +272,22 @@ export function CenterBasicInfoSchema(t: (key: string) => string) {
   }).extend({
     name: z.string().min(1, t("validation.centerNameRequired")),
     Description: z.string().min(1, t("validation.descriptionRequired")),
-    website: z.string().url(t("validation.websiteInvalid")).optional(),
-
-    rnc: z
+    website: z
+      .string()
+      .url(t("validation.websiteInvalid"))
+      .optional()
+      .or(z.literal("")),
+    rnc: z.coerce
       .string()
       .min(1, t("validation.rncRequired"))
       .refine((val) => ValidateDominicanRNC(val), {
         message: t("validation.rncInvalid"),
       }),
-
-    centerType: z.string().min(1, t(" validation.centerTypeRequired")),
-    phone: z.string().min(1, t("validation.phoneRequired")),
+    centerType: z.string().min(1, t("validation.centerTypeRequired")),
+    phone: z.coerce
+      .string()
+      .min(1, t("validation.phoneRequired"))
+      .regex(/^\d{10}$/, t("validation.phoneInvalid")),
   });
 }
 

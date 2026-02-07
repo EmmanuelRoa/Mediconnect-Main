@@ -237,7 +237,9 @@
     "noLanguages": "Idiomas no especificados",
     "acceptedInsurances": "Seguros aceptados",
     "schedule": "Agendar",
-    "clearFilters": "Limpiar"
+    "clearFilters": "Limpiar",
+    "profile": "Perfil",
+    "history": "Historial"
   },
   "appointment": {
     "detailsTitle": "Detalles de la Cita",
