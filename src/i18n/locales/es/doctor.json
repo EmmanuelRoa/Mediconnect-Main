@@ -35,6 +35,64 @@
     "schedule": "Calendario"
   },
 
+  "dashboard": {
+    "metrics": {
+      "totalPatients": "Total de Pacientes",
+      "totalPatientsSubtitle": "Cantidad total de pacientes atendidos este mes.",
+      "totalAppointments": "Total de Consultas",
+      "totalAppointmentsSubtitle": "Cantidad total de consultas realizadas este mes.",
+      "totalEarned": "Total Ganado",
+      "totalEarnedSubtitle": "Monto total generado durante este mes."
+    },
+    "appointmentsManagement": "Gestión de Citas",
+    "productivityAnalysis": "Análisis de productividad",
+    "mostUsedServices": "Servicios más utilizados",
+    "mostUsedServicesDescription": "Lista de los servicios más utilizados por los pacientes este mes.",
+    "filters": {
+      "week": "Semana",
+      "month": "Mes",
+      "3months": "3 Meses",
+      "year": "Año",
+      "all": "Todo"
+    }
+  },
+
+  "appointments": {
+    "table": {
+      "patient": "Paciente",
+      "status": "Estado",
+      "service": "Servicio",
+      "type": "Tipo",
+      "schedule": "Horario",
+      "contact": "Contacto",
+      "actions": "Acciones"
+    },
+    "empty": {
+      "title": "No hay citas registradas",
+      "description": "No se encontraron citas para mostrar en esta sección.",
+      "action": "Agendar nueva cita"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "in_progress": "En Progreso",
+      "completed": "Completada",
+      "scheduled": "Agendada",
+      "cancelled": "Cancelada"
+    },
+    "type": {
+      "in_person": "Presencial",
+      "virtual": "Virtual"
+    },
+    "services": {
+      "generalConsultation": "Consulta general",
+      "physicalSession": "Sesión física",
+      "followUp": "Seguimiento",
+      "rehabilitation": "Rehabilitación",
+      "bloodPressure": "Presión arterial",
+      "guidedExercises": "Ejercicios guiados"
+    }
+  },
+
   "profileForm": {
     "cropBanner": "Recortar Banner",
     "cropProfilePhoto": "Recortar Foto de Perfil",
@@ -95,7 +153,8 @@
     "radiology": "Radiología",
     "surgery": "Cirugía",
     "gynecology": "Ginecología",
-    "ophthalmology": "Oftalmología"
+    "ophthalmology": "Oftalmología",
+    "internalMedicine": "Medicina interna"
   },
 
   "languages": {

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/shared/ui/empty";
+
 const PAGE_SIZE = 10;
 
 const appointments = [
@@ -122,6 +124,7 @@ function getInitials(name: string) {
 }
 
 function DashboardTable() {
+  const { t } = useTranslation("doctor");
   const [page, setPage] = React.useState(1);
   const totalPages = Math.ceil(appointments.length / PAGE_SIZE);
   const startIndex = (page - 1) * PAGE_SIZE;
@@ -139,13 +142,13 @@ function DashboardTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Paciente</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Servicio</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Horario</TableHead>
-            <TableHead>Contacto</TableHead>
-            <TableHead>Acciones</TableHead>
+            <TableHead>{t("appointments.table.patient")}</TableHead>
+            <TableHead>{t("appointments.table.status")}</TableHead>
+            <TableHead>{t("appointments.table.service")}</TableHead>
+            <TableHead>{t("appointments.table.type")}</TableHead>
+            <TableHead>{t("appointments.table.schedule")}</TableHead>
+            <TableHead>{t("appointments.table.contact")}</TableHead>
+            <TableHead>{t("appointments.table.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -158,11 +161,11 @@ function DashboardTable() {
                       <span className="flex items-center justify-center gap-2 text-primary">
                         <CalendarX className="w-7 h-7" />
                         <EmptyTitle className="text-xl font-semibold">
-                          No hay citas registradas
+                          {t("appointments.empty.title")}
                         </EmptyTitle>
                       </span>
                       <EmptyDescription className="text-muted-foreground text-center max-w-md mx-auto">
-                        No se encontraron citas para mostrar en esta sección.
+                        {t("appointments.empty.description")}
                       </EmptyDescription>
                     </div>
                   </EmptyHeader>
@@ -175,7 +178,7 @@ function DashboardTable() {
                         className="px-6 py-2"
                         size="sm"
                       >
-                        Agendar nueva cita
+                        {t("appointments.empty.action")}
                       </Button>
                     </div>
                   </EmptyContent>
@@ -243,7 +246,9 @@ function DashboardTable() {
                         appointment={{
                           id: a.id,
                           doctorId: a.doctorId,
-                          appointmentType: a.appointmentType as "in_person" | "virtual",
+                          appointmentType: a.appointmentType as
+                            | "in_person"
+                            | "virtual",
                           status: a.status,
                         }}
                       />

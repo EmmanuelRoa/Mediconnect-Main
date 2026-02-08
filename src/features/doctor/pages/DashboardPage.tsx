@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/shared/ui/card";
 import { AppointmentsCalendar } from "@/shared/components/calendar/AppointmentsCalendar";
@@ -13,6 +13,7 @@ import AreaChart from "../components/dashboard/AreaChart";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import PieServices from "../components/dashboard/PieServices";
+
 // Data de ejemplo para servicios más utilizados
 const serviciosMasUtilizados = [
   { name: "Consulta médica", value: 35, color: "hsl(var(--chart-1))" },
@@ -23,92 +24,129 @@ const serviciosMasUtilizados = [
   { name: "Ejercicios guiados", value: 4, color: "hsl(var(--chart-6))" },
 ];
 
+type DateRangeType = "week" | "month" | "3months" | "year" | "all";
+
 function DashboardPage() {
   const isMobile = useIsMobile();
-  const { t } = useTranslation("patient");
+  const { t } = useTranslation("doctor");
+  const [dateRange, setDateRange] = useState<DateRangeType>("month");
+  const [filters, setFilters] = useState({
+    specialty: "",
+    location: "",
+    availability: "",
+    // ... otros filtros
+  });
+
+  const resetFilters = () => {
+    setFilters({
+      specialty: "",
+      location: "",
+      availability: "",
+      // ... resetear todos los filtros a sus valores iniciales
+    });
+  };
+
+  const getActiveFiltersCount = () => {
+    return Object.values(filters).filter(
+      (value) => value !== "" && value !== null && value !== undefined,
+    ).length;
+  };
 
   return (
     <motion.main {...fadeInUp} className="min-h-screen">
       <div className="flex flex-col gap-4">
-        <main className="grid grid-cols-[7fr_3fr] h-[800px] gap-4">
+        {/* Main Dashboard Section */}
+        <main className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4 h-auto lg:h-[800px]">
           <div id="cards" className="flex flex-col gap-4 h-full">
-            <div className="flex gap-4 flex-shrink-0">
+            {/* Metrics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-shrink-0">
               <MCMetricCard
-                title="Total de Pacientes"
+                title={t("dashboard.metrics.totalPatients")}
                 icon={<UsersIcon />}
                 value={412}
-                subtitle="Cantidad total de pacientes atendidos este mes."
+                subtitle={t("dashboard.metrics.totalPatientsSubtitle")}
                 percentage="12%"
                 bordered
               />
               <MCMetricCard
-                title="Total de Consultas"
+                title={t("dashboard.metrics.totalAppointments")}
                 icon={<CalendarCheckIcon />}
                 value={285}
-                subtitle="Cantidad total de consultas realizadas este mes."
+                subtitle={t("dashboard.metrics.totalAppointmentsSubtitle")}
                 percentage="8%"
                 bordered
               />
               <MCMetricCard
-                title="Total Ganado"
+                title={t("dashboard.metrics.totalEarned")}
                 icon={<DollarSignIcon />}
                 value="RD$ 87,500"
-                subtitle="Monto total generado durante este mes."
+                subtitle={t("dashboard.metrics.totalEarnedSubtitle")}
                 percentage="15%"
                 bordered
               />
             </div>
-            <Card className="rounded-2xl md:rounded-4xl flex-1 min-h-0 overflow-hidden">
+
+            {/* Appointments Table */}
+            <Card className="rounded-2xl md:rounded-4xl flex-1 min-h-[400px] lg:min-h-0 overflow-hidden">
               <MCTablesLayouts
                 isDashboard
-                title="Gestion de Citas"
+                title={t("dashboard.appointmentsManagement")}
                 tableComponent={<DashboardTable />}
               />
             </Card>
           </div>
-          <Card className="rounded-2xl md:rounded-4xl h-full overflow-hidden">
-            <AppointmentsCalendar orientation="vertical" />
+
+          {/* Calendar */}
+          <Card className="rounded-2xl md:rounded-4xl h-[500px] lg:h-full overflow-hidden">
+            <AppointmentsCalendar
+              orientation={isMobile ? "horizontal" : "vertical"}
+            />
           </Card>
         </main>
-        <section className="grid grid-cols-[7fr_3fr] gap-4">
+
+        {/* Analytics Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4">
+          {/* Productivity Chart */}
           <Card className="rounded-2xl md:rounded-4xl min-h-0 overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4 px-4">
-              <h2 className="text-2xl font-semibold">
-                Análisis de productividad
+              <h2 className="text-xl sm:text-2xl font-semibold">
+                {t("dashboard.productivityAnalysis")}
               </h2>
-              <div>
+              <div className="w-full sm:w-auto">
                 <MCFilterPopover
-                  activeFiltersCount={0}
-                  onClearFilters={() => {}}
+                  activeFiltersCount={getActiveFiltersCount()}
+                  onClearFilters={resetFilters}
                   compact
                 >
                   <MCFilterSelect
                     name="dateRange"
                     options={[
-                      { label: "Semana", value: "week" },
-                      { label: "Mes", value: "month" },
-                      { label: "3 Meses", value: "3months" },
-                      { label: "Año", value: "year" },
-                      { label: "Todo", value: "all" },
+                      { label: t("dashboard.filters.week"), value: "week" },
+                      { label: t("dashboard.filters.month"), value: "month" },
+                      {
+                        label: t("dashboard.filters.3months"),
+                        value: "3months",
+                      },
+                      { label: t("dashboard.filters.year"), value: "year" },
+                      { label: t("dashboard.filters.all"), value: "all" },
                     ]}
-                    value="month"
-                    onChange={() => {
-                      /* lógica para cambiar filtro */
-                      4;
-                    }}
+                    value={dateRange}
+                    onChange={(value) => setDateRange(value as DateRangeType)}
                   />
                 </MCFilterPopover>
               </div>
             </div>
-            <div className="h-[325px] w-full bg-red">
-              <AreaChart />
+            <div className="h-[250px] sm:h-[325px] w-full">
+              <AreaChart dateRange={dateRange} />
             </div>
           </Card>
-          <Card className="rounded-2xl md:rounded-4xl min-h-0 h-full overflow-hidden flex">
+
+          {/* Services Pie Chart */}
+          <Card className="rounded-2xl md:rounded-4xl min-h-0 h-[400px] lg:h-full overflow-hidden flex">
             <PieServices
               data={serviciosMasUtilizados}
-              title="Servicios más utilizados"
-              description="Lista de los servicios más utilizados por los pacientes este mes."
+              title={t("dashboard.mostUsedServices")}
+              description={t("dashboard.mostUsedServicesDescription")}
             />
           </Card>
         </section>

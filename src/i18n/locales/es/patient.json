@@ -342,6 +342,11 @@
     "scheduleNew": "Agendar Nueva Cita",
     "pdfTitle": "Mis Citas",
     "pdfSubtitle": "Lista completa de citas médicas",
+    "accept": "Aceptar",
+    "viewAppointment": "Ver cita",
+    "joinTeleconsult": "Unirse a teleconsulta",
+    "markCompleted": "Marcar como completada",
+    "continueConsultation": "Continuar consulta",
     "pdfColumns": {
       "doctor": "Doctor",
       "specialty": "Especialidad",

@@ -35,6 +35,64 @@
     "schedule": "Schedule"
   },
 
+  "dashboard": {
+    "metrics": {
+      "totalPatients": "Total Patients",
+      "totalPatientsSubtitle": "Total number of patients attended this month.",
+      "totalAppointments": "Total Appointments",
+      "totalAppointmentsSubtitle": "Total number of appointments made this month.",
+      "totalEarned": "Total Earned",
+      "totalEarnedSubtitle": "Total amount generated during this month."
+    },
+    "appointmentsManagement": "Appointments Management",
+    "productivityAnalysis": "Productivity Analysis",
+    "mostUsedServices": "Most Used Services",
+    "mostUsedServicesDescription": "List of the most used services by patients this month.",
+    "filters": {
+      "week": "Week",
+      "month": "Month",
+      "3months": "3 Months",
+      "year": "Year",
+      "all": "All"
+    }
+  },
+
+  "appointments": {
+    "table": {
+      "patient": "Patient",
+      "status": "Status",
+      "service": "Service",
+      "type": "Type",
+      "schedule": "Schedule",
+      "contact": "Contact",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No appointments registered",
+      "description": "No appointments were found to display in this section.",
+      "action": "Schedule new appointment"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled"
+    },
+    "type": {
+      "in_person": "In-person",
+      "virtual": "Virtual"
+    },
+    "services": {
+      "generalConsultation": "General consultation",
+      "physicalSession": "Physical session",
+      "followUp": "Follow-up",
+      "rehabilitation": "Rehabilitation",
+      "bloodPressure": "Blood pressure",
+      "guidedExercises": "Guided exercises"
+    }
+  },
+
   "profileForm": {
     "cropBanner": "Crop Banner",
     "cropProfilePhoto": "Crop Profile Photo",
@@ -95,7 +153,8 @@
     "radiology": "Radiology",
     "surgery": "Surgery",
     "gynecology": "Gynecology",
-    "ophthalmology": "Ophthalmology"
+    "ophthalmology": "Ophthalmology",
+    "internalMedicine": "Internal Medicine"
   },
 
   "languages": {

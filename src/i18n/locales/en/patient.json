@@ -114,7 +114,12 @@
     "appointmentsCount_plural": "{{count}} appointments",
     "emptyTitle": "No appointments scheduled",
     "emptyDescription": "You have no appointments for this day. Select another date or schedule a new appointment.",
-    "join": "Join"
+    "join": "Join",
+    "accept": "Accept",
+    "viewAppointment": "View appointment",
+    "joinTeleconsult": "Join teleconsult",
+    "markCompleted": "Mark as completed",
+    "continueConsultation": "Continue consultation"
   },
   "dashboard": {
     "searchTitle": "Search for doctors, specialties or nearby clinics"
