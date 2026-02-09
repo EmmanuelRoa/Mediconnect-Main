@@ -1,5 +1,6 @@
 import { z } from "zod";
-
+import { ValidateDominicanID } from "@/utils/ValidateDominicanID";
+import { ValidateDominicanRNC } from "@/utils/ValidateDominicanRNC";
 // Enum de estatus de verificación
 export const verificationStatusEnum = z.enum([
   "PENDING",
@@ -41,7 +42,10 @@ export function doctorPersonalInfoSchema(t: (key: string) => string) {
       .min(1, { message: t("validation.nationalityRequired") }),
     identificationNumber: z
       .string()
-      .min(1, { message: t("validation.identificationNumberRequired") }),
+      .min(1, { message: t("validation.identificationNumberRequired") })
+      .refine((val) => ValidateDominicanID(val), {
+        message: t("validation.identificationNumberInvalid"),
+      }),
     phone: z.string().min(1, { message: t("validation.phoneRequired") }),
     address: z.string().min(1, { message: t("validation.addressRequired") }),
     primarySpecialty: z
@@ -92,7 +96,12 @@ export function centerPersonalInfoSchema(t: (key: string) => string) {
     municipality: z
       .string()
       .min(1, { message: t("validation.municipalityRequired") }),
-    rnc: z.string().min(1, { message: t("validation.rncRequired") }),
+    rnc: z
+      .string()
+      .min(1, { message: t("validation.rncRequired") })
+      .refine((val) => ValidateDominicanRNC(val), {
+        message: t("validation.rncInvalid"),
+      }),
     centerType: z
       .string()
       .min(1, { message: t("validation.centerTypeRequired") }),

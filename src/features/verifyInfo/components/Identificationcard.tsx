@@ -47,7 +47,7 @@ function IdentificationCard({
     <Card className="rounded-2xl md:rounded-4xl h-fit">
       <CardContent className="p-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 mb-2">
             <h2 className="text-xl font-semibold">
               {isDoctor ? "Identificación Personal" : "Información del Centro"}
             </h2>
