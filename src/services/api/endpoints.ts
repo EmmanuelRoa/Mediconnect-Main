@@ -14,6 +14,9 @@ export const API_ENDPOINTS = {
     
     // Recuperación de contraseña
     FORGOT_PASSWORD: '/auth/forgot-password',
+    PASSWORD_SOLICITAR_CODIGO: '/auth/password/solicitar-codigo',
+    PASSWORD_VALIDAR_CODIGO: '/auth/password/validar-codigo',
+    PASSWORD_CAMBIAR: '/auth/password/cambiar',
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth/verify-email',
   },

@@ -9,8 +9,14 @@ import type {
   SolicitarCodigoResponse,
   ValidarCodigoRequest,
   ValidarCodigoResponse,
+  ValidarCodigoPasswordRequest,
+  ValidarCodigoPasswordResponse,
+  CambiarPasswordRequest,
+  CambiarPasswordResponse,
   RefreshTokenRequest,
   RefreshTokenResponse,
+  SolicitarCodigoPasswordResponse,
+  SolicitarCodigoPasswordRequest,
 } from './auth.types';
 
 
@@ -57,6 +63,21 @@ export const authService = {
     return data;
   },
 
+
+  /**
+   * Solicitar código OTP para recuperación de contraseña
+   * POST /auth/password/solicitar-codigo
+   */
+  solicitarCodigoPassword: async (
+    request: SolicitarCodigoPasswordRequest
+  ): Promise<SolicitarCodigoPasswordResponse> => {
+    const { data } = await apiClient.post<SolicitarCodigoPasswordResponse>(
+      API_ENDPOINTS.AUTH.PASSWORD_SOLICITAR_CODIGO,
+      request
+    );
+    return data;
+  },
+
   /**
    * Validar código OTP y obtener token de registro
    * POST /auth/registro/validar-codigo
@@ -67,6 +88,41 @@ export const authService = {
     const { data } = await apiClient.post<ValidarCodigoResponse>(
       API_ENDPOINTS.AUTH.REGISTRO_VALIDAR_CODIGO,
       request
+    );
+    return data;
+  },
+
+  /**
+   * Validar código OTP para recuperación de contraseña
+   * POST /auth/password/validar-codigo
+   */
+  validarCodigoPassword: async (
+    request: ValidarCodigoPasswordRequest
+  ): Promise<ValidarCodigoPasswordResponse> => {
+    const { data } = await apiClient.post<ValidarCodigoPasswordResponse>(
+      API_ENDPOINTS.AUTH.PASSWORD_VALIDAR_CODIGO,
+      request
+    );
+    return data;
+  },
+
+  /**
+   * Cambiar contraseña con token de recuperación
+   * POST /auth/password/cambiar
+   * Requiere header X-Recovery-Token
+   */
+  cambiarPassword: async (
+    request: CambiarPasswordRequest,
+    recoveryToken: string
+  ): Promise<CambiarPasswordResponse> => {
+    const { data } = await apiClient.post<CambiarPasswordResponse>(
+      API_ENDPOINTS.AUTH.PASSWORD_CAMBIAR,
+      request,
+      {
+        headers: {
+          'X-Recovery-Token': recoveryToken,
+        },
+      }
     );
     return data;
   },

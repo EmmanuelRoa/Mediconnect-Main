@@ -3,8 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useGoogleLogin } from "@/lib/hooks/auth";
 import { useState } from 'react';
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { Loader2 } from "lucide-react";
 
-function OAuthProvider() {
+interface OAuthProviderProps {
+  onAuthStateChange?: (isAuthenticating: boolean) => void;
+}
+
+function OAuthProvider({ onAuthStateChange }: OAuthProviderProps) {
   const { t } = useTranslation("auth");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const setToast = useGlobalUIStore((state) => state.setToast);
@@ -23,6 +28,7 @@ function OAuthProvider() {
 
   const handleCustomButtonClick = () => {
     setIsAuthenticating(true);
+    onAuthStateChange?.(true);
     
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/google/callback.html`;
@@ -34,6 +40,7 @@ function OAuthProvider() {
         open: true,
       });
       setIsAuthenticating(false);
+      onAuthStateChange?.(false);
       return;
     }
     
@@ -64,6 +71,7 @@ function OAuthProvider() {
         open: true,
       });
       setIsAuthenticating(false);
+      onAuthStateChange?.(false);
       return;
     }
 
@@ -74,21 +82,20 @@ function OAuthProvider() {
     // Función de limpieza
     const cleanup = () => {
       setIsAuthenticating(false);
+      onAuthStateChange?.(false);
       window.removeEventListener('message', handleMessage);
       if (checkPopupInterval) clearInterval(checkPopupInterval);
       if (authTimeout) clearTimeout(authTimeout);
     };
-    const handleMessage = (event: MessageEvent) => {
-      console.log('📨 Mensaje recibido:', event.data);
-      
+    const handleMessage = (event: MessageEvent) => {      
       if (event.origin !== window.location.origin) {
         console.warn('⚠️ Mensaje de origen no confiable:', event.origin);
         return;
       }
       
       if (event.data.type === 'GOOGLE_AUTH_SUCCESS' && event.data.idToken) {
-        console.log('✅ Datos recibido del popup', event.data);
         messageReceived = true;
+
         loginWithGoogle(event.data.idToken);
         
         // Intentar cerrar el popup
@@ -164,16 +171,27 @@ function OAuthProvider() {
                      transition-opacity duration-300 ease-in-out gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleCustomButtonClick}
         >
-          <img
-            src={bubble.src}
-            alt={bubble.alt}
-            className="pointer-events-none"
-            width={20}
-            height={20}
-          />
-          <span className="ml-2 text-[var(--theme-text)] text-lg font-medium">
-            {isPending || isAuthenticating ? 'Iniciando sesión...' : bubble.text}
-          </span>
+          {isPending || isAuthenticating ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin text-[var(--theme-text)]" />
+              <span className="ml-2 text-[var(--theme-text)] text-lg font-medium">
+                {t("login.authenticating", "Iniciando sesión...")}
+              </span>
+            </>
+          ) : (
+            <>
+              <img
+                src={bubble.src}
+                alt={bubble.alt}
+                className="pointer-events-none"
+                width={20}
+                height={20}
+              />
+              <span className="ml-2 text-[var(--theme-text)] text-lg font-medium">
+                {bubble.text}
+              </span>
+            </>
+          )}
         </button>
       ))}
     </div>

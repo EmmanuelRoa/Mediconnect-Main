@@ -5,7 +5,9 @@ import { authService } from '@/services/auth/auth.service';
 import {
   type GoogleLoginRequest,
   type GoogleLoginResponse,
-  normalizeGoogleLoginResponse
+  normalizeGoogleLoginResponse,
+  isGoogleLoginSuccess,
+  isGoogleRegistration
 } from '@/services/auth/auth.types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
@@ -22,24 +24,54 @@ export const useGoogleLogin = (): UseGoogleLoginReturn => {
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
   const login = useAppStore((state) => state.login);
+  const setRegistrationToken = useAppStore((state) => state.setRegistrationToken);
+  const setGoogleUserData = useAppStore((state) => state.setGoogleUserData);
   const setToast = useGlobalUIStore((state) => state.setToast);
 
   const mutation = useMutation<GoogleLoginResponse, AxiosError<ApiErrorResponse>, GoogleLoginRequest>({
     mutationFn: authService.googleLogin,
     
     onSuccess: (data) => {      
-      // Normalizar la respuesta y guardar en el store
-      const { accessToken, refreshToken, user } = normalizeGoogleLoginResponse(data);
-      login(accessToken, refreshToken, user as any);
+      // Verificar si es un login exitoso o requiere registro
+      if (isGoogleLoginSuccess(data)) {
 
-      // Mostrar mensaje de éxito
-      setToast({
-        message: t('errors.loginSuccess'),
-        type: 'success',
-        open: true,
-      });
-      
-      redirectByRole(user.rol, navigate);
+        // Usuario ya registrado - hacer login normal
+        const { accessToken, refreshToken, user } = normalizeGoogleLoginResponse(data);
+        login(accessToken, refreshToken, user as any);
+
+        // Mostrar mensaje de éxito
+        setToast({
+          message: t('login.welcome'),
+          type: 'success',
+          open: true,
+        });
+        
+        redirectByRole(user.rol, navigate);
+      } else if (isGoogleRegistration(data)) {
+        // Usuario nuevo - requiere completar registro
+        console.log('📝 Usuario nuevo, redirigiendo a selección de tipo de usuario...');
+        
+        // Guardar el token de registro
+        setRegistrationToken(data.registroToken);
+        
+        // Guardar los datos del usuario de Google
+        setGoogleUserData({
+          email: data.email,
+          nombre: data.nombre,
+          apellido: data.apellido,
+          foto: data.foto,
+        });
+        
+        // Mostrar mensaje informativo
+        setToast({
+          message: t('auth.completeRegistration') || data.message || 'Por favor completa tu registro',
+          type: 'info',
+          open: true,
+        });
+        
+        // Redirigir a la página de selección de rol
+        navigate(ROUTES.REGISTER);
+      }
     },
     
     onError: (error) => {
@@ -60,7 +92,6 @@ export const useGoogleLogin = (): UseGoogleLoginReturn => {
   return {
     ...mutation,
     loginWithGoogle: (idToken: string) => {
-      console.log('🔐 Iniciando login con Google, enviando idToken al backend...');
       mutation.mutate({ idToken });
     },
   };

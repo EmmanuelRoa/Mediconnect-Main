@@ -9,7 +9,7 @@ import MCProfileImageUploader from "@/shared/components/MCProfileImageUploader";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import patientRegistrationService from "@/features/onboarding/services/patient-registration.service";
-import { base64ToBlob, getMimeTypeFromBase64 } from "@/utils/base64ToFile";
+import { base64ToFile, getMimeTypeFromBase64 } from "@/utils/base64ToFile";
 import { toast } from "sonner";
 const DEFAULT_PROFILE_IMAGE =
   "https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg";
@@ -129,14 +129,46 @@ function PatientProfilePhotoPage() {
       // Agregar foto de perfil si existe y no es la imagen por defecto
       if (profile && profile !== DEFAULT_PROFILE_IMAGE) {
         try {
+          console.log("📸 Procesando foto de perfil...");
+          console.log("Profile string length:", profile.length);
+          console.log("Profile starts with:", profile.substring(0, 50));
+          
           const mimeType = getMimeTypeFromBase64(profile);
-          const photoBlob = base64ToBlob(profile, mimeType);
-          requestData.fotoPerfil = photoBlob;
+          console.log("📸 MIME type detectado:", mimeType);
+          
+          // Convertir base64 a File (mejor que Blob para FormData)
+          const photoFile = base64ToFile(profile, "profile-photo.jpg", mimeType);
+          console.log("📸 File creado:", {
+            name: photoFile.name,
+            size: photoFile.size,
+            type: photoFile.type
+          });
+          
+          requestData.fotoPerfil = photoFile;
+          console.log("✅ Foto de perfil agregada al request");
         } catch (err) {
-          console.warn("Error al procesar la foto de perfil:", err);
+          console.error("❌ Error al procesar la foto de perfil:", err);
+          toast.error(t("profilePhotoPage.errors.photoProcessing") || "Error al procesar la foto");
           // Continuar sin la foto si hay error
         }
+      } else {
+        console.log("ℹ️ No se agregará foto de perfil (usando imagen por defecto o no seleccionada)");
       }
+
+      // Log final de los datos del request
+      console.log("📤 Datos del request preparados:", {
+        token: requestData.token ? `${requestData.token.substring(0, 20)}...` : "NO TOKEN",
+        nombre: requestData.nombre,
+        apellido: requestData.apellido,
+        numero_documento: requestData.numero_documento,
+        tipo_documento: requestData.tipo_documento,
+        genero: requestData.genero,
+        fotoPerfil: requestData.fotoPerfil ? {
+          name: requestData.fotoPerfil.name,
+          size: requestData.fotoPerfil.size,
+          type: requestData.fotoPerfil.type
+        } : "NO PHOTO"
+      });
 
       // Llamar al servicio de registro
       const response = await patientRegistrationService.registerPatient(requestData);

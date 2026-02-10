@@ -24,6 +24,7 @@ import {
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import { useTranslation } from "react-i18next";
+import { getUserAvatar, getUserFullName } from "@/services/auth/auth.types";
 
 interface Props {
   user: any;
@@ -46,7 +47,7 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
         ) : (
           <MCUserBanner
             className="absolute top-0 left-0 w-full h-full rounded-t-4xl"
-            name={user?.name || "IliaTopuria"}
+            name={getUserFullName(user) || "IliaTopuria"}
           />
         )}
         <div
@@ -54,23 +55,23 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
           style={{ zIndex: 2 }}
         >
           <div className="flex items-center w-[95%]">
-            {user?.avatar ? (
+            {getUserAvatar(user) ? (
               <UiAvatar className="w-40 h-40 rounded-full border-4 border-background">
                 <AvatarImage
-                  src={user.avatar}
+                  src={getUserAvatar(user)}
                   alt={t("profileForm.profilePhoto")}
                 />
                 <AvatarFallback>
-                  {user.name
+                  {getUserFullName(user)
                     .split(" ")
-                    .map((n: any[]) => n[0])
+                    .map((n: string) => n[0])
                     .join("")
                     .toUpperCase()}
                 </AvatarFallback>
               </UiAvatar>
             ) : (
               <MCUserAvatar
-                name={user?.name || "IliaTopuria"}
+                name={getUserFullName(user) || "IliaTopuria"}
                 size={180}
                 className="border-5 border-background rounded-full h-full"
               />
@@ -79,7 +80,7 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
             <div className="mt-25 w-full flex justify-between items-center px-6">
               <div className="flex flex-col">
                 <h3 className="text-primary font-semibold text-2xl flex items-center gap-2">
-                  {user?.name || "Ilia Topuria"}
+                  {getUserFullName(user) || "Ilia Topuria"}
                   <BadgeCheck
                     className="w-6 h-6 text-background"
                     fill="#8bb1ca"

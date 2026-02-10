@@ -26,7 +26,7 @@ function ForgotPasswordPage() {
     try {
       // Llamar a la API para solicitar código OTP
       // Si el email no existe, el backend devolverá un error
-      const response = await authService.solicitarCodigoRegistro({
+      const response = await authService.solicitarCodigoPassword({
         email: data.email,
       });
 
@@ -47,7 +47,7 @@ function ForgotPasswordPage() {
 
       const errorMessage = error.response?.data?.message || t("forgotPassword.errors.sendingEmail") || "Error al enviar el correo de restablecimiento de contraseña. Por favor, inténtalo de nuevo.";
 
-      if (error.response?.data?.code === "EMAIL_NOT_FOUND") {
+      if (error.response?.data?.message.includes("No existe un usuario registrado con este correo")) {
         toast.error(t("forgotPassword.errors.emailNotFound") || "Correo no encontrado. Por favor, verifica e inténtalo de nuevo.");
         return;
       }

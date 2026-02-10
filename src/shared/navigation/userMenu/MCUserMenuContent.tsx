@@ -18,6 +18,7 @@ import {
 import { Button } from "@/shared/ui/button";
 
 import { MCUserAvatar } from "./MCUserAvatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
   User,
   Pencil,
@@ -45,6 +46,7 @@ const isMac =
 const cmdOrCtrl = isMac ? "⌘" : "Ctrl";
 
 interface UserData {
+  userId: number;
   name: string;
   email: string;
   avatar: string;
@@ -330,11 +332,29 @@ export function MCUserMenuContent({
             isMobile ? "px-3 py-3" : "px-4 py-3",
           )}
         >
-          <MCUserAvatar
-            name={userData.name}
-            size={isMobile ? 40 : 52}
-            square={false}
-          />
+          {userData.avatar ? (
+            <Avatar className={cn(
+              "rounded-full shadow-lg transition-all",
+              isMobile ? "h-10 w-10" : "h-13 w-13"
+            )}>
+              <AvatarImage
+                src={userData.avatar}
+                alt={userData.name}
+                className="object-cover"
+              />
+              <AvatarFallback className={cn(
+                isMobile ? "text-base" : "text-lg"
+              )}>
+                {userData.initials}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <MCUserAvatar
+              name={userData.name + userData.userId}
+              size={isMobile ? 40 : 52}
+              square={false}
+            />
+          )}
           <div className="flex flex-col items-start leading-tight text-left min-w-0 flex-1">
             <span
               className={cn(

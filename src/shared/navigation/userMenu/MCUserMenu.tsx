@@ -8,7 +8,7 @@ import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProf
 import MCUserMenuTrigger from "./MCUserMenuTrigger";
 import MCUserMenuContent from "./MCUserMenuContent";
 import { DropdownMenu } from "@/shared/animate-ui/components/radix/dropdown-menu";
-import { getUserFullName, getUserInitials } from "@/services/auth/auth.types";
+import { getUserFullName, getUserInitials, getUserAvatar } from "@/services/auth/auth.types";
 
 export function MCUserMenu() {
   // Estados locales
@@ -29,37 +29,43 @@ export function MCUserMenu() {
   const themeButtonRef = useRef<HTMLDivElement>(null);
 
   const getUserData = () => {
+    const avatar = getUserAvatar(user) || "";
+    
     switch (user?.rol) {
       case "PATIENT":
         return {
+          userId: user.id,
           name: getUserFullName(user),
           email: user.email,
           initials: getUserInitials(user),
           roleLabel: t("userMenu.patient"),
-          avatar: "",
+          avatar,
         };
       case "DOCTOR":
         return {
+          userId: user.id,
           name: getUserFullName(user),
           email: user.email,
-          avatar: "",
+          avatar,
           initials: getUserInitials(user),
           roleLabel: t("userMenu.doctor"),
         };
       case "CENTER":
         return {
-          name: "Hospital Dario Contreras",
-          email: "HospDarioCont@gmail.com",
-          avatar: "",
-          initials: "HC",
+          userId: user.id,
+          name: getUserFullName(user),
+          email: user.email,
+          avatar,
+          initials: getUserInitials(user),
           roleLabel: t("userMenu.center"),
         };
       default:
         return {
-          name: "José Almirante",
-          email: "emmanuel03250310@gmail.com",
-          avatar: "",
-          initials: "JA",
+          userId: user?.id || 0,
+          name: getUserFullName(user),
+          email: user?.email || "admin@example.com",
+          avatar,
+          initials: getUserInitials(user),
           roleLabel: t("userMenu.admin"),
         };
     }

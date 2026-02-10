@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Ellipsis,
   History,
@@ -25,6 +24,7 @@ import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useTranslation } from "react-i18next";
+import { getUserAvatar, getUserFullName } from "@/services/auth/auth.types";
 
 interface Props {
   user: any;
@@ -46,19 +46,19 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
           />
         ) : (
           <MCUserBanner
-            name={user?.name || "IliaTopuria"}
+            name={getUserFullName(user) || "IliaTopuria"}
             className="w-full h-full"
           />
         )}
 
         {/* Avatar */}
         <div className="absolute -bottom-14 left-4">
-          {user?.avatar ? (
+          {getUserAvatar(user) ? (
             <UiAvatar className="w-28 h-28 border-4 border-background">
-              <AvatarImage src={user.avatar} />
+              <AvatarImage src={getUserAvatar(user)} />
               <AvatarFallback>
-                {user?.name
-                  ?.split(" ")
+                {getUserFullName(user)
+                  .split(" ")
                   .map((n: string) => n[0])
                   .join("")
                   .toUpperCase()}
@@ -66,7 +66,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
             </UiAvatar>
           ) : (
             <MCUserAvatar
-              name={user?.name || "IliaTopuria"}
+              name={getUserFullName(user) || "IliaTopuria"}
               size={112}
               className="border-4 border-background rounded-full h-full w-full"
             />
@@ -80,7 +80,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
           <div>
             <div className="flex items-center gap-1">
               <h3 className="text-lg font-semibold text-foreground">
-                {user?.name || "Ilia Topuria"}
+                {getUserFullName(user) || "Ilia Topuria"}
               </h3>
               <BadgeCheck className="w-4 h-4 text-background" fill="#8bb1ca" />
             </div>

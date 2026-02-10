@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import LogoImg from "@/assets/MediConnectLanding-green.png";
 import LogoImgdDark from "@/assets/MediConnectLanding.png";
 import MCUserMenu from "./userMenu/MCUserMenu";

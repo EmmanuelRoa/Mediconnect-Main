@@ -23,6 +23,7 @@ export interface User {
   id: number;
   email: string;
   rol: ApiUserRole | string;
+  fotoPerfil?: string | null;
   paciente: Paciente | null;
   doctor: Doctor | null;
   centroSalud: CentroSalud | null;
@@ -84,12 +85,30 @@ export interface GoogleLoginRequest {
   idToken: string;
 }
 
-export interface GoogleLoginResponse {
-  success: boolean;
+// Respuesta cuando el usuario ya está registrado (login)
+export interface GoogleLoginSuccessResponse {
+  success: true;
+  estado: 'login';
   accessToken: string;
   refreshToken: string;
-  user: User;
+  user?: User;
+  usuario?: User; // El backend puede devolver 'usuario' en lugar de 'user'
 }
+
+// Respuesta cuando el usuario necesita completar registro
+export interface GoogleRegistrationResponse {
+  success: true;
+  estado: 'registro';
+  message: string;
+  registroToken: string;
+  email?: string;
+  nombre?: string;
+  apellido?: string;
+  foto?: string;
+}
+
+// Unión de ambas respuestas posibles
+export type GoogleLoginResponse = GoogleLoginSuccessResponse | GoogleRegistrationResponse;
 
 // --- SOLICITAR CÓDIGO OTP ---
 export interface SolicitarCodigoRequest {
@@ -100,6 +119,17 @@ export interface SolicitarCodigoResponse {
   success: boolean;
   message: string;
 }
+
+// --- SOLICITAR CÓDIGO OTP PARA RECUPERACIÓN DE CONTRASEÑA ---
+export interface SolicitarCodigoPasswordRequest {
+  email: string;
+}
+
+export interface SolicitarCodigoPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 
 // --- VALIDAR CÓDIGO OTP ---
 export interface ValidarCodigoRequest {
@@ -113,6 +143,31 @@ export interface ValidarCodigoResponse {
   data: {
     token: string;
   };
+}
+
+// --- VALIDAR CÓDIGO RECUPERACIÓN DE CONTRASEÑA ---
+export interface ValidarCodigoPasswordRequest {
+  email: string;
+  codigo: string;
+}
+
+export interface ValidarCodigoPasswordResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+  };
+}
+
+// --- CAMBIAR CONTRASEÑA ---
+export interface CambiarPasswordRequest {
+  nuevaPassword: string;
+  confirmarPassword: string;
+}
+
+export interface CambiarPasswordResponse {
+  success: boolean;
+  message: string;
 }
 
 // --- USUARIO NORMALIZADO (para el store) ---
@@ -134,12 +189,14 @@ export function normalizeLoginResponse(response: LoginResponse): {
   refreshToken: string;
   user: User;
 } {
+  console.log('🔄 Normalizando respuesta de login...', response);
   return {
     accessToken: response.accessToken,
     refreshToken: response.refreshToken,
     user: {
       id: response.usuario.id,
       email: response.usuario.email,
+      fotoPerfil: getUserAvatar(response.usuario) || undefined,
       rol: getUserAppRole(response.usuario) || response.usuario.rol,
       paciente: response.usuario.paciente || null,
       doctor: response.usuario.doctor || null,
@@ -149,24 +206,47 @@ export function normalizeLoginResponse(response: LoginResponse): {
 }
 
 /**
- * Transforma la respuesta del login con Google retornando un objeto User completo
+ * Type guard para verificar si la respuesta de Google es un login exitoso
  */
-export function normalizeGoogleLoginResponse(response: GoogleLoginResponse): {
+export function isGoogleLoginSuccess(response: GoogleLoginResponse): response is GoogleLoginSuccessResponse {
+  return response.estado === 'login';
+}
+
+/**
+ * Type guard para verificar si la respuesta de Google requiere registro
+ */
+export function isGoogleRegistration(response: GoogleLoginResponse): response is GoogleRegistrationResponse {
+  return response.estado === 'registro';
+}
+
+/**
+ * Transforma la respuesta del login con Google retornando un objeto User completo
+ * Solo funciona con respuestas de tipo login exitoso
+ */
+export function normalizeGoogleLoginResponse(response: GoogleLoginSuccessResponse): {
   accessToken: string;
   refreshToken: string;
   user: User;
 } {
-  // Google login retorna una estructura simplificada, construir el User completo
+  // El backend puede devolver 'usuario' o 'user', manejamos ambos casos
+  const userData = response.user || response.usuario;
+  
+  if (!userData) {
+    console.error('❌ No se encontró información del usuario en la respuesta:', response);
+    throw new Error('Respuesta de Google inválida: falta información del usuario');
+  }
+  
   return {
     accessToken: response.accessToken,
     refreshToken: response.refreshToken,
     user: {
-      id: response.user.id,
-      email: response.user.email,
-      rol: getUserAppRole(response.user) || response.user.rol,
-      paciente: response.user.paciente || null,
-      doctor: response.user.doctor || null,
-      centroSalud: response.user.centroSalud || null,
+      id: userData.id,
+      email: userData.email,
+      fotoPerfil: getUserAvatar(userData) || undefined,
+      rol: getUserAppRole(userData) || userData.rol,
+      paciente: userData.paciente || null,
+      doctor: userData.doctor || null,
+      centroSalud: userData.centroSalud || null,
     },
   };
 }
@@ -244,17 +324,30 @@ export function getUserAppRole(user: User | null): AppUserRole | null {
 
 /**
  * Obtiene el avatar del usuario según su rol
+ * Busca primero en user.fotoPerfil (para usuarios de Google u otros con foto directa)
+ * Luego busca en el objeto específico del rol (doctor, paciente, centroSalud)
  */
 export function getUserAvatar(user: User | null): string | undefined {
   if (!user) return undefined;
   
-  if (user.doctor?.fotoPerfil) {
-    return user.doctor.fotoPerfil;
-  } else if (user.paciente?.fotoPerfil) {
-    return user.paciente.fotoPerfil;
-  } else if (user.centroSalud?.logo) {
-    return user.centroSalud.logo;
+  // Primero verificar si hay foto de perfil directa en el usuario
+  if (user.fotoPerfil) {
+    return user.fotoPerfil;
   }
   
+  // Luego buscar en el objeto específico del rol
+  if (user.doctor?.fotoPerfil) {
+    return user.doctor.fotoPerfil;
+  }
+  
+  if (user.paciente?.fotoPerfil) {
+    return user.paciente.fotoPerfil;
+  }
+  
+  if (user.centroSalud?.fotoPerfil) {
+    return user.centroSalud.fotoPerfil;
+  }
+  
+  // Si no hay foto de perfil, retornar undefined para que se muestre el avatar generado
   return undefined;
 }

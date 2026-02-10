@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import LoginAsideImg from "@/assets/LoginAside.png";
@@ -30,6 +30,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const setLanguage = useGlobalUIStore((state) => state.setLanguage);
   const currentLanguage = useGlobalUIStore((state) => state.language);
+  const [isGoogleAuthenticating, setIsGoogleAuthenticating] = useState(false);
 
   const { loginUser, isPending } = useLogin();
 
@@ -168,7 +169,7 @@ function LoginPage() {
                   {t("login.forgot", "Forgot your password?")}
                 </button>
               </div>
-              <MCButton type="submit" className="w-full" variant="primary" disabled={isPending}>
+              <MCButton type="submit" className="w-full" variant="primary" disabled={isPending || isGoogleAuthenticating}>
                 {isPending ? t("errors.loading", "Loading...") : t("login.submit", "Sign In")}
               </MCButton>
 
@@ -178,7 +179,7 @@ function LoginPage() {
                 <hr className="flex-grow border-t border-gray-300" />
               </div>
 
-              <OAuthProvider />
+              <OAuthProvider onAuthStateChange={setIsGoogleAuthenticating} />
             </MCFormWrapper>
             <div className="mt-4 text-center text-sm sm:text-base">
               <span>{t("login.noAccount", "¿No tienes cuenta?")}</span>

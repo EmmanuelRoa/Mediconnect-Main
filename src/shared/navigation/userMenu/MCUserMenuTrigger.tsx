@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { DropdownMenuTrigger } from "@/shared/animate-ui/components/radix/dropdown-menu";
 import { MCUserAvatar } from "./MCUserAvatar";
 interface UserData {
+  userId: number;
   name: string;
   email: string;
   avatar: string;
@@ -36,7 +37,7 @@ export function MCUserMenuTrigger({ userData, open }: MCUserMenuTriggerProps) {
             </AvatarFallback>
           </Avatar>
         ) : (
-          <MCUserAvatar name={userData.name} size={54} square={false} />
+          <MCUserAvatar name={userData.name + userData.userId} size={54} square={false} />
         )}
 
         <div className="flex items-start gap-3">

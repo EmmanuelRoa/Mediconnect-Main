@@ -43,6 +43,12 @@ apiClient.interceptors.request.use(
       console.log('📤 [API Client] Sin token - petición sin autenticación');
     }
     
+    // CRÍTICO: Si estamos enviando FormData, eliminar Content-Type
+    // para que axios lo configure automáticamente con el boundary correcto
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {

@@ -50,17 +50,30 @@ export const patientRegistrationService = {
         formData.append('fotoPerfil', request.fotoPerfil, 'profile-photo.jpg');
       }
 
+      for (const [key, value] of formData.entries()) {
+        if ((value as any) instanceof File || (value as any) instanceof Blob) {
+          console.log(`  ${key}:`, {
+            name: (value as any) instanceof File ? (value as any).name : 'blob',
+            size: (value as any).size,
+            type: (value as any).type
+          });
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
+
       // Realizar la petición
       // IMPORTANTE: No establecer manualmente 'Content-Type' para FormData
       // Axios lo configura automáticamente con el boundary correcto
-      // El token se envía tanto en el FormData como en el header (doble validación según la API)
+      // El interceptor del cliente eliminará cualquier Content-Type predefinido cuando detecte FormData
       const { data } = await apiClient.post<RegisterPatientResponse>(
         API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_PACIENTE,
         formData,
         {
           headers: {
-            // Enviar token en header Authorization para que el interceptor no lo sobrescriba
+            // Solo enviar token en header Authorization para autenticación
             'Authorization': `Bearer ${request.token}`,
+            // NO establecer Content-Type aquí - dejar que axios lo maneje automáticamente
           },
         }
       );
