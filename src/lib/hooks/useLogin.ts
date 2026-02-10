@@ -1,10 +1,11 @@
 import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '@/services/auth/auth.service';
 import {
   type LoginRequest,
   type LoginResponse,
-  normalizeLoginResponse,
+  normalizeLoginResponse
 } from '@/services/auth/auth.types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
@@ -20,6 +21,7 @@ type UseLoginReturn = Omit<UseMutationResult<LoginResponse, AxiosError<ApiErrorR
 
 export const useLogin = (): UseLoginReturn => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const login = useAppStore((state) => state.login);
   const setToast = useGlobalUIStore((state) => state.setToast);
 
@@ -29,23 +31,24 @@ export const useLogin = (): UseLoginReturn => {
     onSuccess: (data) => {
       
       // Normalizar la respuesta y guardar en el store
-      const { token, user } = normalizeLoginResponse(data);
+      const { accessToken, refreshToken, user } = normalizeLoginResponse(data);
 
-      login(token, user as any);
+      login(accessToken, refreshToken, user as any);
 
       // Mostrar mensaje de éxito
       setToast({
-        message: '¡Bienvenido de vuelta!',
+        message: t('errors.loginSuccess'),
         type: 'success',
         open: true,
       });
 
-      redirectByRole(user.role, navigate);
+
+      redirectByRole(user.rol, navigate);
     },
     
     onError: (error) => {
-      // Obtener mensaje de error amigable
-      const errorMessage = getAuthErrorMessage(error);
+      // Obtener mensaje de error amigable con traducción
+      const errorMessage = getAuthErrorMessage(error, t);
       
       // Mostrar toast de error
       setToast({

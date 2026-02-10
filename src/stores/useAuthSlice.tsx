@@ -1,49 +1,45 @@
 import { type StateCreator } from "zustand";
-
-export type UserRole = "PATIENT" | "DOCTOR" | "CENTER";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar?: string;
-  banner?: string;
-}
+import type { User } from "@/services/auth/auth.types";
 
 export interface AuthSlice {
   isAuthenticated: boolean;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   user: User | null;
 
-  login: (token: string, user: User) => void;
+  login: (accessToken: string, refreshToken: string, user: User) => void;
+  updateTokens: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
 }
 
 export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   isAuthenticated: false,
-  token: null,
-  user: {
-    id: "",
-    name: "",
-    email: "",
-    role: "DOCTOR",
-  },
+  accessToken: null,
+  refreshToken: null,
+  user: null,
 
   //DOCTOR
   //PATIENT
   //CENTER
 
-  login: (token, user) =>
+  login: (accessToken, refreshToken, user) =>
     set({
-      token,
+      accessToken,
+      refreshToken,
       user,
       isAuthenticated: true,
     }),
 
+  updateTokens: (accessToken, refreshToken) =>
+    set({
+      accessToken,
+      refreshToken,
+    }),
+
   logout: () =>
     set({
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       user: null,
       isAuthenticated: false,
     }),

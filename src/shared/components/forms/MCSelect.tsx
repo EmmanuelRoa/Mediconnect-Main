@@ -105,10 +105,10 @@ function MCSelect({
         : [...selectedValues, value];
 
       setSelectedValues(newValues);
-      setValue(name, newValues);
+      setValue(name, newValues, { shouldValidate: true, shouldDirty: true });
       onChange?.(newValues);
     } else {
-      setValue(name, value);
+      setValue(name, value, { shouldValidate: true, shouldDirty: true });
       onChange?.(value);
     }
     setSearchQuery(""); // Limpiar búsqueda después de seleccionar
@@ -117,7 +117,7 @@ function MCSelect({
   const removeValue = (valueToRemove: string) => {
     const newValues = selectedValues.filter((v) => v !== valueToRemove);
     setSelectedValues(newValues);
-    setValue(name, newValues);
+    setValue(name, newValues, { shouldValidate: true, shouldDirty: true });
     onChange?.(newValues);
   };
 

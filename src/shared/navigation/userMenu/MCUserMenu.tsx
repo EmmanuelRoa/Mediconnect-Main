@@ -8,6 +8,7 @@ import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProf
 import MCUserMenuTrigger from "./MCUserMenuTrigger";
 import MCUserMenuContent from "./MCUserMenuContent";
 import { DropdownMenu } from "@/shared/animate-ui/components/radix/dropdown-menu";
+import { getUserFullName, getUserInitials } from "@/services/auth/auth.types";
 
 export function MCUserMenu() {
   // Estados locales
@@ -28,21 +29,21 @@ export function MCUserMenu() {
   const themeButtonRef = useRef<HTMLDivElement>(null);
 
   const getUserData = () => {
-    switch (user?.role) {
+    switch (user?.rol) {
       case "PATIENT":
         return {
-          name: "IliaTopuria",
-          email: "Iliatopuria17@gmail.com",
-          initials: "IT",
+          name: getUserFullName(user),
+          email: user.email,
+          initials: getUserInitials(user),
           roleLabel: t("userMenu.patient"),
           avatar: "",
         };
       case "DOCTOR":
         return {
-          name: "Dr. Cristiano Ronaldo",
-          email: "DrCr7Mediconnect@mediconnect.com",
+          name: getUserFullName(user),
+          email: user.email,
           avatar: "",
-          initials: "CR",
+          initials: getUserInitials(user),
           roleLabel: t("userMenu.doctor"),
         };
       case "CENTER":
@@ -135,7 +136,7 @@ export function MCUserMenu() {
           handleThemeChange={handleThemeChange}
           themeButtonRef={themeButtonRef}
           isMobile={isMobile}
-          userRole={user?.role || "ADMIN"}
+          userRole={user?.rol || "ADMIN"}
         />
       </DropdownMenu>
 

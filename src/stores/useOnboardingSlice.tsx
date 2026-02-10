@@ -37,6 +37,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
     email: "",
     password: "",
     confirmPassword: "",
+    gender: "",
   },
   doctorOnboardingData: {
     name: "",
@@ -103,6 +104,7 @@ export const createOnboardingSlice: StateCreator<OnboardingSlice> = (set) => ({
         role: "Patient",
         identityDocument: "",
         email: "",
+        gender: "",
         password: "",
         confirmPassword: "",
       },

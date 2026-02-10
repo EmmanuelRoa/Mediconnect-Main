@@ -9,6 +9,8 @@ import type {
   SolicitarCodigoResponse,
   ValidarCodigoRequest,
   ValidarCodigoResponse,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
 } from './auth.types';
 
 
@@ -82,12 +84,13 @@ export const authService = {
   },
 
   /**
-   * Refresh token (si el backend lo implementa)
+   * Refresh token - Obtiene nuevos tokens usando el refreshToken
    * POST /auth/refresh
    */
-  refreshToken: async (): Promise<{ token: string }> => {
-    const { data } = await apiClient.post<{ token: string }>(
-      API_ENDPOINTS.AUTH.REFRESH_TOKEN
+  refreshToken: async (request: RefreshTokenRequest): Promise<RefreshTokenResponse> => {
+    const { data } = await apiClient.post<RefreshTokenResponse>(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+      request
     );
     return data;
   },

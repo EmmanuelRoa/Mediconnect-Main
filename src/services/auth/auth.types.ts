@@ -18,6 +18,54 @@ export const reverseRoleMapping: Record<AppUserRole, ApiUserRole> = {
   'ADMINISTRATOR': 'Administrador',
 };
 
+
+export interface User {
+  id: number;
+  email: string;
+  rol: ApiUserRole | string;
+  paciente: Paciente | null;
+  doctor: Doctor | null;
+  centroSalud: CentroSalud | null;
+}
+
+export interface Doctor {
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  numeroDocumentoIdentificacion: string;
+  fotoDocumento: string | null;
+  fotoPerfil: string | null;
+  fechaNacimiento: string; // ISO Date string
+  genero: string;
+  nacionalidad: string;
+  exequatur: string;
+  biografia: string;
+  anosExperiencia: number;
+  estadoVerificacion: string;
+  calificacionPromedio: string;
+  estado: string;
+  creadoEn: string; // ISO Date string
+  actualizadoEn: string; // ISO Date string
+  certificacionesAdicionales: string[] | null;
+  tituloAcademico: string | null;
+  tipoDocIdentificacion: string;
+  ubicacionId: number | null;
+  duracionCitaPromedio: number;
+  tarifas: any | null; // Puedes definir una interfaz Tarifa si conoces la estructura
+  ubicacion: any | null; // Puedes definir una interfaz Ubicacion si conoces la estructura
+  formaciones: any[]; // Array de formaciones
+}
+
+
+export interface Paciente {
+  // Define las propiedades del paciente aquí cuando las tengas
+  [key: string]: any;
+}
+
+export interface CentroSalud {
+  // Define las propiedades del centro de salud aquí
+  [key: string]: any;
+}
 // --- LOGIN CON EMAIL/PASSWORD ---
 export interface LoginRequest {
   email: string;
@@ -26,13 +74,9 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   success: boolean;
-  token: string;
-  usuario: {
-    id: number;
-    email: string;
-    rol: ApiUserRole;
-    fotoPerfil: string | null;
-  };
+  accessToken: string;
+  refreshToken: string;
+  usuario: User;
 }
 
 // --- LOGIN CON GOOGLE ---
@@ -42,13 +86,9 @@ export interface GoogleLoginRequest {
 
 export interface GoogleLoginResponse {
   success: boolean;
-  token: string;
-  user: {
-    id: number;
-    email: string;
-    rol: ApiUserRole;
-    fotoPerfil: string | null;
-  };
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 }
 
 // --- SOLICITAR CÓDIGO OTP ---
@@ -87,39 +127,46 @@ export interface NormalizedUser {
 
 // --- UTILIDADES DE TRANSFORMACIÓN ---
 /**
- * Transforma la respuesta del login a un usuario normalizado
+ * Transforma la respuesta del login retornando el usuario completo del API
  */
 export function normalizeLoginResponse(response: LoginResponse): {
-  token: string;
-  user: NormalizedUser;
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 } {
   return {
-    token: response.token,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
     user: {
-      id: response.usuario.id.toString(),
-      name: '', // Se puede obtener del perfil posteriormente
+      id: response.usuario.id,
       email: response.usuario.email,
-      role: roleMapping[response.usuario.rol],
-      avatar: response.usuario.fotoPerfil || undefined,
+      rol: getUserAppRole(response.usuario) || response.usuario.rol,
+      paciente: response.usuario.paciente || null,
+      doctor: response.usuario.doctor || null,
+      centroSalud: response.usuario.centroSalud || null,
     },
   };
 }
 
 /**
- * Transforma la respuesta del login con Google a un usuario normalizado
+ * Transforma la respuesta del login con Google retornando un objeto User completo
  */
 export function normalizeGoogleLoginResponse(response: GoogleLoginResponse): {
-  token: string;
-  user: NormalizedUser;
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 } {
+  // Google login retorna una estructura simplificada, construir el User completo
   return {
-    token: response.token,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
     user: {
-      id: response.user.id.toString(),
-      name: '', // Se puede obtener del perfil posteriormente
+      id: response.user.id,
       email: response.user.email,
-      role: roleMapping[response.user.rol],
-      avatar: response.user.fotoPerfil || undefined,
+      rol: getUserAppRole(response.user) || response.user.rol,
+      paciente: response.user.paciente || null,
+      doctor: response.user.doctor || null,
+      centroSalud: response.user.centroSalud || null,
     },
   };
 }
@@ -141,3 +188,73 @@ export const AUTH_ERROR_MESSAGES = {
   NETWORK_ERROR: 'Error de conexión. Verifica tu internet',
   SERVER_ERROR: 'Error del servidor. Intenta más tarde',
 } as const;
+
+// --- REFRESH TOKEN ---
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  success: boolean;
+  accessToken: string;
+  refreshToken: string;
+}
+
+// --- UTILIDADES PARA TRABAJAR CON EL USUARIO ---
+/**
+ * Obtiene el nombre completo del usuario según su rol
+ */
+export function getUserFullName(user: User | null): string {
+  if (!user) return '';
+  
+  if (user.doctor) {
+    return `${user.doctor.nombre} ${user.doctor.apellido}`;
+  } else if (user.paciente && user.paciente.nombre) {
+    return `${user.paciente.nombre} ${user.paciente.apellido || ''}`.trim();
+  } else if (user.centroSalud && user.centroSalud.nombre) {
+    return user.centroSalud.nombre;
+  }
+  
+  // Fallback: usar el email
+  return user.email.split('@')[0];
+}
+
+/**
+ * Obtiene las iniciales del usuario para el avatar
+ */
+export function getUserInitials(user: User | null): string {
+  if (!user) return '';
+  const fullName = getUserFullName(user);
+  const names = fullName.split(' ');
+  if (names.length === 1) {
+    return names[0].charAt(0).toUpperCase();
+  } else {
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  }
+}
+
+
+/**
+ * Obtiene el rol de la aplicación a partir del usuario
+ */
+export function getUserAppRole(user: User | null): AppUserRole | null {
+  if (!user) return null;
+  return roleMapping[user.rol as ApiUserRole] || null;
+}
+
+/**
+ * Obtiene el avatar del usuario según su rol
+ */
+export function getUserAvatar(user: User | null): string | undefined {
+  if (!user) return undefined;
+  
+  if (user.doctor?.fotoPerfil) {
+    return user.doctor.fotoPerfil;
+  } else if (user.paciente?.fotoPerfil) {
+    return user.paciente.fotoPerfil;
+  } else if (user.centroSalud?.logo) {
+    return user.centroSalud.logo;
+  }
+  
+  return undefined;
+}

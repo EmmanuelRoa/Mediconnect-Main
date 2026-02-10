@@ -20,7 +20,7 @@ function MCNavbar() {
   const location = useLocation();
   const { t } = useTranslation(); // Usar namespace automático
   const theme = useGlobalUIStore((state) => state.theme);
-  const role = useAppStore((state) => state.user?.role);
+  const role = useAppStore((state) => state.user?.rol);
 
   const effectiveRole = role || "PATIENT";
   const menuConfig = NAVBAR_CONFIG[effectiveRole as keyof typeof NAVBAR_CONFIG];
@@ -31,7 +31,7 @@ function MCNavbar() {
     CENTER: "center",
   };
   const ns = nsMap[effectiveRole] || "patient";
-
+  console.log("Navbar role:", effectiveRole, "using namespace:", ns); 
   return (
     <nav className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-10 py-3 bg-background rounded-full shadow-sm border-none border-background ">
       {/* Logo */}

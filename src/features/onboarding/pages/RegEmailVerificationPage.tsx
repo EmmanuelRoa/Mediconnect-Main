@@ -9,6 +9,7 @@ import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer"
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth/auth.service";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 function RegEmailVerificationPage() {
   const { t } = useTranslation("auth");
@@ -70,7 +71,7 @@ function RegEmailVerificationPage() {
         }
 
         // Mostrar mensaje de éxito
-        toast.success(response.message || "Código enviado correctamente");
+        toast.success(t("registerEmailVerifyPage.successTitleEmailSent") || response.message || "Código enviado correctamente");
         
         // Navegar a la página de verificación OTP
         navigate("/auth/otp-verification", { replace: true });
@@ -83,8 +84,14 @@ function RegEmailVerificationPage() {
         error?.response?.data?.message || 
         error?.message || 
         "Error al enviar el código. Por favor, intenta de nuevo.";
+
+      if (error?.response?.status === 400) {
+        toast.error(t("registerEmailVerifyPage.errors.emailInUse") || "El correo electrónico ya está en uso. Por favor, utiliza otro correo.");
+        return;
+      }
       
-      toast.error(errorMessage);
+      console.log("Error message to display:", errorMessage);
+      toast.error(t("registerEmailVerifyPage.errors.sendingEmail") || errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +139,7 @@ function RegEmailVerificationPage() {
           }}
           continueButtonProps={{
             disabled: isLoading,
+            icon: isLoading ? <Loader2 className="animate-spin" /> : undefined,
           }}
         />
       </MCFormWrapper>

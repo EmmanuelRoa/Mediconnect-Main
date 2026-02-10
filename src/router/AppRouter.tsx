@@ -50,7 +50,7 @@ import AppointmentsPage from "@/features/doctor/pages/AppointmentsPage";
 import { useAppStore } from "@/stores/useAppStore";
 
 function AppRouter() {
-  const userRole = useAppStore((state) => state.user?.role);
+  const userRole = useAppStore((state) => state.user?.rol);
   return (
     <BrowserRouter>
       {" "}

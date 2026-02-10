@@ -8,6 +8,7 @@ import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer"
 import { useNavigate } from "react-router-dom";
 import { PatientBasicInfoSchema } from "@/schema/OnbordingSchema";
 import type { PatientBasicInfoSchemaType } from "@/types/OnbordingTypes";
+import MCSelect from "@/shared/components/forms/MCSelect";
 
 function PatientBasicInfoPage() {
   const { t } = useTranslation("auth");
@@ -17,7 +18,22 @@ function PatientBasicInfoPage() {
   const setBasicInfo = useAppStore((state) => state.setPatientOnboardingData);
   const otpData = useAppStore((state) => state.otp);
   const selectedRole = useAppStore((state) => state.selectedRole);
-  console.log(basicInfo);
+  
+  const genderOptions = [
+  {
+    value: "masculino",
+    label: t("personalIdentificationStep.genderOptions.masculino"),
+  },
+  {
+    value: "femenino",
+    label: t("personalIdentificationStep.genderOptions.femenino"),
+  },
+  {
+    value: "otro",
+    label: t("personalIdentificationStep.genderOptions.otro"),
+  },
+  ];
+
   // Validar que exista OTP verificado antes de acceder a esta página
   useEffect(() => {
     if (!otpData || !basicInfo?.email) {
@@ -40,6 +56,7 @@ function PatientBasicInfoPage() {
         lastName: data.lastName,
         role: "Patient",
         identityDocument: data.identityDocument,
+        gender: data.gender,
         email: basicInfo.email,
         password: basicInfo.password ?? "",
         confirmPassword: basicInfo.confirmPassword ?? "",
@@ -69,6 +86,7 @@ function PatientBasicInfoPage() {
           name: basicInfo?.name || "",
           lastName: basicInfo?.lastName || "",
           identityDocument: basicInfo?.identityDocument || "",
+          gender: basicInfo?.gender || "",
         }}
         className="flex flex-col items-center w-full"
       >
@@ -83,6 +101,12 @@ function PatientBasicInfoPage() {
             name="lastName"
             placeholder={t("patientBasicInfo.lastNamePlaceholder")}
           />
+          <MCSelect
+              name="gender"
+              label={t("personalIdentificationStep.genderLabel")}
+              placeholder={t("personalIdentificationStep.genderPlaceholder")}
+              options={genderOptions}
+            />
           <MCInput
             label={t("patientBasicInfo.identityDocumentLabel")}
             name="identityDocument"

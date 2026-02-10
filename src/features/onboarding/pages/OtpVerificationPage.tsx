@@ -10,6 +10,7 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth/auth.service";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 function OtpVerificationPage() {
   const { t } = useTranslation("auth");
@@ -47,7 +48,7 @@ function OtpVerificationPage() {
 
   const handleSubmit = async (data: { otp: string }) => {
     if (!confirmedEmail) {
-      toast.error("Email no encontrado");
+      toast.error(t("registerEmailVerifyPage.errors.emailNotFound") || "Email no encontrado");
       return;
     }
 
@@ -69,7 +70,7 @@ function OtpVerificationPage() {
         setVerifyEmail({ verified: true, email: confirmedEmail });
 
         // Mostrar mensaje de éxito
-        toast.success(response.message || "Código verificado correctamente");
+        toast.success(t("registerEmailVerifyPage.successTitle") || response.message || "¡Correo verificado con éxito!");
         
         // Navegar según el rol
         setTimeout(() => {
@@ -91,8 +92,15 @@ function OtpVerificationPage() {
       const errorMessage = 
         error?.response?.data?.message || 
         error?.message || 
-        "Código inválido. Por favor, verifica e intenta de nuevo.";
+        t("registerEmailVerifyPage.errors.otpInvalid") || "Código inválido. Por favor, verifica e intenta de nuevo.";
       
+      if (error?.response?.data?.message?.toLowerCase().includes("expirado")) {
+        toast.error(t("registerEmailVerifyPage.errors.otpExpired") || "El código ha expirado. Por favor, solicita un nuevo código.");
+        return;
+      } else if (error?.response?.data?.message?.toLowerCase().includes("inválido")) {
+        toast.error(t("registerEmailVerifyPage.errors.invalidOtp") || "El código es inválido. Por favor, verifica e intenta de nuevo.");
+        return;
+      }
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -101,7 +109,7 @@ function OtpVerificationPage() {
 
   const handleResendOtp = async () => {
     if (!confirmedEmail) {
-      toast.error("Email no encontrado");
+      toast.error(t("registerEmailVerifyPage.errors.emailNotFound") || "Email no encontrado");
       return;
     }
 
@@ -114,7 +122,7 @@ function OtpVerificationPage() {
       });
 
       if (response.success) {
-        toast.success(response.message || "Código reenviado correctamente");
+        toast.success(t("registerEmailVerifyPage.successTitleEmailSent") || response.message || "Código reenviado correctamente");
       }
     } catch (error: any) {
       console.error("Error al reenviar código OTP:", error);
@@ -122,7 +130,7 @@ function OtpVerificationPage() {
       const errorMessage = 
         error?.response?.data?.message || 
         error?.message || 
-        "Error al reenviar el código. Por favor, intenta de nuevo.";
+        t("registerEmailVerifyPage.errors.sendingEmail") || "Error al reenviar el código. Por favor, intenta de nuevo.";
       
       toast.error(errorMessage);
     } finally {
@@ -174,8 +182,9 @@ function OtpVerificationPage() {
             type="button"
             onClick={handleResendOtp}
             disabled={isLoading || isResending}
+            icon={isResending ? <Loader2 className="animate-spin" /> : undefined}
           >
-            {isResending ? "Reenviando..." : t("verifyEmail.resend")}
+            {isResending ? t("verifyEmail.resending") || "Reenviando..." : t("verifyEmail.resend")}
           </MCButton>
         </div>
 
@@ -188,6 +197,7 @@ function OtpVerificationPage() {
           }}
           continueButtonProps={{
             disabled: isLoading,
+            icon: isLoading ? <Loader2 className="animate-spin" /> : undefined,
           }}
         />
       </MCFormWrapper>

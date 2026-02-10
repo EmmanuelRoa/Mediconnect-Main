@@ -19,6 +19,7 @@ import EsIMG from "@/assets/flag-spain.png";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 
 import { useLogin } from "@/lib/hooks/auth";
+import { ROUTES } from "@/router/routes";
 
 
 function LoginPage() {
@@ -162,13 +163,13 @@ function LoginPage() {
                 <button
                   type="button"
                   className="text-base text-primary font-semibold hover:underline cursor-pointer"
-                  onClick={() => navigate("/auth/forgot-password")}
+                  onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
                 >
                   {t("login.forgot", "Forgot your password?")}
                 </button>
               </div>
               <MCButton type="submit" className="w-full" variant="primary" disabled={isPending}>
-                {isPending ? t("login.loading", "Loading...") : t("login.submit", "Sign In")}
+                {isPending ? t("errors.loading", "Loading...") : t("login.submit", "Sign In")}
               </MCButton>
 
               <div className="flex items-center my-4">
@@ -183,7 +184,7 @@ function LoginPage() {
               <span>{t("login.noAccount", "¿No tienes cuenta?")}</span>
               <button
                 className="ml-2 text-primary font-semibold hover:underline"
-                onClick={() => navigate("/auth/register")}
+                onClick={() => navigate(ROUTES.REGISTER)}
                 type="button"
               >
                 {t("login.register", "Regístrate")}

@@ -1,44 +1,42 @@
 import type { AxiosError } from 'axios';
 import type { ApiErrorResponse } from '@/services/api/client';
-import { AUTH_ERROR_MESSAGES } from '@/services/auth/auth.types';
+import type { TFunction } from 'i18next';
 
 /**
  * Obtiene un mensaje de error amigable basado en el error de autenticación
  */
-export function getAuthErrorMessage(error: AxiosError<ApiErrorResponse>): string {
+export function getAuthErrorMessage(
+  error: AxiosError<ApiErrorResponse>,
+  t: TFunction<'auth', undefined>
+): string {
   // Si hay respuesta del servidor
   if (error.response) {
     const { status, data } = error.response;
 
-    // Usar el mensaje del backend si está disponible
-    if (data?.message) {
-      return data.message;
-    }
-
     // Mensajes por código de estado
     switch (status) {
       case 400:
-        return 'Datos inválidos. Verifica tu email y contraseña';
+        return t('errors.invalidData');
       case 401:
-        return AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS;
+        return t('errors.invalidCredentials');
       case 403:
-        return AUTH_ERROR_MESSAGES.USER_INACTIVE;
+        return t('errors.userInactive');
       case 409:
-        return AUTH_ERROR_MESSAGES.EMAIL_ALREADY_EXISTS;
+        return t('errors.emailAlreadyExists');
       case 500:
-        return AUTH_ERROR_MESSAGES.SERVER_ERROR;
+        return t('errors.serverError');
       default:
-        return 'Error al procesar tu solicitud';
+        return data.message;
     }
   }
 
   // Error de red
   if (error.request) {
-    return AUTH_ERROR_MESSAGES.NETWORK_ERROR;
+    return t('errors.networkError');
   }
 
   // Error desconocido
-  return 'Ocurrió un error inesperado';
+  return t('errors.unexpectedError');
 }
 
 /**

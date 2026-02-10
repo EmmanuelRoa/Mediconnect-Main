@@ -1,5 +1,25 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAppStore } from '@/stores/useAppStore';
+import API_ENDPOINTS from './endpoints';
+
+// Flag para evitar múltiples llamadas simultáneas al refresh
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
+
+const processQueue = (error: Error | null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
 
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
@@ -13,11 +33,13 @@ const apiClient = axios.create({
 // Interceptor de Request: Agregar token automáticamente
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = useAppStore.getState().token;
+    const accessToken = useAppStore.getState().accessToken;
     
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    } else {
+    // Solo agregar token si no existe ya un header Authorization
+    // (para permitir tokens personalizados en peticiones específicas)
+    if (accessToken && config.headers && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    } else if (!accessToken && !config.headers?.Authorization) {
       console.log('📤 [API Client] Sin token - petición sin autenticación');
     }
     
@@ -29,7 +51,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor de Response: Manejo de errores global
+// Interceptor de Response: Manejo de errores global y auto-refresh de tokens
 apiClient.interceptors.response.use(
   (response) => {
     console.log('📥 [API Client] Response recibida:', {
@@ -42,7 +64,9 @@ apiClient.interceptors.response.use(
     // Si el response es exitoso, retornar los datos directamente
     return response;
   },
-  (error: AxiosError<ApiErrorResponse>) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    
     console.error('📥 [API Client] Error en response:', {
       message: error.message,
       code: error.code,
@@ -56,15 +80,112 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       
-      // Token expirado o inválido
-      if (status === 401) {
-        console.warn('🔒 [API Client] Token inválido o expirado (401)');
-        // DESACTIVADO TEMPORALMENTE PARA DEBUGGING
-        // const logout = useAppStore.getState().logout;
-        // logout();
-        // if (typeof window !== 'undefined') {
-        //   window.location.href = '/login';
-        // }
+      // Token expirado - intentar refresh automático
+      if (status === 401 && !originalRequest._retry) {
+        // Lista de endpoints de autenticación que NO deben activar el flujo de refresh
+        const authEndpoints = [
+          API_ENDPOINTS.AUTH.LOGIN,
+          API_ENDPOINTS.AUTH.GOOGLE_LOGIN,
+          API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+          API_ENDPOINTS.AUTH.REGISTRO_SOLICITAR_CODIGO,
+          API_ENDPOINTS.AUTH.REGISTRO_VALIDAR_CODIGO,
+          API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_PACIENTE,
+          API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_DOCTOR,
+          API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+          API_ENDPOINTS.AUTH.RESET_PASSWORD,
+          API_ENDPOINTS.AUTH.VERIFY_EMAIL,
+        ];
+        
+        // Si es un endpoint de autenticación, NO intentar refresh
+        const isAuthEndpoint = authEndpoints.some(endpoint => 
+          originalRequest.url?.includes(endpoint)
+        );
+        
+        if (isAuthEndpoint) {
+          console.log('🔓 [API Client] Error 401 en endpoint de autenticación - propagando error');
+          return Promise.reject(error);
+        }
+        
+        // Verificar si no es el endpoint de refresh para evitar loop infinito
+        if (originalRequest.url === API_ENDPOINTS.AUTH.REFRESH_TOKEN) {
+          console.error('🔒 [API Client] Refresh token inválido - cerrando sesión');
+          const logout = useAppStore.getState().logout;
+          logout();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
+        }
+
+        if (isRefreshing) {
+          // Si ya estamos refrescando, añadir a la cola
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(() => {
+              return apiClient(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        const refreshToken = useAppStore.getState().refreshToken;
+
+        if (!refreshToken) {
+          console.error('🔒 [API Client] No hay refresh token - cerrando sesión');
+          const logout = useAppStore.getState().logout;
+          logout();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
+        }
+
+        try {
+          console.log('🔄 [API Client] Intentando refrescar token...');
+          
+          // Hacer la petición de refresh
+          const { data: refreshData } = await axios.post(
+            `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+            { refreshToken }
+          );
+
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshData;
+
+          console.log('✅ [API Client] Tokens refrescados exitosamente');
+
+          // Actualizar tokens en el store
+          const updateTokens = useAppStore.getState().updateTokens;
+          updateTokens(newAccessToken, newRefreshToken);
+
+          // Actualizar el header del request original
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+          // Procesar la cola de requests pendientes
+          processQueue(null, newAccessToken);
+
+          // Reintentar el request original
+          return apiClient(originalRequest);
+        } catch (refreshError) {
+          console.error('❌ [API Client] Error al refrescar token:', refreshError);
+          
+          processQueue(refreshError as Error, null);
+          
+          // Si falla el refresh, cerrar sesión
+          const logout = useAppStore.getState().logout;
+          logout();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
       }
       
       // Usuario inactivo o bloqueado

@@ -8,6 +8,7 @@ import NavbarBell from "../components/NavbarBell";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "@/stores/useAppStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useLogout } from "@/lib/hooks/useLogout";
 import { NAVBAR_CONFIG } from "@/config/navbar.config";
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
 import { Menu, X, LogOut, Search, MessageCircle } from "lucide-react";
@@ -17,8 +18,8 @@ function MCMobileNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useGlobalUIStore((state) => state.theme);
-  const role = useAppStore((state) => state.user?.role);
-  const logout = useAppStore((state) => state.logout);
+  const role = useAppStore((state) => state.user?.rol);
+  const logoutUser = useLogout();
 
   const effectiveRole = role || "PATIENT";
   const menuConfig = NAVBAR_CONFIG[effectiveRole as keyof typeof NAVBAR_CONFIG];
@@ -32,9 +33,8 @@ function MCMobileNavbar() {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/auth/login");
     setOpen(false);
+    logoutUser();
   };
 
   return (

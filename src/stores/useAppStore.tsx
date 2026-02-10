@@ -25,7 +25,8 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         // AuthSlice
         isAuthenticated: state.isAuthenticated,
-        token: state.token,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         user: state.user,
 
         // AuthFlowSlice

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import SuccessImg from "@/assets/successPassword.png";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { ROUTES } from "@/router/routes";
 
 function PasswordSuccessPage() {
   const { t } = useTranslation("auth");
@@ -15,17 +16,17 @@ function PasswordSuccessPage() {
   useEffect(() => {
     const hasValidAccess =
       canAccessPage &&
-      allowedPages.some((pageObj) => pageObj.page === "/auth/password-success");
+      allowedPages.some((pageObj) => pageObj.page === ROUTES.PASSWORD_SUCCESS);
 
     if (!hasValidAccess) {
-      navigate("/auth/forgot-password", { replace: true });
+      navigate(ROUTES.FORGOT_PASSWORD, { replace: true });
     } else {
       setHasAccess(true);
     }
   }, [canAccessPage, allowedPages, navigate]);
 
   const handleclick = () => {
-    navigate("/login", { replace: true });
+    navigate(ROUTES.LOGIN, { replace: true });
   };
 
   if (!hasAccess) {

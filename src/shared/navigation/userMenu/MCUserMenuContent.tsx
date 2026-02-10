@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSequentialShortcuts } from "@/lib/hooks/useSequentialShortcuts";
+import { useLogout } from "@/lib/hooks/useLogout";
 import {
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -85,6 +86,16 @@ export function MCUserMenuContent({
 }: MCUserMenuContentProps) {
   const { t } = useTranslation("common");
   const navigate = useNavigate();
+  const logoutUser = useLogout();
+
+  // Función para manejar el cierre de sesión
+  const handleLogout = useCallback(() => {
+    // Cerrar el menú antes de hacer logout
+    setOpen(false);
+    
+    // Ejecutar logout (limpia estado y redirige)
+    logoutUser();
+  }, [logoutUser, setOpen]);
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode);
@@ -148,10 +159,7 @@ export function MCUserMenuContent({
     // G → A for Logout (Adios)
     {
       sequence: ["g", "a"],
-      action: () => {
-        // Aquí deberías llamar a tu función de logout
-        console.log("Logout triggered");
-      },
+      action: handleLogout,
     },
     // G → D for Verification Docs (if applicable)
     ...(userRole === "DOCTOR" || userRole === "CENTER"
@@ -501,7 +509,7 @@ export function MCUserMenuContent({
         <DropdownMenuSeparator className="bg-primary/15" />
 
         {/* Cerrar sesión */}
-        <DropdownMenuItem variant="destructive">
+        <DropdownMenuItem variant="destructive" onSelect={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" />
           {t("userMenu.logout")}
           {!isMobile && <DropdownMenuShortcut>G → A</DropdownMenuShortcut>}

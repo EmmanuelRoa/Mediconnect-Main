@@ -4,26 +4,38 @@ import MCInput from "@/shared/components/forms/MCInput";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "react-i18next";
 import AuthFooterContainer from "../../components/AuthFooterContainer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ResetPasswordSchema } from "@/schema/AuthSchema";
 import { useEffect } from "react";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { ROUTES } from "@/router/routes";
 function ResetPasswordPage() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
+  const location = useLocation();
   const resetPassword = useAppStore((state) => state.resetPassword);
   const setResetPassword = useAppStore((state) => state.setResetPassword);
   const setAccessPage = useGlobalUIStore((state) => state.setAccessPage);
-  const forgotPasswordEmail = useAppStore(
-    (state) => state.forgotPassword.email
-  );
+  const setForgotPassword = useAppStore((state) => state.setForgotPassword);
+  
+  // Intentar obtener el email del estado de navegación primero, luego del store
+  const emailFromNavigation = (location.state as { email?: string })?.email;
+  const emailFromStore = useAppStore((state) => state.forgotPassword.email);
+  const forgotPasswordEmail = emailFromNavigation || emailFromStore;
+  
   const otp = useAppStore((state) => state.otp);
 
   useEffect(() => {
-    if (!forgotPasswordEmail || !otp) {
-      navigate("/auth/forgot-password", { replace: true });
+    // Si hay email de navegación pero no está en el store, guardarlo
+    if (emailFromNavigation && !emailFromStore) {
+      setForgotPassword({ email: emailFromNavigation });
     }
-  }, [forgotPasswordEmail, otp, navigate]);
+    
+    // Si no hay email o OTP, redirigir
+    if (!forgotPasswordEmail || !otp) {
+      navigate(ROUTES.FORGOT_PASSWORD, { replace: true });
+    }
+  }, [forgotPasswordEmail, otp, emailFromNavigation, emailFromStore, setForgotPassword, navigate]);
 
   const handleSubmit = (data: {
     password: string;
@@ -36,10 +48,10 @@ function ResetPasswordPage() {
       });
       setAccessPage(
         true,
-        [{ page: "/auth/password-success", reason: "password" }],
+        [{ page: ROUTES.PASSWORD_SUCCESS, reason: "password" }],
         "password"
       );
-      navigate("/auth/password-success", { replace: true });
+      navigate(ROUTES.PASSWORD_SUCCESS, { replace: true });
     } else {
       alert(t("resetPassword.errorFields"));
     }

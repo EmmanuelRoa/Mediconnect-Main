@@ -1,10 +1,11 @@
 import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '@/services/auth/auth.service';
 import {
   type GoogleLoginRequest,
   type GoogleLoginResponse,
-  normalizeGoogleLoginResponse,
+  normalizeGoogleLoginResponse
 } from '@/services/auth/auth.types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useGlobalUIStore } from '@/stores/useGlobalUIStore';
@@ -19,31 +20,33 @@ type UseGoogleLoginReturn = Omit<UseMutationResult<GoogleLoginResponse, AxiosErr
 
 export const useGoogleLogin = (): UseGoogleLoginReturn => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const login = useAppStore((state) => state.login);
   const setToast = useGlobalUIStore((state) => state.setToast);
 
   const mutation = useMutation<GoogleLoginResponse, AxiosError<ApiErrorResponse>, GoogleLoginRequest>({
     mutationFn: authService.googleLogin,
     
-    onSuccess: (data) => {
+    onSuccess: (data) => {      
       // Normalizar la respuesta y guardar en el store
-      const { token, user } = normalizeGoogleLoginResponse(data);
-      login(token, user as any);
+      const { accessToken, refreshToken, user } = normalizeGoogleLoginResponse(data);
+      login(accessToken, refreshToken, user as any);
 
       // Mostrar mensaje de éxito
       setToast({
-        message: '¡Has iniciado sesión con Google!',
+        message: t('errors.loginSuccess'),
         type: 'success',
         open: true,
       });
-
-      // Redirigir según el rol del usuario
-      redirectByRole(user.role, navigate);
+      
+      redirectByRole(user.rol, navigate);
     },
     
     onError: (error) => {
-      // Obtener mensaje de error amigable
-      const errorMessage = getAuthErrorMessage(error);
+      console.error('❌ Error en login con Google:', error);
+      
+      // Obtener mensaje de error amigable con traducción
+      const errorMessage = getAuthErrorMessage(error, t);
       
       // Mostrar toast de error
       setToast({
@@ -56,7 +59,10 @@ export const useGoogleLogin = (): UseGoogleLoginReturn => {
 
   return {
     ...mutation,
-    loginWithGoogle: (idToken: string) => mutation.mutate({ idToken }),
+    loginWithGoogle: (idToken: string) => {
+      console.log('🔐 Iniciando login con Google, enviando idToken al backend...');
+      mutation.mutate({ idToken });
+    },
   };
 };
 
@@ -66,13 +72,13 @@ export const useGoogleLogin = (): UseGoogleLoginReturn => {
 function redirectByRole(role: string, navigate: ReturnType<typeof useNavigate>) {
   switch (role) {
     case 'PATIENT':
-      navigate(ROUTES.PATIENT.HOME);
+      navigate(ROUTES.COMMON.DASHBOARD);
       break;
     case 'DOCTOR':
-      navigate(ROUTES.DOCTOR.HOME);
+      navigate(ROUTES.COMMON.DASHBOARD);
       break;
     case 'CENTER':
-      navigate(ROUTES.CENTER.HOME);
+      navigate(ROUTES.COMMON.DASHBOARD);
       break;
     default:
       navigate('/');

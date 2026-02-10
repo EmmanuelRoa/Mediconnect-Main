@@ -18,6 +18,7 @@ export const BasePatientSchema = z.object({
   email: z.string(),
   password: z.string(),
   confirmPassword: z.string(),
+  gender: z.string(),
   urlImg: UploadedFileSchema.optional(),
 });
 
@@ -96,6 +97,7 @@ export function PatientBasicInfoSchema(t: (key: string) => string) {
     name: true,
     lastName: true,
     identityDocument: true,
+    gender: true,
   }).extend({
     name: z.string().min(1, t("validation.nameRequired")),
     lastName: z.string().min(1, t("validation.lastNameRequired")),
@@ -105,6 +107,7 @@ export function PatientBasicInfoSchema(t: (key: string) => string) {
       .refine((val) => ValidateDominicanID(val), {
         message: t("validation.identityDocumentInvalid"),
       }),
+    gender: z.string().min(1, t("validation.genderRequired")),
   });
 }
 
