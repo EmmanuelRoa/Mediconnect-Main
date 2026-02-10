@@ -45,10 +45,10 @@ function AuthHeader() {
               trigger={backButtonContent}
               title={t("header.cancelTitle")}
               variant="warning"
+              size="sm"
               onConfirm={handleConfirmCancel}
               confirmText={t("header.confirmCancel")}
               secondaryText={t("header.continue")}
-              size="sm"
             >
               <div className="flex flex-col">
                 <p className="text-primary text-justify">

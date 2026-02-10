@@ -21,7 +21,9 @@ interface MCTablesLayoutsProps {
   toogleView?: React.ReactNode;
   filtersInlineWithTitle?: boolean;
   pdfGeneratorComponent?: React.ReactNode;
+  actionPlusComponent?: React.ReactNode; // <-- Nuevo prop
   isDashboard?: boolean;
+  titleSize?: string; // Nueva prop opcional
 }
 
 function MCTablesLayouts({
@@ -34,36 +36,38 @@ function MCTablesLayouts({
   filtersInlineWithTitle = false,
   isDashboard = false,
   pdfGeneratorComponent,
+  actionPlusComponent, // <-- Nuevo prop
+  titleSize, // Recibe la nueva prop
 }: MCTablesLayoutsProps) {
   const isMobile = useIsMobile();
 
   return (
     <div
-      className={`bg-background ${!isDashboard ? "min-h-screen" : ""} flex gap-4 rounded-4xl ${
-        isDashboard ? "py-4 px-4" : isMobile ? "py-4 px-4" : "p-10"
+      className={`bg-background ${!isDashboard ? "min-h-screen" : "h-fit"} flex gap-4 rounded-4xl ${
+        isDashboard ? "p-10" : isMobile ? "py-4 px-4" : "p-10"
       }`}
     >
       <motion.main {...fadeInUp} className={`w-full flex flex-col gap-6`}>
-        {/* Título y acciones en la misma fila */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1
-            className={`${isDashboard ? "text-2xl" : "text-3xl"} font-bold text-foreground`}
+            className={`${titleSize ? titleSize : isDashboard ? "text-3xl" : "text-3xl"} font-bold text-foreground`}
           >
             {title}
           </h1>
           {(searchComponent ||
             filterComponent ||
             toogleView ||
-            pdfGeneratorComponent) && (
+            pdfGeneratorComponent ||
+            actionPlusComponent) && (
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-end max-w-lg">
               {searchComponent}
               {filterComponent}
               {toogleView}
               {pdfGeneratorComponent}
+              {actionPlusComponent}
             </div>
           )}
         </div>
-
         {/* Métricas Cards */}
         {metrics.length > 0 && (
           <div className="flex gap-4">
@@ -78,7 +82,6 @@ function MCTablesLayouts({
             ))}
           </div>
         )}
-
         {/* Tabla */}
         <div>{tableComponent}</div>
       </motion.main>

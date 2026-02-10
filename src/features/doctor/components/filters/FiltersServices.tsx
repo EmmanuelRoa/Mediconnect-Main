@@ -140,7 +140,7 @@ function FiltersServices({
       label: (
         <span className="flex items-center gap-1">
           {t("filters.rating.4_5", "4.5+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },
@@ -149,7 +149,7 @@ function FiltersServices({
       label: (
         <span className="flex items-center gap-1">
           {t("filters.rating.4", "4.0+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },
@@ -158,7 +158,7 @@ function FiltersServices({
       label: (
         <span className="flex items-center gap-1">
           {t("filters.rating.3_5", "3.5+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },

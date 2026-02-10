@@ -109,7 +109,6 @@ function MCFilterDates({
             <Calendar
               mode="single"
               selected={value?.[0]}
-              compact
               onSelect={(date) => {
                 if (date) {
                   const newRange: [Date, Date] = [date, value?.[1] || date];
@@ -139,7 +138,6 @@ function MCFilterDates({
           >
             <Calendar
               mode="single"
-              compact
               selected={value?.[1]}
               onSelect={(date) => {
                 if (date) {

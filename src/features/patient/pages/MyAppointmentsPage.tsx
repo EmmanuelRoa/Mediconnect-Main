@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MyAppointmentsCards } from "../components/appoiments/MyAppointmentsCards";
@@ -375,7 +375,6 @@ function MyAppointmentsPage() {
     };
   }, [filters, searchTerm]);
 
-  // Calcular paginación para citas próximas
   const upcomingPagination = useMemo(() => {
     const totalPages = Math.ceil(upcomingAppointments.length / ITEMS_PER_PAGE);
     const startIndex = (upcomingPage - 1) * ITEMS_PER_PAGE;

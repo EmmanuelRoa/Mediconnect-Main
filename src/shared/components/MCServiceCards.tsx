@@ -1,20 +1,20 @@
 import { Card, CardContent } from "@/shared/ui/card";
 import MCServicesStatus from "./tables/MCServicesStatus";
-import {
-  Star,
-  Clock,
-  MapPin,
-  Ellipsis,
-  ClipboardPlus,
-  Video,
-} from "lucide-react";
+import { Star, Clock, MapPin, ClipboardPlus, Video } from "lucide-react";
 import MCButton from "./forms/MCButton";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useNavigate } from "react-router-dom";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import { useAppStore } from "@/stores/useAppStore";
+import ServicesActions from "@/features/doctor/components/healthService/ServicesActions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
+import { useRef, useState, useEffect } from "react";
 interface MCServiceCardProps {
   idProvider?: string | number;
   image: string;
@@ -29,6 +29,10 @@ interface MCServiceCardProps {
   onDetails?: () => void;
   isOwner?: boolean;
   serviceId: string; // <-- NUEVA PROP
+  onEdit?: () => void;
+  onDeactivate?: () => void;
+  onActivate?: () => void;
+  onDelete?: () => void;
 }
 
 const MCServiceCards = ({
@@ -44,8 +48,17 @@ const MCServiceCards = ({
   type,
   onDetails,
   isOwner = false,
-  serviceId, // <-- NUEVA PROP
-}: MCServiceCardProps) => {
+  serviceId,
+  onEdit,
+  onDeactivate,
+  onActivate,
+  onDelete,
+}: MCServiceCardProps & {
+  onEdit?: () => void;
+  onDeactivate?: () => void;
+  onActivate?: () => void;
+  onDelete?: () => void;
+}) => {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
   const navigate = useNavigate(); // <-- NAVEGAR
@@ -58,11 +71,22 @@ const MCServiceCards = ({
 
   const getTypeIcon = () => {
     if (type.toLowerCase().includes("mixta"))
-      return <ClipboardPlus size={16} className="text-secondary" />;
+      return <ClipboardPlus size={16} className="text-secondary mb-0.5" />;
     if (type.toLowerCase().includes("virtual"))
-      return <Video size={16} className="text-secondary" />;
-    return <MapPin size={16} className="text-secondary" />;
+      return <Video size={16} className="text-secondary mb-0.5" />;
+    return <MapPin size={16} className="text-secondary mb-0.5" />;
   };
+
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    if (titleRef.current) {
+      setIsTruncated(
+        titleRef.current.scrollWidth > titleRef.current.clientWidth,
+      );
+    }
+  }, [title]);
 
   return (
     <Card className="rounded-3xl bg-transparent border border-primary/10 shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
@@ -74,7 +98,7 @@ const MCServiceCards = ({
             isMobile ? "h-40" : "h-48"
           }`}
         />
-        {/* Overlay para status y elipsis */}
+        {/* Overlay para status y acciones */}
         <div className="absolute top-0 left-0 w-full flex justify-between items-start p-2 pointer-events-none">
           {isOwner && (
             <>
@@ -83,73 +107,19 @@ const MCServiceCards = ({
                 variant="card"
                 className="pointer-events-auto"
               />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className={`
-              z-30 rounded-full border-none border-white/60
-              bg-black/20 backdrop-blur-xl shadow-2xl
-              transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]
-              pointer-events-auto
-              ${isMobile ? "p-1" : "p-1.5"}
-            `}
-                    type="button"
-                  >
-                    <Ellipsis
-                      className="text-white"
-                      size={isMobile ? 18 : 20}
-                    />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className={`
-            p-1 flex flex-col gap-0.5 z-40 rounded-xl 
-            border border-primary/10 shadow-lg
-            ${isMobile ? "min-w-[140px] text-xs" : "min-w-[150px] text-sm"}
-          `}
-                  align="end"
-                  sideOffset={5}
-                >
-                  <button
-                    className={`
-              text-left rounded-lg hover:bg-accent transition
-              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-            `}
-                    type="button"
-                    onClick={() => navigate(`/service/${serviceId}`)} // <-- NAVEGAR
-                  >
-                    Ver servicio
-                  </button>
-                  <button
-                    className={`
-              text-left rounded-lg hover:bg-accent transition
-              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-            `}
-                    type="button"
-                  >
-                    Editar servicio
-                  </button>
-                  <button
-                    className={`
-              text-left rounded-lg hover:bg-accent transition
-              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-            `}
-                    type="button"
-                  >
-                    Desactivar servicio
-                  </button>
-                  <button
-                    className={`
-              text-left rounded-lg hover:bg-destructive/10 
-              text-destructive transition
-              ${isMobile ? "px-2 py-1" : "px-2.5 py-1.5"}
-            `}
-                    type="button"
-                  >
-                    Eliminar servicio
-                  </button>
-                </PopoverContent>
-              </Popover>
+              <div className="pointer-events-auto">
+                <ServicesActions
+                  isCard
+                  status={status}
+                  onView={
+                    onDetails ?? (() => navigate(`/service/${serviceId}`))
+                  }
+                  onEdit={onEdit}
+                  onDeactivate={onDeactivate}
+                  onActivate={onActivate}
+                  onDelete={onDelete}
+                />
+              </div>
             </>
           )}
         </div>
@@ -161,14 +131,41 @@ const MCServiceCards = ({
         <div
           className={`flex items-center justify-between ${isMobile ? "mb-1" : "mb-1"}`}
         >
-          <h3
-            className={`font-semibold text-primary ${isMobile ? "text-base" : "text-lg"}`}
-          >
-            {title}
-          </h3>
+          {isTruncated ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h3
+                    ref={titleRef}
+                    className={`font-semibold text-primary ${isMobile ? "text-base" : "text-lg"} truncate max-w-[220px] md:max-w-[320px]`}
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {title}
+                  </h3>
+                </TooltipTrigger>
+                <TooltipContent>{title}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <h3
+              ref={titleRef}
+              className={`font-semibold text-primary ${isMobile ? "text-base" : "text-lg"} truncate max-w-[220px] md:max-w-[320px]`}
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {title}
+            </h3>
+          )}
           <span
             className={`
-            bg-accent/50 rounded-full text-primary font-medium
+            bg-accent/50  dark:bg-bg-btn-secondary rounded-full text-primary font-medium
             ${isMobile ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm"}
           `}
           >
@@ -178,8 +175,8 @@ const MCServiceCards = ({
 
         <p
           className={`
-    text-muted-foreground mb-3 line-clamp-2
-    ${isMobile ? "text-xs min-h-[36px]" : "text-sm min-h-[44px]"}
+    text-muted-foreground my-1.5 line-clamp-2
+    ${isMobile ? "text-xs max-h-[36px] h-fit" : "text-sm max-h-[44px] h-fit"}
   `}
         >
           {description || "-"}
@@ -195,7 +192,7 @@ const MCServiceCards = ({
             <Star
               size={isMobile ? 14 : 16}
               fill="#F7B500"
-              className="text-[#F7B500]"
+              className="text-[#F7B500] mb-0.5"
             />
             <span className="font-medium">{rating}</span>
             <span className="text-muted-foreground"></span>
@@ -204,7 +201,10 @@ const MCServiceCards = ({
           {!isMobile && <span className="mx-2 text-muted-foreground">•</span>}
 
           <div className="flex items-center gap-1">
-            <Clock size={isMobile ? 14 : 16} className="text-secondary" />
+            <Clock
+              size={isMobile ? 14 : 16}
+              className="text-secondary mb-0.5"
+            />
             <span>{duration}</span>
           </div>
 
@@ -229,17 +229,29 @@ const MCServiceCards = ({
           >
             {t("profile.services.details", "Ver detalles")}
           </MCButton>
-          <ScheduleAppointmentDialog
-            idProvider={idProvider ? String(idProvider) : ""}
-          >
+          {/* Mostrar botón según rol */}
+          {isOwner ? (
             <MCButton
               className="w-full rounded-full mt-auto"
               variant="outline"
               size="sm"
+              onClick={() => navigate(`/service/${serviceId}/availability`)}
             >
-              Agendar
+              Disponibilidad
             </MCButton>
-          </ScheduleAppointmentDialog>
+          ) : currentUser === "PATIENT" ? (
+            <ScheduleAppointmentDialog
+              idProvider={idProvider ? String(idProvider) : ""}
+            >
+              <MCButton
+                className="w-full rounded-full mt-auto"
+                variant="outline"
+                size="sm"
+              >
+                Agendar
+              </MCButton>
+            </ScheduleAppointmentDialog>
+          ) : null}
         </div>
       </CardContent>
     </Card>

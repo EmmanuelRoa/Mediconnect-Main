@@ -23,14 +23,14 @@ function MCServicesStatus({
       color:
         variant === "card"
           ? "bg-[#2E7D32]/40 text-white"
-          : "bg-green-100/70 text-green-700",
+          : "bg-[#2E7D32]/10 dark:bg-[#2E7D32]/20 text-[#2E7D32]",
     },
     inactive: {
       label: t("services.status.inactive", "Inactivo"),
       color:
         variant === "card"
-          ? "bg-gray-500/80 text-white" // Fondo más oscuro, texto blanco
-          : "bg-gray-200/90 text-gray-700", // Fondo más claro, texto más oscuro
+          ? "bg-gray-500/80 text-white dark:bg-gray-700/80 dark:text-gray-300"
+          : "bg-[#9E9E9E]/10 text-[#9E9E9E]  dark:bg-[#616161]/20 dark:text-[#BDBDBD]",
     },
   };
 
@@ -46,7 +46,7 @@ function MCServicesStatus({
 
   return (
     <Badge
-      className={`rounded-xl shadow ${sizeClass} ${color} ${className} ${
+      className={`rounded-full ${sizeClass} ${color} ${className} ${
         variant === "card"
           ? " backdrop-blur-xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.175,0.885,0.32,2.2)]"
           : ""
