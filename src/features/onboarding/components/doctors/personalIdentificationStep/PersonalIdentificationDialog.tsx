@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import PersonalIdentificationStep1 from "./PersonalIdentificationStep1";
 import PersonalIdentificationStep2 from "./PersonalIdentificationStep2";
@@ -24,7 +24,6 @@ function PersonalIdentificationDialog({
 
   const current = useGlobalUIStore((s) => s.doctorOnboardingStep);
   const setCurrent = useGlobalUIStore((s) => s.setDoctorOnboardingStep);
-  const [step1Valid, setStep1Valid] = useState(false);
   const doctorsteps = useAppStore((state) => state.doctorOnboardingData);
 
   const doctorStep1 =
@@ -41,7 +40,6 @@ function PersonalIdentificationDialog({
     doctorsteps?.mainSpecialty &&
     doctorsteps?.secondarySpecialties;
 
-  const handleValidationChange = (isValid: boolean) => setStep1Valid(isValid);
   const handleNextStep = () => setCurrent(current + 1);
 
   return (
@@ -72,7 +70,6 @@ function PersonalIdentificationDialog({
             <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 ">
               {current === 0 && (
                 <PersonalIdentificationStep1
-                  onValidationChange={handleValidationChange}
                   onNext={handleNextStep}
                 >
                   <AuthFooterContainer
@@ -85,7 +82,7 @@ function PersonalIdentificationDialog({
                       disabled: current === 0,
                     }}
                     continueButtonProps={{
-                      disabled: !step1Valid || !doctorStep1,
+                      disabled: !doctorStep1,
                     }}
                   />
                 </PersonalIdentificationStep1>

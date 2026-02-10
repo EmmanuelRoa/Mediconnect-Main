@@ -49,9 +49,18 @@ function PersonalIdentificationStep2({
       label: t("professionalIdentificationStep.specialtyOptions.ginecologia"),
     },
     {
+      value: "neurologia",
+      label: t("professionalIdentificationStep.specialtyOptions.neurologia"),
+    },
+    {
+      value: "odontologia",
+      label: t("professionalIdentificationStep.specialtyOptions.odontologia"),
+    },
+    {
       value: "otra",
       label: t("professionalIdentificationStep.specialtyOptions.otra"),
     },
+
   ];
 
   const handleSubmit = (data: any) => {

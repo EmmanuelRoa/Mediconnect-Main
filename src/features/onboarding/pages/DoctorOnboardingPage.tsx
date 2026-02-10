@@ -38,7 +38,11 @@ function DoctorOnboardingPage() {
       doctorOnboardingData?.birthDate &&
       doctorOnboardingData?.nationality &&
       doctorOnboardingData?.phone &&
-      doctorOnboardingData?.email;
+      doctorOnboardingData?.email &&
+      doctorOnboardingData?.identityDocument &&
+      doctorOnboardingData?.exequatur &&
+      doctorOnboardingData?.mainSpecialty &&
+      doctorOnboardingData?.secondarySpecialties;
 
     const isIdDocComplete = Boolean(doctorOnboardingData?.identityDocumentFile);
 

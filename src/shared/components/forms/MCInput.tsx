@@ -4,7 +4,7 @@ import { EyeIcon } from "@/shared/ui/eye";
 import { EyeOffIcon } from "@/shared/ui/eye-off";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 interface MCInputProps {
   name: string;
@@ -24,6 +24,8 @@ interface MCInputProps {
   standalone?: boolean;
   // Nueva prop para icono
   icon?: React.ReactNode;
+  // Nueva prop para establecer fecha máxima (útil para fechas de nacimiento)
+  maxDate?: string;
 }
 
 function formatCedula(value: string) {
@@ -52,6 +54,7 @@ function MCInput({
   variant = "default",
   standalone = false,
   icon,
+  maxDate,
 }: MCInputProps) {
   const formContext = standalone ? null : useFormContext();
 
@@ -120,21 +123,36 @@ function MCInput({
   };
 
   // Detectar si es campo de cédula
+  const isCedulaVariant = variant === "cedula";
 
   // Estado local solo para mostrar la cédula formateada
   const [cedulaValue, setCedulaValue] = useState(value || "");
 
-  const isCedulaVariant = variant === "cedula";
+  // Sincronizar el estado local con el valor del formulario
+  useEffect(() => {
+    if (isCedulaVariant && !standalone && formContext) {
+      const currentValue = formContext.watch(name);
+      if (currentValue && currentValue !== cedulaValue.replace(/\D/g, "")) {
+        setCedulaValue(formatCedula(currentValue));
+      }
+    }
+  }, [formContext?.watch(name), isCedulaVariant, standalone]);
 
   const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCedula(e.target.value);
     setCedulaValue(formatted);
     // Enviar solo los números al formulario
     const onlyDigits = formatted.replace(/\D/g, "");
+    
     if (standalone) {
       onChange?.({ ...e, target: { ...e.target, value: onlyDigits } });
     } else {
       formContext?.setValue(name, onlyDigits, { shouldValidate: true });
+      // IMPORTANTE: También llamar al onChange prop si existe
+      // para que el componente padre pueda actualizar su estado
+      if (onChange) {
+        onChange({ ...e, target: { ...e.target, value: onlyDigits } });
+      }
     }
   };
 
@@ -163,6 +181,25 @@ function MCInput({
 
   // Obtener errores solo si está en un form
   const error = !standalone && formContext?.formState?.errors?.[name];
+
+  // Calcular atributos adicionales para inputs de fecha
+  const getDateAttributes = () => {
+    if (type !== "date") return {};
+    
+    const attributes: { max?: string } = {};
+    
+    // Si se proporciona maxDate explícitamente, usarlo
+    if (maxDate) {
+      attributes.max = maxDate;
+    } 
+    // Si es un campo de fecha de nacimiento, establecer máximo a hoy
+    else if (name === "birthDate" || name === "fechaNacimiento") {
+      const today = new Date().toISOString().split('T')[0];
+      attributes.max = today;
+    }
+    
+    return attributes;
+  };
 
   return (
     <div className="w-full flex flex-col mb-4 px-0">
@@ -221,6 +258,7 @@ function MCInput({
           required={required}
           disabled={disabled}
           {...inputProps}
+          {...getDateAttributes()}
           className={cn(
             "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary placeholder:text-md",
             getSizeClasses(),

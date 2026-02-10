@@ -10,13 +10,11 @@ import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
 
 type PersonalIdentificationStep1Props = {
   children?: React.ReactNode;
-  onValidationChange?: (isValid: boolean) => void;
   onNext?: () => void;
 };
 
 function PersonalIdentificationStep1({
   children,
-  onValidationChange,
   onNext,
 }: PersonalIdentificationStep1Props) {
   const { t } = useTranslation("auth");
@@ -68,7 +66,6 @@ function PersonalIdentificationStep1({
   ];
 
   const handleSubmit = (data: DoctorBasicInfoSchemaType) => {
-    onValidationChange?.(true);
     onNext?.();
   };
 
@@ -91,7 +88,6 @@ function PersonalIdentificationStep1({
         schema={DoctorBasicInfoSchema((key: string) => t(key))}
         onSubmit={handleSubmit}
         defaultValues={doctorOnboardingData}
-        onValidationChange={onValidationChange}
       >
         <div className="space-y-4">
           {/* Nombre y Apellido */}
