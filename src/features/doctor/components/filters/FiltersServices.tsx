@@ -1,5 +1,5 @@
 import { type JSX } from "react";
-import { Clock, Star, DollarSign } from "lucide-react";
+import { Star, DollarSign } from "lucide-react";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { useTranslation } from "react-i18next";
 
@@ -82,38 +82,34 @@ function FiltersServices({
 
   const durationOptions: OptionType[] = [
     {
-      value: "15",
+      value: "corta",
       label: (
         <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          {t("filters.duration.15", "15 min")}
+          {t("filters.duration.short", "Consulta corta (15-30 min)")}
         </span>
       ),
     },
     {
-      value: "30",
+      value: "media",
       label: (
         <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          {t("filters.duration.30", "30 min")}
+          {t("filters.duration.medium", "Consulta estándar (30-45 min)")}
         </span>
       ),
     },
     {
-      value: "60",
+      value: "larga",
       label: (
         <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          {t("filters.duration.60", "1 hora")}
+          {t("filters.duration.long", "Consulta extendida (45-60 min)")}
         </span>
       ),
     },
     {
-      value: "120",
+      value: "extendida",
       label: (
         <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          {t("filters.duration.120", "2+ horas")}
+          {t("filters.duration.extended", "Consulta especializada (60+ min)")}
         </span>
       ),
     },
@@ -204,7 +200,7 @@ function FiltersServices({
 
       <MCFilterSelect
         name="duration"
-        label={t("filters.labels.duration", "Duración")}
+        label={t("filters.labels.duration", "Duración de consulta")}
         options={durationOptions}
         placeholder={t("filters.placeholders.duration", "Seleccionar duración")}
         value={filters.duration}

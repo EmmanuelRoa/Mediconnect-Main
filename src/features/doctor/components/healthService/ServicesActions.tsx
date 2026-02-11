@@ -5,6 +5,7 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { Button } from "@/shared/ui/button";
 import { ROUTES } from "@/router/routes";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ChangeStatusServiceModal from "./ChangeStatusServiceModal";
 
 interface ServicesActionsProps {
@@ -15,7 +16,7 @@ interface ServicesActionsProps {
   onDelete?: () => void;
   status?: "active" | "inactive";
   isCard?: boolean;
-  serviceId?: string; // <-- nuevo prop
+  serviceId?: string;
 }
 
 const ServicesActions: React.FC<ServicesActionsProps> = ({
@@ -26,17 +27,16 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
   onDelete,
   status = "active",
   isCard = false,
-  serviceId, // <-- nuevo prop
+  serviceId,
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { t } = useTranslation("doctor");
 
   // Estado para el modal
   const [modalAction, setModalAction] = useState<
     "activate" | "deactivate" | "delete" | null
   >(null);
-
-  () => setModalAction("delete");
 
   // Confirmar acción
   const handleConfirm = () => {
@@ -104,7 +104,7 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
               type="button"
               onClick={handleView}
             >
-              Ver servicio
+              {t("services.actions.view")}
             </button>
             <button
               className={`
@@ -115,7 +115,7 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
               type="button"
               onClick={onEdit}
             >
-              Editar servicio
+              {t("services.actions.edit")}
             </button>
             {status === "active" ? (
               <ChangeStatusServiceModal
@@ -132,7 +132,7 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
                   `}
                   type="button"
                 >
-                  Desactivar servicio
+                  {t("services.actions.deactivate")}
                 </button>
               </ChangeStatusServiceModal>
             ) : (
@@ -150,7 +150,7 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
                   `}
                   type="button"
                 >
-                  Activar servicio
+                  {t("services.actions.activate")}
                 </button>
               </ChangeStatusServiceModal>
             )}
@@ -168,7 +168,7 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
                 `}
                 type="button"
               >
-                Eliminar servicio
+                {t("services.actions.delete")}
               </button>
             </ChangeStatusServiceModal>
           </div>

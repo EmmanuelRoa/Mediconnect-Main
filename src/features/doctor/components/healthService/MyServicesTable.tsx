@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import {
   Table,
   TableBody,
@@ -18,22 +17,24 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/shared/ui/pagination";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import ServicesActions from "./ServicesActions";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
+import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import ServicesActions from "./ServicesActions";
+
 const PAGE_SIZE = 15;
 
 interface Service {
   id: string;
   servicio: string;
   especialidad: string;
-  ubicacion: string | string[]; // <-- puede ser string o array de strings
+  ubicacion: string | string[];
   tipo: string;
   precio: string;
   duracion: string;
@@ -47,7 +48,10 @@ interface MyServicesTableProps {
 }
 
 function MyServicesTable({ services = [] }: MyServicesTableProps) {
+  const { t } = useTranslation("doctor");
+  const isMobile = useIsMobile();
   const [page, setPage] = React.useState(1);
+
   const totalPages = Math.ceil(services.length / PAGE_SIZE);
   const startIndex = (page - 1) * PAGE_SIZE;
   const endIndex = startIndex + PAGE_SIZE;
@@ -64,15 +68,33 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Servicio</TableHead>
-            <TableHead>Especialidad</TableHead>
-            <TableHead>Ubicación</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Precio</TableHead>
-            <TableHead>Duración</TableHead>
-            <TableHead>Rating</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Acciones</TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.service")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.specialty")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.location")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.type")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.price")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.duration")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.rating")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.status")}
+            </TableHead>
+            <TableHead className={isMobile ? "text-xs" : ""}>
+              {t("services.table.actions")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -82,8 +104,12 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {row.imagen ? (
-                      <div className="h-16 w-16 relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center">
-                        <Avatar className="h-16 w-16 rounded-full overflow-hidden">
+                      <div
+                        className={`${isMobile ? "h-12 w-12" : "h-16 w-16"} relative overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center`}
+                      >
+                        <Avatar
+                          className={`${isMobile ? "h-12 w-12" : "h-16 w-16"} rounded-full overflow-hidden`}
+                        >
                           <AvatarImage
                             src={row.imagen}
                             alt={row.servicio}
@@ -98,11 +124,17 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
                         </Avatar>
                       </div>
                     ) : null}
-                    <span className="font-medium">{row.servicio}</span>
+                    <span
+                      className={`font-medium ${isMobile ? "text-xs" : ""}`}
+                    >
+                      {row.servicio}
+                    </span>
                   </div>
                 </TableCell>
-                <TableCell>{row.especialidad}</TableCell>
-                <TableCell>
+                <TableCell className={isMobile ? "text-xs" : ""}>
+                  {row.especialidad}
+                </TableCell>
+                <TableCell className={isMobile ? "text-xs" : ""}>
                   {Array.isArray(row.ubicacion) ? (
                     row.ubicacion.length > 1 ? (
                       <TooltipProvider>
@@ -115,7 +147,9 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
                           <TooltipContent>
                             <div className="flex flex-col gap-1">
                               {row.ubicacion.map((u, idx) => (
-                                <span key={idx}>{u}</span>
+                                <span key={idx} className="text-xs">
+                                  {u}
+                                </span>
                               ))}
                             </div>
                           </TooltipContent>
@@ -128,17 +162,27 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
                     <span>{row.ubicacion}</span>
                   )}
                 </TableCell>
-                <TableCell>{row.tipo}</TableCell>
-                <TableCell>{row.precio}</TableCell>
-                <TableCell>{row.duracion}</TableCell>
+                <TableCell className={isMobile ? "text-xs" : ""}>
+                  {row.tipo}
+                </TableCell>
+                <TableCell className={isMobile ? "text-xs" : ""}>
+                  {row.precio}
+                </TableCell>
+                <TableCell className={isMobile ? "text-xs" : ""}>
+                  {row.duracion}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     <Star
-                      size={16}
+                      size={isMobile ? 14 : 16}
                       fill="#F7B500"
                       className="text-yellow-400 mb-0.5"
                     />
-                    <span className="font-medium">{row.rating}</span>
+                    <span
+                      className={`font-medium ${isMobile ? "text-xs" : ""}`}
+                    >
+                      {row.rating}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -150,6 +194,7 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
                 <TableCell>
                   <ServicesActions
                     status={row.estado === "Activo" ? "active" : "inactive"}
+                    serviceId={row.id}
                     onView={() => alert(`Ver servicio ${row.id}`)}
                     onEdit={() => alert(`Editar servicio ${row.id}`)}
                     onDeactivate={() => alert(`Desactivar servicio ${row.id}`)}
@@ -161,8 +206,11 @@ function MyServicesTable({ services = [] }: MyServicesTableProps) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="text-center">
-                No hay servicios registrados.
+              <TableCell
+                colSpan={9}
+                className={`text-center ${isMobile ? "text-xs" : ""}`}
+              >
+                {t("services.table.noServices")}
               </TableCell>
             </TableRow>
           )}

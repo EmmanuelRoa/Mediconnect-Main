@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import MyServicesTable from "../components/healthService/MyServicesTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
@@ -24,23 +25,30 @@ import {
   EmptyContent,
 } from "@/shared/ui/empty";
 import MCButton from "@/shared/components/forms/MCButton";
-import { Filter, CalendarX } from "lucide-react";
+import {
+  Filter,
+  CalendarX,
+  CheckCircle,
+  Ban,
+  Star,
+  Layers,
+} from "lucide-react";
 import MCServiceCards from "@/shared/components/MCServiceCards";
 import FilterMyServices from "../components/filters/FilterMyServices";
 import MCNewButton from "@/shared/components/forms/MCNewButton";
+
 const mockServices = [
   {
     id: "1",
     servicio: "Consulta General",
     especialidad: "Medicina General",
-    ubicacion: ["Clínica Central", "Sucursal Norte"], // <-- ahora es array
+    ubicacion: ["Clínica Central", "Sucursal Norte"],
     tipo: "Presencial / Virtual",
     precio: "RD$1500",
     duracion: "30 min",
     rating: 4.8,
     estado: "Activo",
     imagen: "https://randomuser.me/api/portraits/men/1.jpg",
-    // Props adicionales para MCServiceCards
     title: "Consulta General",
     price: "RD$1500",
     description: "Consulta médica general completa",
@@ -167,6 +175,9 @@ const mockServices = [
 const ITEMS_PER_PAGE = 8;
 
 function MyServicesPage() {
+  const { t } = useTranslation("doctor");
+  const isMobile = useIsMobile();
+
   // Estados
   const [showCards, setShowCards] = useState(() => {
     const saved = localStorage.getItem("myServicesView");
@@ -207,6 +218,24 @@ function MyServicesPage() {
     localStorage.setItem("myServicesView", val);
   };
 
+  // Función para verificar si una duración coincide con el rango seleccionado
+  const matchesDuracionRange = (duracion: string, filtro: string) => {
+    if (!filtro) return true;
+    const minutos = parseInt(duracion);
+    switch (filtro) {
+      case "corta":
+        return minutos >= 15 && minutos <= 30;
+      case "media":
+        return minutos > 30 && minutos <= 45;
+      case "larga":
+        return minutos > 45 && minutos <= 60;
+      case "extendida":
+        return minutos > 60;
+      default:
+        return true;
+    }
+  };
+
   // Filtrar servicios
   const filteredServices = useMemo(() => {
     return mockServices.filter((service) => {
@@ -231,6 +260,10 @@ function MyServicesPage() {
       const matchesEstado =
         filters.estado === "all" || service.status === filters.estado;
       const matchesRating = !filters.rating || service.rating >= filters.rating;
+      const matchesDuracion = matchesDuracionRange(
+        service.duracion,
+        filters.duracion,
+      );
 
       return (
         matchesSearch &&
@@ -238,12 +271,13 @@ function MyServicesPage() {
         matchesEspecialidad &&
         matchesTipo &&
         matchesEstado &&
-        matchesRating
+        matchesRating &&
+        matchesDuracion
       );
     });
   }, [searchTerm, filters]);
 
-  // Transformar data para MCServiceCards (solo props necesarias)
+  // Transformar data para MCServiceCards
   const transformedServices = useMemo(() => {
     return filteredServices.map((service) => ({
       idProvider: service.id,
@@ -270,7 +304,7 @@ function MyServicesPage() {
   const searchComponent = (
     <div className="w-full sm:w-auto sm:min-w-[200px] lg:min-w-[250px]">
       <MCFilterInput
-        placeholder="Buscar servicio"
+        placeholder={t("services.management.searchPlaceholder")}
         value={searchTerm}
         onChange={setSearchTerm}
       />
@@ -283,23 +317,24 @@ function MyServicesPage() {
       onClick={async () => {
         await MCGeneratePDF({
           columns: [
-            { title: "Servicio", key: "servicio" },
-            { title: "Especialidad", key: "especialidad" },
-            { title: "Ubicación", key: "ubicacion" },
-            { title: "Tipo", key: "tipo" },
-            { title: "Precio", key: "precio" },
-            { title: "Duración", key: "duracion" },
-            { title: "Rating", key: "rating" },
-            { title: "Estado", key: "estado" },
+            { title: t("services.table.service"), key: "servicio" },
+            { title: t("services.table.specialty"), key: "especialidad" },
+            { title: t("services.table.location"), key: "ubicacion" },
+            { title: t("services.table.type"), key: "tipo" },
+            { title: t("services.table.price"), key: "precio" },
+            { title: t("services.table.duration"), key: "duracion" },
+            { title: t("services.table.rating"), key: "rating" },
+            { title: t("services.table.status"), key: "estado" },
           ],
           data: filteredServices,
           fileName: "mis-servicios",
-          title: "Servicios",
-          subtitle: "Listado de servicios",
+          title: t("services.management.title"),
+          subtitle: t("services.table.service"),
         });
       }}
     />
   );
+
   const filterComponent = (
     <MCFilterPopover
       activeFiltersCount={activeFiltersCount}
@@ -329,20 +364,26 @@ function MyServicesPage() {
         <div className="flex flex-col items-center gap-2">
           <span className="flex items-center justify-center gap-2 text-primary">
             {activeFiltersCount > 0 ? (
-              <Filter className="w-7 h-7" />
+              <Filter className={isMobile ? "w-5 h-5" : "w-7 h-7"} />
             ) : (
-              <CalendarX className="w-7 h-7" />
+              <CalendarX className={isMobile ? "w-5 h-5" : "w-7 h-7"} />
             )}
-            <EmptyTitle className="text-xl font-semibold">
+            <EmptyTitle
+              className={`font-semibold ${isMobile ? "text-lg" : "text-xl"}`}
+            >
               {activeFiltersCount > 0
-                ? "No hay resultados"
-                : "No tienes servicios registrados"}
+                ? t("services.empty.noResults")
+                : t("services.empty.noServices")}
             </EmptyTitle>
           </span>
-          <EmptyDescription className="text-muted-foreground text-center max-w-md mx-auto">
+          <EmptyDescription
+            className={`text-muted-foreground text-center max-w-md mx-auto ${
+              isMobile ? "text-sm" : "text-base"
+            }`}
+          >
             {activeFiltersCount > 0
-              ? "No se encontraron servicios con los filtros seleccionados."
-              : "Agrega tu primer servicio para comenzar a recibir pacientes."}
+              ? t("services.empty.noResultsDescription")
+              : t("services.empty.noServicesDescription")}
           </EmptyDescription>
         </div>
       </EmptyHeader>
@@ -352,13 +393,12 @@ function MyServicesPage() {
             <MCButton
               variant="outline"
               onClick={clearFilters}
-              className="px-6 py-2"
+              className={isMobile ? "px-4 py-2" : "px-6 py-2"}
               size="sm"
             >
-              Limpiar filtros
+              {t("services.empty.clearFilters")}
             </MCButton>
           )}
-          {/* Aquí podrías poner un botón para agregar servicio si lo necesitas */}
         </div>
       </EmptyContent>
     </Empty>
@@ -370,7 +410,11 @@ function MyServicesPage() {
       emptyState
     ) : (
       <>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          className={`grid gap-4 ${
+            isMobile ? "grid-cols-1" : "md:grid-cols-2 lg:grid-cols-4"
+          }`}
+        >
           {paginatedServices.map((service) => (
             <MCServiceCards key={service.serviceId} {...service} />
           ))}
@@ -414,11 +458,49 @@ function MyServicesPage() {
   );
 
   // Botón para crear nuevo servicio
-  const actionPlusComponent = <MCNewButton text="Nuevo servicio"></MCNewButton>;
+  const actionPlusComponent = (
+    <MCNewButton text={t("services.management.newService")} />
+  );
+
+  // Métricas
+  const metrics = [
+    {
+      title: t("services.metrics.activeServices"),
+      value: filteredServices.filter((s) => s.status === "active").length,
+      subtitle: t("services.metrics.activeServicesSubtitle"),
+      icon: <CheckCircle />,
+    },
+    {
+      title: t("services.metrics.inactiveServices"),
+      value: filteredServices.filter((s) => s.status === "inactive").length,
+      subtitle: t("services.metrics.inactiveServicesSubtitle"),
+      icon: <Ban />,
+    },
+    {
+      title: t("services.metrics.averageRating"),
+      value:
+        filteredServices.length > 0
+          ? (
+              filteredServices.reduce((acc, s) => acc + s.rating, 0) /
+              filteredServices.length
+            ).toFixed(2)
+          : "0.00",
+      subtitle: t("services.metrics.averageRatingSubtitle"),
+      icon: <Star />,
+    },
+    {
+      title: t("services.metrics.totalRegistered"),
+      value: filteredServices.length,
+      subtitle: t("services.metrics.totalRegisteredSubtitle"),
+      icon: <Layers />,
+    },
+  ];
 
   return (
     <MCTablesLayouts
-      title="Gestión de Servicios"
+      title={t("services.management.title")}
+      metrics={metrics}
+      filtersInlineWithTitle
       tableComponent={tableComponent}
       toogleView={toggleView}
       searchComponent={searchComponent}

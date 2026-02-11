@@ -239,6 +239,7 @@
 
   "common": {
     "close": "Close",
+    "cancel": "Cancel",
     "connected": "Connected",
     "connect": "Connect",
     "disconnect": "Disconnect",
@@ -276,6 +277,7 @@
         "view": "View service",
         "edit": "Edit service",
         "deactivate": "Deactivate service",
+        "activate": "Activate service",
         "delete": "Delete service"
       }
     },
@@ -292,6 +294,69 @@
       "disconnect": "Disconnect",
       "viewDetails": "View details",
       "reviews": "reviews"
+    }
+  },
+
+  "services": {
+    "management": {
+      "title": "Services Management",
+      "newService": "New service",
+      "searchPlaceholder": "Search service"
+    },
+    "table": {
+      "service": "Service",
+      "specialty": "Specialty",
+      "location": "Location",
+      "type": "Type",
+      "price": "Price",
+      "duration": "Duration",
+      "rating": "Rating",
+      "status": "Status",
+      "actions": "Actions",
+      "noServices": "No services registered."
+    },
+    "actions": {
+      "view": "View service",
+      "edit": "Edit service",
+      "deactivate": "Deactivate service",
+      "activate": "Activate service",
+      "delete": "Delete service"
+    },
+    "modals": {
+      "activate": {
+        "title": "Activate Service",
+        "message": "Are you sure you want to activate this service? Once activated, patients will be able to book it.",
+        "confirm": "Activate"
+      },
+      "deactivate": {
+        "title": "Deactivate Service",
+        "message": "Are you sure you want to deactivate this service? Patients will not be able to book it until you activate it again.",
+        "confirm": "Deactivate"
+      },
+      "delete": {
+        "title": "Delete Service",
+        "message": "Are you sure you want to delete this service? This action cannot be undone and you will lose all related information.",
+        "confirm": "Delete"
+      }
+    },
+    "metrics": {
+      "totalServices": "Total Services",
+      "totalServicesSubtitle": "Active services available for patients",
+      "activeServices": "Active Services",
+      "activeServicesSubtitle": "Total active",
+      "inactiveServices": "Inactive Services",
+      "inactiveServicesSubtitle": "Total inactive",
+      "averageRating": "Average Rating",
+      "averageRatingSubtitle": "Average rating",
+      "totalRegistered": "Total services",
+      "totalRegisteredSubtitle": "Registered services"
+    },
+    "empty": {
+      "noResults": "No results",
+      "noResultsDescription": "No services were found with the selected filters.",
+      "noServices": "You have no registered services",
+      "noServicesDescription": "Add your first service to start receiving patients.",
+      "clearFilters": "Clear filters"
     }
   },
 
@@ -353,10 +418,10 @@
       "5000_plus": "RD$5,000+"
     },
     "duration": {
-      "15": "15 min",
-      "30": "30 min",
-      "60": "1 hour",
-      "120": "2+ hours"
+      "short": "Short consultation (15-30 min)",
+      "medium": "Standard consultation (30-45 min)",
+      "long": "Extended consultation (45-60 min)",
+      "extended": "Specialized consultation (60+ min)"
     },
     "status": {
       "all": "All",

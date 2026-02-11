@@ -239,6 +239,7 @@
 
   "common": {
     "close": "Cerrar",
+    "cancel": "Cancelar",
     "connected": "Conectado",
     "connect": "Conectar",
     "disconnect": "Desconectar",
@@ -276,6 +277,7 @@
         "view": "Ver servicio",
         "edit": "Editar servicio",
         "deactivate": "Desactivar servicio",
+        "activate": "Activar servicio",
         "delete": "Eliminar servicio"
       }
     },
@@ -292,6 +294,69 @@
       "disconnect": "Desconectar",
       "viewDetails": "Ver detalles",
       "reviews": "reseñas"
+    }
+  },
+
+  "services": {
+    "management": {
+      "title": "Gestión de Servicios",
+      "newService": "Nuevo servicio",
+      "searchPlaceholder": "Buscar servicio"
+    },
+    "table": {
+      "service": "Servicio",
+      "specialty": "Especialidad",
+      "location": "Ubicación",
+      "type": "Tipo",
+      "price": "Precio",
+      "duration": "Duración",
+      "rating": "Calificación",
+      "status": "Estado",
+      "actions": "Acciones",
+      "noServices": "No hay servicios registrados."
+    },
+    "actions": {
+      "view": "Ver servicio",
+      "edit": "Editar servicio",
+      "deactivate": "Desactivar servicio",
+      "activate": "Activar servicio",
+      "delete": "Eliminar servicio"
+    },
+    "modals": {
+      "activate": {
+        "title": "Activar Servicio",
+        "message": "¿Estás seguro que deseas activar este servicio? Una vez activado, los pacientes podrán reservarlo.",
+        "confirm": "Activar"
+      },
+      "deactivate": {
+        "title": "Desactivar Servicio",
+        "message": "¿Estás seguro que deseas desactivar este servicio? Los pacientes no podrán reservarlo hasta que lo actives nuevamente.",
+        "confirm": "Desactivar"
+      },
+      "delete": {
+        "title": "Eliminar Servicio",
+        "message": "¿Estás seguro que deseas eliminar este servicio? Esta acción no se puede deshacer y perderás toda la información relacionada.",
+        "confirm": "Eliminar"
+      }
+    },
+    "metrics": {
+      "totalServices": "Total de Servicios",
+      "totalServicesSubtitle": "Servicios activos disponibles para los pacientes",
+      "activeServices": "Servicios Activos",
+      "activeServicesSubtitle": "Total activos",
+      "inactiveServices": "Servicios Inactivos",
+      "inactiveServicesSubtitle": "Total inactivos",
+      "averageRating": "Promedio rating",
+      "averageRatingSubtitle": "Rating promedio",
+      "totalRegistered": "Total servicios",
+      "totalRegisteredSubtitle": "Servicios registrados"
+    },
+    "empty": {
+      "noResults": "No hay resultados",
+      "noResultsDescription": "No se encontraron servicios con los filtros seleccionados.",
+      "noServices": "No tienes servicios registrados",
+      "noServicesDescription": "Agrega tu primer servicio para comenzar a recibir pacientes.",
+      "clearFilters": "Limpiar filtros"
     }
   },
 
@@ -353,10 +418,10 @@
       "5000_plus": "RD$5,000+"
     },
     "duration": {
-      "15": "15 min",
-      "30": "30 min",
-      "60": "1 hora",
-      "120": "2+ horas"
+      "short": "Consulta corta (15-30 min)",
+      "medium": "Consulta estándar (30-45 min)",
+      "long": "Consulta extendida (45-60 min)",
+      "extended": "Consulta especializada (60+ min)"
     },
     "status": {
       "all": "Todos",

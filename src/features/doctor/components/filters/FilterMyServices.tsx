@@ -1,5 +1,5 @@
 import { type JSX } from "react";
-import { Clock, Star, DollarSign, MapPin, Stethoscope } from "lucide-react";
+import { Star, DollarSign } from "lucide-react";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
@@ -43,45 +43,53 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
   ];
 
   const tipoOptions: OptionType[] = [
-    { value: "presencial", label: "Presencial" },
-    { value: "virtual", label: "Virtual" },
-    { value: "mixta", label: "Presencial / Virtual" },
+    { value: "presencial", label: t("filters.serviceTypes.presencial") },
+    { value: "virtual", label: t("filters.serviceTypes.virtual") },
+    { value: "mixta", label: t("filters.serviceTypes.mixta") },
   ];
 
   const precioOptions: OptionType[] = [
     {
       value: "0-1000",
       label: (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-4 h-4" />
-          RD$0 - RD$1,000
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          <DollarSign className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+          {t("filters.priceRanges.0_1000")}
         </span>
       ),
     },
     {
       value: "1000-3000",
       label: (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-4 h-4" />
-          RD$1,000 - RD$3,000
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          <DollarSign className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+          {t("filters.priceRanges.1000_3000")}
         </span>
       ),
     },
     {
       value: "3000-5000",
       label: (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-4 h-4" />
-          RD$3,000 - RD$5,000
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          <DollarSign className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+          {t("filters.priceRanges.3000_5000")}
         </span>
       ),
     },
     {
       value: "5000+",
       label: (
-        <span className="flex items-center gap-1">
-          <DollarSign className="w-4 h-4" />
-          RD$5,000+
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          <DollarSign className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+          {t("filters.priceRanges.5000_plus")}
         </span>
       ),
     },
@@ -89,56 +97,42 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
   const duracionOptions: OptionType[] = [
     {
-      value: "25",
+      value: "corta",
       label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          25 min
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.duration.short")}
         </span>
       ),
     },
     {
-      value: "30",
+      value: "media",
       label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          30 min
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.duration.medium")}
         </span>
       ),
     },
     {
-      value: "35",
+      value: "larga",
       label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          35 min
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.duration.long")}
         </span>
       ),
     },
     {
-      value: "40",
+      value: "extendida",
       label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          40 min
-        </span>
-      ),
-    },
-    {
-      value: "45",
-      label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          45 min
-        </span>
-      ),
-    },
-    {
-      value: "50",
-      label: (
-        <span className="flex items-center gap-1">
-          <Clock className="w-4 h-4" />
-          50 min
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.duration.extended")}
         </span>
       ),
     },
@@ -148,40 +142,59 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
     {
       value: "4.5",
       label: (
-        <span className="flex items-center gap-1">
-          4.5+
-          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.rating.4_5")}
+          <Star
+            className={`text-yellow-400 ${isMobile ? "w-3 h-3" : "w-4 h-4"}`}
+            fill="currentColor"
+          />
         </span>
       ),
     },
     {
       value: "4",
       label: (
-        <span className="flex items-center gap-1">
-          4.0+
-          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.rating.4")}
+          <Star
+            className={`text-yellow-400 ${isMobile ? "w-3 h-3" : "w-4 h-4"}`}
+            fill="currentColor"
+          />
         </span>
       ),
     },
     {
       value: "3.5",
       label: (
-        <span className="flex items-center gap-1">
-          3.5+
-          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+        <span
+          className={`flex items-center gap-1 ${isMobile ? "text-xs" : ""}`}
+        >
+          {t("filters.rating.3_5")}
+          <Star
+            className={`text-yellow-400 ${isMobile ? "w-3 h-3" : "w-4 h-4"}`}
+            fill="currentColor"
+          />
         </span>
       ),
     },
     {
       value: "0",
-      label: "Todas las calificaciones",
+      label: (
+        <span className={isMobile ? "text-xs" : ""}>
+          {t("filters.rating.all")}
+        </span>
+      ),
     },
   ];
 
   const estadoOptions: OptionType[] = [
-    { value: "all", label: "Todos" },
-    { value: "active", label: "Activos" },
-    { value: "inactive", label: "Inactivos" },
+    { value: "all", label: t("filters.status.all") },
+    { value: "active", label: t("filters.status.active") },
+    { value: "inactive", label: t("filters.status.inactive") },
   ];
 
   return (
@@ -190,7 +203,7 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
         name="servicio"
         label="Tipo de Servicio"
         options={servicioOptions}
-        placeholder="Seleccionar servicio"
+        placeholder={t("filters.placeholders.serviceType")}
         value={filters.servicio}
         noBadges
         onChange={(v) =>
@@ -216,9 +229,9 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
       <MCFilterSelect
         name="tipo"
-        label="Tipo de Atención"
+        label={t("filters.labels.serviceType")}
         options={tipoOptions}
-        placeholder="Seleccionar tipo"
+        placeholder={t("filters.placeholders.serviceType")}
         value={filters.tipo}
         noBadges
         onChange={(v) =>
@@ -230,9 +243,9 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
       <MCFilterSelect
         name="precio"
-        label="Rango de Precio"
+        label={t("filters.labels.priceRange")}
         options={precioOptions}
-        placeholder="Seleccionar rango"
+        placeholder={t("filters.placeholders.priceRange")}
         value={filters.precio}
         noBadges
         onChange={(v) =>
@@ -244,9 +257,9 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
       <MCFilterSelect
         name="duracion"
-        label="Duración"
+        label={t("filters.labels.duration")}
         options={duracionOptions}
-        placeholder="Seleccionar duración"
+        placeholder={t("filters.placeholders.duration")}
         value={filters.duracion}
         noBadges
         onChange={(v) =>
@@ -258,9 +271,9 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
       <MCFilterSelect
         name="rating"
-        label="Calificación"
+        label={t("filters.labels.rating")}
         options={ratingOptions}
-        placeholder="Calificación mínima"
+        placeholder={t("filters.placeholders.rating")}
         value={filters.rating !== null ? String(filters.rating) : "0"}
         noBadges
         onChange={(v) =>
@@ -272,9 +285,9 @@ function FilterMyServices({ filters, onFiltersChange }: FilterMyServicesProps) {
 
       <MCFilterSelect
         name="estado"
-        label="Estado"
+        label={t("filters.labels.status")}
         options={estadoOptions}
-        placeholder="Seleccionar estado"
+        placeholder={t("filters.placeholders.status")}
         value={filters.estado}
         noBadges
         onChange={(v) =>
