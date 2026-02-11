@@ -501,7 +501,6 @@ function ScheduleAppointmentForm({
                   selected={selectedDate}
                   onSelect={handleDateSelect}
                   initialFocus
-                  compact
                   className="p-3 pointer-events-auto"
                 />
               </MorphingPopoverContent>

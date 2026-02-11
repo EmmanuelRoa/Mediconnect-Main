@@ -22,10 +22,12 @@ function Calendar({
   formatters,
   components,
   appointmentCounts,
+  compact = false, // Añade la prop compact
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"];
   appointmentCounts?: Map<string, number>;
+  compact?: boolean; // Añade la prop compact
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -33,8 +35,9 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-2", // Reducido de p-3 a p-2
-        "[--cell-size:1.5rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent", // Reducido de 1.75rem a 1.5rem
+        "bg-background group/calendar",
+        compact ? "p-1" : "p-3",
+        "[--cell-size:1.75rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
@@ -48,11 +51,13 @@ function Calendar({
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn(
-          "flex gap-2 flex-col md:flex-row relative", // Reducido de gap-4 a gap-2
+          "flex flex-col md:flex-row relative",
+          compact ? "gap-2" : "gap-4",
           defaultClassNames.months,
         ),
         month: cn(
-          "flex flex-col w-full gap-0.5", // Reducido de gap-1 a gap-0.5
+          "flex flex-col w-full",
+          compact ? "gap-0.5" : "gap-1",
           defaultClassNames.month,
         ),
         nav: cn(
@@ -60,25 +65,34 @@ function Calendar({
           defaultClassNames.nav,
         ),
         week: cn(
-          "flex w-full gap-0", // Mantiene gap-0
+          "flex w-full",
+          compact ? "gap-0.5" : "gap-0",
           defaultClassNames.week,
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-9 aria-disabled:opacity-50 p-1.5 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full", // Reducido de size-11 a size-9
+          compact
+            ? "size-8 aria-disabled:opacity-50 p-1 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full"
+            : "size-11 aria-disabled:opacity-50 p-2 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
           defaultClassNames.button_previous,
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-9 aria-disabled:opacity-50 p-1.5 select-none transition-all duration-200 hover:bg-primary/10  dark:hover:bg-primary/20 active:scale-95 rounded-full", // Reducido de size-11 a size-9
+          compact
+            ? "size-8 aria-disabled:opacity-50 p-1 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full"
+            : "size-11 aria-disabled:opacity-50 p-2 select-none transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded-full",
           defaultClassNames.button_next,
         ),
         month_caption: cn(
-          "flex items-center justify-center h-10 w-full px-8 mb-4", // Reducido h-12 a h-10, mb-8 a mb-4, px-10 a px-8
+          compact
+            ? "flex items-center justify-center h-8 w-full px-4 mb-2"
+            : "flex items-center justify-center h-12 w-full px-10 mb-8",
           defaultClassNames.month_caption,
         ),
         dropdowns: cn(
-          "w-full flex items-center font-medium justify-center h-10 gap-1.5", // Reducido de h-12 a h-10
+          compact
+            ? "w-full flex items-center font-medium justify-center h-8 gap-1"
+            : "w-full flex items-center font-medium justify-center h-12 gap-1.5",
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
@@ -90,16 +104,20 @@ function Calendar({
           defaultClassNames.dropdown,
         ),
         caption_label: cn(
-          "select-none font-medium text-primary text-xl", // Reducido de text-2xl a text-xl
+          compact
+            ? "select-none font-medium text-primary text-base"
+            : "select-none font-medium text-primary text-2xl",
           defaultClassNames.caption_label,
         ),
         table: "w-full border-collapse",
         weekdays: cn(
-          "flex mb-1 gap-0.5", // Reducido de mb-2 a mb-1
+          compact ? "flex mb-1 gap-0.5" : "flex mb-2 gap-0.5",
           defaultClassNames.weekdays,
         ),
         weekday: cn(
-          "text-muted-foreground rounded-md flex-1 font-medium text-xs select-none uppercase tracking-wide", // Reducido de text-sm a text-xs
+          compact
+            ? "text-muted-foreground rounded-md flex-1 font-medium text-xs select-none uppercase tracking-wide"
+            : "text-muted-foreground rounded-md flex-1 font-medium text-sm select-none uppercase tracking-wide",
           defaultClassNames.weekday,
         ),
         week_number_header: cn(
@@ -146,27 +164,34 @@ function Calendar({
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
             return (
-              <ChevronLeftIcon className={cn("size-6", className)} {...props} />
+              <ChevronLeftIcon
+                className={cn(compact ? "size-5" : "size-7", className)}
+                {...props}
+              />
             );
           }
 
           if (orientation === "right") {
             return (
               <ChevronRightIcon
-                className={cn("size-6", className)}
+                className={cn(compact ? "size-5" : "size-7", className)}
                 {...props}
               />
             );
           }
 
           return (
-            <ChevronDownIcon className={cn("size-6", className)} {...props} />
+            <ChevronDownIcon
+              className={cn(compact ? "size-5" : "size-7", className)}
+              {...props}
+            />
           );
         },
         DayButton: (dayButtonProps) => (
           <CalendarDayButton
             {...dayButtonProps}
             appointmentCounts={appointmentCounts}
+            compact={compact}
           />
         ),
         WeekNumber: ({ children, ...props }) => {
@@ -190,9 +215,11 @@ function CalendarDayButton({
   day,
   modifiers,
   appointmentCounts,
+  compact = false,
   ...props
 }: React.ComponentProps<typeof DayButton> & {
   appointmentCounts?: Map<string, number>;
+  compact?: boolean;
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -231,7 +258,10 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-accent group-data-[focused=true]/day:ring-accent/50 dark:hover:text-primary dark:hover:bg-primary/20 flex aspect-square w-full max-w-[1.75rem] h-7 mx-auto p-3 flex-col items-center justify-center leading-none font-normal text-xs group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-2 rounded-full data-[range-end=true]:rounded-full data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-full hover:bg-primary/10 transition-colors duration-150",
+        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-accent group-data-[focused=true]/day:ring-accent/50 dark:hover:text-primary dark:hover:bg-primary/20 flex aspect-square w-full mx-auto flex-col items-center justify-center leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-2 rounded-full data-[range-end=true]:rounded-full data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-full hover:bg-primary/10 transition-colors duration-150",
+        compact
+          ? "max-w-[1.25rem] h-5 p-1 text-xs"
+          : "max-w-[2rem] h-8 p-4.5 text-sm",
         modifiers.today && "border border-primary",
         intensityClass,
         appointmentCount > 0 && "border-2",
@@ -240,17 +270,16 @@ function CalendarDayButton({
       )}
       {...props}
     >
-      <span
-        className={cn(
-          appointmentCount > 0 &&
-            !modifiers.selected &&
-            "text-primary dark:text-primary-foreground",
-        )}
-      >
-        {day.date.getDate()}
-      </span>
+      <span>{day.date.getDate()}</span>
       {appointmentCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-semibold">
+        <span
+          className={cn(
+            "absolute flex items-center justify-center rounded-full bg-accent text-accent-foreground font-semibold",
+            compact
+              ? "text-[9px] w-3 h-3 -top-0.5 -right-0.5"
+              : "text-xs w-4 h-4 -top-1 -right-1",
+          )}
+        >
           {appointmentCount}
         </span>
       )}

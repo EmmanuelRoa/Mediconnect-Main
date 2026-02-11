@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/empty";
 import { Filter, CalendarX } from "lucide-react";
 import MCButton from "@/shared//components/forms/MCButton";
+
 interface Service {
   id: string;
   title: string;
@@ -67,17 +68,45 @@ function DoctorServicesSection({ services }: Props) {
     // Filtro por tipo
     if (filters.type && service.type !== filters.type) return false;
 
-    // Filtro por duración
-    if (filters.duration && service.duration !== filters.duration) return false;
+    // Filtro por duración (rango)
+    if (filters.duration) {
+      const min = parseInt(service.duration);
+      switch (filters.duration) {
+        case "corta":
+          if (!(min >= 15 && min <= 30)) return false;
+          break;
+        case "media":
+          if (!(min > 30 && min <= 45)) return false;
+          break;
+        case "larga":
+          if (!(min > 45 && min <= 60)) return false;
+          break;
+        case "extendida":
+          if (!(min > 60)) return false;
+          break;
+        default:
+          break;
+      }
+    }
 
-    // Filtro por rango de precio (ejemplo simple, ajusta según tu formato de precio)
+    // Filtro por rango de precio
     if (filters.priceRange) {
-      const [min, max] = filters.priceRange.split("-").map(Number);
       const priceValue = Number(service.price.replace(/[^0-9]/g, ""));
-      if (max) {
-        if (priceValue < min || priceValue > max) return false;
-      } else {
-        if (priceValue < min) return false;
+      switch (filters.priceRange) {
+        case "0-1000":
+          if (!(priceValue >= 0 && priceValue <= 1000)) return false;
+          break;
+        case "1000-3000":
+          if (!(priceValue > 1000 && priceValue <= 3000)) return false;
+          break;
+        case "3000-5000":
+          if (!(priceValue > 3000 && priceValue <= 5000)) return false;
+          break;
+        case "5000+":
+          if (!(priceValue > 5000)) return false;
+          break;
+        default:
+          break;
       }
     }
 
