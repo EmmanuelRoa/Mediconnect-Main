@@ -89,6 +89,7 @@ function DashboardPage() {
             {/* Appointments Table */}
             <Card className="rounded-2xl md:rounded-4xl flex-1 min-h-[400px] lg:min-h-0 overflow-hidden">
               <MCTablesLayouts
+                titleSize="text-2xl"
                 isDashboard
                 title={t("dashboard.appointmentsManagement")}
                 tableComponent={<DashboardTable />}
