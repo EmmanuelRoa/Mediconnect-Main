@@ -11,7 +11,6 @@ import { useAppStore } from "@/stores/useAppStore";
 import { type LoginSchemaType } from "@/types/AuthTypes";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
-import LanguageDropDown from "../components/LanguageDropDown";
 import { useNavigate } from "react-router-dom";
 import OAuthProvider from "../components/OAuthProvider";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
