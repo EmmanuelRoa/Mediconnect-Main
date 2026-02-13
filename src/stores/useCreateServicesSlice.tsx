@@ -40,17 +40,15 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set) => ({
     name: "",
     specialty: "",
     selectedModality: "presencial",
-    price: 0,
-    numberOfSessions: 1,
+    numberOfSessions: 0,
     duration: {
       hours: 0,
-      minutes: 1,
+      minutes: 0,
     },
     pricePerSession: 0,
     images: [],
     comercial_schedule: [],
     description: "",
-    insuranceAccepted: "",
     location: undefined,
   },
   setCreateServiceData: (data) =>
@@ -127,17 +125,17 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set) => ({
         name: "",
         specialty: "",
         selectedModality: "presencial",
-        price: 0,
-        numberOfSessions: 1,
+
+        numberOfSessions: 0,
         duration: {
           hours: 0,
-          minutes: 1,
+          minutes: 0,
         },
         pricePerSession: 0,
         images: [],
         comercial_schedule: [],
         description: "",
-        insuranceAccepted: "",
+
         location: undefined,
       },
       locationData: {
@@ -157,6 +155,7 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set) => ({
         endTime: "",
         locationId: "",
       },
+      isTitleSeted: false,
       createServiceStep: [
         { servicesDetails: { status: "process" } },
         { location: { status: "wait" } },

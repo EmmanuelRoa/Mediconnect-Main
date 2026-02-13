@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
 interface MCInputProps {
   name: string;
   label?: string;
@@ -20,16 +21,21 @@ interface MCInputProps {
   size?: "small" | "medium" | "large";
   status?: "default" | "error" | "success" | "warning" | "loading";
   statusMessage?: string;
-  variant?: "edit" | "default" | "cedula";
+  variant?:
+    | "edit"
+    | "default"
+    | "cedula"
+    | "internal-vertical"
+    | "internal-horizontal";
   standalone?: boolean;
-  // Nueva prop para icono
   icon?: React.ReactNode;
+  internalTitle?: string;
+  internalPlaceholder?: string;
+  displayMode?: "placeholder" | "value";
 }
 
 function formatCedula(value: string) {
-  // Solo números, máximo 11 dígitos
   const digits = value.replace(/\D/g, "").slice(0, 11);
-  // Formato visual: 000-0000000-0
   if (digits.length <= 3) return digits;
   if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
   return `${digits.slice(0, 3)}-${digits.slice(3, 10)}-${digits.slice(10)}`;
@@ -52,11 +58,14 @@ function MCInput({
   variant = "default",
   standalone = false,
   icon,
+  internalTitle,
+  internalPlaceholder,
+  displayMode = "placeholder",
 }: MCInputProps) {
   const formContext = standalone ? null : useFormContext();
-
   const { t } = useTranslation("common");
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const [cedulaValue, setCedulaValue] = useState(value || "");
 
   const handleStatusColor = () => {
     switch (status) {
@@ -86,7 +95,6 @@ function MCInput({
 
   const getIconPaddingClasses = () => {
     if (!icon) return "";
-
     switch (size) {
       case "small":
         return "pl-10";
@@ -116,20 +124,37 @@ function MCInput({
     if (variant === "edit") {
       return "border-none bg-accent text-primary/80 placeholder:text-primary/60";
     }
+    if (variant === "internal-vertical" || variant === "internal-horizontal") {
+      return "border-none bg-transparent text-primary/80 placeholder:text-primary/60";
+    }
     return "";
   };
 
-  // Detectar si es campo de cédula
+  const handleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
 
-  // Estado local solo para mostrar la cédula formateada
-  const [cedulaValue, setCedulaValue] = useState(value || "");
+  const handleNumberInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const cleanValue = input.value.replace(/[^0-9]/g, "");
+    if (input.value !== cleanValue) {
+      input.value = cleanValue;
+      const event = new Event("input", { bubbles: true });
+      input.dispatchEvent(event);
+    }
+  };
 
   const isCedulaVariant = variant === "cedula";
+  const isInternalVariant =
+    variant === "internal-vertical" || variant === "internal-horizontal";
+  const isVerticalLayout = variant === "internal-vertical";
+  const isHorizontalLayout = variant === "internal-horizontal";
 
   const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCedula(e.target.value);
     setCedulaValue(formatted);
-    // Enviar solo los números al formulario
     const onlyDigits = formatted.replace(/\D/g, "");
     if (standalone) {
       onChange?.({ ...e, target: { ...e.target, value: onlyDigits } });
@@ -138,7 +163,6 @@ function MCInput({
     }
   };
 
-  // Props del input dependiendo del modo y variante
   const inputProps = isCedulaVariant
     ? {
         value: cedulaValue,
@@ -146,28 +170,39 @@ function MCInput({
       }
     : standalone
       ? {
-          value: value || "",
-          onChange: onChange,
+          value,
+          onChange,
         }
-      : (() => {
-          if (!formContext) return {};
-          const field = formContext.register(name);
-          return {
-            ...field,
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-              field.onChange(e);
-              onChange?.(e);
-            },
-          };
-        })();
+      : formContext
+        ? type === "number"
+          ? formContext.register(name, { valueAsNumber: true })
+          : formContext.register(name)
+        : {};
 
-  // Obtener errores solo si está en un form
   const error = !standalone && formContext?.formState?.errors?.[name];
+
+  const getCurrentValue = () => {
+    if (isCedulaVariant) return cedulaValue;
+    if (standalone) return value || "";
+    return formContext?.watch(name) || "";
+  };
+
+  const currentValue = getCurrentValue();
+
+  const getDisplayPlaceholder = () => {
+    if (displayMode === "value" && currentValue) {
+      return "";
+    }
+    return internalPlaceholder || placeholder;
+  };
+
+  // Detectar si el input debe estar deshabilitado por variante interna
+  const isInternalDisabled = isInternalVariant;
 
   return (
     <div className="w-full flex flex-col mb-4 px-0">
-      {/* Label and Password Toggle */}
-      {label && (
+      {/* Label externo */}
+      {label && !isInternalVariant && (
         <div className="flex flex-row justify-between items-center mb-2 gap-2">
           <label
             htmlFor={name}
@@ -200,37 +235,113 @@ function MCInput({
         </div>
       )}
 
-      {/* Input Container */}
-      <div className="relative">
-        {/* Icon */}
-        {icon && (
-          <div
-            className={cn(
-              "absolute left-0 top-0 flex items-center justify-center pointer-events-none text-primary/60",
-              getIconSizeClasses(),
-            )}
-          >
-            {icon}
-          </div>
-        )}
-
-        <Input
-          id={name}
-          placeholder={placeholder}
-          type={type === "password" && passwordVisibility ? "text" : type}
-          required={required}
-          disabled={disabled}
-          {...inputProps}
-          className={cn(
-            "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary placeholder:text-md",
-            getSizeClasses(),
-            handleStatusColor(),
-            getVariantClasses(),
-            getIconPaddingClasses(),
-            className,
+      {/* LAYOUT VERTICAL */}
+      {isVerticalLayout ? (
+        <div className="border border-primary/50 rounded-full px-4 sm:px-5 py-3">
+          {internalTitle && (
+            <label
+              htmlFor={name}
+              className="text-left text-sm sm:text-base text-primary font-medium block mb-1"
+            >
+              {internalTitle}
+              {required && <span className="text-red-500 ml-1">*</span>}
+            </label>
           )}
-        />
-      </div>
+          <div className="relative">
+            {displayMode === "value" && currentValue ? (
+              <div className="w-full text-primary/60 text-right text-sm sm:text-base">
+                {currentValue}
+              </div>
+            ) : (
+              <input
+                id={name}
+                placeholder={getDisplayPlaceholder()}
+                type={type === "password" && passwordVisibility ? "text" : type}
+                required={required}
+                disabled={isInternalDisabled}
+                onKeyDown={type === "number" ? handleNumberKeyDown : undefined}
+                onInput={type === "number" ? handleNumberInput : undefined}
+                {...inputProps}
+                className={cn(
+                  "h-fit px-0 border-none w-full text-left placeholder:text-left focus:ring-0 focus:outline-none",
+                  "text-primary/60 placeholder:text-primary/60 text-sm sm:text-base",
+                  className,
+                )}
+              />
+            )}
+          </div>
+        </div>
+      ) : isHorizontalLayout ? (
+        /* LAYOUT HORIZONTAL */
+        <div className="border border-primary/60 rounded-full px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex flex-row items-center justify-between gap-4">
+            {internalTitle && (
+              <label
+                htmlFor={name}
+                className="text-left text-base sm:text-lg text-primary font-medium whitespace-nowrap"
+              >
+                {internalTitle}
+                {required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            )}
+            <div className="relative flex-1 min-w-0">
+              {displayMode === "value" && currentValue ? (
+                <div className="w-full text-primary/60 text-right text-sm sm:text-base">
+                  {currentValue}
+                </div>
+              ) : (
+                <input
+                  id={name}
+                  placeholder={getDisplayPlaceholder()}
+                  type={
+                    type === "password" && passwordVisibility ? "text" : type
+                  }
+                  required={required}
+                  disabled={isInternalDisabled}
+                  className={cn(
+                    "h-fit w-full px-0 border-none text-right placeholder:text-right focus:ring-0 focus:outline-none",
+                    "text-primary/60 placeholder:text-primary/60 text-sm sm:text-base",
+                    isInternalDisabled && "cursor-pointer bg-muted",
+                    className,
+                  )}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* LAYOUT NORMAL */
+        <div className="relative">
+          {icon && (
+            <div
+              className={cn(
+                "absolute left-0 top-0 flex items-center justify-center pointer-events-none text-primary/60",
+                getIconSizeClasses(),
+              )}
+            >
+              {icon}
+            </div>
+          )}
+          <Input
+            id={name}
+            placeholder={placeholder}
+            type={type === "password" && passwordVisibility ? "text" : type}
+            required={required}
+            disabled={disabled}
+            onKeyDown={type === "number" ? handleNumberKeyDown : undefined}
+            onInput={type === "number" ? handleNumberInput : undefined}
+            {...inputProps}
+            className={cn(
+              "w-full rounded-4xl focus:ring-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 text-primary placeholder:text-md",
+              getSizeClasses(),
+              handleStatusColor(),
+              getVariantClasses(),
+              getIconPaddingClasses(),
+              className,
+            )}
+          />
+        </div>
+      )}
 
       {/* Status Message */}
       {statusMessage && (
@@ -252,7 +363,7 @@ function MCInput({
         </span>
       )}
 
-      {/* Form Errors (solo si NO es standalone) */}
+      {/* Form Errors */}
       {error && (
         <span className="text-red-500 text-sm mt-1">
           {String(error?.message)}

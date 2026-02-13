@@ -18,7 +18,6 @@ export const defaultServiceSchema = z.object({
     .optional(),
   specialty: z.string(),
   selectedModality: z.enum(["presencial", "teleconsulta", "Mixta"]),
-  price: z.number().min(0, "Price must be a positive number"),
   numberOfSessions: z
     .number()
     .min(1, "Number of sessions must be at least 1")
@@ -30,8 +29,8 @@ export const defaultServiceSchema = z.object({
   }),
   pricePerSession: z
     .number()
-    .min(0, "Price per session must be a positive number"),
-  insuranceAccepted: z.string().optional(),
+    .min(1, "Price per session must be greater than 0"),
+
   images: z
     .array(UploadedFileSchema)
     .max(8, "Máximo 8 imágenes")
@@ -53,12 +52,20 @@ export const serviceSchema = (t: (key: string) => string) =>
       .optional(),
     specialty: z.string(),
     selectedModality: z.enum(["presencial", "teleconsulta", "Mixta"]),
-    price: z.number().min(0, t("validation.price.positive")),
+    pricePerSession: z
+      .number()
+      .min(1, t("validation.pricePerSession.positive"))
+      .transform((val) =>
+        typeof val === "number" && !isNaN(val) ? val : undefined,
+      ),
     numberOfSessions: z
       .number()
       .min(1, t("validation.numberOfSessions.min"))
       .max(5, t("validation.numberOfSessions.max"))
-      .default(1),
+      .default(1)
+      .transform((val) =>
+        typeof val === "number" && !isNaN(val) ? val : undefined,
+      ),
     duration: z.object({
       hours: z.number().int().min(0).max(23).default(0),
       minutes: z
@@ -67,10 +74,7 @@ export const serviceSchema = (t: (key: string) => string) =>
         .min(1, t("validation.duration.minutes.min"))
         .max(59, t("validation.duration.minutes.max")),
     }),
-    pricePerSession: z
-      .number()
-      .min(0, t("validation.pricePerSession.positive")),
-    insuranceAccepted: z.string().optional(),
+
     images: z
       .array(UploadedFileSchema)
       .max(8, t("validation.images.maxLength"))
