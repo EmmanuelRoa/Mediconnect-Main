@@ -31,6 +31,8 @@
     "agePlaceholder": "Ingresa tu edad",
     "height": "Altura (cm)",
     "heightPlaceholder": "Ingresa tu altura",
+    "years": "años",
+    "pending": "Pendiente",
     "weight": "Peso (kg)",
     "weightPlaceholder": "Ingresa tu peso",
     "bloodType": "Tipo de Sangre",
@@ -80,6 +82,8 @@
     "emailInvalid": "Dirección de correo inválida",
     "ageInvalid": "Entrada inválida: se esperaba un número",
     "heightInvalid": "Entrada inválida: se esperaba un número",
+    "weightPositive": "El peso debe ser un número positivo",
+    "heightPositive": "La altura debe ser un número positivo",
     "weightInvalid": "Entrada inválida: se esperaba un número",
     "bloodTypeInvalid": "Opción inválida: se esperaba A+, A-, B+, B-, AB+, AB-, O+ o O-"
   },

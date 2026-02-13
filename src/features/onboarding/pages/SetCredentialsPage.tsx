@@ -149,20 +149,15 @@ function SetCredentialsPage() {
           throw new Error(t('setCredentialsPage.errors.noRegistrationToken'));
         }
 
-        console.log(t('setCredentialsPage.messages.startingRegistration'));
-
         // Mapear y enviar los datos al backend
         const request = await mapDoctorOnboardingToRequest(
           updatedDoctorData,
           registrationToken
         );
 
-        const response = await doctorRegistrationService.registerDoctor(request);
-
-        console.log(t('setCredentialsPage.messages.registrationSuccess'), response);
+        await doctorRegistrationService.registerDoctor(request);
 
         // Login automático después del registro exitoso
-        console.log('Iniciando login automático...');
         const loginResponse = await authService.login({
           email: updatedDoctorData.email,
           password: updatedDoctorData.password,

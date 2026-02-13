@@ -98,29 +98,6 @@ export const doctorRegistrationService = {
       if (request.descripciones_certificaciones && request.descripciones_certificaciones.length > 0) {
         formData.append('descripciones_certificaciones', JSON.stringify(request.descripciones_certificaciones));
       }
-
-      // Log para debug - Verificar que todos los archivos sean válidos
-      console.log('[Doctor Registration Service] Sending data:');
-      console.log('[Doctor Registration Service] FormData entries:');
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`  ✅ ${key} (File):`, {
-            name: value.name,
-            size: value.size,
-            type: value.type,
-            lastModified: value.lastModified
-          });
-        } else if (typeof value === 'object' && value !== null && 'size' in value && 'type' in value) {
-          // Es un Blob pero no un File
-          console.log(`  ⚠️ ${key} (Blob - debería ser File):`, {
-            size: (value as any).size,
-            type: (value as any).type
-          });
-        } else {
-          console.log(`  📝 ${key} (string):`, value);
-        }
-      }
-
       // Realizar la petición
       const { data } = await apiClient.post<RegisterDoctorResponse>(
         API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_DOCTOR,

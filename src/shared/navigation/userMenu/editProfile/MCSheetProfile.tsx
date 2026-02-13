@@ -4,6 +4,7 @@ import MCSheetDoctor from "./doctor/MCSheetDoctor";
 import MCSheetHealthCenter from "./center/MCSheetHealthCenter";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { getUserAppRole } from "@/services/auth/auth.types";
 interface MCSheetProfileProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -13,8 +14,9 @@ interface MCSheetProfileProps {
 function MCSheetProfile({ open, onOpenChange, whatTab }: MCSheetProfileProps) {
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
+  
   const renderProfileContent = () => {
-    switch (user?.role) {
+    switch (getUserAppRole(user)) {
       case "PATIENT":
         return <MCSheetPatient onOpenChange={onOpenChange} whatTab={whatTab} />;
       case "DOCTOR":

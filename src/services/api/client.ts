@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAppStore } from '@/stores/useAppStore';
 import API_ENDPOINTS from './endpoints';
+import { willTokenExpireSoon, isTokenExpired } from '@/services/auth/token.utils';
 
 // Flag para evitar múltiples llamadas simultáneas al refresh
 let isRefreshing = false;
@@ -21,6 +22,63 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
+/**
+ * Función auxiliar para refrescar los tokens
+ * Centraliza la lógica de refresh para ser reutilizada
+ */
+const refreshTokens = async (): Promise<{ accessToken: string; refreshToken: string } | null> => {
+  const refreshToken = useAppStore.getState().refreshToken;
+
+  if (!refreshToken) {
+    console.error('🔒 [API Client] No hay refresh token disponible');
+    return null;
+  }
+
+  try {
+    console.log('🔄 [API Client] Refrescando tokens...');
+    
+    const { data: refreshData } = await axios.post(
+      `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+      { refreshToken },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    console.log('📥 [API Client] Respuesta del refresh:', refreshData);
+
+    // Validar que la respuesta tenga los campos necesarios
+    if (!refreshData || !refreshData.accessToken || !refreshData.refreshToken) {
+      console.error('❌ [API Client] Respuesta de refresh inválida:', refreshData);
+      throw new Error('Respuesta de refresh inválida: faltan tokens');
+    }
+
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshData;
+
+    console.log('✅ [API Client] Tokens refrescados exitosamente');
+
+    // Actualizar tokens en el store
+    const updateTokens = useAppStore.getState().updateTokens;
+    updateTokens(newAccessToken, newRefreshToken);
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  } catch (error) {
+    console.error('❌ [API Client] Error al refrescar tokens:', error);
+    
+    // Si falla el refresh, cerrar sesión
+    const logout = useAppStore.getState().logout;
+    logout();
+    
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    
+    return null;
+  }
+};
+
 // Crear instancia de axios con configuración base
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
@@ -30,16 +88,94 @@ const apiClient = axios.create({
   },
 });
 
-// Interceptor de Request: Agregar token automáticamente
+// Interceptor de Request: Agregar token automáticamente y verificar expiración
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     const accessToken = useAppStore.getState().accessToken;
     
-    // Solo agregar token si no existe ya un header Authorization
-    // (para permitir tokens personalizados en peticiones específicas)
-    if (accessToken && config.headers && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    } else if (!accessToken && !config.headers?.Authorization) {
+    // Lista de endpoints de autenticación que NO requieren refresh proactivo
+    const authEndpoints = [
+      API_ENDPOINTS.AUTH.LOGIN,
+      API_ENDPOINTS.AUTH.GOOGLE_LOGIN,
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+      API_ENDPOINTS.AUTH.REGISTRO_SOLICITAR_CODIGO,
+      API_ENDPOINTS.AUTH.REGISTRO_VALIDAR_CODIGO,
+      API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_PACIENTE,
+      API_ENDPOINTS.AUTH.REGISTRO_COMPLETAR_DOCTOR,
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      API_ENDPOINTS.AUTH.VERIFY_EMAIL,
+    ];
+    
+    const isAuthEndpoint = authEndpoints.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+    
+    // Si tenemos un token y no es un endpoint de autenticación, verificar expiración
+    if (accessToken && !isAuthEndpoint) {
+      // Verificar si el token está expirado
+      if (isTokenExpired(accessToken)) {
+        console.warn('⚠️ [API Client] Token expirado - refrescando antes de la petición');
+        
+        if (isRefreshing) {
+          // Si ya estamos refrescando, esperar en la cola
+          await new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          });
+          
+          // Después de que se resuelva la cola, obtener el nuevo token
+          const newAccessToken = useAppStore.getState().accessToken;
+          if (config.headers) {
+            config.headers.Authorization = `Bearer ${newAccessToken}`;
+          }
+        } else {
+          isRefreshing = true;
+          
+          try {
+            const tokens = await refreshTokens();
+            
+            if (tokens) {
+              // Actualizar el header con el nuevo token
+              if (config.headers) {
+                config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+              }
+              
+              // Procesar la cola
+              processQueue(null, tokens.accessToken);
+            } else {
+              // Si no se pudo refrescar, rechazar la petición
+              processQueue(new Error('No se pudo refrescar el token'), null);
+              throw new Error('Token expirado y no se pudo refrescar');
+            }
+          } finally {
+            isRefreshing = false;
+          }
+        }
+      }
+      // Verificar si el token expirará pronto (dentro de 5 minutos)
+      else if (willTokenExpireSoon(accessToken, 5)) {
+        console.log('⏰ [API Client] Token expirará pronto - refrescando de manera proactiva');
+        
+        // Hacer el refresh de manera no bloqueante (en background)
+        if (!isRefreshing) {
+          isRefreshing = true;
+          
+          // Ejecutar el refresh en background sin bloquear la petición actual
+          refreshTokens().finally(() => {
+            isRefreshing = false;
+          });
+        }
+        
+        // Continuar con el token actual (aún válido)
+        if (config.headers && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+      }
+      // Token válido y no próximo a expirar
+      else if (config.headers && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    } else if (!accessToken && !config.headers?.Authorization && !isAuthEndpoint) {
       console.log('📤 [API Client] Sin token - petición sin autenticación');
     }
     
@@ -57,7 +193,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor de Response: Manejo de errores global y auto-refresh de tokens
+// Interceptor de Response: Manejo de errores global y auto-refresh de tokens (fallback)
 apiClient.interceptors.response.use(
   (response) => {
     console.log('📥 [API Client] Response recibida:', {
@@ -86,7 +222,8 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       
-      // Token expirado - intentar refresh automático
+      // Token expirado - intentar refresh automático (FALLBACK)
+      // Nota: El refresh proactivo debería prevenir la mayoría de estos casos
       if (status === 401 && !originalRequest._retry) {
         // Lista de endpoints de autenticación que NO deben activar el flujo de refresh
         const authEndpoints = [
@@ -123,6 +260,8 @@ apiClient.interceptors.response.use(
           return Promise.reject(error);
         }
 
+        console.warn('⚠️ [API Client] 401 recibido (fallback) - el refresh proactivo no lo previno');
+
         if (isRefreshing) {
           // Si ya estamos refrescando, añadir a la cola
           return new Promise((resolve, reject) => {
@@ -139,55 +278,27 @@ apiClient.interceptors.response.use(
         originalRequest._retry = true;
         isRefreshing = true;
 
-        const refreshToken = useAppStore.getState().refreshToken;
-
-        if (!refreshToken) {
-          console.error('🔒 [API Client] No hay refresh token - cerrando sesión');
-          const logout = useAppStore.getState().logout;
-          logout();
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
-          return Promise.reject(error);
-        }
-
         try {
-          console.log('🔄 [API Client] Intentando refrescar token...');
-          
-          // Hacer la petición de refresh
-          const { data: refreshData } = await axios.post(
-            `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
-            { refreshToken }
-          );
+          const tokens = await refreshTokens();
 
-          const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshData;
+          if (tokens) {
+            // Actualizar el header del request original
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+            }
 
-          console.log('✅ [API Client] Tokens refrescados exitosamente');
+            // Procesar la cola de requests pendientes
+            processQueue(null, tokens.accessToken);
 
-          // Actualizar tokens en el store
-          const updateTokens = useAppStore.getState().updateTokens;
-          updateTokens(newAccessToken, newRefreshToken);
-
-          // Actualizar el header del request original
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-          // Procesar la cola de requests pendientes
-          processQueue(null, newAccessToken);
-
-          // Reintentar el request original
-          return apiClient(originalRequest);
-        } catch (refreshError) {
-          console.error('❌ [API Client] Error al refrescar token:', refreshError);
-          
-          processQueue(refreshError as Error, null);
-          
-          // Si falla el refresh, cerrar sesión
-          const logout = useAppStore.getState().logout;
-          logout();
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            // Reintentar el request original
+            return apiClient(originalRequest);
+          } else {
+            processQueue(new Error('No se pudo refrescar el token'), null);
+            return Promise.reject(new Error('No se pudo refrescar el token'));
           }
-          
+        } catch (refreshError) {
+          console.error('❌ [API Client] Error al refrescar token (fallback):', refreshError);
+          processQueue(refreshError as Error, null);
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

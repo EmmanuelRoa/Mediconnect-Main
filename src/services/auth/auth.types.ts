@@ -59,8 +59,25 @@ export interface Doctor {
 
 
 export interface Paciente {
-  // Define las propiedades del paciente aquí cuando las tengas
-  [key: string]: any;
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  numero_documento_identificacion: string;
+  tipoDocIdentificacion: string;
+  foto_documento: string | null;
+  fotoPerfil?: string | null; // Alias para compatibilidad
+  fechaNacimiento: string; // ISO Date string
+  genero: string;
+  altura: number | null;
+  peso: number | null;
+  tipoSangre: string | null;
+  estado: string;
+  ubicacionId: number | null;
+  creadoEn: string; // ISO Date string
+  actualizadoEn: string | null; // ISO Date string
+  // Aliases para compatibilidad con código existente
+  createdAt?: string;
+  fechaCreacion?: string;
 }
 
 export interface CentroSalud {
@@ -339,8 +356,8 @@ export function getUserAvatar(user: User | null): string | undefined {
     return user.doctor.fotoPerfil;
   }
   
-  if (user.paciente?.fotoPerfil) {
-    return user.paciente.fotoPerfil;
+  if (user.paciente?.fotoPerfil || user.paciente?.foto_documento) {
+    return user.paciente.fotoPerfil || undefined;
   }
   
   if (user.centroSalud?.fotoPerfil) {
@@ -349,6 +366,86 @@ export function getUserAvatar(user: User | null): string | undefined {
   
   // Si no hay foto de perfil, retornar undefined para que se muestre el avatar generado
   return undefined;
+}
+
+
+/**
+ * Función para obtener la fecha en la que se creó el usuario, formateada como texto
+ * Ejemplo: "día 10 del mes de enero del año 2020"
+ */
+export function getUserCreationDate(paciente: Paciente | null): string {
+  if (!paciente) return '';
+  const date = new Date(paciente.creadoEn || paciente.createdAt || paciente.fechaCreacion || '');
+  if (isNaN(date.getTime())) return '';
+  
+  const day = date.getDate();
+  const month = date.toLocaleDateString('es-ES', { month: 'long' });
+  const year = date.getFullYear();
+  
+  return `día ${day} del mes de ${month} del año ${year}`;
+}
+
+/**
+ * Función para obtener la edad del paciente a partir de su fecha de nacimiento
+ */
+export function getPatientAge(paciente: Paciente | null): number | null {
+  if (!paciente || !paciente.fechaNacimiento) return null;
+  const birthDate = new Date(paciente.fechaNacimiento);
+  if (isNaN(birthDate.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+
+/** 
+ * Función para obtener el tipo de sangre del paciente
+*/
+export function getPatientBloodType(paciente: Paciente | null): string {
+  if (!paciente || !paciente.tipoSangre) return '';
+  return paciente.tipoSangre;
+}
+
+/**
+ * Función para obtener la altura del paciente
+ */
+export function getPatientHeight(paciente: Paciente | null): number | null {
+  if (!paciente || paciente.altura === null) return null;
+  return paciente.altura;
+}
+
+/**
+ * Función para obtener el peso del paciente
+ */
+export function getPatientWeight(paciente: Paciente | null): number | null {
+  if (!paciente || paciente.peso === null) return null;
+  return paciente.peso;
+}
+
+/**
+ * Fuincion para calcular el indice de masa corporal (IMC) del paciente
+ * IMC = peso (kg) / (altura (m))^2
+ */
+export function calculatePatientBMI(paciente: Paciente | null): number | null {
+  const height = getPatientHeight(paciente);
+  const weight = getPatientWeight(paciente);
+  if (height === null || weight === null || height === 0) return null;
+  const heightInMeters = height / 100;
+  const bmi = weight / (heightInMeters * heightInMeters);
+  return parseFloat(bmi.toFixed(2));
+}
+
+
+/**
+ * Función para obtener el género del paciente
+ */
+export function getPatientGender(paciente: Paciente | null): string {
+  if (!paciente || !paciente.genero) return '';
+  return paciente.genero;
 }
 
 // --- VERIFICAR DOCUMENTO ---

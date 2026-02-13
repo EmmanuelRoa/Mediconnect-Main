@@ -31,6 +31,8 @@
     "agePlaceholder": "Enter age",
     "height": "Height (cm)",
     "heightPlaceholder": "Enter height",
+    "years": "years",
+    "pending": "Pending",
     "weight": "Weight (kg)",
     "weightPlaceholder": "Enter weight",
     "bloodType": "Blood Type",
@@ -80,6 +82,8 @@
     "emailInvalid": "Invalid email address",
     "ageInvalid": "Invalid input: a number was expected",
     "heightInvalid": "Invalid input: a number was expected",
+    "weightPositive": "Weight must be a positive number",
+    "heightPositive": "Height must be a positive number",
     "weightInvalid": "Invalid input: a number was expected",
     "bloodTypeInvalid": "Invalid option: expected A+, A-, B+, B-, AB+, AB-, O+ or O-"
   },

@@ -101,7 +101,7 @@ export function patientProfileSchema(t: (key: string) => string) {
       .string()
       .regex(/^\d{10}$/, t("validation.phoneInvalid"))
       .optional(),
-    age: z
+    age: z.coerce
       .number()
       .min(0, t("validation.agePositive"))
       .max(150, t("validation.ageMax"))
@@ -120,12 +120,12 @@ export function patientProfileSchema(t: (key: string) => string) {
       .string()
       .min(1, t("validation.nationalityRequired"))
       .optional(),
-    weight: z
+    weight: z.coerce
       .number()
       .min(0.1, t("validation.weightPositive"))
       .max(500, t("validation.weightMax"))
       .optional(),
-    height: z
+    height: z.coerce
       .number()
       .min(1, t("validation.heightPositive"))
       .max(300, t("validation.heightMax"))

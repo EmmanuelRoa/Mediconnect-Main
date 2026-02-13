@@ -24,7 +24,8 @@ import {
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import { useTranslation } from "react-i18next";
-import { getUserAvatar, getUserFullName } from "@/services/auth/auth.types";
+import { getUserAvatar, getUserCreationDate, getUserFullName } from "@/services/auth/auth.types";
+
 
 interface Props {
   user: any;
@@ -34,6 +35,7 @@ interface Props {
 function PatientProfileBanner({ user, setOpenSheet }: Props) {
   const { t } = useTranslation("patient");
 
+  console.log("User in PatientProfileBanner:", user); // Debug: Verificar datos del usuario
   return (
     <div className="shadow-md rounded-4xl border-0 mx-auto">
       <div className="relative h-60 flex items-end rounded-t-4xl bg-background ">
@@ -90,7 +92,7 @@ function PatientProfileBanner({ user, setOpenSheet }: Props) {
                   <span className="font-medium">
                     {t("profileForm.patientSince")}
                   </span>{" "}
-                  15 de Enero, 2025
+                  {getUserCreationDate(user.paciente)}
                 </p>
               </div>
 

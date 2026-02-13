@@ -24,7 +24,7 @@ import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useTranslation } from "react-i18next";
-import { getUserAvatar, getUserFullName } from "@/services/auth/auth.types";
+import { getUserAvatar, getUserCreationDate, getUserFullName } from "@/services/auth/auth.types";
 
 interface Props {
   user: any;
@@ -89,7 +89,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
               <span className="font-medium">
                 {t("profileForm.patientSince")}
               </span>{" "}
-              15 de Enero, 2025
+              {getUserCreationDate(user.paciente)}
             </p>
           </div>
 

@@ -9,6 +9,7 @@ export interface AuthSlice {
 
   login: (accessToken: string, refreshToken: string, user: User) => void;
   updateTokens: (accessToken: string, refreshToken: string) => void;
+  updateUser: (user: User) => void;
   logout: () => void;
 }
 
@@ -34,6 +35,11 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     set({
       accessToken,
       refreshToken,
+    }),
+
+  updateUser: (user) =>
+    set({
+      user,
     }),
 
   logout: () =>

@@ -19,6 +19,12 @@ function DoctorOnboardingPage() {
   const doctorOnboardingData = useAppStore(
     (state) => state.doctorOnboardingData
   );
+  
+  // Detectar si viene de registro con Google
+  const registrationToken = useAppStore((state) => state.registrationToken);
+  const googleUserData = useAppStore((state) => state.googleUserData);
+  const isGoogleRegistration = registrationToken && googleUserData;
+  
   useEffect(() => {
     if (!verifyEmail.verified) {
       navigate("/auth/register", { replace: true });
@@ -196,7 +202,7 @@ function DoctorOnboardingPage() {
               progressStats.requiredItemsCount,
           }}
           backButtonProps={{
-            onClick: () => navigate("/auth/otp-verification"),
+            onClick: () => navigate(isGoogleRegistration ? "/auth/register" : "/auth/otp-verification"), 
           }}
         />
       </div>

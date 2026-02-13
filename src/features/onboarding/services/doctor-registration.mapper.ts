@@ -36,7 +36,6 @@ function normalizeMimeType(type?: string): string {
   };
   
   const fullType = partialToFull[normalized] || 'image/jpeg';
-  console.log(`[normalizeMimeType] '${type}' -> '${fullType}'`);
   return fullType;
 }
 
@@ -175,14 +174,6 @@ export async function mapDoctorOnboardingToRequest(
   if (!fotoPerfil) {
     throw new Error('Foto de perfil es requerida');
   }
-  
-  console.log('[Mapper] Foto de perfil convertida:', {
-    name: fotoPerfil.name,
-    type: fotoPerfil.type,
-    size: fotoPerfil.size,
-    isFile: fotoPerfil instanceof File,
-    isBlob: fotoPerfil instanceof Blob
-  });
 
   // Convertir fotos de documentos de base64 a Files (1-2 archivos requeridos)
   if (!doctorData.identityDocumentFile || doctorData.identityDocumentFile.length === 0) {
@@ -196,13 +187,7 @@ export async function mapDoctorOnboardingToRequest(
   const fotoDocumento = await Promise.all(
     doctorData.identityDocumentFile.map(async (doc, index) => {
       const file = await urlToFile(doc.url, `document-${index + 1}`, doc.type);
-      console.log(`[Mapper] Documento ${index + 1} convertido:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        isFile: file instanceof File,
-        isBlob: file instanceof Blob
-      });
+
       return file;
     })
   );
@@ -228,13 +213,7 @@ export async function mapDoctorOnboardingToRequest(
         `academic-title-${index + 1}`,
         title.type
       );
-      console.log(`[Mapper] Título académico ${index + 1} convertido:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        isFile: file instanceof File,
-        isBlob: file instanceof Blob
-      });
+
       return file;
     })
   );
@@ -249,19 +228,11 @@ export async function mapDoctorOnboardingToRequest(
           `certification-${index + 1}`,
           cert.type
         );
-        console.log(`[Mapper] Certificación ${index + 1} convertida:`, {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          isFile: file instanceof File,
-          isBlob: file instanceof Blob
-        });
+
         return file;
       })
     );
   }
-  
-  console.log('[Mapper] Conversión completada exitosamente');
 
   // Construir el objeto de request
   const request: RegisterDoctorRequest = {

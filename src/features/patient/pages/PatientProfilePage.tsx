@@ -25,6 +25,8 @@ import {
 import MCButton from "@/shared/components/forms/MCButton";
 import { Filter } from "lucide-react";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent"; // <-- importa el layout
+import { calculatePatientBMI, getPatientAge, getPatientBloodType, getPatientWeight, getPatientHeight } from "@/services/auth/auth.types";
+
 
 // Interfaz para los filtros de doctores
 interface DoctorFilters {
@@ -95,6 +97,13 @@ function PatientProfilePage() {
 
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
+  
+  // Calcular la edad del paciente
+  const patientAge = getPatientAge(user?.paciente || null);
+  const IMC = calculatePatientBMI(user?.paciente || null);
+  const bloodType = getPatientBloodType(user?.paciente || null);
+  const weight = getPatientWeight(user?.paciente || null);
+  const height = getPatientHeight(user?.paciente || null);
 
   const insuranceLogos = [
     { name: t("filters.insurances.senasa") },
@@ -226,11 +235,11 @@ function PatientProfilePage() {
 
             <MedicalInfoCard
               isMobile={isMobile}
-              age={t("profileForm.agePlaceholder")}
-              bmi="26.1"
-              height={t("profileForm.heightPlaceholder") + " cm"}
-              weight={t("profileForm.weightPlaceholder") + " kg"}
-              bloodType={t("profileForm.bloodTypePlaceholder")}
+              age={patientAge !== null ? `${patientAge} ${t("profileForm.years")}` : t("profileForm.agePlaceholder")}
+              bmi={IMC !== null ? `${IMC.toFixed(1)}` : t("profileForm.pending")}
+              height={height !== null ? `${height} cm` : t("profileForm.heightPlaceholder") + " cm"}
+              weight={weight !== null ? `${weight} kg` : t("profileForm.weightPlaceholder") + " kg"}
+              bloodType={bloodType || t("profileForm.bloodTypePlaceholder")}
               allergies={[
                 t("clinicalHistory.allergies") + " (Penicillin, skin rash)",
                 t("clinicalHistory.allergies") + " (Penicillin, skin rash)",
