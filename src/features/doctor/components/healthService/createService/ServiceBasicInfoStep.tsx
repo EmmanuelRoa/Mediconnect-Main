@@ -10,7 +10,7 @@ import PriceModal from "./Modals/PriceModal";
 import DurationModal from "./Modals/DurationModal";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCInput from "@/shared/components/forms/MCInput";
-import { useEffect } from "react";
+
 function ServiceBasicInfoStep() {
   const { t } = useTranslation();
   const basicInfoSchema = serviceSchema(t).pick({
@@ -23,9 +23,34 @@ function ServiceBasicInfoStep() {
   });
 
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
+  const setCreateServiceData = useCreateServicesStore(
+    (s) => s.setCreateServiceData,
+  );
+  const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
+  const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
 
   const handleSubmit = (data: any) => {
-    console.log("Datos del formulario:", data);
+    const formattedData = {
+      ...data,
+      specialty: data.specialty,
+      selectedModality: data.selectedModality,
+      pricePerSession: Number(data.pricePerSession),
+      numberOfSessions: Number(data.numberOfSessions),
+      duration: {
+        hours: Number(data.duration?.hours || 0),
+        minutes: Number(data.duration?.minutes || 30),
+      },
+    };
+
+    setCreateServiceData(formattedData);
+    console.log("Datos enviados del paso 1:", formattedData);
+
+    // Avanzar al siguiente paso (saltará location si es teleconsulta)
+    goToNextStep();
+  };
+
+  const handleBack = () => {
+    goToPreviousStep();
   };
 
   const modalityOptions = [
@@ -39,17 +64,14 @@ function ServiceBasicInfoStep() {
     { value: "pediatria", label: t("specialty.pediatrics") },
   ];
 
-  // Función para formatear la duración SOLO para display visual
   const formatDurationDisplay = (duration: any) => {
     if (!duration) return "0m";
-    // Si es objeto { hours, minutes }
     if (typeof duration === "object" && duration !== null) {
       const h = parseInt(duration.hours, 10) || 0;
       const m = parseInt(duration.minutes, 10) || 0;
       if (h === 0) return `${m}m`;
       return `${h}h : ${m}m`;
     }
-    // Si es string "HH:mm" o "HH:mm:ss"
     if (typeof duration === "string") {
       const [hours, minutes] = duration.split(":");
       const h = parseInt(hours, 10) || 0;
@@ -60,10 +82,6 @@ function ServiceBasicInfoStep() {
     return "0m";
   };
 
-  useEffect(() => {
-    console.log("Datos actuales del servicio:", createServiceData);
-  }, [createServiceData]);
-
   return (
     <ServicesLayoutsSteps title="Ponle un título a tu servicio">
       <MCFormWrapper
@@ -71,9 +89,9 @@ function ServiceBasicInfoStep() {
         defaultValues={{
           specialty: createServiceData.specialty || "",
           selectedModality: createServiceData.selectedModality || "presencial",
-          pricePerSession: createServiceData.pricePerSession,
+          pricePerSession: createServiceData.pricePerSession || 1,
           description: createServiceData.description || "",
-          numberOfSessions: createServiceData.numberOfSessions,
+          numberOfSessions: createServiceData.numberOfSessions || 1,
           duration: createServiceData.duration || { hours: 0, minutes: 30 },
         }}
         onSubmit={handleSubmit}
@@ -100,6 +118,8 @@ function ServiceBasicInfoStep() {
               variant="internal-vertical"
               internalTitle={t("form.optional")}
               internalPlaceholder={t("form.descriptionPlaceholder")}
+              value={createServiceData.description || ""}
+              standalone
             />
           </DescriptionModal>
           <CounterModal>
@@ -111,10 +131,10 @@ function ServiceBasicInfoStep() {
               variant="internal-horizontal"
               internalTitle={t("form.sessions")}
               internalPlaceholder={t("form.numberOfSessionsPlaceholder")}
-              value={createServiceData.numberOfSessions} // Asegúrate de que este valor se actualice correctamente desde el store
+              value={createServiceData.numberOfSessions?.toString() ?? "1"}
               displayMode="value"
               standalone
-            />{" "}
+            />
           </CounterModal>
           <DurationModal>
             <MCInput
@@ -138,7 +158,7 @@ function ServiceBasicInfoStep() {
               internalTitle={t("form.pricePerSession")}
               internalPlaceholder={t("form.pricePerSessionPlaceholder")}
               className="my-input"
-              value={createServiceData.pricePerSession} // Asegúrate de que este valor se actualice correctamente desde el store
+              value={createServiceData.pricePerSession?.toString() ?? "1"}
               displayMode="value"
               standalone
             />
@@ -146,7 +166,7 @@ function ServiceBasicInfoStep() {
         </div>
         <AuthFooterContainer
           backButtonProps={{
-            disabled: true,
+            onClick: handleBack,
           }}
           continueButtonProps={{
             type: "submit",

@@ -12,6 +12,7 @@ interface MCFormWrapperProps<TSchema extends ZodType<any, any, any>> {
   children: ReactNode;
   className?: string;
   onValidationChange?: (isValid: boolean) => void;
+  submitRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 function MCFormWrapper<TSchema extends ZodType<any, any, any>>({
@@ -21,6 +22,7 @@ function MCFormWrapper<TSchema extends ZodType<any, any, any>>({
   children,
   className,
   onValidationChange,
+  submitRef,
 }: MCFormWrapperProps<TSchema>) {
   const methods = useForm<z.input<TSchema>, any, z.output<TSchema>>({
     resolver: zodResolver(schema),
@@ -33,6 +35,13 @@ function MCFormWrapper<TSchema extends ZodType<any, any, any>>({
       onValidationChange(methods.formState.isValid);
     }
   }, [methods.formState.isValid, onValidationChange]);
+
+  // Exponer la función de submit a través del ref
+  useEffect(() => {
+    if (submitRef) {
+      submitRef.current = methods.handleSubmit(onSubmit);
+    }
+  }, [submitRef, methods.handleSubmit, onSubmit]);
 
   return (
     <FormProvider {...methods}>

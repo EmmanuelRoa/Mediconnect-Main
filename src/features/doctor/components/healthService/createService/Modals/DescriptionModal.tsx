@@ -4,7 +4,8 @@ import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { serviceSchema } from "@/schema/createService.schema";
 import { useTranslation } from "react-i18next";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
 interface DescriptionModalProps {
   children?: React.ReactNode;
 }
@@ -14,14 +15,21 @@ function DescriptionModal({ children }: DescriptionModalProps) {
     (s) => s.setCreateServiceField,
   );
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
+  const submitRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     console.log("Descripción actual:", createServiceData.description);
   }, [createServiceData.description]);
+
   const { t } = useTranslation();
   const descriptionSchema = serviceSchema(t).pick({ description: true });
 
   const handleSubmit = (data: any) => {
     setCreateServiceField("description", data.description);
+  };
+
+  const handleConfirm = () => {
+    submitRef.current?.();
   };
 
   return (
@@ -30,9 +38,7 @@ function DescriptionModal({ children }: DescriptionModalProps) {
       title="Descripción del servicio"
       trigger={children}
       variant="decide"
-      onConfirm={() => {
-        handleSubmit({ description: createServiceData.description });
-      }}
+      onConfirm={handleConfirm}
       confirmText="Guardar"
       secondaryText="Cancelar"
       triggerClassName="w-full"
@@ -45,16 +51,14 @@ function DescriptionModal({ children }: DescriptionModalProps) {
             description: createServiceData.description,
           }}
           onSubmit={handleSubmit}
+          submitRef={submitRef}
         >
           <MCAnimatedInput
             name="description"
             placeholder="Ingresa tu descripción aquí..."
             maxLength={250}
-            onChange={(value) => {
-              setCreateServiceField("description", value);
-            }}
             variant="Description"
-          />{" "}
+          />
         </MCFormWrapper>
       </div>
     </MCModalBase>
