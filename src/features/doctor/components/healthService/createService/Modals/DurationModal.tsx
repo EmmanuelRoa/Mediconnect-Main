@@ -1,75 +1,85 @@
 import MCCounterInput from "@/shared/components/forms/MCCounterInput";
-import { MCModalBase } from "@/shared/components/MCModalBase";
+import { MCDialogBase } from "@/shared/components/MCDialogBase";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { serviceSchema } from "@/schema/createService.schema";
 import { useTranslation } from "react-i18next";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 interface DurationModalProps {
   children?: React.ReactNode;
-  updateField: (
-    fieldName:
-      | "name"
-      | "description"
-      | "specialty"
-      | "selectedModality"
-      | "pricePerSession"
-      | "numberOfSessions"
-      | "duration"
-      | "images"
-      | "location"
-      | "comercial_schedule",
-    value: any,
-  ) => void;
 }
 
-function DurationModal({ children, updateField }: DurationModalProps) {
+function DurationModal({ children }: DurationModalProps) {
+  const setCreateServiceField = useCreateServicesStore(
+    (s) => s.setCreateServiceField,
+  );
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
   const submitRef = useRef<(() => void) | null>(null);
-
+  const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
   const durationSchema = serviceSchema(t).pick({ duration: true });
 
   const handleSubmit = (data: any) => {
     console.log("Datos enviados desde modal:", data);
-    updateField("duration", data.duration); // Actualiza AMBOS
+    setCreateServiceField("duration", data.duration);
+    // Cerrar modal después de guardar
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 100);
   };
 
   const handleConfirm = () => {
     submitRef.current?.();
   };
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(true);
+  };
+
   return (
-    <MCModalBase
-      id="duration-modal"
-      title="Duración de la sesión"
-      trigger={children}
-      variant="decide"
-      size="smWide"
-      confirmText="Guardar"
-      onConfirm={handleConfirm}
-      secondaryText="Cancelar"
-      triggerClassName="w-full h-auto"
-    >
-      <MCFormWrapper
-        schema={durationSchema}
-        defaultValues={{
-          duration: createServiceData.duration || { hours: 0, minutes: 30 },
-        }}
-        onSubmit={handleSubmit}
-        submitRef={submitRef}
+    <>
+      <div
+        onClick={handleTriggerClick}
+        className="w-full h-auto cursor-pointer"
       >
-        <MCCounterInput
-          name="duration"
-          variant="hours"
-          min={0}
-          max={120}
-          step={10}
-          defaultValue={createServiceData.duration || { hours: 0, minutes: 30 }}
-        />
-      </MCFormWrapper>
-    </MCModalBase>
+        {children}
+      </div>
+
+      <MCDialogBase
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title="Duración de la sesión"
+        variant="decide"
+        size="sm"
+        confirmText="Guardar"
+        onConfirm={handleConfirm}
+        secondaryText="Cancelar"
+      >
+        <MCFormWrapper
+          schema={durationSchema}
+          defaultValues={{
+            duration: createServiceData.duration || { hours: 0, minutes: 30 },
+          }}
+          onSubmit={handleSubmit}
+          submitRef={submitRef}
+        >
+          <MCCounterInput
+            name="duration"
+            variant="hours"
+            min={0}
+            max={120}
+            step={10}
+            defaultValue={
+              createServiceData.duration || { hours: 0, minutes: 30 }
+            }
+          />
+        </MCFormWrapper>
+      </MCDialogBase>
+    </>
   );
 }
 

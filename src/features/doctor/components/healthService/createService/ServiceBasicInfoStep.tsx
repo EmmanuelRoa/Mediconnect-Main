@@ -30,45 +30,39 @@ function ServiceBasicInfoStep() {
   const setCreateServiceData = useCreateServicesStore(
     (s) => s.setCreateServiceData,
   );
+
   const setCreateServiceField = useCreateServicesStore(
     (s) => s.setCreateServiceField,
   );
   const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
 
-  // UPDATED: With correct typing
-  const updateField = (
-    fieldName:
-      | "name"
-      | "description"
-      | "specialty"
-      | "selectedModality"
-      | "pricePerSession"
-      | "numberOfSessions"
-      | "duration"
-      | "images"
-      | "location"
-      | "comercial_schedule",
-    value: any,
-  ) => {
-    setCreateServiceField(fieldName, value);
-    if (formRef.current?.setValue) {
-      formRef.current.setValue(fieldName, value);
-    }
-  };
-
+  // Actualizar el formulario cuando cambien los datos del store
   useEffect(() => {
-    if (formRef.current?.reset) {
-      formRef.current.reset({
-        specialty: createServiceData.specialty || "",
-        selectedModality: createServiceData.selectedModality || "presencial",
-        pricePerSession: createServiceData.pricePerSession || 1,
-        description: createServiceData.description || "",
-        numberOfSessions: createServiceData.numberOfSessions || 1,
-        duration: createServiceData.duration || { hours: 0, minutes: 30 },
-      });
+    if (formRef.current) {
+      formRef.current.setValue(
+        "numberOfSessions",
+        createServiceData.numberOfSessions || 1,
+      );
+      formRef.current.setValue(
+        "duration",
+        createServiceData.duration || { hours: 0, minutes: 30 },
+      );
+      formRef.current.setValue(
+        "pricePerSession",
+        createServiceData.pricePerSession || 1,
+      );
+      formRef.current.setValue(
+        "description",
+        createServiceData.description || "",
+      );
     }
-  }, [createServiceData]);
+  }, [
+    createServiceData.numberOfSessions,
+    createServiceData.duration,
+    createServiceData.pricePerSession,
+    createServiceData.description,
+  ]);
 
   const handleSubmit = (data: any) => {
     const formattedData = {
@@ -84,6 +78,8 @@ function ServiceBasicInfoStep() {
     };
 
     setCreateServiceData(formattedData);
+    console.log("Datos enviados del paso 1:", formattedData);
+
     goToNextStep();
   };
 
@@ -126,8 +122,8 @@ function ServiceBasicInfoStep() {
       description="Empieza con una opción accesible para atraer a más pacientes y optimizar tu agenda de manera eficiente."
     >
       <MCFormWrapper
+        formRef={formRef}
         submitRef={submitRef}
-        formRef={formRef} // IMPORTANTE: pasar formRef
         schema={basicInfoSchema}
         defaultValues={{
           specialty: createServiceData.specialty || "",
@@ -153,7 +149,7 @@ function ServiceBasicInfoStep() {
             options={modalityOptions}
             placeholder={t("form.selectModality")}
           />
-          <DescriptionModal updateField={updateField}>
+          <DescriptionModal>
             <MCInput
               name="description"
               label={t("form.description")}
@@ -163,7 +159,7 @@ function ServiceBasicInfoStep() {
               internalPlaceholder={t("form.descriptionPlaceholder")}
             />
           </DescriptionModal>
-          <CounterModal updateField={updateField}>
+          <CounterModal>
             <MCInput
               name="numberOfSessions"
               label={t("form.numberOfSessions")}
@@ -175,7 +171,7 @@ function ServiceBasicInfoStep() {
               displayMode="value"
             />
           </CounterModal>
-          <DurationModal updateField={updateField}>
+          <DurationModal>
             <MCInput
               name="duration"
               label={t("form.durationHours")}
@@ -188,7 +184,7 @@ function ServiceBasicInfoStep() {
               )}
             />
           </DurationModal>
-          <PriceModal updateField={updateField}>
+          <PriceModal>
             <MCInput
               name="pricePerSession"
               label={t("form.price")}

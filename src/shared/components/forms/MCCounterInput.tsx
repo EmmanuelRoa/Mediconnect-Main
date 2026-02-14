@@ -70,8 +70,8 @@ const MCCounterInput = ({
   };
 
   const renderPriceVariant = (field: any) => (
-    <div className="flex flex-col items-center gap-4">
-      <div className="flex items-center gap-12">
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex items-center gap-8">
         <button
           type="button"
           onMouseDown={() => {
@@ -87,12 +87,12 @@ const MCCounterInput = ({
             startHolding(false, newValue, field.onChange);
           }}
           onTouchEnd={stopHolding}
-          className="p-3 rounded-full border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 active:scale-90 transition-all duration-200"
+          className="p-2 rounded-full border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 active:scale-90 transition-all duration-200"
         >
           <Minus className="w-5 h-5 text-primary" />
         </button>
-        <div className="flex items-center gap-4 min-w-[220px] justify-center">
-          <span className="text-4xl font-bold text-primary">RD$</span>
+        <div className="flex items-center gap-1 min-w-[150px] justify-center">
+          <span className="text-2xl font-bold text-primary">RD$</span>
           <input
             type="number"
             min={min}
@@ -103,15 +103,13 @@ const MCCounterInput = ({
               if (isNaN(val)) val = min;
               field.onChange(val);
             }}
-            className="text-6xl font-bold text-primary tabular-nums min-w-[180px] text-center bg-transparent outline-none"
-            style={{ width: 220 }}
+            className="text-4xl font-bold text-primary tabular-nums w-[150px] text-center bg-transparent outline-none"
           />
         </div>
         <button
           type="button"
           onMouseDown={() => {
             let newValue = field.value + step;
-            // Solo limitar si max está definido
             if (typeof max === "number") newValue = Math.min(max, newValue);
             field.onChange(newValue);
             startHolding(true, newValue, field.onChange);
@@ -125,7 +123,7 @@ const MCCounterInput = ({
             startHolding(true, newValue, field.onChange);
           }}
           onTouchEnd={stopHolding}
-          className="p-3 rounded-full border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 active:scale-90 transition-all duration-200"
+          className="p-2 rounded-full border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 active:scale-90 transition-all duration-200"
         >
           <Plus className="w-5 h-5 text-primary" />
         </button>

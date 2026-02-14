@@ -1,81 +1,85 @@
 import MCCounterInput from "@/shared/components/forms/MCCounterInput";
-import { MCModalBase } from "@/shared/components/MCModalBase";
+import { MCDialogBase } from "@/shared/components/MCDialogBase";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { serviceSchema } from "@/schema/createService.schema";
 import { useTranslation } from "react-i18next";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
-interface PriceModalProps {
-  children?: React.ReactNode;
-  updateField: (
-    fieldName:
-      | "name"
-      | "description"
-      | "specialty"
-      | "selectedModality"
-      | "pricePerSession"
-      | "numberOfSessions"
-      | "duration"
-      | "images"
-      | "location"
-      | "comercial_schedule",
-    value: any,
-  ) => void;
-}
-
-function PriceModal({ children, updateField }: PriceModalProps) {
+function PriceModal({ children }: { children?: React.ReactNode }) {
+  const setCreateServiceField = useCreateServicesStore(
+    (s) => s.setCreateServiceField,
+  );
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
   const submitRef = useRef<(() => void) | null>(null);
-
+  const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
   const priceSchema = serviceSchema(t).pick({ pricePerSession: true });
 
   const handleSubmit = (data: any) => {
-    updateField("pricePerSession", data.pricePerSession);
+    console.log("Datos enviados desde modal:", data);
+    setCreateServiceField("pricePerSession", data.pricePerSession);
+    // Cerrar modal después de guardar
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 100);
   };
 
   const handleConfirm = () => {
     submitRef.current?.();
   };
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(true);
+  };
+
   return (
-    <MCModalBase
-      id="price-modal"
-      title={t("form.price")}
-      trigger={children}
-      variant="decide"
-      size="smWide"
-      confirmText={t("Guardar")}
-      onConfirm={handleConfirm}
-      secondaryText={t("Cancelar")}
-      triggerClassName="w-full h-auto"
-    >
-      <MCFormWrapper
-        schema={priceSchema}
-        defaultValues={{
-          pricePerSession:
-            typeof createServiceData.pricePerSession === "number"
-              ? createServiceData.pricePerSession
-              : 1,
-        }}
-        onSubmit={handleSubmit}
-        submitRef={submitRef}
+    <>
+      <div
+        onClick={handleTriggerClick}
+        className="w-full h-auto cursor-pointer"
       >
-        <MCCounterInput
-          name="pricePerSession"
-          variant="price"
-          min={1}
-          step={1}
-          defaultValue={
-            typeof createServiceData.pricePerSession === "number"
-              ? createServiceData.pricePerSession
-              : 1
-          }
-          label={t("form.price")}
-        />
-      </MCFormWrapper>
-    </MCModalBase>
+        {children}
+      </div>
+
+      <MCDialogBase
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title={t("form.price")}
+        variant="decide"
+        confirmText={t("Guardar")}
+        onConfirm={handleConfirm}
+        secondaryText={t("Cancelar")}
+      >
+        <MCFormWrapper
+          schema={priceSchema}
+          defaultValues={{
+            pricePerSession:
+              typeof createServiceData.pricePerSession === "number"
+                ? createServiceData.pricePerSession
+                : 1,
+          }}
+          onSubmit={handleSubmit}
+          submitRef={submitRef}
+        >
+          <MCCounterInput
+            name="pricePerSession"
+            variant="price"
+            min={1}
+            step={1}
+            defaultValue={
+              typeof createServiceData.pricePerSession === "number"
+                ? createServiceData.pricePerSession
+                : 1
+            }
+            label={t("form.price")}
+          />
+        </MCFormWrapper>
+      </MCDialogBase>
+    </>
   );
 }
 

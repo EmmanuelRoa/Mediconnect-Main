@@ -45,12 +45,25 @@ function CreateServicesPage() {
     <CircleCheck key="check" />,
   ];
 
-  const steps = stepsStatus.map((step, idx) => {
+  // Filtrar steps y títulos si es teleconsulta
+  const filteredStepIcons = isTeleconsulta
+    ? [stepIcons[0], stepIcons[2], stepIcons[3], stepIcons[4]]
+    : stepIcons;
+
+  const filteredTitleByStep = isTeleconsulta
+    ? [titleByStep[0], titleByStep[2], titleByStep[3], titleByStep[4]]
+    : titleByStep;
+
+  const filteredStepsStatus = isTeleconsulta
+    ? stepsStatus.filter((_, idx) => idx !== 1)
+    : stepsStatus;
+
+  const steps = filteredStepsStatus.map((step, idx) => {
     const key = Object.keys(step)[0];
     const stepObj = step[key as keyof typeof step] as { status: StepStatus };
 
     return {
-      icon: stepIcons[idx],
+      icon: filteredStepIcons[idx],
       status: stepObj.status,
     };
   });
@@ -61,28 +74,42 @@ function CreateServicesPage() {
       return <ServiceTittleStep />;
     }
 
-    switch (currentStep) {
-      case 0:
-        return <ServiceBasicInfoStep />;
-      case 1:
-        return <ServiceLocationStep />;
-      case 2:
-        return <ServiceScheduleStep />;
-      case 3:
-        return <ServiceImagesStep />;
-      case 4:
-        return <ServiceReviewStep />;
-      default:
-        return <ServiceBasicInfoStep />;
+    if (isTeleconsulta) {
+      switch (currentStep) {
+        case 0:
+          return <ServiceBasicInfoStep />;
+        case 2:
+          return <ServiceScheduleStep />;
+        case 3:
+          return <ServiceImagesStep />;
+        case 4:
+          return <ServiceReviewStep />;
+        default:
+          return <ServiceBasicInfoStep />;
+      }
+    } else {
+      switch (currentStep) {
+        case 0:
+          return <ServiceBasicInfoStep />;
+        case 1:
+          return <ServiceLocationStep />;
+        case 2:
+          return <ServiceScheduleStep />;
+        case 3:
+          return <ServiceImagesStep />;
+        case 4:
+          return <ServiceReviewStep />;
+        default:
+          return <ServiceBasicInfoStep />;
+      }
     }
   };
 
   // Calcular el paso visible (considerando que location puede estar oculto)
   const getVisibleStepNumber = () => {
     if (!currentFirst) return 1;
-    if (isTeleconsulta && currentStep >= 1) {
-      // Si es teleconsulta y estamos en paso 1 o superior, restar 1
-      return currentStep; // Ya que currentStep saltará de 0 a 2
+    if (isTeleconsulta && currentStep >= 2) {
+      return currentStep - 1;
     }
     return currentStep + 1;
   };
@@ -96,7 +123,7 @@ function CreateServicesPage() {
       <div className="w-full flex flex-col items-center justify-center">
         <div className="flex flex-col justify-center items-center">
           <h1 className="text-lg text-center text-primary mt-1">
-            {titleByStep[currentStep]}
+            {filteredTitleByStep[getVisibleStepNumber() - 1]}
           </h1>
           <span className="opacity-40">
             Paso {getVisibleStepNumber()} de {getTotalSteps()}
