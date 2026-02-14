@@ -8,12 +8,23 @@ import { useEffect, useRef } from "react";
 
 interface DescriptionModalProps {
   children?: React.ReactNode;
+  updateField: (
+    fieldName:
+      | "name"
+      | "description"
+      | "specialty"
+      | "selectedModality"
+      | "pricePerSession"
+      | "numberOfSessions"
+      | "duration"
+      | "images"
+      | "location"
+      | "comercial_schedule",
+    value: any,
+  ) => void;
 }
 
-function DescriptionModal({ children }: DescriptionModalProps) {
-  const setCreateServiceField = useCreateServicesStore(
-    (s) => s.setCreateServiceField,
-  );
+function DescriptionModal({ children, updateField }: DescriptionModalProps) {
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
   const submitRef = useRef<(() => void) | null>(null);
 
@@ -25,7 +36,7 @@ function DescriptionModal({ children }: DescriptionModalProps) {
   const descriptionSchema = serviceSchema(t).pick({ description: true });
 
   const handleSubmit = (data: any) => {
-    setCreateServiceField("description", data.description);
+    updateField("description", data.description);
   };
 
   const handleConfirm = () => {

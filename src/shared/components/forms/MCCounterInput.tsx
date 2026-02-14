@@ -9,8 +9,8 @@ interface MCCounterInputProps {
   min?: number;
   max?: number;
   step?: number;
-  defaultValue?: number | string;
-  onChange?: (value: any) => void; // Add optional onChange prop
+  defaultValue?: number | string | { hours: number; minutes: number };
+  onChange?: (value: any) => void;
 }
 
 const MCCounterInput = ({
@@ -21,25 +21,12 @@ const MCCounterInput = ({
   max,
   step = 1,
   defaultValue = 0,
-  onChange, // Accept onChange prop
+  onChange,
 }: MCCounterInputProps) => {
   const { control, setValue } = useFormContext();
   const [isHolding, setIsHolding] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-
-  // Función para convertir HH:mm:ss a minutos totales
-  const timeStringToMinutes = (timeString: string): number => {
-    const [hours, minutes] = timeString.split(":").map(Number);
-    return (hours || 0) * 60 + (minutes || 0);
-  };
-
-  // Función para convertir minutos totales a HH:mm:ss
-  const minutesToTimeString = (totalMinutes: number): string => {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
-  };
 
   const startHolding = (
     increment: boolean,
@@ -74,6 +61,13 @@ const MCCounterInput = ({
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  const getDefaultValue = () => {
+    if (variant === "hours") {
+      return { hours: 0, minutes: 1 };
+    }
+    return defaultValue;
+  };
 
   const renderPriceVariant = (field: any) => (
     <div className="flex flex-col items-center gap-4">
@@ -140,25 +134,18 @@ const MCCounterInput = ({
   );
 
   const renderHoursVariant = (field: any) => {
-    // Convertir el valor del campo (HH:mm:ss) a minutos totales
-    const totalMinutes =
-      typeof field.value === "string"
-        ? timeStringToMinutes(field.value)
-        : field.value;
-
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
+    // El valor ahora es un objeto { hours, minutes }
+    const value = field.value || { hours: 0, minutes: 1 };
+    const hours = value.hours ?? 0;
+    const minutes = value.minutes ?? 1;
 
     const updateTime = (newHours: number, newMinutes: number) => {
       if (newHours < 0) newHours = 0;
       if (newHours > 23) newHours = 23;
-      if (newMinutes < 0) newMinutes = 0;
+      if (newMinutes < 1) newMinutes = 1;
       if (newMinutes > 59) newMinutes = 59;
 
-      const totalMinutes = newHours * 60 + newMinutes;
-      // Convertir a formato HH:mm:ss antes de guardar
-      const timeString = minutesToTimeString(totalMinutes);
-      field.onChange(timeString);
+      field.onChange({ hours: newHours, minutes: newMinutes });
     };
 
     return (
@@ -304,7 +291,7 @@ const MCCounterInput = ({
     <Controller
       name={name}
       control={control}
-      defaultValue={defaultValue}
+      defaultValue={getDefaultValue()}
       render={({ field }) => {
         // Wrap field.onChange to call both the form onChange and the prop onChange
         const handleChange = (value: any) => {

@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
@@ -24,7 +24,7 @@ interface MCModalBaseProps {
     | "sm"
     | "smWide"
     | "md"
-    | "mdAuto" // <-- Agrega esta línea
+    | "mdAuto"
     | "lg"
     | "xl"
     | "2xl"
@@ -69,6 +69,8 @@ export function MCModalBase({
   const isMobile = useIsMobile();
 
   const [internalIsOpen, setInternalIsOpen] = useState(defaultOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isOpen = isControlled ? externalIsOpen : internalIsOpen;
 
@@ -99,6 +101,15 @@ export function MCModalBase({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, isControlled, onClose]);
 
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const sizeClasses = {
     sm: isMobile
       ? "w-full max-w-[95vw] mx-2 max-h-[70vh]"
@@ -107,7 +118,7 @@ export function MCModalBase({
       ? "w-full max-w-[95vw] mx-2 max-h-[70vh]"
       : "max-w-xl w-[1600px]  h-full max-h-[500px]",
     md: isMobile ? "w-[95vw] h-[70vh]" : "w-[512px] h-[600px]",
-    mdAuto: isMobile ? "w-[95vw] max-h-[80vh]" : "w-[512px] max-h-[90vh]", // <-- Nuevo tamaño
+    mdAuto: isMobile ? "w-[95vw] max-h-[80vh]" : "w-[512px] max-h-[90vh]",
     lg: isMobile ? "w-[95vw] h-[80vh]" : "w-[672px] h-[700px]",
     xl: isMobile ? "w-[98vw] h-[85vh]" : "w-[896px] h-[800px]",
     "2xl": isMobile ? "w-[100vw] h-[90vh]" : "w-[1152px] h-[900px]",
@@ -125,13 +136,34 @@ export function MCModalBase({
   const footerPadding = isMobile ? "px-4 pb-4 pt-3" : "px-6 pb-4 pt-3";
 
   const handleConfirm = () => {
-    onConfirm?.();
+    if (isClosing) return; // Prevenir múltiples clicks
+
+    setIsClosing(true);
+
+    // Cerrar el modal primero
     handleOpenChange(false);
+
+    // Ejecutar el callback después de que la animación termine
+    // La animación dura aproximadamente 400ms según las transiciones en morphing-dialog
+    closeTimeoutRef.current = setTimeout(() => {
+      onConfirm?.();
+      setIsClosing(false);
+    }, 450);
   };
 
   const handleSecondary = () => {
-    onSecondary?.();
+    if (isClosing) return; // Prevenir múltiples clicks
+
+    setIsClosing(true);
+
+    // Cerrar el modal primero
     handleOpenChange(false);
+
+    // Ejecutar el callback después de que la animación termine
+    closeTimeoutRef.current = setTimeout(() => {
+      onSecondary?.();
+      setIsClosing(false);
+    }, 450);
   };
 
   return (
@@ -204,6 +236,7 @@ export function MCModalBase({
                 size={isMobile ? "l" : "m"}
                 onClick={handleSecondary}
                 className={isMobile ? "w-full" : ""}
+                disabled={isClosing}
               >
                 {secondaryText}
               </MCButton>
@@ -212,6 +245,7 @@ export function MCModalBase({
                 size={isMobile ? "l" : "m"}
                 onClick={handleConfirm}
                 className={isMobile ? "w-full" : ""}
+                disabled={isClosing}
               >
                 {confirmText}
               </MCButton>
@@ -231,6 +265,7 @@ export function MCModalBase({
                 size={isMobile ? "l" : "m"}
                 onClick={handleConfirm}
                 className={isMobile ? "w-full" : ""}
+                disabled={isClosing}
               >
                 {confirmText}
               </MCButton>
@@ -250,6 +285,7 @@ export function MCModalBase({
                 size={isMobile ? "l" : "m"}
                 onClick={handleSecondary}
                 className={isMobile ? "w-full" : ""}
+                disabled={isClosing}
               >
                 {secondaryText}
               </MCButton>
@@ -258,6 +294,7 @@ export function MCModalBase({
                 size={isMobile ? "l" : "m"}
                 onClick={handleConfirm}
                 className={isMobile ? "w-full" : ""}
+                disabled={isClosing}
               >
                 {confirmText}
               </MCButton>

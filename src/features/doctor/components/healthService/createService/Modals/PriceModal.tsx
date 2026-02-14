@@ -4,18 +4,39 @@ import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { serviceSchema } from "@/schema/createService.schema";
 import { useTranslation } from "react-i18next";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
+import { useRef } from "react";
 
-function PriceModal({ children }: { children?: React.ReactNode }) {
-  const setCreateServiceField = useCreateServicesStore(
-    (s) => s.setCreateServiceField,
-  );
+interface PriceModalProps {
+  children?: React.ReactNode;
+  updateField: (
+    fieldName:
+      | "name"
+      | "description"
+      | "specialty"
+      | "selectedModality"
+      | "pricePerSession"
+      | "numberOfSessions"
+      | "duration"
+      | "images"
+      | "location"
+      | "comercial_schedule",
+    value: any,
+  ) => void;
+}
+
+function PriceModal({ children, updateField }: PriceModalProps) {
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
+  const submitRef = useRef<(() => void) | null>(null);
 
   const { t } = useTranslation();
   const priceSchema = serviceSchema(t).pick({ pricePerSession: true });
 
   const handleSubmit = (data: any) => {
-    setCreateServiceField("pricePerSession", data.pricePerSession);
+    updateField("pricePerSession", data.pricePerSession);
+  };
+
+  const handleConfirm = () => {
+    submitRef.current?.();
   };
 
   return (
@@ -26,9 +47,7 @@ function PriceModal({ children }: { children?: React.ReactNode }) {
       variant="decide"
       size="smWide"
       confirmText={t("Guardar")}
-      onConfirm={() =>
-        handleSubmit({ pricePerSession: createServiceData.pricePerSession })
-      }
+      onConfirm={handleConfirm}
       secondaryText={t("Cancelar")}
       triggerClassName="w-full h-auto"
     >
@@ -41,6 +60,7 @@ function PriceModal({ children }: { children?: React.ReactNode }) {
               : 1,
         }}
         onSubmit={handleSubmit}
+        submitRef={submitRef}
       >
         <MCCounterInput
           name="pricePerSession"
@@ -52,7 +72,6 @@ function PriceModal({ children }: { children?: React.ReactNode }) {
               ? createServiceData.pricePerSession
               : 1
           }
-          onChange={(value) => setCreateServiceField("pricePerSession", value)}
           label={t("form.price")}
         />
       </MCFormWrapper>

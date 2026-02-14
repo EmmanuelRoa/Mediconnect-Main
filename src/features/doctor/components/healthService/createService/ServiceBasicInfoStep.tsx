@@ -10,9 +10,13 @@ import PriceModal from "./Modals/PriceModal";
 import DurationModal from "./Modals/DurationModal";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCInput from "@/shared/components/forms/MCInput";
+import { useEffect, useRef } from "react";
 
 function ServiceBasicInfoStep() {
   const { t } = useTranslation();
+  const formRef = useRef<any>(null);
+  const submitRef = useRef<any>(null);
+
   const basicInfoSchema = serviceSchema(t).pick({
     specialty: true,
     selectedModality: true,
@@ -26,8 +30,45 @@ function ServiceBasicInfoStep() {
   const setCreateServiceData = useCreateServicesStore(
     (s) => s.setCreateServiceData,
   );
+  const setCreateServiceField = useCreateServicesStore(
+    (s) => s.setCreateServiceField,
+  );
   const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
+
+  // UPDATED: With correct typing
+  const updateField = (
+    fieldName:
+      | "name"
+      | "description"
+      | "specialty"
+      | "selectedModality"
+      | "pricePerSession"
+      | "numberOfSessions"
+      | "duration"
+      | "images"
+      | "location"
+      | "comercial_schedule",
+    value: any,
+  ) => {
+    setCreateServiceField(fieldName, value);
+    if (formRef.current?.setValue) {
+      formRef.current.setValue(fieldName, value);
+    }
+  };
+
+  useEffect(() => {
+    if (formRef.current?.reset) {
+      formRef.current.reset({
+        specialty: createServiceData.specialty || "",
+        selectedModality: createServiceData.selectedModality || "presencial",
+        pricePerSession: createServiceData.pricePerSession || 1,
+        description: createServiceData.description || "",
+        numberOfSessions: createServiceData.numberOfSessions || 1,
+        duration: createServiceData.duration || { hours: 0, minutes: 30 },
+      });
+    }
+  }, [createServiceData]);
 
   const handleSubmit = (data: any) => {
     const formattedData = {
@@ -43,9 +84,6 @@ function ServiceBasicInfoStep() {
     };
 
     setCreateServiceData(formattedData);
-    console.log("Datos enviados del paso 1:", formattedData);
-
-    // Avanzar al siguiente paso (saltará location si es teleconsulta)
     goToNextStep();
   };
 
@@ -83,8 +121,13 @@ function ServiceBasicInfoStep() {
   };
 
   return (
-    <ServicesLayoutsSteps title="Ponle un título a tu servicio">
+    <ServicesLayoutsSteps
+      title="Haz crecer tu servicio médico con información detallada"
+      description="Empieza con una opción accesible para atraer a más pacientes y optimizar tu agenda de manera eficiente."
+    >
       <MCFormWrapper
+        submitRef={submitRef}
+        formRef={formRef} // IMPORTANTE: pasar formRef
         schema={basicInfoSchema}
         defaultValues={{
           specialty: createServiceData.specialty || "",
@@ -110,7 +153,7 @@ function ServiceBasicInfoStep() {
             options={modalityOptions}
             placeholder={t("form.selectModality")}
           />
-          <DescriptionModal>
+          <DescriptionModal updateField={updateField}>
             <MCInput
               name="description"
               label={t("form.description")}
@@ -118,11 +161,9 @@ function ServiceBasicInfoStep() {
               variant="internal-vertical"
               internalTitle={t("form.optional")}
               internalPlaceholder={t("form.descriptionPlaceholder")}
-              value={createServiceData.description || ""}
-              standalone
             />
           </DescriptionModal>
-          <CounterModal>
+          <CounterModal updateField={updateField}>
             <MCInput
               name="numberOfSessions"
               label={t("form.numberOfSessions")}
@@ -131,24 +172,23 @@ function ServiceBasicInfoStep() {
               variant="internal-horizontal"
               internalTitle={t("form.sessions")}
               internalPlaceholder={t("form.numberOfSessionsPlaceholder")}
-              value={createServiceData.numberOfSessions?.toString() ?? "1"}
               displayMode="value"
-              standalone
             />
           </CounterModal>
-          <DurationModal>
+          <DurationModal updateField={updateField}>
             <MCInput
               name="duration"
               label={t("form.durationHours")}
               variant="internal-horizontal"
               internalTitle={t("form.hours")}
               internalPlaceholder="0h : 0m"
-              value={formatDurationDisplay(createServiceData.duration)}
               displayMode="value"
-              standalone
+              customDisplayValue={formatDurationDisplay(
+                createServiceData.duration,
+              )}
             />
           </DurationModal>
-          <PriceModal>
+          <PriceModal updateField={updateField}>
             <MCInput
               name="pricePerSession"
               label={t("form.price")}
@@ -157,10 +197,7 @@ function ServiceBasicInfoStep() {
               variant="internal-horizontal"
               internalTitle={t("form.pricePerSession")}
               internalPlaceholder={t("form.pricePerSessionPlaceholder")}
-              className="my-input"
-              value={createServiceData.pricePerSession?.toString() ?? "1"}
               displayMode="value"
-              standalone
             />
           </PriceModal>
         </div>
