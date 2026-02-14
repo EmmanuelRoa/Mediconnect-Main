@@ -4,7 +4,7 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     GOOGLE_LOGIN: '/auth/google',
     LOGOUT: '/auth/logout',
-    REFRESH_TOKEN: '/auth/refresh',
+    REFRESH_TOKEN: '/auth/refresh-access-token',
     
     // Registro
     REGISTRO_SOLICITAR_CODIGO: '/auth/registro/solicitar-codigo',

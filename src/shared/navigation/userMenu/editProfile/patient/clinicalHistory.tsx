@@ -3,27 +3,14 @@ import MCButton from "@/shared/components/forms/MCButton";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCTextArea from "@/shared/components/forms/MCTextArea";
-import { X, BookHeart, Heart } from "lucide-react";
+import { X, BookHeart, Heart, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { patientClinicalHistorySchema } from "@/schema/profile.schema";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-
-const ALLERGY_OPTIONS = [
-  { value: "pollen", label: "Pollen" },
-  { value: "penicillin", label: "Penicillin" },
-  { value: "nuts", label: "Nuts" },
-  { value: "latex", label: "Latex" },
-  { value: "aspirin", label: "Aspirin" },
-];
-
-const CONDITION_OPTIONS = [
-  { value: "diabetes", label: "Diabetes" },
-  { value: "hypertension", label: "Hypertension" },
-  { value: "asthma", label: "Asthma" },
-  { value: "heart_disease", label: "Heart Disease" },
-  { value: "cancer", label: "Cancer" },
-];
+import { patientService } from "./services/patient.service";
+import type { CondicionMedica } from "./services/patient.types";
+import { toast } from "sonner";
 
 function ClinicalHistory() {
   const { t } = useTranslation("patient");
@@ -36,12 +23,26 @@ function ClinicalHistory() {
     (state) => state.patientClinicalHistory,
   );
 
-  const allergies = patientClinicalHistory?.allergies || [];
-  const conditions = patientClinicalHistory?.conditions || [];
+  // Estados para las listas de alergias y condiciones
+  const [availableAllergies, setAvailableAllergies] = useState<CondicionMedica[]>([]);
+  const [availableConditions, setAvailableConditions] = useState<CondicionMedica[]>([]);
+  const [myAllergies, setMyAllergies] = useState<CondicionMedica[]>([]);
+  const [myConditions, setMyConditions] = useState<CondicionMedica[]>([]);
+
+  // Estados de carga
+  const [isLoadingAllergies, setIsLoadingAllergies] = useState(true);
+  const [isLoadingConditions, setIsLoadingConditions] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    loadAllergiesData();
+    loadConditionsData();
+  }, []);
 
   useEffect(() => {
     if (editingIndex !== null && textareaRef.current) {
@@ -49,71 +50,246 @@ function ClinicalHistory() {
     }
   }, [editingIndex]);
 
+  async function loadAllergiesData() {
+    try {
+      setIsLoadingAllergies(true);
+      const [availableResponse, myResponse] = await Promise.all([
+        patientService.getAvailableAllergies(),
+        patientService.getMyAllergies(),
+      ]);
+
+      if (availableResponse.success) {
+        setAvailableAllergies(availableResponse.data);
+      }
+
+      if (myResponse.success) {
+        setMyAllergies(myResponse.data);
+        // Actualizar el store también
+        setPatientClinicalHistory({
+          ...patientClinicalHistory,
+          allergies: myResponse.data.map(a => a.id.toString()),
+        });
+      }
+    } catch (error) {
+      console.error("Error al cargar alergias:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorLoadingAllergies", "Error al cargar alergias")
+      );
+    } finally {
+      setIsLoadingAllergies(false);
+    }
+  }
+
+  async function loadConditionsData() {
+    try {
+      setIsLoadingConditions(true);
+      const [availableResponse, myResponse] = await Promise.all([
+        patientService.getAvailableConditions(),
+        patientService.getMyConditions(),
+      ]);
+
+      if (availableResponse.success) {
+        setAvailableConditions(availableResponse.data);
+      }
+
+      if (myResponse.success) {
+        setMyConditions(myResponse.data);
+      }
+    } catch (error) {
+      console.error("Error al cargar condiciones:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorLoadingConditions", "Error al cargar condiciones médicas")
+      );
+    } finally {
+      setIsLoadingConditions(false);
+    }
+  }
+
   function handleSubmit(data: any) {
     console.log("Form submitted:", data);
   }
 
-  function handleAddAllergy(value: string) {
-    setPatientClinicalHistory({
-      ...patientClinicalHistory,
-      allergies: [...allergies, value],
-    });
+  async function handleAddAllergy(value: string) {
+    const condicionId = parseInt(value);
+    
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.addAllergy({ condicionId });
+
+      if (response.success) {
+        setMyAllergies([...myAllergies, response.data]);
+        toast.success(
+          response.message || t("clinicalHistory.allergyAdded", "Alergia agregada exitosamente")
+        );
+        
+        // Actualizar el store
+        setPatientClinicalHistory({
+          ...patientClinicalHistory,
+          allergies: [...myAllergies.map(a => a.id.toString()), value],
+        });
+      }
+    } catch (error) {
+      console.error("Error al agregar alergia:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorAddingAllergy", "Error al agregar alergia")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function handleAddCondition(value: string) {
-    const newConditions = [...conditions, value];
-    setPatientClinicalHistory({
-      ...patientClinicalHistory,
-      conditions: newConditions,
-    });
-    setEditingIndex(newConditions.length - 1);
-    setEditingValue(value);
+  async function handleAddCondition(value: string) {
+    const condicionId = parseInt(value);
+    
+    // Encontrar la condición seleccionada para obtener su descripción
+    const selectedCondition = availableConditions.find(c => c.id === condicionId);
+    const notasIniciales = selectedCondition?.descripcion || "";
+    
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.addCondition({ 
+        condicionId, 
+        notas: notasIniciales 
+      });
+
+      if (response.success) {
+        const newConditions = [...myConditions, response.data];
+        setMyConditions(newConditions);
+        toast.success(
+          response.message || t("clinicalHistory.conditionAdded", "Condición médica agregada exitosamente")
+        );
+        
+        // Activar edición automáticamente con la descripción inicial
+        setEditingIndex(newConditions.length - 1);
+        setEditingValue(notasIniciales);
+      }
+    } catch (error) {
+      console.error("Error al agregar condición:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorAddingCondition", "Error al agregar condición médica")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function handleRemoveAllergy(value: string) {
-    setPatientClinicalHistory({
-      ...patientClinicalHistory,
-      allergies: allergies.filter((a) => a !== value),
-    });
+  async function handleRemoveAllergy(condicionId: number) {
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.removeAllergy(condicionId);
+
+      if (response.success) {
+        setMyAllergies(myAllergies.filter(a => a.id !== condicionId));
+        toast.success(
+          response.message || t("clinicalHistory.allergyRemoved", "Alergia eliminada exitosamente")
+        );
+        
+        // Actualizar el store
+        setPatientClinicalHistory({
+          ...patientClinicalHistory,
+          allergies: myAllergies.filter(a => a.id !== condicionId).map(a => a.id.toString()),
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar alergia:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorRemovingAllergy", "Error al eliminar alergia")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function handleRemoveCondition(idx: number) {
-    setPatientClinicalHistory({
-      ...patientClinicalHistory,
-      conditions: conditions.filter((_, i) => i !== idx),
-    });
-    if (editingIndex === idx) {
-      setEditingIndex(null);
-      setEditingValue("");
+  async function handleRemoveCondition(idx: number) {
+    const condition = myConditions[idx];
+    
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.removeCondition(condition.id);
+
+      if (response.success) {
+        setMyConditions(myConditions.filter((_, i) => i !== idx));
+        toast.success(
+          response.message || t("clinicalHistory.conditionRemoved", "Condición médica eliminada exitosamente")
+        );
+        
+        if (editingIndex === idx) {
+          setEditingIndex(null);
+          setEditingValue("");
+        }
+      }
+    } catch (error) {
+      console.error("Error al eliminar condición:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("clinicalHistory.errorRemovingCondition", "Error al eliminar condición médica")
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   function handleEditCondition(idx: number) {
     setEditingIndex(idx);
-    setEditingValue(conditions[idx]);
+    setEditingValue(myConditions[idx].notas || "");
   }
 
   function handleConditionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setEditingValue(e.target.value);
   }
 
-  function handleConditionBlur() {
+  async function handleConditionBlur() {
     if (editingIndex !== null) {
       const trimmedValue = editingValue.trim();
+      const condition = myConditions[editingIndex];
 
-      if (trimmedValue === "") {
-        handleRemoveCondition(editingIndex);
-      } else {
-        const updatedConditions = [...conditions];
-        updatedConditions[editingIndex] = trimmedValue;
-        setPatientClinicalHistory({
-          ...patientClinicalHistory,
-          conditions: updatedConditions,
-        });
+      // Si las notas no han cambiado, solo salir del modo de edición
+      if (trimmedValue === (condition.notas || "")) {
+        setEditingIndex(null);
+        setEditingValue("");
+        return;
       }
 
-      setEditingIndex(null);
-      setEditingValue("");
+      try {
+        setIsSubmitting(true);
+        
+        // Actualizar la condición con nuevas notas
+        const response = await patientService.addCondition({ 
+          condicionId: condition.id, 
+          notas: trimmedValue 
+        });
+
+        if (response.success) {
+          const updatedConditions = [...myConditions];
+          updatedConditions[editingIndex] = response.data;
+          setMyConditions(updatedConditions);
+          toast.success(
+            t("clinicalHistory.notesUpdated", "Notas actualizadas exitosamente")
+          );
+        }
+      } catch (error) {
+        console.error("Error al actualizar notas:", error);
+        toast.error(
+          error instanceof Error 
+            ? error.message 
+            : t("clinicalHistory.errorUpdatingNotes", "Error al actualizar notas")
+        );
+      } finally {
+        setIsSubmitting(false);
+        setEditingIndex(null);
+        setEditingValue("");
+      }
     }
   }
 
@@ -158,15 +334,17 @@ function ClinicalHistory() {
             isMobile ? "p-3" : "p-4"
           } mb-2 min-h-[60px]`}
         >
-          <div
-            className={`flex flex-wrap ${isMobile ? "gap-1.5" : "gap-2"} mb-3`}
-          >
-            {allergies.map((a) => {
-              const label =
-                ALLERGY_OPTIONS.find((opt) => opt.value === a)?.label || a;
-              return (
+          {isLoadingAllergies ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-red-600" />
+            </div>
+          ) : (
+            <div
+              className={`flex flex-wrap ${isMobile ? "gap-1.5" : "gap-2"} mb-3`}
+            >
+              {myAllergies.map((allergy) => (
                 <div
-                  key={a}
+                  key={allergy.id}
                   className={`flex items-center gap-2 ${
                     isMobile ? "px-3 py-0.5" : "px-4 py-1"
                   } bg-red-600 text-white rounded-full ${
@@ -177,21 +355,22 @@ function ClinicalHistory() {
                     <Heart
                       className={`${isMobile ? "w-3 h-3" : "w-4 h-4"} mb-0.5`}
                     />
-                    <p>{label}</p>
+                    <p>{allergy.nombre}</p>
                   </div>
                   <MCButton
                     variant="delete"
                     size="s"
-                    onClick={() => handleRemoveAllergy(a)}
+                    onClick={() => handleRemoveAllergy(allergy.id)}
                     className="ml-1 rounded-full p-0.5"
                     aria-label={t("clinicalHistory.removeAllergy")}
+                    disabled={isSubmitting}
                   >
                     <X size={isMobile ? 16 : 18} />
                   </MCButton>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
         <div
           className={`mb-1 ${
@@ -201,17 +380,21 @@ function ClinicalHistory() {
           {t("clinicalHistory.addAllergy")}
         </div>
         <MCSelect
-          key={allergies.length}
+          key={myAllergies.length}
           name="allergy"
           searchable={true}
           className="mb-4"
           placeholder={t("clinicalHistory.selectAllergy")}
-          options={ALLERGY_OPTIONS.filter(
-            (opt) => !allergies.includes(opt.value),
-          )}
+          options={availableAllergies
+            .filter((allergy) => !myAllergies.some(a => a.id === allergy.id))
+            .map((allergy) => ({
+              value: allergy.id.toString(),
+              label: allergy.nombre,
+            }))}
           onChange={(value) => {
             if (typeof value === "string") handleAddAllergy(value);
           }}
+          disabled={isLoadingAllergies || isSubmitting}
         />
       </div>
 
@@ -229,71 +412,101 @@ function ClinicalHistory() {
             isMobile ? "p-3" : "p-4"
           } flex flex-col ${isMobile ? "gap-2" : "gap-3"} mb-4 min-h-[60px]`}
         >
-          {conditions.map((cond, idx) => {
-            const label =
-              CONDITION_OPTIONS.find((opt) => opt.value === cond)?.label ||
-              cond;
-            return editingIndex === idx ? (
-              <div key={idx} className="flex items-center gap-2">
-                <MCTextArea
-                  name={`condition_${idx}`}
-                  className={`border-2 border-orange-400 rounded-xl ${
+          {isLoadingConditions ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+            </div>
+          ) : (
+            myConditions.map((condition, idx) => {
+              return editingIndex === idx ? (
+                <div key={condition.id} className="flex items-center gap-2">
+                  <MCTextArea
+                    name={`condition_${condition.id}`}
+                    className={`border-2 border-orange-400 rounded-xl ${
+                      isMobile ? "px-3 py-1.5 text-sm" : "px-4 py-2 text-base"
+                    } transition-all focus:border-orange-500`}
+                    value={editingValue}
+                    onBlur={handleConditionBlur}
+                    onChange={handleConditionChange}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleConditionBlur();
+                      } else if (e.key === "Escape") {
+                        setEditingIndex(null);
+                        setEditingValue("");
+                      }
+                    }}
+                    placeholder={t("clinicalHistory.conditionPlaceholder")}
+                    disabled={isSubmitting}
+                  />
+                  <MCButton
+                    size="s"
+                    onClick={() => handleRemoveCondition(idx)}
+                    className="rounded-full p-1 hover:bg-red-500 hover:opacity-80 bg-transparent"
+                    aria-label={t("clinicalHistory.removeCondition")}
+                    disabled={isSubmitting}
+                  >
+                    <X size={isMobile ? 16 : 18} className="text-white " />
+                  </MCButton>
+                </div>
+              ) : (
+                <div
+                  key={condition.id}
+                  className={`flex items-center gap-2 ${
                     isMobile ? "px-3 py-1.5 text-sm" : "px-4 py-2 text-base"
-                  } transition-all focus:border-orange-500`}
-                  value={editingValue}
-                  onBlur={handleConditionBlur}
-                  onChange={handleConditionChange}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleConditionBlur();
-                    } else if (e.key === "Escape") {
+                  } cursor-pointer border-2 border-orange-200 rounded-xl hover:border-orange-300 transition-all`}
+                  onClick={() => handleEditCondition(idx)}
+                >
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="font-semibold">{condition.nombre}</span>
+                    {condition.notas && (
+                      <span className="text-sm text-muted-foreground">
+                        {condition.notas}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
                       handleRemoveCondition(idx);
-                    }
-                  }}
-                  placeholder={t("clinicalHistory.conditionPlaceholder")}
-                />
-                <MCButton
-                  size="s"
-                  onClick={() => handleRemoveCondition(idx)}
-                  className="rounded-full p-1 hover:bg-red-500 hover:opacity-80 bg-transparent"
-                  aria-label={t("clinicalHistory.removeCondition")}
-                >
-                  <X size={isMobile ? 16 : 18} className="text-white " />
-                </MCButton>
-              </div>
-            ) : cond ? (
-              <div
-                key={idx}
-                className={`flex items-center gap-2 ${
-                  isMobile ? "px-3 py-1.5 text-sm" : "px-4 py-2 text-base"
-                } cursor-pointer border-2 border-orange-200 rounded-xl hover:border-orange-300 transition-all`}
-                onClick={() => handleEditCondition(idx)}
-              >
-                <span className="flex-1">{label}</span>
-                <button
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    handleRemoveCondition(idx);
-                  }}
-                  className="rounded-full p-1 hover:bg-red-500 hover:opacity-80"
-                  aria-label={t("clinicalHistory.removeCondition")}
-                >
-                  <X size={isMobile ? 16 : 18} />
-                </button>
-              </div>
-            ) : null;
-          })}
+                    }}
+                    className="rounded-full p-1 hover:bg-red-500 hover:opacity-80"
+                    aria-label={t("clinicalHistory.removeCondition")}
+                    disabled={isSubmitting}
+                  >
+                    <X size={isMobile ? 16 : 18} />
+                  </button>
+                </div>
+              );
+            })
+          )}
         </div>
 
-        <MCButton
-          variant="outline"
-          className="w-full"
-          size="l"
-          onClick={() => handleAddCondition("")}
+        <div
+          className={`mb-1 ${
+            isMobile ? "text-base" : "text-lg"
+          } font-medium text-primary`}
         >
           {t("clinicalHistory.addCondition")}
-        </MCButton>
+        </div>
+        <MCSelect
+          key={myConditions.length}
+          name="condition"
+          searchable={true}
+          className="mb-4"
+          placeholder={t("clinicalHistory.selectCondition")}
+          options={availableConditions
+            .filter((condition) => !myConditions.some(c => c.id === condition.id))
+            .map((condition) => ({
+              value: condition.id.toString(),
+              label: condition.nombre,
+            }))}
+          onChange={(value) => {
+            if (typeof value === "string") handleAddCondition(value);
+          }}
+          disabled={isLoadingConditions || isSubmitting}
+        />
       </div>
     </MCFormWrapper>
   );

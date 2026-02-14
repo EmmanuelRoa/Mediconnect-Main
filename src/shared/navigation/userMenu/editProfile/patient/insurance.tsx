@@ -1,20 +1,21 @@
+import { useState, useEffect } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCSelect from "@/shared/components/forms/MCSelect";
-import { X, Shield } from "lucide-react";
+import { X, Shield, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { patientInsuranceSchema } from "@/schema/profile.schema";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { patientService } from "./services/patient.service";
+import type { Seguro } from "./services/patient.types";
+import { toast } from "sonner";
 
-const INSURANCE_OPTIONS = [
-  { value: "segurosAtlas", label: "Seguros Atlas" },
-  { value: "axa", label: "AXA" },
-  { value: "gnp", label: "GNP" },
-  { value: "metlife", label: "MetLife" },
-  { value: "miiimi", label: "miiimi" },
-  { value: "mamam", label: "mamam" },
-  { value: "qualitas", label: "Qualitas" },
+// Tipos de seguro disponibles (esto podría venir de la API si existe un endpoint)
+const INSURANCE_TYPES = [
+  { value: 1, label: "Plan Básico de Salud" },
+  { value: 2, label: "Subsidiado" },
+  { value: 3, label: "Contributivo Subsidiado" },
 ];
 
 function Insurance() {
@@ -27,33 +28,154 @@ function Insurance() {
 
   const patientInsurance = useProfileStore((state) => state.patientInsurance);
 
-  const insurances = Array.isArray(patientInsurance)
-    ? []
-    : patientInsurance?.insuranceProvider || [];
+  // Estados para las listas de seguros
+  const [availableInsurances, setAvailableInsurances] = useState<Seguro[]>([]);
+  const [myInsurances, setMyInsurances] = useState<Seguro[]>([]);
+  const [selectedInsuranceType, setSelectedInsuranceType] = useState<number | null>(null);
 
-  const handleAddInsurance = (value: string) => {
-    if (!insurances.includes(value)) {
-      setPatientInsurance({
-        ...patientInsurance,
-        insuranceProvider: [...insurances, value],
-      });
+  // Estados de carga
+  const [isLoadingInsurances, setIsLoadingInsurances] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    loadInsurancesData();
+  }, []);
+
+  async function loadInsurancesData() {
+    try {
+      setIsLoadingInsurances(true);
+      const [availableResponse, myResponse] = await Promise.all([
+        patientService.getAvailableInsurances(),
+        patientService.getMyInsurances(),
+      ]);
+
+      if (availableResponse.success) {
+        setAvailableInsurances(availableResponse.data);
+      }
+
+      if (myResponse.success) {
+        // Transformar la estructura anidada de la API a objetos Seguro
+        const transformedInsurances: Seguro[] = myResponse.data.map(item => ({
+          id: item.seguro.id,
+          nombre: item.seguro.nombre,
+          descripcion: item.seguro.descripcion,
+          idTipoSeguro: item.tipoSeguro.id,
+          tipoSeguro: item.tipoSeguro,
+        }));
+        
+        setMyInsurances(transformedInsurances);
+        
+        // Actualizar el store también
+        setPatientInsurance({
+          ...patientInsurance,
+          insuranceProvider: transformedInsurances.map(i => i.id.toString()),
+        });
+      }
+    } catch (error) {
+      console.error("Error al cargar seguros:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("insurance.errorLoading", "Error al cargar seguros")
+      );
+    } finally {
+      setIsLoadingInsurances(false);
     }
-  };
-
-  const handleRemoveInsurance = (value: string) => {
-    setPatientInsurance({
-      ...patientInsurance,
-      insuranceProvider: insurances.filter((i) => i !== value),
-    });
-  };
-
-  const availableInsurances = INSURANCE_OPTIONS.filter(
-    (opt) => !insurances.includes(opt.value),
-  );
+  }
 
   const handleSubmit = () => {
     console.log("Insurance data submitted:", patientInsurance);
   };
+
+  async function handleAddInsurance(value: string) {
+    const idSeguro = parseInt(value);
+    
+    // Validar que se haya seleccionado un tipo de seguro
+    if (!selectedInsuranceType) {
+      toast.error(t("insurance.selectTypeFirst", "Por favor selecciona el tipo de seguro primero"));
+      return;
+    }
+    
+    // Validar límite de 3 seguros
+    if (myInsurances.length >= 3) {
+      toast.error(t("insurance.maxLimit", "Solo puedes tener un máximo de 3 seguros"));
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.addInsurance({ 
+        idSeguro, 
+        idTipoSeguro: selectedInsuranceType 
+      });
+
+      if (response.success) {
+        // Construir el objeto Seguro a partir de la respuesta
+        const newInsurance: Seguro = {
+          id: response.data.seguro.id,
+          nombre: response.data.seguro.nombre,
+          descripcion: response.data.seguro.descripcion,
+          idTipoSeguro: response.data.tipoSeguro.id,
+          tipoSeguro: response.data.tipoSeguro,
+        };
+        
+        const updatedInsurances = [...myInsurances, newInsurance];
+        setMyInsurances(updatedInsurances);
+        
+        toast.success(
+          response.message || t("insurance.added", "Seguro agregado exitosamente")
+        );
+        
+        // Actualizar el store
+        setPatientInsurance({
+          ...patientInsurance,
+          insuranceProvider: updatedInsurances.map(i => i.id.toString()),
+        });
+        
+        // Resetear selección de tipo de seguro
+        setSelectedInsuranceType(null);
+      }
+    } catch (error) {
+      console.error("Error al agregar seguro:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("insurance.errorAdding", "Error al agregar seguro")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleRemoveInsurance(id: number) {
+    try {
+      setIsSubmitting(true);
+      const response = await patientService.removeInsurance(id);
+
+      if (response.success) {
+        setMyInsurances(myInsurances.filter(i => i.id !== id));
+        toast.success(
+          response.message || t("insurance.removed", "Seguro eliminado exitosamente")
+        );
+        
+        // Actualizar el store
+        setPatientInsurance({
+          ...patientInsurance,
+          insuranceProvider: myInsurances.filter(i => i.id !== id).map(i => i.id.toString()),
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar seguro:", error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : t("insurance.errorRemoving", "Error al eliminar seguro")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <MCFormWrapper
@@ -91,42 +213,81 @@ function Insurance() {
         <div
           className={`border-2 border-dotted border-primary rounded-xl ${
             isMobile ? "p-3" : "p-4"
-          } mb-2`}
+          } mb-2 min-h-[60px]`}
         >
-          <div
-            className={`flex flex-wrap ${isMobile ? "gap-1.5" : "gap-2"} mb-3`}
-          >
-            {insurances.map((i) => {
-              const label =
-                INSURANCE_OPTIONS.find((opt) => opt.value === i)?.label || i;
-              return (
-                <span
-                  key={i}
-                  className={`flex items-center gap-2 ${
-                    isMobile ? "px-3 py-0.5" : "px-4 py-1"
-                  } bg-accent/40 text-primary rounded-full ${
-                    isMobile ? "text-sm" : "text-base"
-                  } font-medium`}
-                >
-                  <span className="flex items-center gap-1">
-                    <Shield
-                      className={`${isMobile ? "w-3 h-3" : "w-4 h-4"} mb-0.5`}
-                    />
-                    {label}
-                  </span>
-                  <MCButton
-                    size="s"
-                    onClick={() => handleRemoveInsurance(i)}
-                    className="ml-1 rounded-full p-0.5 bg-transparent hover:bg-accent/70"
-                    aria-label={t("insurance.remove")}
+          {isLoadingInsurances ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div
+              className={`flex flex-wrap ${isMobile ? "gap-1.5" : "gap-2"} mb-3`}
+            >
+              {myInsurances.map((insurance) => {
+                const tipoSeguroNombre = typeof insurance.tipoSeguro === 'object' && insurance.tipoSeguro !== null
+                  ? insurance.tipoSeguro.nombre
+                  : insurance.tipoSeguro;
+                
+                return (
+                  <span
+                    key={insurance.id}
+                    className={`flex items-center gap-2 ${
+                      isMobile ? "px-3 py-0.5" : "px-4 py-1"
+                    } bg-accent/40 text-primary rounded-full ${
+                      isMobile ? "text-sm" : "text-base"
+                    } font-medium`}
                   >
-                    <X size={isMobile ? 16 : 18} className="text-primary" />
-                  </MCButton>
-                </span>
-              );
-            })}
-          </div>
+                    <span className="flex items-center gap-1">
+                      <Shield
+                        className={`${isMobile ? "w-3 h-3" : "w-4 h-4"} mb-0.5`}
+                      />
+                      {insurance.nombre}
+                      {tipoSeguroNombre && (
+                        <span className="text-xs opacity-70">({tipoSeguroNombre})</span>
+                      )}
+                    </span>
+                    <MCButton
+                      size="s"
+                      onClick={() => handleRemoveInsurance(insurance.id)}
+                      className="ml-1 rounded-full p-0.5 bg-transparent hover:bg-accent/70"
+                      aria-label={t("insurance.remove")}
+                      disabled={isSubmitting}
+                    >
+                      <X size={isMobile ? 16 : 18} className="text-primary" />
+                    </MCButton>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
+        
+        {/* Tipo de seguro */}
+        <div
+          className={`mb-1 ${
+            isMobile ? "text-base" : "text-lg"
+          } font-medium text-primary`}
+        >
+          {t("insurance.selectType", "Selecciona el tipo de seguro")}
+        </div>
+        <MCSelect
+          key={`type-${myInsurances.length}`}
+          name="insuranceType"
+          className="mb-4"
+          placeholder={t("insurance.typePlaceholder", "Tipo de seguro")}
+          options={INSURANCE_TYPES.map(type => ({
+            value: type.value.toString(),
+            label: type.label,
+          }))}
+          onChange={(value) => {
+            if (typeof value === "string") {
+              setSelectedInsuranceType(parseInt(value));
+            }
+          }}
+          disabled={isLoadingInsurances || isSubmitting || myInsurances.length >= 3}
+        />
+        
+        {/* Seguro */}
         <div
           className={`mb-1 ${
             isMobile ? "text-base" : "text-lg"
@@ -135,17 +296,28 @@ function Insurance() {
           {t("insurance.add")}
         </div>
         <MCSelect
-          key={insurances.length}
+          key={myInsurances.length}
           name="insurance"
           className="mb-4"
           searchable={true}
           placeholder={t("insurance.select", "Selecciona un seguro")}
-          options={availableInsurances}
-          disabled={availableInsurances.length === 0}
+          options={availableInsurances
+            .filter((insurance) => !myInsurances.some(i => i.id === insurance.id))
+            .map((insurance) => ({
+              value: insurance.id.toString(),
+              label: insurance.nombre,
+            }))}
+          disabled={isLoadingInsurances || isSubmitting || myInsurances.length >= 3 || !selectedInsuranceType}
           onChange={(value) => {
             if (typeof value === "string") handleAddInsurance(value);
           }}
         />
+        
+        {myInsurances.length >= 3 && (
+          <div className={`text-orange-500 ${isMobile ? "text-sm" : "text-base"} font-medium`}>
+            {t("insurance.maxReached", "Has alcanzado el límite máximo de 3 seguros")}
+          </div>
+        )}
       </div>
     </MCFormWrapper>
   );

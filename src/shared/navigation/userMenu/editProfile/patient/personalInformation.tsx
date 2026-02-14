@@ -16,6 +16,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { patientService } from "./services/patient.service";
 import type { UpdatePatientProfileRequest } from "./services/patient.types";
 import { toast } from "sonner";
+import { base64ToFile } from "@/utils/base64ToFile";
 
 interface PersonalInformationProps {
   schema: any;
@@ -51,6 +52,9 @@ function PersonalInformation({
   const [showDeleteProfileModal, setShowDeleteProfileModal] = useState(false);
   const [showDeleteBannerModal, setShowDeleteBannerModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Guardar la imagen original del perfil para detectar cambios
+  const originalProfileImage = getUserAvatar(user) || "";
 
   // Opciones de tipos de sangre
   const bloodTypeOptions = [
@@ -129,7 +133,44 @@ function PersonalInformation({
     setIsSubmitting(true);
 
     try {
-      // Preparar datos para enviar al backend
+      // 1. Si la foto de perfil cambió, actualizarla primero
+      let newProfilePhotoUrl = originalProfileImage;
+      const profileImageChanged = profileImage !== originalProfileImage && profileImage;
+
+      if (profileImageChanged) {
+        try {
+          // Convertir la imagen base64 a File
+          const photoFile = base64ToFile(
+            profileImage,
+            'profile-photo.jpg',
+            'image/jpeg'
+          );
+
+          // Llamar al servicio para actualizar la foto de perfil
+          const photoResponse = await patientService.updateProfilePhoto(photoFile);
+
+          if (photoResponse.success && photoResponse.data.fotoPerfilUrl) {
+            // Agregar timestamp para evitar caché del navegador
+            newProfilePhotoUrl = `${photoResponse.data.fotoPerfilUrl}?t=${Date.now()}`;
+            
+            // Actualizar también el estado local para preview inmediata
+            setProfileImage(newProfilePhotoUrl);
+            
+            toast.success(
+              t("profileForm.photoUpdated", "Foto de perfil actualizada exitosamente")
+            );
+          }
+        } catch (photoError) {
+          console.error("Error al actualizar foto de perfil:", photoError);
+          const photoErrorMessage = photoError instanceof Error 
+            ? photoError.message 
+            : t("profileForm.errorPhotoUpdate", "Error al actualizar la foto de perfil");
+          toast.error(photoErrorMessage);
+          // Continuar con la actualización de datos personales aunque falle la foto
+        }
+      }
+
+      // 2. Actualizar datos personales (altura, peso, tipo de sangre)
       const updateData: UpdatePatientProfileRequest = {
         altura: data.height ? Number(data.height) : undefined,
         peso: data.weight ? Number(data.weight) : undefined,
@@ -140,12 +181,19 @@ function PersonalInformation({
       const response = await patientService.updateProfile(updateData);
 
       if (response.success) {
+        // Agregar timestamp para evitar caché del navegador
+        const photoUrlWithCacheBust = newProfilePhotoUrl 
+          ? `${newProfilePhotoUrl}?t=${Date.now()}` 
+          : newProfilePhotoUrl;
+
         // Actualizar el usuario en el store con los nuevos datos
         useAppStore.getState().updateUser({
           ...user,
+          fotoPerfil: photoUrlWithCacheBust,
           paciente: user.paciente ? {
             ...user.paciente,
             ...response.data,
+            fotoPerfil: photoUrlWithCacheBust, // Actualizar también en paciente
           } : null,
         });
 
@@ -154,8 +202,8 @@ function PersonalInformation({
           setPatientProfile({
             ...patientProfile,
             ...data,
-            avatar: profileImage
-              ? { url: profileImage, type: "image", name: "avatar" }
+            avatar: newProfilePhotoUrl
+              ? { url: newProfilePhotoUrl, type: "image", name: "avatar" }
               : undefined,
             banner: bannerImage
               ? { url: bannerImage, type: "image", name: "banner" }

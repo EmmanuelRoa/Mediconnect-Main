@@ -57,10 +57,23 @@
     "addAllergy": "Add Allergy",
     "selectAllergy": "Select an allergy",
     "removeAllergy": "Remove allergy",
+    "errorLoadingAllergies": "Error loading allergies",
+    "allergyAdded": "Allergy added successfully",
+    "errorAddingAllergy": "Error adding allergy",
+    "allergyRemoved": "Allergy removed successfully",
+    "errorRemovingAllergy": "Error removing allergy",
     "conditions": "Conditions",
     "addCondition": "Add Condition",
+    "selectCondition": "Select a condition",
     "removeCondition": "Remove condition",
-    "conditionPlaceholder": "Describe your condition"
+    "conditionPlaceholder": "Describe your condition",
+    "errorLoadingConditions": "Error loading medical conditions",
+    "conditionAdded": "Medical condition added successfully",
+    "errorAddingCondition": "Error adding medical condition",
+    "conditionRemoved": "Medical condition removed successfully",
+    "errorRemovingCondition": "Error removing medical condition",
+    "notesUpdated": "Notes updated successfully",
+    "errorUpdatingNotes": "Error updating notes"
   },
   "insurance": {
     "title": "Medical Insurance",
@@ -84,6 +97,8 @@
     "heightInvalid": "Invalid input: a number was expected",
     "weightPositive": "Weight must be a positive number",
     "heightPositive": "Height must be a positive number",
+    "weightMax": "Weight must be less than 500 kg",
+    "heightMax": "Height must be less than 300 cm",
     "weightInvalid": "Invalid input: a number was expected",
     "bloodTypeInvalid": "Invalid option: expected A+, A-, B+, B-, AB+, AB-, O+ or O-"
   },

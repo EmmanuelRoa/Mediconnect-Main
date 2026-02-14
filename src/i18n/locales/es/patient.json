@@ -57,10 +57,23 @@
     "addAllergy": "Agregar Alergia",
     "selectAllergy": "Selecciona una alergia",
     "removeAllergy": "Eliminar alergia",
+    "errorLoadingAllergies": "Error al cargar alergias",
+    "allergyAdded": "Alergia agregada exitosamente",
+    "errorAddingAllergy": "Error al agregar alergia",
+    "allergyRemoved": "Alergia eliminada exitosamente",
+    "errorRemovingAllergy": "Error al eliminar alergia",
     "conditions": "Condiciones",
     "addCondition": "Agregar Condición",
+    "selectCondition": "Selecciona una condición",
     "removeCondition": "Eliminar condición",
-    "conditionPlaceholder": "Describe tu condición"
+    "conditionPlaceholder": "Describe tu condición",
+    "errorLoadingConditions": "Error al cargar condiciones médicas",
+    "conditionAdded": "Condición médica agregada exitosamente",
+    "errorAddingCondition": "Error al agregar condición médica",
+    "conditionRemoved": "Condición médica eliminada exitosamente",
+    "errorRemovingCondition": "Error al eliminar condición médica",
+    "notesUpdated": "Notas actualizadas exitosamente",
+    "errorUpdatingNotes": "Error al actualizar notas"
   },
   "insurance": {
     "title": "Seguro Médico",
@@ -84,6 +97,8 @@
     "heightInvalid": "Entrada inválida: se esperaba un número",
     "weightPositive": "El peso debe ser un número positivo",
     "heightPositive": "La altura debe ser un número positivo",
+    "weightMax": "El peso debe ser menor a 500 kg",
+    "heightMax": "La altura debe ser menor a 300 cm",
     "weightInvalid": "Entrada inválida: se esperaba un número",
     "bloodTypeInvalid": "Opción inválida: se esperaba A+, A-, B+, B-, AB+, AB-, O+ o O-"
   },

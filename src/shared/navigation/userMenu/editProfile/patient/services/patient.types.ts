@@ -41,3 +41,162 @@ export interface UpdatePatientProfileError {
   error?: string;
   statusCode?: number;
 }
+
+// --- TIPOS PARA ACTUALIZACIÓN DE FOTO DE PERFIL ---
+
+export interface UpdateProfilePhotoResponse {
+  success: boolean;
+  message: string;
+  data: {
+    fotoPerfilUrl: string;
+  };
+}
+
+export interface UpdateProfilePhotoError {
+  success: false;
+  message: string;
+  error?: string;
+  statusCode?: number;
+}
+
+// --- TIPOS PARA CONDICIONES MÉDICAS Y ALERGIAS ---
+
+export interface CondicionMedica {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  tipo: 'Alergia' | 'Condición Médica';
+  notas?: string; // Notas personales del paciente
+}
+
+export interface GetAvailableAllergiesResponse {
+  success: boolean;
+  data: CondicionMedica[];
+}
+
+export interface GetAvailableConditionsResponse {
+  success: boolean;
+  data: CondicionMedica[];
+}
+
+export interface AddAllergyRequest {
+  condicionId: number;
+  notas?: string;
+}
+
+export interface AddConditionRequest {
+  condicionId: number;
+  notas?: string;
+}
+
+export interface AddAllergyResponse {
+  success: boolean;
+  message: string;
+  data: CondicionMedica;
+}
+
+export interface AddConditionResponse {
+  success: boolean;
+  message: string;
+  data: CondicionMedica;
+}
+
+export interface GetMyAllergiesResponse {
+  success: boolean;
+  data: CondicionMedica[];
+}
+
+export interface GetMyConditionsResponse {
+  success: boolean;
+  data: CondicionMedica[];
+}
+
+export interface RemoveAllergyResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface RemoveConditionResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface MedicalConditionError {
+  success: false;
+  message: string;
+  error?: string;
+  statusCode?: number;
+}
+
+// --- TIPOS PARA SEGUROS MÉDICOS ---
+
+export interface TipoSeguro {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
+
+export interface Seguro {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  idTipoSeguro?: number;
+  tipoSeguro?: TipoSeguro | string;
+}
+
+export interface GetAvailableInsurancesResponse {
+  success: boolean;
+  data: Seguro[];
+}
+
+export interface GetMyInsurancesResponse {
+  success: boolean;
+  data: Array<{
+    creadoEn: string;
+    estado: string;
+    seguro: {
+      id: number;
+      nombre: string;
+      descripcion?: string;
+      urlImage?: string | null;
+      creadoEn: string;
+      estado: string;
+    };
+    tipoSeguro: TipoSeguro;
+  }>;
+}
+
+export interface AddInsuranceRequest {
+  idSeguro: number;
+  idTipoSeguro: number;
+}
+
+export interface AddInsuranceResponse {
+  success: boolean;
+  message: string;
+  data: {
+    creadoEn: string;
+    estado: string;
+    seguro: {
+      id: number;
+      nombre: string;
+      descripcion?: string;
+      urlImage?: string | null;
+      creadoEn: string;
+      estado: string;
+    };
+    tipoSeguro: TipoSeguro;
+  };
+}
+
+export interface RemoveInsuranceResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface InsuranceError {
+  success: false;
+  message: string;
+  error?: string;
+  statusCode?: number;
+}
