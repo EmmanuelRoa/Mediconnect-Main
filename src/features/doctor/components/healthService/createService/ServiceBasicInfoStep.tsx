@@ -31,9 +31,6 @@ function ServiceBasicInfoStep() {
     (s) => s.setCreateServiceData,
   );
 
-  const setCreateServiceField = useCreateServicesStore(
-    (s) => s.setCreateServiceField,
-  );
   const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
 

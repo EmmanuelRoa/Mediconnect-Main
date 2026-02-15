@@ -20,7 +20,8 @@ export interface CreateServicesSlice {
 
   locationData: LocationType;
   setLocationData: (data: Partial<LocationType>) => void;
-
+  setlocationField: (field: keyof LocationType, value: any) => void;
+  clearLocationData: () => void;
   comercialScheduleData: ComercialScheduleType;
   setComercialScheduleData: (data: Partial<ComercialScheduleType>) => void;
 
@@ -76,7 +77,24 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set, get) => ({
     set((state) => ({
       locationData: { ...state.locationData, ...data },
     })),
+  setlocationField: (field, value) =>
+    set((state) => ({
+      locationData: { ...state.locationData, [field]: value },
+    })),
 
+  clearLocationData: () =>
+    set({
+      locationData: {
+        name: "",
+        address: "",
+        province: "",
+        municipality: "",
+        coordinates: {
+          latitude: 0,
+          longitude: 0,
+        },
+      },
+    }),
   comercialScheduleData: {
     name: "",
     day: [],

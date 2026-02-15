@@ -103,7 +103,9 @@ export const locationSchema = (t: (key: string) => string) =>
     name: z
       .string()
       .min(1, t("validation.name.required"))
-      .max(30, t("validation.name.maxLength30")),
+      .max(30, t("validation.name.maxLength30"))
+      .optional(),
+
     address: z.string().min(1, t("validation.address.required")),
     province: z.string().min(1, t("validation.province.required")),
     municipality: z.string().min(1, t("validation.municipality.required")),

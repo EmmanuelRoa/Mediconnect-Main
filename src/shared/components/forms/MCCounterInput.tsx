@@ -1,6 +1,6 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
-import { DollarSign, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 
 interface MCCounterInputProps {
   name: string;
@@ -23,8 +23,8 @@ const MCCounterInput = ({
   defaultValue = 0,
   onChange,
 }: MCCounterInputProps) => {
-  const { control, setValue } = useFormContext();
-  const [isHolding, setIsHolding] = useState(false);
+  const { control } = useFormContext();
+
   const intervalRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
@@ -33,7 +33,6 @@ const MCCounterInput = ({
     currentValue: number,
     onChange: (value: number) => void,
   ) => {
-    setIsHolding(true);
     const direction = increment ? step : -step;
 
     timeoutRef.current = setTimeout(() => {
@@ -50,7 +49,6 @@ const MCCounterInput = ({
   };
 
   const stopHolding = () => {
-    setIsHolding(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
