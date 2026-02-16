@@ -41,6 +41,9 @@ export interface CreateServicesSlice {
   goToNextStep: () => void;
   goToPreviousStep: () => void;
 
+  allowNavigation: boolean;
+  setAllowNavigation: (allow: boolean) => void;
+
   resetAll: () => void;
 }
 
@@ -299,6 +302,14 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set, get) => ({
       };
     }),
 
+  // ✨ Nueva propiedad para controlar la navegación
+  allowNavigation: false,
+
+  // ✨ Nueva función para permitir/bloquear navegación
+  setAllowNavigation: (allow: boolean) => {
+    set({ allowNavigation: allow });
+  },
+
   resetAll: () =>
     set({
       createServiceData: {
@@ -342,6 +353,7 @@ const createServicesSlice: StateCreator<CreateServicesSlice> = (set, get) => ({
         { summary: { status: "wait" } },
       ] as ServiceStep[],
       currentStep: 0,
+      allowNavigation: false, // ✨ Resetear también esta propiedad
     }),
 });
 
