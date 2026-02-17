@@ -450,24 +450,22 @@ export function MCUserMenuContent({
                 {t("userMenu.changeTheme")}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="w-56 p-1 bg-background border border-primary/20 rounded-xl shadow-lg">
-                <DropdownMenuRadioGroup
-                  value={theme}
-                  onValueChange={(value) =>
-                    handleThemeChange(value as Theme, {} as React.MouseEvent)
-                  }
-                >
-                  {themeOptions.map((option) => (
-                    <DropdownMenuRadioItem
-                      key={option.value}
-                      value={option.value}
-                    >
-                      <div className="flex items-center gap-2">
-                        {option.icon}
-                        <span>{option.label}</span>
-                      </div>
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
+                {themeOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={(e) => handleThemeChange(option.value, e)}
+                    className={cn(
+                      "cursor-pointer flex items-center gap-2",
+                      theme === option.value && "text-primary",
+                    )}
+                  >
+                    {theme === option.value && (
+                      <span className="absolute left-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                    )}
+                    <span className="ml-4">{option.icon}</span>
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           )}
