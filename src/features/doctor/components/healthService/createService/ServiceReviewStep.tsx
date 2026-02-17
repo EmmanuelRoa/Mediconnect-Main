@@ -1,13 +1,12 @@
-import { Plus, X } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
 import ServicesLayoutsSteps from "./ServicesLayoutsSteps";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
 import { useTranslation } from "react-i18next";
-import { ImageCarouselModal } from "../ImageCarouselModal";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import PhotoGallery from "../PhotoGallery";
 import MapScheduleLocation from "@/shared/components/maps/MapScheduleLocation";
 import { useNavigate } from "react-router-dom";
+
 const locationsData = [
   {
     id: 1,
@@ -25,98 +24,134 @@ const locationsData = [
   },
 ];
 
-// Mapea la data al formato requerido por MapScheduleLocation
 const mappedLocations = locationsData.map((loc) => ({
   lat: loc.latitude,
   lng: loc.longitude,
   label: loc.name || loc.address,
-  color: "#e11d48", // Puedes personalizar el color si lo deseas
+  color: "#e11d48",
 }));
 
 function ServiceReviewStep() {
   const { t } = useTranslation("doctor");
+  const isMobile = useIsMobile();
+
   const serviceCreateData = useCreateServicesStore((s) => s.createServiceData);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
   const navigate = useNavigate();
 
   const handleSubmit = () => {
-    // Aquí puedes agregar lógica para guardar el servicio si es necesario
     navigate("/doctor/services");
   };
 
   const modality = serviceCreateData.selectedModality;
+
   return (
     <ServicesLayoutsSteps
-      title="Revisar Servicio"
-      description="Revisa toda la información de tu servicio antes de publicarlo. Asegúrate de que todo esté correcto para atraer a más pacientes y brindarles la mejor experiencia posible."
+      title={t("createService.review.title")}
+      description={t("createService.review.description")}
     >
-      <div className="w-full flex flex-col gap-4">
+      <div className={`w-full flex flex-col ${isMobile ? "gap-3" : "gap-4"}`}>
         <PhotoGallery
           images={(serviceCreateData.images || []).map((img) => img.url)}
         />
         <div className="w-full flex flex-col">
-          <h3 className="text-3xl font-medium">{serviceCreateData.name}</h3>
-          <p className="text-lg text-primary/80">
+          <h3 className={`${isMobile ? "text-2xl" : "text-3xl"} font-medium`}>
+            {serviceCreateData.name}
+          </h3>
+          <p
+            className={`${isMobile ? "text-base" : "text-lg"} text-primary/80`}
+          >
             {serviceCreateData.description}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div
+          className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-3"} gap-4`}
+        >
           <div>
-            <h4 className="text-md font-medium text-primary/75 ">
-              Especialidad
+            <h4
+              className={`${isMobile ? "text-sm" : "text-md"} font-medium text-primary/75`}
+            >
+              {t("createService.review.specialty")}
             </h4>
-            <p className="text-lg">{serviceCreateData.specialty}</p>
+            <p className={isMobile ? "text-base" : "text-lg"}>
+              {serviceCreateData.specialty}
+            </p>
           </div>
           <div>
-            <h4 className="text-md font-medium text-primary/75 ">Modalidad</h4>
-            <p className="text-lg">{serviceCreateData.selectedModality}</p>
+            <h4
+              className={`${isMobile ? "text-sm" : "text-md"} font-medium text-primary/75`}
+            >
+              {t("createService.review.modality")}
+            </h4>
+            <p className={isMobile ? "text-base" : "text-lg"}>
+              {serviceCreateData.selectedModality}
+            </p>
           </div>
           <div>
-            <h4 className="text-md font-medium text-primary/75 ">Duración</h4>
-            <p className="text-lg">
+            <h4
+              className={`${isMobile ? "text-sm" : "text-md"} font-medium text-primary/75`}
+            >
+              {t("createService.review.duration")}
+            </h4>
+            <p className={isMobile ? "text-base" : "text-lg"}>
               {formatDurationDisplay(serviceCreateData.duration)}
             </p>
           </div>
           <div>
-            <h4 className="text-md font-medium text-primary/75 ">
-              Precio por sesión
+            <h4
+              className={`${isMobile ? "text-sm" : "text-md"} font-medium text-primary/75`}
+            >
+              {t("createService.review.pricePerSession")}
             </h4>
-            <p className="text-lg">${serviceCreateData.pricePerSession}</p>
+            <p className={isMobile ? "text-base" : "text-lg"}>
+              ${serviceCreateData.pricePerSession}
+            </p>
           </div>
           <div>
-            <h4 className="text-md  font-medium text-primary/75 ">
-              Número de sesiones
+            <h4
+              className={`${isMobile ? "text-sm" : "text-md"} font-medium text-primary/75`}
+            >
+              {t("createService.review.numberOfSessions")}
             </h4>
-            <p className="text-lg">{serviceCreateData.numberOfSessions}</p>
+            <p className={isMobile ? "text-base" : "text-lg"}>
+              {serviceCreateData.numberOfSessions}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-medium">Ubicación</h2>
-          {modality === "presencial" || modality === "Mixta" ? (
+        {(modality === "presencial" || modality === "Mixta") && (
+          <div className="flex flex-col gap-2">
+            <h2 className={`${isMobile ? "text-lg" : "text-xl"} font-medium`}>
+              {t("createService.review.location")}
+            </h2>
             <MapScheduleLocation
               showAddressInfo
               multipleLocations={mappedLocations}
             />
-          ) : (
-            <div>
-              <h4 className="text-lg font-semibold text-primary mb-1">
-                Consulta virtual
-              </h4>
-              <p className="text-primary opacity-75 text-sm">
-                La consulta se realizará a través de la plataforma de
-                teleconsultas de Mediconnect. Recibirás un enlace por correo
-                electrónico antes de la cita.
-              </p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {modality === "teleconsulta" && (
+          <div className="flex flex-col">
+            <h4
+              className={`${isMobile ? "text-base" : "text-lg"} font-medium text-primary`}
+            >
+              {t("createService.review.virtualConsultation")}
+            </h4>
+            <p
+              className={`text-primary opacity-75 ${isMobile ? "text-xs" : "text-sm"}`}
+            >
+              {t("createService.review.virtualConsultationDescription")}
+            </p>
+          </div>
+        )}
+
         <AuthFooterContainer
           type="Save"
           continueButtonProps={{
             onClick: handleSubmit,
-            children: "Guardar",
+            children: t("createService.review.save"),
           }}
           backButtonProps={{
             onClick: () => goToPreviousStep(),

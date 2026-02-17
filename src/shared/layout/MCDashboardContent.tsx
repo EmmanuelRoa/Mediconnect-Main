@@ -20,7 +20,7 @@ interface Props {
   noBg?: boolean;
   isTele?: boolean;
   create?: boolean;
-  abandonarTrigger?: React.ReactNode; // <-- Nueva prop para pasar el trigger del modal
+  abandonarTrigger?: React.ReactNode;
 }
 
 const MCDashboardContent: React.FC<Props> = ({
@@ -33,17 +33,15 @@ const MCDashboardContent: React.FC<Props> = ({
   noBg = false,
   isTele = false,
   create = false,
-  abandonarTrigger, // <-- Recibir el trigger
+  abandonarTrigger,
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
 
-  // Referencia para abrir el modal desde el trigger
   const modalRef = useRef<{ open: () => void }>(null);
 
-  // Función para verificar si hay datos sin guardar
   const hasUnsavedData = useCallback(() => {
     return (
       createServiceData?.name !== "" ||
@@ -55,7 +53,6 @@ const MCDashboardContent: React.FC<Props> = ({
     );
   }, [createServiceData]);
 
-  // Trigger personalizado
   const abandonarButton = (
     <div
       role="button"
@@ -74,7 +71,9 @@ const MCDashboardContent: React.FC<Props> = ({
         className="transition-transform duration-200 group-hover:-translate-x-1 group-hover:scale-110"
         size={20}
       />
-      <span className="font-medium text-lg">{t("Abandonar")}</span>
+      <span className="font-medium text-lg">
+        {t("createService.leave.button")}
+      </span>
     </div>
   );
 
@@ -126,12 +125,11 @@ const LeaveCreateService = React.forwardRef(function LeaveCreateService({
   trigger,
 }: LeaveCreateServiceProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const { clearComercialScheduleData } = useCreateServicesStore();
 
   const handleConfirmLeave = () => {
     console.log("sallll mmg");
-
     clearComercialScheduleData();
     navigate("/doctor/services");
   };
@@ -140,14 +138,12 @@ const LeaveCreateService = React.forwardRef(function LeaveCreateService({
     <MCModalBase
       id="leave-create-service"
       trigger={trigger}
-      title={t("Abandonar creación")}
-      description={t(
-        "¿Estás seguro de que quieres abandonar la creación del servicio? Se perderán los cambios no guardados.",
-      )}
+      title={t("createService.leave.title")}
+      description={t("createService.leave.description")}
       variant="warning"
       onConfirm={handleConfirmLeave}
-      confirmText={t("Sí, abandonar")}
-      secondaryText={t("No, continuar editando")}
+      confirmText={t("createService.leave.confirm")}
+      secondaryText={t("createService.leave.cancel")}
       size="smWide"
     >
       <></>

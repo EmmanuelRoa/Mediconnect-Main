@@ -4,8 +4,10 @@ import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer"
 import { ChevronRight } from "lucide-react";
 import MCButton from "@/shared/components/forms/MCButton";
 import { Button } from "@/shared/ui/button";
-import { useState } from "react";
 import ManageSchedule from "./Modals/ManageSchedule";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
+
 const schedules = [
   {
     id: 1,
@@ -40,24 +42,31 @@ const schedules = [
 ];
 
 function ServiceScheduleStep() {
+  const isMobile = useIsMobile();
+  const { t } = useTranslation("doctor");
+
   const comercialScheduleSelected = useCreateServicesStore(
     (s) => s.createServiceData.comercial_schedule,
   );
+
   const setComercialScheduleData = useCreateServicesStore(
     (s) => s.setCreateServiceField,
   );
+
   const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
 
   return (
     <ServicesLayoutsSteps
-      title="Establece tu horario"
-      description="Empieza con una opción accesible para atraer a más pacientes y optimizar tu agenda de manera eficiente."
+      title={t("createService.schedule.title")}
+      description={t("createService.schedule.description")}
     >
       <div
         className={`w-full ${schedules.length > 6 ? "max-h-80 overflow-y-auto" : ""}`}
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div
+          className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}
+        >
           {schedules.map((item) => (
             <div
               key={item.id}
@@ -75,9 +84,17 @@ function ServiceScheduleStep() {
                 )
               }
             >
-              <div className="flex flex-col gap-1 max-w-[220px]">
-                <p className="text-base font-medium truncate">{item.name}</p>
-                <p className="text-sm font-normal truncate">
+              <div
+                className={`flex flex-col gap-1 ${isMobile ? "max-w-[200px]" : "max-w-[220px]"}`}
+              >
+                <p
+                  className={`${isMobile ? "text-sm" : "text-base"} font-medium truncate`}
+                >
+                  {item.name}
+                </p>
+                <p
+                  className={`${isMobile ? "text-xs" : "text-sm"} font-normal truncate`}
+                >
                   {item.schedule.firstDay} {item.schedule.firstHour} -{" "}
                   {item.schedule.lastDay} {item.schedule.lastHour}
                 </p>
@@ -87,18 +104,20 @@ function ServiceScheduleStep() {
                   variant="outline"
                   className="rounded-4xl p-2 border-none bg-transparent shadow-none text-primary/75 hover:bg-primary/10 hover:text-primary focus:ring-0 focus:ring-offset-0 focus-visible:ring-0"
                 >
-                  <ChevronRight />
-                </Button>{" "}
+                  <ChevronRight className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+                </Button>
               </ManageSchedule>
             </div>
           ))}
         </div>
       </div>
+
       <ManageSchedule>
         <MCButton className="w-full rounded-xl mt-6" variant="tercero">
-          Agregar Horario
+          {t("createService.schedule.addSchedule")}
         </MCButton>
       </ManageSchedule>
+
       <AuthFooterContainer
         continueButtonProps={{
           disabled: !comercialScheduleSelected,

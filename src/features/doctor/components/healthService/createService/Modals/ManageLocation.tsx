@@ -1,7 +1,6 @@
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import MapSelectLocation from "@/shared/components/maps/MapSelectLocation";
 import MCInput from "@/shared/components/forms/MCInput";
-
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
 import { locationSchema } from "@/schema/createService.schema";
 import { useTranslation } from "react-i18next";
@@ -20,7 +19,7 @@ function ManageLocation({
   children,
   triggerClassName,
 }: manageLocationProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const formRef = useRef<any>(null);
 
   const locatonFormSchema = locationSchema(t);
@@ -35,23 +34,19 @@ function ManageLocation({
     lng: -69.9312,
   });
 
-  // Manejar el click en el trigger
   const handleTriggerClick = useCallback(() => {
     setShouldLoadData(true);
   }, []);
 
-  // Cargar datos cuando se abre el modal
   useEffect(() => {
     if (!shouldLoadData) return;
 
-    // Si es edición, cargar los datos existentes
     if (locationSelected !== undefined && locationData) {
       setCoordinates({
         lat: locationData.coordinates?.latitude || 18.4861,
         lng: locationData.coordinates?.longitude || -69.9312,
       });
     } else {
-      // Si es nuevo, limpiar todo
       clearLocationData();
       setCoordinates({
         lat: 18.4861,
@@ -105,7 +100,6 @@ function ManageLocation({
     clearLocationData();
   };
 
-  // Actualizar el formulario cuando cambien los datos del store
   useEffect(() => {
     if (formRef.current && formRef.current.reset) {
       formRef.current.reset({
@@ -121,7 +115,6 @@ function ManageLocation({
     }
   }, [locationData, coordinates]);
 
-  // Clonar el trigger con el handler
   const triggerWithHandler = React.isValidElement(children)
     ? React.cloneElement(children as React.ReactElement<any>, {
         onClick: handleTriggerClick,
@@ -131,7 +124,7 @@ function ManageLocation({
   return (
     <MCModalBase
       id="manage-location-modal"
-      title="Seleccionar Ubicación"
+      title={t("createService.location.manageLocation")}
       size="lgAuto"
       variant="decide"
       onConfirm={handleConfirm}

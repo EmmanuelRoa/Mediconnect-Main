@@ -1,30 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import MCInput from "@/shared/components/forms/MCInput";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
-
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
 import { comercialScheduleSchema } from "@/schema/createService.schema";
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const DAY_LABELS: Record<number, string> = {
-  0: "Domingo",
-  1: "Lunes",
-  2: "Martes",
-  3: "Miércoles",
-  4: "Jueves",
-  5: "Viernes",
-  6: "Sábado",
-};
-
-const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Empezar con lunes
+const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 const LOCATIONS_DATA = [
   {
@@ -43,10 +27,6 @@ const LOCATIONS_DATA = [
   },
 ];
 
-// ============================================================================
-// INTERFACES
-// ============================================================================
-
 interface ManageLocationProps {
   locationSelected?: number | undefined;
   children: React.ReactNode;
@@ -57,18 +37,12 @@ interface DaysSelectorProps {
   onChange?: (value: number[]) => void;
 }
 
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-// Convierte una hora en formato "HH:mm" o "HH:mm am/pm" a minutos
 function timeToMinutes(time: string): number {
   if (!time) return 0;
 
   let [hour, minute] = [0, 0];
   let isPM = false;
 
-  // Detectar formato am/pm
   const ampmMatch = time.match(/(am|pm)$/i);
   if (ampmMatch) {
     isPM = ampmMatch[1].toLowerCase() === "pm";
@@ -85,15 +59,22 @@ function timeToMinutes(time: string): number {
   return hour * 60 + minute;
 }
 
-// ============================================================================
-// COMPONENTS
-// ============================================================================
-
 function DaysSelector({ name, onChange }: DaysSelectorProps) {
+  const { t } = useTranslation("doctor");
   const {
     control,
     formState: { errors },
   } = useFormContext();
+
+  const DAY_LABELS: Record<number, string> = {
+    0: t("days.sunday"),
+    1: t("days.monday"),
+    2: t("days.tuesday"),
+    3: t("days.wednesday"),
+    4: t("days.thursday"),
+    5: t("days.friday"),
+    6: t("days.saturday"),
+  };
 
   return (
     <div className="flex flex-col my-2">
@@ -102,7 +83,7 @@ function DaysSelector({ name, onChange }: DaysSelectorProps) {
           htmlFor={name}
           className="text-left text-base sm:text-lg text-primary"
         >
-          Días
+          {t("createService.schedule.days")}
         </label>
       </div>
       <Controller
@@ -149,26 +130,14 @@ function DaysSelector({ name, onChange }: DaysSelectorProps) {
 }
 
 function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
-  // ============================================================================
-  // HOOKS
-  // ============================================================================
-
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const submitRef = useRef<(() => void) | null>(null);
   const formRef = useRef<any>(null);
-
-  // ============================================================================
-  // STATE
-  // ============================================================================
 
   const [startTimeTouched, setStartTimeTouched] = useState(false);
   const [endTimeTouched, setEndTimeTouched] = useState(false);
   const [shouldLoadData, setShouldLoadData] = useState(false);
-  const [modalKey, setModalKey] = useState(0); // Para forzar re-render del modal
-
-  // ============================================================================
-  // STORE
-  // ============================================================================
+  const [modalKey, setModalKey] = useState(0);
 
   const serviceDuration = useCreateServicesStore(
     (s) => s.createServiceData.duration,
@@ -179,6 +148,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
       s.createServiceData.selectedModality === "presencial" ||
       s.createServiceData.selectedModality === "Mixta",
   );
+
   const setComercialScheduleField = useCreateServicesStore(
     (s) => s.setComercialScheduleField,
   );
@@ -195,10 +165,6 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
     (s) => s.clearComercialScheduleData,
   );
 
-  // ============================================================================
-  // COMPUTED VALUES
-  // ============================================================================
-
   const comercialScheduleFormSchema = comercialScheduleSchema(t);
 
   const locationOptions = LOCATIONS_DATA.map((location) => ({
@@ -209,19 +175,12 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
   const minDurationMinutes =
     (serviceDuration?.hours || 0) * 60 + (serviceDuration?.minutes || 0);
 
-  // ============================================================================
-  // HANDLERS
-  // ============================================================================
-
   const handleTriggerClick = useCallback(() => {
-    // Limpiar las horas cada vez que se abre el modal
     setComercialScheduleField("startTime", "");
     setComercialScheduleField("endTime", "");
     setStartTimeTouched(false);
     setEndTimeTouched(false);
     setShouldLoadData(true);
-
-    // Forzar re-render del modal para Safari
     setModalKey((prev) => prev + 1);
   }, [setComercialScheduleField]);
 
@@ -241,24 +200,16 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
     setEndTimeTouched(false);
   };
 
-  // ============================================================================
-  // EFFECTS
-  // ============================================================================
-
-  // Cargar datos cuando se abre el modal
   useEffect(() => {
     if (!shouldLoadData) return;
 
-    // Si NO es edición (locationSelected es undefined), limpiar todo
     if (locationSelected === undefined) {
       clearComercialScheduleData();
     }
-    // Si es edición, los datos ya están en comercialScheduleData
 
     setShouldLoadData(false);
   }, [shouldLoadData, locationSelected, clearComercialScheduleData]);
 
-  // Actualizar el formulario cuando cambien los datos del store
   useEffect(() => {
     if (formRef.current && formRef.current.reset) {
       formRef.current.reset({
@@ -269,13 +220,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         locationId: comercialScheduleData.locationId || undefined,
       });
     }
-
-    console.log(comercialScheduleData);
   }, [comercialScheduleData]);
-
-  // ============================================================================
-  // VALIDATION
-  // ============================================================================
 
   const hasTimeConflict =
     comercialScheduleData.startTime &&
@@ -291,14 +236,9 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
     startTimeTouched &&
     endTimeTouched &&
     timeToMinutes(comercialScheduleData.endTime) -
-      timeToMinutes(comercialScheduleData.startTime) <
-      minDurationMinutes;
+      timeToMinutes(comercialScheduleData.startTime);
+  minDurationMinutes;
 
-  // ============================================================================
-  // RENDER
-  // ============================================================================
-
-  // Clonar el trigger con el handler
   const triggerWithHandler = React.isValidElement(children)
     ? React.cloneElement(children as React.ReactElement<any>, {
         onClick: handleTriggerClick,
@@ -308,7 +248,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
   return (
     <MCModalBase
       id="manage-location-modal"
-      title="Gestionar Horario"
+      title={t("createService.schedule.manageSchedule")}
       size="mdAuto"
       variant="decide"
       trigger={triggerWithHandler}
@@ -341,10 +281,10 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         formRef={formRef}
       >
         <MCInput
-          label="Nombre del Horario"
+          label={t("createService.schedule.scheduleName")}
           name="name"
           maxLength={30}
-          placeholder="Ej: Horario de Lunes a Viernes"
+          placeholder={t("createService.schedule.scheduleNamePlaceholder")}
           value={comercialScheduleData.name || ""}
           onChange={(e) => setComercialScheduleField("name", e.target.value)}
         />
@@ -355,10 +295,10 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         />
 
         <MCInput
-          key={`startTime-${modalKey}`} // Forzar re-render del input
+          key={`startTime-${modalKey}`}
           name="startTime"
-          label="Hora de Inicio"
-          placeholder="Ej: 08:00 o 08:00 am"
+          label={t("createService.schedule.startTime")}
+          placeholder={t("createService.schedule.startTimePlaceholder")}
           variant="decideHour"
           value={comercialScheduleData.startTime || ""}
           onChange={(e) => {
@@ -368,10 +308,10 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         />
 
         <MCInput
-          key={`endTime-${modalKey}`} // Forzar re-render del input
+          key={`endTime-${modalKey}`}
           name="endTime"
-          label="Hora de Fin"
-          placeholder="Ej: 17:00 o 05:00 pm"
+          label={t("createService.schedule.endTime")}
+          placeholder={t("createService.schedule.endTimePlaceholder")}
           variant="decideHour"
           value={comercialScheduleData.endTime || ""}
           onChange={(e) => {
@@ -383,25 +323,24 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         {isPresentialOrMixed && (
           <MCSelect
             name="locationId"
-            label="Ubicación"
-            placeholder="Seleccionar ubicación"
+            label={t("createService.schedule.location")}
+            placeholder={t("createService.schedule.selectLocation")}
             options={locationOptions}
             searchable
             onChange={(value) => setComercialScheduleField("locationId", value)}
           />
         )}
 
-        {/* Error Messages */}
         {hasTimeConflict && (
           <div className="text-red-500 text-sm mt-2 p-3 bg-red-50 rounded-4xl border border-red-200">
-            La hora de fin debe ser posterior a la hora de inicio
+            {t("createService.schedule.errorEndTime")}
           </div>
         )}
 
         {hasInsufficientDuration && (
           <div className="text-red-500 text-sm mt-2 p-3 bg-red-50 rounded-4xl border border-red-200">
-            El rango de horario debe permitir al menos una cita de{" "}
-            {minDurationMinutes} minutos.
+            {t("createService.schedule.errorMinDuration")} {minDurationMinutes}{" "}
+            minutos.
           </div>
         )}
       </MCFormWrapper>
