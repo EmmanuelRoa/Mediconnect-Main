@@ -101,5 +101,6 @@ export const ROUTES = {
     CALENDAR: "/calendar",
     SERVICE: "/service/:serviceId",
     DASHBOARD: "/dashboard",
+    REQUESTS: "/requests",
   },
 };

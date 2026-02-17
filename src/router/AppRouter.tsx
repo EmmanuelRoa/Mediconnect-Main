@@ -36,7 +36,6 @@ import VerifyNewEmailPage from "@/features/account/settings/pages/VerifyNewEmail
 import ChangePasswordPage from "@/features/account/settings/pages/ChangePasswordPage";
 import DeleteAccountPage from "@/features/account/settings/pages/DeleteAccountPage";
 import VerifyIdentityPage from "@/features/account/settings/pages/VerifyIdentityPage";
-
 import PrivacyOverviewPage from "@/features/account/privacy/pages/PrivacyOverviewPage";
 import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisibilityPage";
 import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
@@ -51,6 +50,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import VerifyInfo from "@/features/verifyInfo/pages/VerifyInfo";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import CreateServicesPage from "@/features/doctor/pages/CreateServicesPage";
+import RequestPage from "@/features/request/pages/RequestPage";
 
 function AppRouter() {
   const userRole = useAppStore((state) => state.user?.role);
@@ -238,6 +238,15 @@ function AppRouter() {
                 <ProtectedRoute doctor center>
                   {" "}
                   <VerifyInfo />{" "}
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path={ROUTES.COMMON.REQUESTS}
+              element={
+                <ProtectedRoute doctor center>
+                  <RequestPage />
                 </ProtectedRoute>
               }
             />

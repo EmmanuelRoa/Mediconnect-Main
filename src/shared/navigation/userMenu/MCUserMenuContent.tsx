@@ -202,12 +202,12 @@ export function MCUserMenuContent({
       {
         value: "light",
         label: t("userMenu.themeLight", { defaultValue: "Light" }),
-        icon: <Sun className="w-4 h-4 text-primary" />,
+        icon: <Sun className="w-4 h-4" />,
       },
       {
         value: "dark",
         label: t("userMenu.themeDark", { defaultValue: "Dark" }),
-        icon: <Moon className="w-4 h-4 text-primary" />,
+        icon: <Moon className="w-4 h-4" />,
       },
     ];
 
@@ -274,7 +274,7 @@ export function MCUserMenuContent({
       },
     ];
 
-    // Agregar ítems específicos por rol
+    // Add verification docs for DOCTOR and CENTER
     if (userRole === "DOCTOR" || userRole === "CENTER") {
       baseItems.push({
         icon: <FileCheck className="w-4 h-4 mr-2" />,
@@ -282,14 +282,12 @@ export function MCUserMenuContent({
         shortcut: !isMobile ? "G → D" : undefined,
         action: () => navigate("/verify-info"),
       });
-    }
-
-    if (userRole === "DOCTOR") {
+      // Add requests for DOCTOR and CENTER
       baseItems.push({
         icon: <Inbox className="w-4 h-4 mr-2" />,
         label: t("userMenu.requests"),
         shortcut: !isMobile ? "G → R" : undefined,
-        action: () => {},
+        action: () => navigate("/requests"),
       });
     }
 
@@ -452,22 +450,24 @@ export function MCUserMenuContent({
                 {t("userMenu.changeTheme")}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="w-56 p-1 bg-background border border-primary/20 rounded-xl shadow-lg">
-                {themeOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={(e) => handleThemeChange(option.value, e)}
-                    className={cn(
-                      "cursor-pointer flex items-center gap-2",
-                      theme === option.value && "text-primary",
-                    )}
-                  >
-                    {theme === option.value && (
-                      <span className="absolute left-2 h-1.5 w-1.5 rounded-full bg-primary" />
-                    )}
-                    <span className="ml-4">{option.icon}</span>
-                    {option.label}
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuRadioGroup
+                  value={theme}
+                  onValueChange={(value) =>
+                    handleThemeChange(value as Theme, {} as React.MouseEvent)
+                  }
+                >
+                  {themeOptions.map((option) => (
+                    <DropdownMenuRadioItem
+                      key={option.value}
+                      value={option.value}
+                    >
+                      <div className="flex items-center gap-2">
+                        {option.icon}
+                        <span>{option.label}</span>
+                      </div>
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           )}
@@ -521,21 +521,34 @@ export function MCUserMenuContent({
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent",
+                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left group",
                     language === lang.code
                       ? "bg-primary/10 text-primary border border-primary/20"
-                      : "border border-transparent",
+                      : "border border-transparent hover:bg-accent",
                   )}
                 >
-                  <img
-                    src={lang.flag}
-                    alt={lang.label}
-                    className="w-6 h-6 rounded-full"
+                  <div
+                    className={cn(
+                      "relative w-6 h-6 rounded-full overflow-hidden transition-all",
+                      language === lang.code &&
+                        "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                    )}
+                  >
+                    <img
+                      src={lang.flag}
+                      alt={lang.label}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="font-medium flex-1">{lang.label}</span>
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      language === lang.code
+                        ? "bg-primary opacity-100"
+                        : "bg-transparent opacity-0",
+                    )}
                   />
-                  <span className="font-medium">{lang.label}</span>
-                  {language === lang.code && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
-                  )}
                 </button>
               ))}
             </div>
@@ -552,17 +565,31 @@ export function MCUserMenuContent({
                   key={option.value}
                   onClick={(e) => handleThemeChangeAndClose(option.value, e)}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left hover:bg-accent hover:cursor-pointer hover:text-background",
+                    "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left group",
                     theme === option.value
                       ? "bg-primary/10 text-primary border border-primary/20"
-                      : "border border-transparent",
+                      : "border border-transparent hover:bg-accent",
                   )}
                 >
-                  {option.icon}
-                  <span className="font-medium">{option.label}</span>
-                  {theme === option.value && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-primary" />
-                  )}
+                  <div
+                    className={cn(
+                      "relative flex items-center justify-center w-6 h-6 rounded-full transition-all",
+                      theme === option.value
+                        ? "bg-primary/20 text-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {option.icon}
+                  </div>
+                  <span className="font-medium flex-1">{option.label}</span>
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      theme === option.value
+                        ? "bg-primary opacity-100"
+                        : "bg-transparent opacity-0",
+                    )}
+                  />
                 </button>
               ))}
             </div>
