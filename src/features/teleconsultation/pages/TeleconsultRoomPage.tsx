@@ -117,7 +117,7 @@ function TeleconsultRoomPage() {
           </div>
         ) : (
           // DESKTOP LAYOUT
-          <div className="flex gap-4 h-[calc(100vh-theme(spacing.20))]">
+          <div className="flex gap-4 h-[calc(100vh-theme(spacing.20))] ">
             {/* Columna izquierda: Video arriba, Info abajo */}
             <div className="flex-1 flex flex-col gap-4 min-w-0">
               {/* Video - ocupa más espacio */}

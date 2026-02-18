@@ -31,7 +31,7 @@ const MCDashboardContent: React.FC<Props> = ({
   mainWidth = "max-w-2xl",
   mainClassName = "",
   noBg = false,
-  isTele = false,
+
   create = false,
   abandonarTrigger,
 }) => {
@@ -79,15 +79,15 @@ const MCDashboardContent: React.FC<Props> = ({
 
   return (
     <div
-      className={`${noBg ? "bg-transparent" : "bg-background"} min-h-screen flex gap-4 rounded-4xl ${isMobile ? "py-4 px-4" : "py-10 px-4"}`}
+      className={`
+        ${noBg ? "bg-transparent p-0 md:px-10 md:py-0" : "bg-background"}
+        min-h-screen flex gap-4 rounded-4xl
+        ${isMobile ? "p-4" : "p-10"}
+      `}
     >
       <div
-        className={`w-full ${
-          isMobile
-            ? "flex flex-col"
-            : isTele
-              ? "grid grid-cols-[0.5fr_9fr_0.5fr]"
-              : "grid grid-cols-[1fr_8fr_1fr]"
+        className={`w-full gap-8 ${
+          isMobile ? "flex flex-col" : "grid grid-cols-[auto_1fr]" // Solo dos columnas: aside y main
         } justify-items-center `}
       >
         <aside className={isMobile ? "w-full mb-4" : ""}>
@@ -109,7 +109,6 @@ const MCDashboardContent: React.FC<Props> = ({
         >
           {children}
         </motion.main>
-        {!isMobile && <div />}
       </div>
     </div>
   );

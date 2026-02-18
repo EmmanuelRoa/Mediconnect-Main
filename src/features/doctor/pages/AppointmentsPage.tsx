@@ -25,8 +25,6 @@ import {
   Calendar,
 } from "lucide-react";
 import FilterMyAppointments from "../components/filters/FilterMyAppoinments";
-import MCNewButton from "@/shared/components/forms/MCNewButton";
-import { ROUTES } from "@/router/routes";
 
 // Import the Appointment type
 import type { Appointment } from "../components/appointments/MyAppointmentTable";

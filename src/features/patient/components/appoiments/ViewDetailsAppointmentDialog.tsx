@@ -33,7 +33,7 @@ interface ViewDetailsAppointmentDialogProps {
   appointmentDetails?: React.ReactNode;
   hospitalDetails?: React.ReactNode;
   status?: string;
-  preview?: "details" | "history";
+  preview?: "details" | "history" | "patientDetails"; // <--- agrega "patientDetails"
 }
 
 function PacientDetailsTabContent() {
