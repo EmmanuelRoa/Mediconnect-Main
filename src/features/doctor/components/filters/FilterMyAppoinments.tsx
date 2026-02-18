@@ -1,6 +1,7 @@
 import { type JSX } from "react";
 import { Calendar, User, Stethoscope } from "lucide-react";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
+import MCFilterDates from "@/shared/components/filters/MCFilterDates";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
@@ -9,7 +10,7 @@ interface MyAppointmentFilters {
   appointmentType: string;
   specialty: string;
   service: string;
-  dateRange: string;
+  dateRange?: [Date, Date]; // Cambiado de string a [Date, Date]
 }
 
 interface FilterMyAppointmentsProps {
@@ -248,19 +249,14 @@ function FilterMyAppointments({
         }
       />
 
-      <MCFilterSelect
-        name="dateRange"
-        label={t("appointments.filters.labels.dateRange")}
-        options={dateRangeOptions}
-        placeholder={t("appointments.filters.placeholders.dateRange")}
-        value={filters.dateRange}
-        noBadges
-        onChange={(v) =>
-          onFiltersChange({
-            dateRange: typeof v === "string" ? v : (v[0] ?? ""),
-          })
-        }
-      />
+      {/* Nuevo filtro de rango de fechas */}
+      <div className="w-full ">
+        <MCFilterDates
+          label={t("appointments.filters.labels.dateRange")}
+          value={filters.dateRange}
+          onChange={(dateRange) => onFiltersChange({ dateRange })}
+        />
+      </div>
     </div>
   );
 }

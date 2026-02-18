@@ -61,7 +61,7 @@ function PacientDetailsTabContent() {
 
   return (
     <div className="mt-4 pr-2">
-      <h2 className="text-xl font-semibold mb-4">
+      <h2 className="text-xl font-semibold mb-4 text-primary">
         {t("appointment.patientDetailsTab", "Datos Personales")}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
@@ -86,7 +86,7 @@ function PacientDetailsTabContent() {
           <p className="text-primary font-medium">{patient.weight}</p>
         </div>
       </div>
-      <h2 className="text-xl font-semibold mb-2 mt-4">
+      <h2 className="text-xl font-semibold mb-2 mt-4 text-primary">
         Información de Contacto
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -99,7 +99,9 @@ function PacientDetailsTabContent() {
           <p className="text-primary font-medium">{patient.phone}</p>
         </div>
       </div>
-      <h2 className="text-xl font-semibold mb-2 mt-4">Información Médica</h2>
+      <h2 className="text-xl font-semibold mb-2 mt-4 text-primary">
+        Información Médica
+      </h2>
       <div className="mb-4">
         <h3 className="font-medium mb-1 text-red-700">Alergias</h3>
         <div className="max-h-32 overflow-y-auto">

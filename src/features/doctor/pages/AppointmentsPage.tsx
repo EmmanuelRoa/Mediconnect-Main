@@ -151,13 +151,16 @@ function AppointmentsPage() {
     appointmentType: "all",
     specialty: "all",
     service: "all",
-    dateRange: "all",
+    dateRange: undefined as [Date, Date] | undefined, // Actualizado
   });
 
   // Contar filtros activos
-  const activeFiltersCount = Object.values(filters).filter(
-    (value) => value !== "all" && value !== "",
-  ).length;
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (key === "dateRange") {
+      return value !== undefined;
+    }
+    return value !== "all" && value !== "";
+  }).length;
 
   // Limpiar filtros
   const clearFilters = () => {
@@ -166,7 +169,7 @@ function AppointmentsPage() {
       appointmentType: "all",
       specialty: "all",
       service: "all",
-      dateRange: "all",
+      dateRange: undefined,
     });
   };
 
@@ -176,39 +179,23 @@ function AppointmentsPage() {
     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   };
 
-  // Función para filtrar por rango de fechas
-  const matchesDateRange = (dateStr: string, range: string) => {
-    if (range === "all") return true;
+  // Función para filtrar por rango de fechas personalizado
+  const matchesCustomDateRange = (
+    dateStr: string,
+    range?: [Date, Date],
+  ): boolean => {
+    if (!range) return true;
 
     const appointmentDate = parseDate(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    appointmentDate.setHours(0, 0, 0, 0);
 
-    switch (range) {
-      case "today":
-        return appointmentDate.toDateString() === today.toDateString();
-      case "this-week": {
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        return appointmentDate >= weekStart && appointmentDate <= weekEnd;
-      }
-      case "this-month":
-        return (
-          appointmentDate.getMonth() === today.getMonth() &&
-          appointmentDate.getFullYear() === today.getFullYear()
-        );
-      case "next-7-days": {
-        const next7Days = new Date(today);
-        next7Days.setDate(today.getDate() + 7);
-        return appointmentDate >= today && appointmentDate <= next7Days;
-      }
-      case "past":
-        return appointmentDate < today;
-      default:
-        return true;
-    }
+    const startDate = new Date(range[0]);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(range[1]);
+    endDate.setHours(23, 59, 59, 999);
+
+    return appointmentDate >= startDate && appointmentDate <= endDate;
   };
 
   // Filtrar citas
@@ -238,7 +225,10 @@ function AppointmentsPage() {
         appointment.service
           .toLowerCase()
           .includes(filters.service.replace("-", " "));
-      const matchesDate = matchesDateRange(appointment.date, filters.dateRange);
+      const matchesDate = matchesCustomDateRange(
+        appointment.date,
+        filters.dateRange,
+      );
 
       return (
         matchesSearch &&

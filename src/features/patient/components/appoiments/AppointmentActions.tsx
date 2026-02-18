@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/router/routes";
@@ -7,6 +6,8 @@ import CancelAppointmentDialog from "@/features/patient/components/appoiments/Ca
 import ViewDetailsAppointmentDialog from "./ViewDetailsAppointmentDialog";
 import { useAppStore } from "@/stores/useAppStore";
 import AcceptAppointment from "@/features/doctor/components/appointments/modals/AcceptAppointment";
+import RejectAppointment from "@/features/doctor/components/appointments/modals/RejectAppointment";
+import RescheduleAppointment from "@/features/doctor/components/appointments/modals/RescheduleAppointment";
 interface AppointmentActionsProps {
   appointment: {
     id: string;
@@ -39,25 +40,19 @@ export default function AppointmentActions({
     );
   };
 
-  const handleAcceptAppointment = (appointmentId: string) => {
-    // Lógica para aceptar cita
-    console.log("Accepting appointment:", appointmentId);
-  };
-
   const handleCompleteAppointment = (appointmentId: string) => {
     // Lógica para marcar como completada
     console.log("Completing appointment:", appointmentId);
   };
 
   const handleContinueConsultation = (appointmentId: string) => {
-    // Lógica para continuar consulta presencial
-    console.log("Continuing consultation:", appointmentId);
+    navigate(ROUTES.DOCTOR.CONSULTATION.replace(":id", appointmentId));
   };
 
   // Acciones para DOCTOR
   if (userRole === "DOCTOR") {
     if (isPending) {
-      // PENDING: Ver Detalles, Aceptar Cita (con modal), Cancelar Cita
+      // PENDING: Ver Detalles, Aceptar Cita (con modal), Rechazar Cita
       return (
         <div className="flex flex-col gap-1 p-2">
           <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
@@ -70,11 +65,11 @@ export default function AppointmentActions({
               {t("appointments.accept")}
             </div>
           </AcceptAppointment>
-          <CancelAppointmentDialog appointmentId={appointment.id}>
+          <RejectAppointment appointmentId={appointment.id}>
             <div className="p-2 cursor-pointer rounded-lg hover:bg-destructive/10 text-destructive transition text-sm text-center">
-              {t("appointments.cancel")}
+              {t("appointments.reject")}
             </div>
-          </CancelAppointmentDialog>
+          </RejectAppointment>
         </div>
       );
     }
@@ -88,14 +83,11 @@ export default function AppointmentActions({
               {t("appointments.viewAppointment")}
             </div>
           </ViewDetailsAppointmentDialog>
-          <ScheduleAppointmentDialog
-            idProvider={appointment.doctorId}
-            idAppointment={appointment.id}
-          >
+          <RescheduleAppointment appointmentId={appointment.id}>
             <div className="p-2 cursor-pointer rounded-lg hover:bg-accent/70 dark:hover:text-background transition text-sm text-center">
               {t("appointments.reschedule")}
             </div>
-          </ScheduleAppointmentDialog>
+          </RescheduleAppointment>
           <CancelAppointmentDialog appointmentId={appointment.id}>
             <div className="p-2 cursor-pointer rounded-lg hover:bg-destructive/10 text-destructive transition text-sm text-center">
               {t("appointments.cancel")}
