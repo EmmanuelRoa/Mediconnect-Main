@@ -70,7 +70,7 @@ function PatientProfileBannerMobile({ user, setOpenSheet }: Props) {
       <div className="relative h-36">
         {user?.banner ? (
           <img
-            src={user.banner.url}
+            src={user.banner}
             alt={t("profileForm.bannerImage")}
             className="w-full h-full object-cover"
           />

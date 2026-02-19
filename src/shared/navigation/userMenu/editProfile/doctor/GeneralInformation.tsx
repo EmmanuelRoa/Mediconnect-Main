@@ -76,6 +76,17 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
     },
   ];
   
+  // Función para formatear el teléfono (ejemplo: (809) 003-2424)
+  function formatPhone(phone: string): string {
+    // Solo números
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length === 10) {
+      // Formato nacional RD: (809) 123-4567
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    return phone;
+  }
+
   // Mapear los datos del doctor a los valores del formulario
   const defaultValues = useMemo(
     () =>
@@ -92,7 +103,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
                 ?.filter((e) => !e.es_principal)
                 .map((e) => e.id_especialidad.toString()) || [],
             email: user.email || "",
-            phone: user.doctor.telefono || "",
+            phone: formatPhone(user.telefono || ""),
             yearsExperience: user.doctor.anosExperiencia?.toString() || "",
             licenseNumber: user.doctor.exequatur || "",
             identityDocument: user.doctor.numeroDocumentoIdentificacion || "",
@@ -283,6 +294,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
         useAppStore.getState().updateUser({
           ...user,
           fotoPerfil: newProfilePhotoUrl,
+          telefono: data.phone || user.telefono,
           banner: newBannerUrl || null,
           doctor: user.doctor ? {
             ...user.doctor,

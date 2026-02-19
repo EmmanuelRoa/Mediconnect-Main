@@ -28,7 +28,14 @@ import type {
   AddAcceptedInsuranceRequest,
   AddAcceptedInsuranceResponse,
   RemoveAcceptedInsuranceResponse,
-  InsuranceError
+  InsuranceError,
+  GetDoctorLanguagesResponse,
+  AddDoctorLanguageRequest,
+  AddDoctorLanguageResponse,
+  UpdateDoctorLanguageRequest,
+  UpdateDoctorLanguageResponse,
+  DeleteDoctorLanguageResponse,
+  LanguageError
 } from './doctor.types';
 
 /**
@@ -719,6 +726,134 @@ export const doctorService = {
         errorData?.message || 
         error.message || 
         'Error al eliminar seguro. Intenta nuevamente.'
+      );
+    }
+  },
+
+  // --- IDIOMAS DEL DOCTOR ---
+
+  /**
+   * Obtiene los idiomas que maneja el doctor autenticado
+   * @returns Lista de idiomas del doctor con sus niveles de dominio
+   */
+  getDoctorLanguages: async (): Promise<GetDoctorLanguagesResponse> => {
+    try {
+      const response = await apiClient.get<GetDoctorLanguagesResponse>(
+        '/doctores/idiomas'
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener idiomas del doctor:', error);
+      
+      const errorData = error.response?.data as LanguageError;
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener tus idiomas. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Agrega un idioma a la lista de idiomas que maneja el doctor
+   * @param data - ID del idioma y ID del nivel de dominio
+   * @returns Respuesta con el idioma agregado
+   */
+  addDoctorLanguage: async (data: AddDoctorLanguageRequest): Promise<AddDoctorLanguageResponse> => {
+    try {
+      const response = await apiClient.post<AddDoctorLanguageResponse>(
+        '/doctores/idiomas',
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al agregar idioma:', error);
+      
+      const errorData = error.response?.data as LanguageError;
+      
+      if (error.response?.status === 400) {
+        throw new Error(
+          errorData?.message || 
+          'El idioma ya está en tu lista.'
+        );
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al agregar idioma. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Actualiza el nivel de dominio de un idioma del doctor
+   * @param idiomaId - ID del idioma a actualizar
+   * @param data - Datos a actualizar (nivel de dominio)
+   * @returns Respuesta con el idioma actualizado
+   */
+  /**
+   * Actualiza un idioma de la lista de idiomas que maneja el doctor
+   * @param idiomaId - ID del idioma a actualizar
+   * @param data - Datos a actualizar (nivel)
+   * @returns Idioma actualizado
+   */
+  updateDoctorLanguage: async (
+    idiomaId: number,
+    data: UpdateDoctorLanguageRequest
+  ): Promise<UpdateDoctorLanguageResponse> => {
+    try {
+      const response = await apiClient.patch<UpdateDoctorLanguageResponse>(
+        `/doctores/idiomas/${idiomaId}`,
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al actualizar idioma:', error);
+      
+      const errorData = error.response?.data as LanguageError;
+      
+      if (error.response?.status === 404) {
+        throw new Error('Idioma no encontrado.');
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al actualizar idioma. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Elimina un idioma de la lista de idiomas que maneja el doctor
+   * @param idiomaId - ID del idioma a eliminar
+   * @returns Respuesta de confirmación
+   */
+  deleteDoctorLanguage: async (idiomaId: number): Promise<DeleteDoctorLanguageResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteDoctorLanguageResponse>(
+        `/doctores/idiomas/${idiomaId}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al eliminar idioma:', error);
+      
+      const errorData = error.response?.data as LanguageError;
+      
+      if (error.response?.status === 404) {
+        throw new Error('Idioma no encontrado.');
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al eliminar idioma. Intenta nuevamente.'
       );
     }
   },

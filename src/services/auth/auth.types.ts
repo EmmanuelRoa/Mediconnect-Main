@@ -111,12 +111,14 @@ export interface Paciente {
   peso: number | null;
   tipoSangre: string | null;
   estado: string;
+  telefono: string | null;
   ubicacionId: number | null;
   creadoEn: string; // ISO Date string
   actualizadoEn: string | null; // ISO Date string
   // Aliases para compatibilidad con código existente
   createdAt?: string;
   fechaCreacion?: string;
+  usuario?: User; // Para acceder a datos comunes del usuario como email, fotoPerfil, etc.
 }
 
 export interface CentroSalud {
@@ -290,6 +292,7 @@ export function normalizeLoginResponse(response: LoginResponse): {
       fotoPerfil: getUserAvatar(response.usuario) || undefined,
       banner: getUserBanner(response.usuario) || undefined,
       rol: getUserAppRole(response.usuario) || response.usuario.rol,
+      telefono: getUserPhone(response.usuario) || undefined,
       paciente: response.usuario.paciente || null,
       doctor: response.usuario.doctor || null,
       centroSalud: response.usuario.centroSalud || null,
@@ -337,6 +340,7 @@ export function normalizeGoogleLoginResponse(response: GoogleLoginSuccessRespons
       fotoPerfil: getUserAvatar(userData) || undefined,
       banner: getUserBanner(userData) || undefined,
       rol: getUserAppRole(userData) || userData.rol,
+      telefono: getUserPhone(userData) || undefined,
       paciente: userData.paciente || null,
       doctor: userData.doctor || null,
       centroSalud: userData.centroSalud || null,
@@ -390,6 +394,47 @@ export function getUserFullName(user: User | null): string {
   
   // Fallback: usar el email
   return user.email.split('@')[0];
+}
+
+/**
+ * Obtener el telefono del usuario según su rol
+ */
+export function getUserPhone(user: User | null): string {
+  if (!user) return '';
+  
+  // Primero verificar si hay teléfono directo en el usuario
+  if (user.telefono) {
+    return user.telefono;
+  }
+  
+  // Para doctores, buscar primero en doctor.usuario.telefono
+  if (user.doctor) {
+    if (user.doctor.usuario?.telefono) {
+      return user.doctor.usuario.telefono;
+    }
+    if (user.doctor.telefono) {
+      return user.doctor.telefono;
+    }
+  }
+  
+  // Para pacientes
+  if(user.paciente){
+    if (user.paciente.usuario?.telefono) {
+      return user.paciente.usuario.telefono;
+    }
+
+    if (user.paciente.telefono) {
+      return user.paciente.telefono;
+    }
+  }
+  
+  
+  // Para centros de salud
+  if (user.centroSalud && user.centroSalud.telefono) {
+    return user.centroSalud.telefono;
+  }
+  
+  return '';
 }
 
 /**

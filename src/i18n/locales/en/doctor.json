@@ -27,6 +27,7 @@
     "experienceAtLeastOne": "At least one experience entry is required",
     "languageRequired": "Language cannot be empty",
     "languageAtLeastOne": "At least one language is required",
+    "proficiencyRequired": "Proficiency level is required",
     "insuranceProviderRequired": "Insurance provider cannot be empty"
   },
 
@@ -178,7 +179,18 @@
     "list": "Languages You Speak",
     "add": "Add Language",
     "select": "Select a language",
-    "remove": "Remove language"
+    "remove": "Remove language",
+    "proficiency": "Proficiency Level",
+    "selectProficiency": "Select level",
+    "selectBoth": "Please select the language and proficiency level",
+    "edit": "Edit proficiency level",
+    "errorLoading": "Error loading languages",
+    "added": "Language added successfully",
+    "errorAdding": "Error adding language",
+    "removed": "Language removed successfully",
+    "errorRemoving": "Error removing language",
+    "updated": "Proficiency level updated successfully",
+    "errorUpdating": "Error updating proficiency level"
   },
 
   "insurance": {
@@ -267,6 +279,9 @@
   "common": {
     "close": "Close",
     "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "adding": "Adding...",
     "connected": "Connected",
     "connect": "Connect",
     "disconnect": "Disconnect",
@@ -306,6 +321,14 @@
       "addInsurance": "Add the medical insurance you accept to help your patients",
       "noInsurance": "This doctor has not registered accepted medical insurance.",
       "addButton": "Add accepted insurance"
+    },
+    "languages": {
+      "title": "Languages",
+      "description": "Languages this doctor can attend you in",
+      "loading": "Loading languages...",
+      "empty": "No languages registered",
+      "emptyDescription": "Add the languages you can use to attend your patients.",
+      "add": "Add Languages"
     },
     "services": {
       "title": "Services offered",

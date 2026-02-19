@@ -27,6 +27,7 @@
     "experienceAtLeastOne": "Se requiere al menos una experiencia laboral",
     "languageRequired": "El idioma no puede estar vacío",
     "languageAtLeastOne": "Se requiere al menos un idioma",
+    "proficiencyRequired": "El nivel de dominio es requerido",
     "insuranceProviderRequired": "La aseguradora no puede estar vacía"
   },
 
@@ -180,7 +181,18 @@
     "list": "Idiomas que Hablas",
     "add": "Agregar Idioma",
     "select": "Selecciona un idioma",
-    "remove": "Eliminar idioma"
+    "remove": "Eliminar idioma",
+    "proficiency": "Nivel de Dominio",
+    "selectProficiency": "Selecciona el nivel",
+    "selectBoth": "Por favor selecciona el idioma y el nivel de dominio",
+    "edit": "Editar nivel de dominio",
+    "errorLoading": "Error al cargar idiomas",
+    "added": "Idioma agregado exitosamente",
+    "errorAdding": "Error al agregar idioma",
+    "removed": "Idioma eliminado exitosamente",
+    "errorRemoving": "Error al eliminar idioma",
+    "updated": "Nivel de dominio actualizado exitosamente",
+    "errorUpdating": "Error al actualizar nivel de dominio"
   },
 
   "insurance": {
@@ -269,6 +281,9 @@
   "common": {
     "close": "Cerrar",
     "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "adding": "Agregando...",
     "connected": "Conectado",
     "connect": "Conectar",
     "disconnect": "Desconectar",
@@ -308,6 +323,14 @@
       "addInsurance": "Agrega los seguros médicos que aceptas para ayudar a tus pacientes",
       "noInsurance": "Este doctor no ha registrado seguros médicos aceptados.",
       "addButton": "Agregar seguros aceptados"
+    },
+    "languages": {
+      "title": "Idiomas",
+      "description": "Idiomas en los que este doctor puede atenderte",
+      "loading": "Cargando idiomas...",
+      "empty": "No hay idiomas registrados",
+      "emptyDescription": "Agrega los idiomas en los que puedes atender a tus pacientes.",
+      "add": "Agregar Idiomas"
     },
     "services": {
       "title": "Servicios ofrecidos",

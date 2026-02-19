@@ -100,8 +100,14 @@ export function doctorExperienceSchema(t: (key: string) => string) {
 export function doctorLanguageSchema(t: (key: string) => string) {
   return z.object({
     languages: z
-      .array(z.string().min(1, t("validation.languageRequired")))
-      .min(1, t("validation.languageAtLeastOne")),
+      .array(
+        z.object({
+          id: z.number().optional(),
+          idIdioma: z.number().min(1, t("validation.languageRequired")),
+          idNivelDominio: z.number().min(1, t("validation.proficiencyRequired")),
+        })
+      )
+      .optional(),
   });
 }
 

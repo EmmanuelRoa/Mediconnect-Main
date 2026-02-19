@@ -40,7 +40,7 @@ function PersonalInformation({
   const [tempImage, setTempImage] = useState<string>("");
 
   const [bannerImage, setBannerImage] = useState<string>(
-    user?.banner?.url || "",
+    user?.banner || "",
   );
   const [profileImage, setProfileImage] = useState<string>(
     getUserAvatar(user) || "",
@@ -57,7 +57,7 @@ function PersonalInformation({
   const originalProfileImage = getUserAvatar(user) || "";
 
   // Guardar la imagen original del banner para detectar cambios
-  const originalBannerImage = user?.banner?.url || "";
+  const originalBannerImage = user?.banner || "";
 
   // Opciones de tipos de sangre
   const bloodTypeOptions = [
@@ -234,7 +234,7 @@ function PersonalInformation({
         useAppStore.getState().updateUser({
           ...user,
           fotoPerfil: photoUrlWithCacheBust,
-          banner: bannerUrlWithCacheBust ? { url: bannerUrlWithCacheBust } : null,
+          banner: bannerUrlWithCacheBust ? bannerUrlWithCacheBust : null,
           paciente: user.paciente ? {
             ...user.paciente,
             ...response.data,

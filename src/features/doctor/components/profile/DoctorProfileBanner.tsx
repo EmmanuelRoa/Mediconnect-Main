@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import {
   Settings,
@@ -14,7 +15,11 @@ import {
   Heart,
   HeartOff,
   Stethoscope,
+  Languages,
 } from "lucide-react";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
+import type { Idioma } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
+import { onDoctorLanguageChanged } from "@/lib/events/languageEvents";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +51,20 @@ interface Props {
   isMyProfile?: boolean;
 }
 
+// Lista de idiomas disponibles para traducción
+const AVAILABLE_LANGUAGES = [
+  { label: "Español", labelEn: "Spanish" },
+  { label: "Inglés", labelEn: "English" },
+  { label: "Francés", labelEn: "French" },
+  { label: "Alemán", labelEn: "German" },
+  { label: "Italiano", labelEn: "Italian" },
+  { label: "Portugués", labelEn: "Portuguese" },
+  { label: "Chino", labelEn: "Chinese" },
+  { label: "Japonés", labelEn: "Japanese" },
+  { label: "Árabe", labelEn: "Arabic" },
+  { label: "Ruso", labelEn: "Russian" },
+];
+
 function DoctorProfileBanner({
   doctor,
   setOpenSheet,
@@ -53,12 +72,39 @@ function DoctorProfileBanner({
   onToggleFavorite,
   isMyProfile,
 }: Props) {
-  const { t } = useTranslation("doctor");
+  const { t, i18n } = useTranslation("doctor");
   const navigate = useNavigate();
+  const [languages, setLanguages] = useState<Idioma[]>([]);
 
   const logout = useAppStore((state) => state.logout);
   const setToast = useGlobalUIStore((state) => state.setToast);
   const clearAllVerifyInfo = useVerifyInfoStore((state) => state.clearAll);
+
+  const fetchLanguages = async () => {
+    if (!isMyProfile) return; // Solo cargar si es mi perfil
+    try {
+      const response = await doctorService.getDoctorLanguages();
+      setLanguages(response.data || []);
+    } catch (err) {
+      console.error("Error al obtener idiomas del doctor:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLanguages();
+  }, [isMyProfile]);
+
+  useEffect(() => {
+    const unsubscribe = onDoctorLanguageChanged(() => {
+      fetchLanguages();
+    });
+    return unsubscribe;
+  }, []);
+
+  const getLanguageLabel = (nombre: string) => {
+    const lang = AVAILABLE_LANGUAGES.find(l => l.label === nombre);
+    return i18n.language === 'en' ? (lang?.labelEn || nombre) : nombre;
+  };
   
   const handleLogout = () => {
     logout();
@@ -150,11 +196,15 @@ function DoctorProfileBanner({
                       {doctor.yearsOfExperience}{" "}
                       {t("profileForm.yearsExperience")}
                     </span>
-                    {/*&#8226;{" "}
-                     <span className="flex items-center gap-1">
-                      <Languages size={18} className="text-secondary" />
-                      {doctor.languages.join(", ")}
-                    </span> */}
+                    {languages.length > 0 && (
+                      <>
+                        &#8226;{" "}
+                        <span className="flex items-center gap-1">
+                          <Languages size={18} className="text-secondary" />
+                          {languages.map((lang) => getLanguageLabel(lang.nombre)).join(", ")}
+                        </span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>

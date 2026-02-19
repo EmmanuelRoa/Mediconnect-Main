@@ -372,6 +372,59 @@ export interface InsuranceError {
   statusCode?: number;
 }
 
+// --- TIPOS PARA IDIOMAS DEL DOCTOR ---
+
+export interface Idioma {
+  id: number;
+  doctorId: number;
+  nombre: string;
+  nivel: string;
+  estado: string;
+  creadoEn: string;
+  actualizadoEn: string | null;
+}
+
+
+export interface GetDoctorLanguagesResponse {
+  success: boolean;
+  message?: string;
+  data: Idioma[];
+}
+
+export interface AddDoctorLanguageRequest {
+  nombre: string;
+  nivel: string;
+}
+
+export interface AddDoctorLanguageResponse {
+  success: boolean;
+  message: string;
+  data: Idioma;
+}
+
+export interface UpdateDoctorLanguageRequest {
+  nombre?: string;
+  nivel?: string;
+}
+
+export interface UpdateDoctorLanguageResponse {
+  success: boolean;
+  message: string;
+  data: Idioma;
+}
+
+export interface DeleteDoctorLanguageResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface LanguageError {
+  success: false;
+  message: string;
+  error?: string;
+  statusCode?: number;
+}
+
 // --- RE-EXPORTAR TIPOS RELACIONADOS ---
 
 /**

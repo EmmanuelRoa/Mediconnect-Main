@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import {
   Settings,
@@ -17,6 +17,9 @@ import {
   Languages,
   Stethoscope,
 } from "lucide-react";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
+import type { Idioma } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
+import { onDoctorLanguageChanged } from "@/lib/events/languageEvents";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +36,7 @@ import {
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import { useTranslation } from "react-i18next";
-import { getUserFullName } from "@/services/auth/auth.types";
+import { getDoctorRating, getUserFullName } from "@/services/auth/auth.types";
 
 interface Props {
   doctor: any;
@@ -43,6 +46,20 @@ interface Props {
   isMyProfile?: boolean;
 }
 
+// Lista de idiomas disponibles para traducción
+const AVAILABLE_LANGUAGES = [
+  { label: "Español", labelEn: "Spanish" },
+  { label: "Inglés", labelEn: "English" },
+  { label: "Francés", labelEn: "French" },
+  { label: "Alemán", labelEn: "German" },
+  { label: "Italiano", labelEn: "Italian" },
+  { label: "Portugués", labelEn: "Portuguese" },
+  { label: "Chino", labelEn: "Chinese" },
+  { label: "Japonés", labelEn: "Japanese" },
+  { label: "Árabe", labelEn: "Arabic" },
+  { label: "Ruso", labelEn: "Russian" },
+];
+
 function DoctorProfileBannerMobile({
   doctor,
   setOpenSheet,
@@ -50,7 +67,34 @@ function DoctorProfileBannerMobile({
   onToggleFavorite,
   isMyProfile,
 }: Props) {
-  const { t } = useTranslation("doctor");
+  const { t, i18n } = useTranslation("doctor");
+  const [languages, setLanguages] = useState<Idioma[]>([]);
+
+  const fetchLanguages = async () => {
+    if (!isMyProfile) return; // Solo cargar si es mi perfil
+    try {
+      const response = await doctorService.getDoctorLanguages();
+      setLanguages(response.data || []);
+    } catch (err) {
+      console.error("Error al obtener idiomas del doctor:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLanguages();
+  }, [isMyProfile]);
+
+  useEffect(() => {
+    const unsubscribe = onDoctorLanguageChanged(() => {
+      fetchLanguages();
+    });
+    return unsubscribe;
+  }, []);
+
+  const getLanguageLabel = (nombre: string) => {
+    const lang = AVAILABLE_LANGUAGES.find(l => l.label === nombre);
+    return i18n.language === 'en' ? (lang?.labelEn || nombre) : nombre;
+  };
 
   return (
     <div className="w-full rounded-3xl shadow-md bg-background overflow-hidden">
@@ -113,7 +157,7 @@ function DoctorProfileBannerMobile({
             <div className="flex flex-col gap-1 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Star fill="#F7B500" size={14} className="text-[#F7B500]" />
-                <span>{doctor.rating.toFixed(1)}</span>
+                <span>{getDoctorRating(doctor.calificacionPromedio)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Stethoscope size={14} className="text-secondary" />
@@ -121,10 +165,14 @@ function DoctorProfileBannerMobile({
                   {doctor.yearsOfExperience} {t("profileForm.yearsExperience")}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <Languages size={14} className="text-secondary" />
-                <span>{doctor.languages.join(", ")}</span>
-              </div>
+              {languages.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Languages size={14} className="text-secondary" />
+                  <span>
+                    {languages.map((lang) => getLanguageLabel(lang.nombre)).join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

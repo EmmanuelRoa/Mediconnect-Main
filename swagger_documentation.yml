@@ -48,10 +48,10 @@ tags:
     description: Endpoints para gestionar tipos de centros de salud
   - name: CentrosSalud
     description: Endpoints para gestionar centros de salud y completar su perfil
-  - name: Profesiones
-    description: Endpoints para gestionar profesiones
   - name: ExperienciasLaborales
     description: Endpoints para gestionar experiencias laborales de doctores
+  - name: FormacionesAcademicas
+    description: Endpoints para gestionar formaciones académicas de doctores
   - name: Autenticación
     description: Endpoints para autenticación y gestión de tokens JWT
   - name: Notificaciones
@@ -66,6 +66,8 @@ tags:
     description: Endpoints para gestionar seguros médicos (Admin CRUD, Pacientes máx 3, Doctores ilimitados)
   - name: TiposSeguros
     description: Endpoints para gestionar tipos de seguros (Admin CRUD, Cliente solo lectura)
+  - name: Servicios
+    description: Endpoints para gestionar servicios médicos ofrecidos por doctores (CRUD, imágenes, desactivación)
 
 
 # --- RUTAS (ENDPOINTS) ---
@@ -4360,12 +4362,16 @@ paths:
       summary: Listar todos los horarios
       tags:
         - Horarios
+      security:
+        - bearerAuth: []
       description: |
-        Obtiene una lista de todos los horarios del sistema. 
+        Obtiene una lista de todos los horarios del sistema.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
 
         **Traducción Automática:**
         Este endpoint soporta traducción automática de campos mediante query params.
-        Ejemplo: `/api/servicios-horarios?target=en&translate_fields=descripcion`
+        Ejemplo: `/api/horarios?target=en&translate_fields=descripcion`
       parameters:
         - name: target
           in: query
@@ -4388,7 +4394,7 @@ paths:
           schema:
             type: string
           example: "descripcion,nombre"
-          description: Campos a traducir separados por comas (ejemplo: "descripcion,nombre")
+          description: 'Campos a traducir separados por comas (ejemplo: "descripcion,nombre")'
       responses:
         '200':
           description: Horarios obtenidos exitosamente
@@ -4398,6 +4404,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Horario'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -4409,7 +4427,12 @@ paths:
       summary: Crear un nuevo horario
       tags:
         - Horarios
-      description: Crea un nuevo horario para un doctor en una ubicación específica. El horario especifica un bloque de tiempo en un día de la semana.
+      security:
+        - bearerAuth: []
+      description: |
+        Crea un nuevo horario para un doctor en una ubicación específica. El horario especifica un bloque de tiempo en un día de la semana.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       requestBody:
         required: true
         content:
@@ -4462,6 +4485,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: Conflicto de horario (se superpone con otro existente)
           content:
@@ -4480,7 +4515,12 @@ paths:
       summary: Obtener horario por ID
       tags:
         - Horarios
-      description: Obtiene los detalles de un horario específico por su ID.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene los detalles de un horario específico por su ID.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -4502,6 +4542,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Horario no encontrado
           content:
@@ -4519,7 +4571,12 @@ paths:
       summary: Actualizar un horario
       tags:
         - Horarios
-      description: Actualiza los datos de un horario existente. Al menos uno de los campos opcionales debe ser proporcionado.
+      security:
+        - bearerAuth: []
+      description: |
+        Actualiza los datos de un horario existente. Al menos uno de los campos opcionales debe ser proporcionado.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -4578,6 +4635,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Horario no encontrado
           content:
@@ -4601,7 +4670,12 @@ paths:
       summary: Eliminar un horario
       tags:
         - Horarios
-      description: Elimina (soft delete) un horario, marcándolo como eliminado.
+      security:
+        - bearerAuth: []
+      description: |
+        Elimina (soft delete) un horario, marcándolo como eliminado.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -4619,6 +4693,18 @@ paths:
                 $ref: '#/components/schemas/Horario'
         '400':
           description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
           content:
             application/json:
               schema:
@@ -4641,7 +4727,12 @@ paths:
       summary: Listar horarios de un doctor
       tags:
         - Horarios
-      description: Obtiene todos los horarios asociados a un doctor específico.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todos los horarios asociados a un doctor específico.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: doctorId
           in: path
@@ -4665,6 +4756,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -4677,7 +4780,12 @@ paths:
       summary: Listar horarios por día de la semana
       tags:
         - Horarios
-      description: Obtiene todos los horarios programados para un día específico de la semana.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todos los horarios programados para un día específico de la semana.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: diaSemana
           in: path
@@ -4702,6 +4810,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -4714,7 +4834,12 @@ paths:
       summary: Listar horarios por estado
       tags:
         - Horarios
-      description: Obtiene todos los horarios que tienen un estado específico (Activo, Inactivo o Eliminado).
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todos los horarios que tienen un estado específico (Activo, Inactivo o Eliminado).
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: target
           in: query
@@ -4761,6 +4886,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -4774,7 +4911,12 @@ paths:
       summary: Crear una nueva relación ServicioHorario
       tags:
         - ServiciosHorarios
-      description: Crea una nueva relación entre un servicio y un horario. Especifica que un servicio está disponible en un horario determinado.
+      security:
+        - bearerAuth: []
+      description: |
+        Crea una nueva relación entre un servicio y un horario. Especifica que un servicio está disponible en un horario determinado.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       requestBody:
         required: true
         content:
@@ -4820,6 +4962,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: La relación ya existe
           content:
@@ -4833,9 +4987,13 @@ paths:
       summary: Listar todas las relaciones ServicioHorario
       tags:
         - ServiciosHorarios
+      security:
+        - bearerAuth: []
       description: |
         Obtiene una lista de todas las relaciones ServicioHorario con soporte para paginación y filtros.
-        
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
+
         **Traducción Automática:**
         Este endpoint soporta traducción automática de campos mediante query params.
         Ejemplo: `/api/servicios-horarios?target=en&translate_fields=descripcion`
@@ -4926,6 +5084,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
 
@@ -4934,7 +5104,12 @@ paths:
       summary: Obtener una relación ServicioHorario específica
       tags:
         - ServiciosHorarios
-      description: Obtiene los detalles de una relación específica entre un servicio y un horario.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene los detalles de una relación específica entre un servicio y un horario.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: servicioId
           in: path
@@ -4967,6 +5142,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Relación ServicioHorario no encontrada
           content:
@@ -4980,7 +5167,12 @@ paths:
       summary: Actualizar una relación ServicioHorario
       tags:
         - ServiciosHorarios
-      description: Actualiza una relación ServicioHorario existente. Puede cambiar la combinación de IDs (servicioId y/o horarioId) o solo el estado. Si se cambia la combinación de IDs, se valida que la nueva combinación no exista y que los nuevos servicio y horario existan en la base de datos.
+      security:
+        - bearerAuth: []
+      description: |
+        Actualiza una relación ServicioHorario existente. Puede cambiar la combinación de IDs (servicioId y/o horarioId) o solo el estado.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: servicioId
           in: path
@@ -5036,6 +5228,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Relación ServicioHorario no encontrada
           content:
@@ -5055,7 +5259,12 @@ paths:
       summary: Eliminar una relación ServicioHorario
       tags:
         - ServiciosHorarios
-      description: Elimina una relación ServicioHorario, removiendo la disponibilidad de ese servicio en ese horario.
+      security:
+        - bearerAuth: []
+      description: |
+        Elimina una relación ServicioHorario, removiendo la disponibilidad de ese servicio en ese horario.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: servicioId
           in: path
@@ -5089,6 +5298,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Relación ServicioHorario no encontrada
           content:
@@ -5103,7 +5324,12 @@ paths:
       summary: Listar todos los horarios de un servicio
       tags:
         - ServiciosHorarios
-      description: Obtiene todos los horarios en los que está disponible un servicio específico.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todos los horarios en los que está disponible un servicio específico.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: servicioId
           in: path
@@ -5132,6 +5358,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
 
@@ -5140,7 +5378,12 @@ paths:
       summary: Listar todos los servicios de un horario
       tags:
         - ServiciosHorarios
-      description: Obtiene todos los servicios disponibles en un horario específico.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todos los servicios disponibles en un horario específico.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: horarioId
           in: path
@@ -5169,6 +5412,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
 
@@ -5177,7 +5432,12 @@ paths:
       summary: Listar todas las relaciones ServicioHorario por estado
       tags:
         - ServiciosHorarios
-      description: Obtiene todas las relaciones ServicioHorario filtradas por estado (Activo, Inactivo, Eliminado) con soporte para paginación.
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene todas las relaciones ServicioHorario filtradas por estado (Activo, Inactivo, Eliminado) con soporte para paginación.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: estado
           in: path
@@ -5237,6 +5497,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -5250,9 +5522,13 @@ paths:
       summary: Listar tipos de servicios
       tags:
         - TiposServicios
+      security:
+        - bearerAuth: []
       description: |
         Obtiene una lista de tipos de servicios con soporte para paginación y filtros.
-        
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
+
         **Traducción Automática:**
         Este endpoint soporta traducción automática de campos mediante query params.
         Ejemplo: `/api/tipos-servicios?target=en&translate_fields=nombre,descripcion`
@@ -5332,11 +5608,29 @@ paths:
              application/json:
                schema:
                  $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       summary: Crear un nuevo tipo de servicio
       tags:
         - TiposServicios
+      security:
+        - bearerAuth: []
+      description: |
+        Crea un nuevo tipo de servicio.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       requestBody:
         required: true
         content:
@@ -5367,6 +5661,18 @@ paths:
                     $ref: '#/components/schemas/TipoServicio'
         '400':
           description: Datos inválidos
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: El tipo de servicio ya existe
         '500':
@@ -5381,6 +5687,12 @@ paths:
       summary: Obtener tipo de servicio por ID
       tags:
         - TiposServicios
+      security:
+        - bearerAuth: []
+      description: |
+        Obtiene un tipo de servicio por su ID.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -5401,6 +5713,18 @@ paths:
                     $ref: '#/components/schemas/TipoServicio'
         '404':
           description: Tipo de servicio no encontrado
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -5412,6 +5736,12 @@ paths:
       summary: Actualizar tipo de servicio
       tags:
         - TiposServicios
+      security:
+        - bearerAuth: []
+      description: |
+        Actualiza un tipo de servicio existente.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -5447,6 +5777,18 @@ paths:
                       $ref: '#/components/schemas/TipoServicio'
         '404':
           description: Tipo de servicio no encontrado
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -5458,6 +5800,12 @@ paths:
       summary: Eliminar tipo de servicio
       tags:
         - TiposServicios
+      security:
+        - bearerAuth: []
+      description: |
+        Elimina un tipo de servicio.
+
+        **Acceso:** Requiere token JWT. Roles permitidos: `Doctor`, `Administrador`.
       parameters:
         - name: id
           in: path
@@ -5478,6 +5826,18 @@ paths:
                       type: string
         '404':
           description: Tipo de servicio no encontrado
+        '401':
+          description: Token JWT no proporcionado o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no tiene el rol requerido (Doctor o Administrador)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
           content:
@@ -7428,6 +7788,11 @@ paths:
                 nacionalidad:
                   type: string
                   example: "Dominicana"
+                fechaNacimiento:
+                  type: string
+                  format: date
+                  example: "1985-06-20"
+                  description: "Fecha de nacimiento del doctor (formato ISO 8601: YYYY-MM-DD)"
                 estado:
                   type: string
                   enum: ["Activo", "Inactivo"]
@@ -7818,6 +8183,216 @@ paths:
           description: No autenticado
         '403':
           description: No autorizado (requiere rol Doctor)
+        '500':
+          description: Error interno del servidor
+
+  /doctores/idiomas:
+    post:
+      summary: Agregar un idioma al doctor autenticado
+      tags:
+        - Doctores
+      description: Permite al doctor autenticado agregar un nuevo idioma que maneja.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del idioma
+                  example: "Inglés"
+                nivel:
+                  type: string
+                  description: Nivel de dominio del idioma
+                  enum: ["Básico", "Intermedio", "Avanzado", "Nativo"]
+                  example: "Avanzado"
+      responses:
+        '201':
+          description: Idioma agregado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Idioma agregado exitosamente."
+                  data:
+                    $ref: '#/components/schemas/DoctorIdioma'
+        '400':
+          description: Solicitud inválida
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
+        '409':
+          description: El idioma ya existe para este doctor
+        '500':
+          description: Error interno del servidor
+
+    get:
+      summary: Obtener todos los idiomas del doctor autenticado
+      tags:
+        - Doctores
+      description: |
+        Obtiene la lista de todos los idiomas que maneja el doctor autenticado.
+        
+        **Traducción Automática:**
+        Este endpoint soporta traducción automática de campos mediante query params:
+        
+        - `target`: Idioma destino (ej: en, fr, de)
+        - `source`: Idioma origen (opcional, default: es)
+        - `translate_fields`: Campos a traducir separados por coma (ej: nombre)
+        
+        Ejemplo: `/api/doctores/idiomas?target=en&translate_fields=nombre`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: Idioma destino para traducción automática (activa la traducción)
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen para traducción automática
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "nombre"
+          description: Campos a traducir separados por coma (ej nombre)
+      responses:
+        '200':
+          description: Idiomas obtenidos exitosamente (pueden estar traducidos)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DoctorIdioma'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
+        '500':
+          description: Error interno del servidor
+
+  /doctores/idiomas/{id}:
+    patch:
+      summary: Actualizar un idioma del doctor autenticado
+      tags:
+        - Doctores
+      description: Permite al doctor autenticado actualizar un idioma que maneja.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del idioma
+          example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  description: Nuevo nombre del idioma
+                  example: "Francés"
+                nivel:
+                  type: string
+                  description: Nuevo nivel de dominio
+                  enum: ["Básico", "Intermedio", "Avanzado", "Nativo"]
+                  example: "Intermedio"
+      responses:
+        '200':
+          description: Idioma actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Idioma actualizado exitosamente."
+                  data:
+                    $ref: '#/components/schemas/DoctorIdioma'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
+        '404':
+          description: Idioma no encontrado
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      summary: Eliminar un idioma del doctor autenticado
+      tags:
+        - Doctores
+      description: Permite al doctor autenticado eliminar un idioma.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del idioma
+          example: 123
+      responses:
+        '200':
+          description: Idioma eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Idioma eliminado exitosamente."
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
+        '404':
+          description: Idioma no encontrado
         '500':
           description: Error interno del servidor
 
@@ -8429,281 +9004,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /profesiones:
-    post:
-      summary: Crear una nueva profesión
-      tags:
-        - Profesiones
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - nombre
-              properties:
-                nombre:
-                  type: string
-                  example: "Medicina General"
-                estado:
-                  type: string
-                  enum: ["Activo", "Inactivo"]
-                  example: "Activo"
-                descripcion:
-                  type: string
-                  example: "Profesión dedicada al diagnóstico y tratamiento general de enfermedades."
-      responses:
-        '201':
-          description: Profesión creada exitosamente
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profesion'
-        '400':
-          description: Datos inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: La profesión ya existe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-    get:
-      summary: Obtener todas las profesiones
-      tags:
-        - Profesiones
-      description: |
-        Obtiene una lista de profesiones con soporte para filtros y paginación.
-        
-        **Traducción Automática:**
-        Este endpoint soporta traducción automática de campos mediante query params.
-        Ejemplo: `/api/profesiones?target=en&translate_fields=nombre,descripcion`
-      parameters:
-        - name: target
-          in: query
-          required: false
-          schema:
-            type: string
-          example: "en"
-          description: Idioma destino para traducción automática (activa la traducción)
-        - name: source
-          in: query
-          required: false
-          schema:
-            type: string
-            default: "es"
-          example: "es"
-          description: Idioma origen para traducción automática
-        - name: translate_fields
-          in: query
-          required: false
-          schema:
-            type: string
-          example: "nombre,descripcion"
-          description: Campos a traducir separados por coma
-        - name: estado
-          in: query
-          schema:
-            type: string
-            enum: ["Activo", "Inactivo", "Eliminado"]
-          description: Filtrar por estado
-        - name: busqueda
-          in: query
-          schema:
-            type: string
-          description: Buscar por nombre
-        - name: pagina
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-          description: Número de página
-        - name: limite
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 10
-          description: Cantidad de resultados por página
-      responses:
-        '200':
-          description: Lista de profesiones
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  profesiones:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Profesion'
-                  total:
-                    type: integer
-                    example: 50
-        '400':
-          description: Parámetros inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-  /profesiones/{id}:
-    get:
-      summary: Obtener una profesión por ID
-      tags:
-        - Profesiones
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la profesión
-      responses:
-        '200':
-          description: Profesión encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profesion'
-        '400':
-          description: ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Profesión no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    put:
-      summary: Actualizar una profesión
-      tags:
-        - Profesiones
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la profesión
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                nombre:
-                  type: string
-                  example: "Cardiología"
-                estado:
-                  type: string
-                  enum: ["Activo", "Inactivo", "Eliminado"]
-                  example: "Activo"
-                descripcion:
-                  type: string
-                  example: "Especialidad médica que se ocupa de los trastornos del corazón."
-      responses:
-        '200':
-          description: Profesión actualizada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profesion'
-        '400':
-          description: Datos inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Profesión no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
-          description: Ya existe otra profesión con ese nombre
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    delete:
-      summary: Eliminar profesión (soft delete)
-      tags:
-        - Profesiones
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la profesión
-      responses:
-        '200':
-          description: Profesión eliminada exitosamente
-        '400':
-          description: ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Profesión no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   # --- EXPERIENCIAS LABORALES ENDPOINTS ---
   /experiencias-laborales:
     post:
-      summary: Crear una nueva experiencia laboral
+      summary: Crear experiencia laboral
+      security:
+        - bearerAuth: []
       tags:
         - ExperienciasLaborales
-      description: Crea una nueva experiencia laboral para un doctor. Debe especificar un centro de salud o una institución externa, pero no ambos.
+      description: |
+        Crea una nueva experiencia laboral para el doctor autenticado.
+        El doctor se obtiene automáticamente del token JWT.
       requestBody:
         required: true
         content:
@@ -8711,58 +9025,43 @@ paths:
             schema:
               type: object
               required:
-                - doctorId
-                - profesionId
-                - descripcionCargo
+                - institucion
+                - posicion
                 - fechaInicio
               properties:
-                doctorId:
-                  type: integer
-                  example: 1
-                  description: ID del doctor
-                centroSaludId:
-                  type: integer
-                  example: 5
-                  description: ID del centro de salud (opcional si se especifica institucionExterna)
-                institucionExterna:
+                institucion:
                   type: string
-                  example: "Hospital General Regional"
                   maxLength: 150
-                  description: Nombre de la institución externa (opcional si se especifica centroSaludId)
-                profesionId:
-                  type: integer
-                  example: 2
-                  description: ID de la profesión
-                descripcionCargo:
+                  example: "Hospital General"
+                  description: Nombre de la institución
+                posicion:
                   type: string
-                  example: "Médico General en el área de emergencias"
-                  minLength: 5
-                  maxLength: 200
-                  description: Descripción del cargo desempeñado
+                  maxLength: 100
+                  example: "Médico General"
+                  description: Posición o cargo desempeñado
                 fechaInicio:
                   type: string
                   format: date
-                  example: "2020-01-15"
-                  description: Fecha de inicio (ISO 8601, no puede ser futura)
+                  example: "2020-01-01"
+                  description: Fecha de inicio
                 fechaFinalizacion:
                   type: string
                   format: date
-                  example: "2023-06-30"
-                  description: Fecha de finalización (ISO 8601, requerida si trabajaActualmente es false)
+                  example: "2024-01-01"
+                  description: Fecha de finalización (requerida si trabajaActualmente es false)
                 trabajaActualmente:
                   type: boolean
-                  example: false
                   default: false
-                  description: Indica si el doctor trabaja actualmente en este puesto
+                  example: true
+                  description: Indica si trabaja actualmente en este puesto
                 estado:
                   type: string
                   enum: ["Activo", "Inactivo"]
-                  example: "Activo"
                   default: "Activo"
-                  description: Estado de la experiencia laboral
+                  example: "Activo"
       responses:
         '201':
-          description: Experiencia laboral creada exitosamente
+          description: Experiencia creada exitosamente
           content:
             application/json:
               schema:
@@ -8777,77 +9076,24 @@ paths:
                   data:
                     $ref: '#/components/schemas/ExperienciaLaboral'
         '400':
-          description: Datos inválidos (fechas inválidas, institución requerida, campos faltantes, etc.)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Doctor, profesión o centro de salud no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Datos inválidos
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
         '500':
           description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
     get:
-      summary: Obtener todas las experiencias laborales
+      summary: Listar experiencias laborales del doctor autenticado
+      security:
+        - bearerAuth: []
       tags:
         - ExperienciasLaborales
       description: |
-        Lista todas las experiencias laborales con soporte para filtros y paginación. Los resultados se ordenan por trabajos actuales primero y luego por fecha de inicio descendente.
-        
-        **Traducción Automática:**
-        Este endpoint soporta traducción automática de campos mediante query params.
-        Ejemplo: `/api/experiencias-laborales?target=en&translate_fields=descripcionCargo,institucionExterna`
+        Obtiene todas las experiencias laborales del doctor autenticado.
+        Los resultados se ordenan por trabajos actuales primero, luego por fecha de inicio descendente.
       parameters:
-        - name: target
-          in: query
-          required: false
-          schema:
-            type: string
-          example: "en"
-          description: Idioma destino para traducción automática (activa la traducción)
-        - name: source
-          in: query
-          required: false
-          schema:
-            type: string
-            default: "es"
-          example: "es"
-          description: Idioma origen para traducción automática
-        - name: translate_fields
-          in: query
-          required: false
-          schema:
-            type: string
-          example: "descripcionCargo,institucionExterna"
-          description: Campos a traducir separados por coma
-        - name: doctorId
-          in: query
-          schema:
-            type: integer
-          description: Filtrar por ID del doctor
-        - name: centroSaludId
-          in: query
-          schema:
-            type: integer
-          description: Filtrar por ID del centro de salud
-        - name: profesionId
-          in: query
-          schema:
-            type: integer
-          description: Filtrar por ID de la profesión
-        - name: trabajaActualmente
-          in: query
-          schema:
-            type: boolean
-          description: Filtrar por trabajos actuales (true/false)
         - name: estado
           in: query
           schema:
@@ -8858,7 +9104,7 @@ paths:
           in: query
           schema:
             type: string
-          description: Buscar en descripción del cargo e institución externa
+          description: Buscar en institución y posición
         - name: pagina
           in: query
           schema:
@@ -8873,7 +9119,7 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
-          description: Cantidad de resultados por página
+          description: Resultados por página
       responses:
         '200':
           description: Lista de experiencias laborales
@@ -8897,97 +9143,22 @@ paths:
                           $ref: '#/components/schemas/ExperienciaLaboral'
                       total:
                         type: integer
-                        example: 25
-        '400':
-          description: Parámetros inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /experiencias-laborales/doctor/{doctorId}:
-    get:
-      summary: Obtener todas las experiencias laborales de un doctor específico
-      tags:
-        - ExperienciasLaborales
-      description: Obtiene el portafolio/línea temporal completo de un doctor. Ideal para mostrar el historial profesional. Los resultados se ordenan por trabajos actuales primero y luego por fecha de inicio descendente.
-      parameters:
-        - name: doctorId
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID del doctor
-        - name: pagina
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-          description: Número de página
-        - name: limite
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Cantidad de resultados por página
-      responses:
-        '200':
-          description: Lista de experiencias laborales del doctor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Experiencias laborales del doctor obtenidas exitosamente"
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-                    properties:
-                      experiencias:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/ExperienciaLaboral'
-                      total:
-                        type: integer
                         example: 5
-        '400':
-          description: ID del doctor inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Doctor no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (requiere rol Doctor)
         '500':
           description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /experiencias-laborales/{id}:
     get:
-      summary: Obtener una experiencia laboral por ID
+      summary: Obtener experiencia laboral por ID
+      security:
+        - bearerAuth: []
       tags:
         - ExperienciasLaborales
-      description: Obtiene los detalles completos de una experiencia laboral específica por su ID.
+      description: Obtiene una experiencia laboral específica. Solo el doctor propietario puede acceder.
       parameters:
         - name: id
           in: path
@@ -9013,28 +9184,25 @@ paths:
                     $ref: '#/components/schemas/ExperienciaLaboral'
         '400':
           description: ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (no es el propietario)
         '404':
           description: Experiencia laboral no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
     put:
-      summary: Actualizar una experiencia laboral
+      summary: Actualizar experiencia laboral
+      security:
+        - bearerAuth: []
       tags:
         - ExperienciasLaborales
-      description: Actualiza una experiencia laboral existente. Todos los campos son opcionales, pero al menos uno debe ser proporcionado. Se mantienen las validaciones de negocio (fechas coherentes, institución válida, etc.).
+      description: |
+        Actualiza una experiencia laboral existente.
+        Solo el doctor propietario puede actualizar.
+        Todos los campos son opcionales.
       parameters:
         - name: id
           in: path
@@ -9049,47 +9217,32 @@ paths:
             schema:
               type: object
               properties:
-                centroSaludId:
-                  type: integer
-                  example: 7
-                  description: ID del centro de salud
-                institucionExterna:
+                institucion:
                   type: string
-                  example: "Clínica Moderna"
                   maxLength: 150
-                  description: Nombre de la institución externa
-                profesionId:
-                  type: integer
-                  example: 3
-                  description: ID de la profesión
-                descripcionCargo:
+                  example: "Hospital Especializado"
+                posicion:
                   type: string
-                  example: "Jefe de Emergencias"
-                  minLength: 5
-                  maxLength: 200
-                  description: Descripción del cargo
+                  maxLength: 100
+                  example: "Médico Especialista"
                 fechaInicio:
                   type: string
                   format: date
                   example: "2020-02-01"
-                  description: Fecha de inicio
                 fechaFinalizacion:
                   type: string
                   format: date
-                  example: "2024-01-15"
-                  description: Fecha de finalización
+                  example: "2024-06-30"
                 trabajaActualmente:
                   type: boolean
                   example: false
-                  description: Indica si trabaja actualmente en este puesto
                 estado:
                   type: string
-                  enum: ["Activo", "Inactivo", "Eliminado"]
+                  enum: ["Activo", "Inactivo"]
                   example: "Activo"
-                  description: Estado de la experiencia
       responses:
         '200':
-          description: Experiencia laboral actualizada exitosamente
+          description: Experiencia actualizada exitosamente
           content:
             application/json:
               schema:
@@ -9104,29 +9257,25 @@ paths:
                   data:
                     $ref: '#/components/schemas/ExperienciaLaboral'
         '400':
-          description: Datos inválidos (fechas inválidas, institución inválida, etc.)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Datos inválidos
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (no es el propietario)
         '404':
-          description: Experiencia laboral, profesión o centro de salud no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Experiencia laboral no encontrada
         '500':
           description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
-      summary: Eliminar una experiencia laboral (soft delete)
+      summary: Eliminar experiencia laboral (soft delete)
+      security:
+        - bearerAuth: []
       tags:
         - ExperienciasLaborales
-      description: Elimina lógicamente una experiencia laboral marcándola como "Eliminado". No se elimina físicamente del sistema para preservar el historial.
+      description: |
+        Elimina lógicamente una experiencia laboral marcándola como "Eliminado".
+        Solo el doctor propietario puede eliminar.
       parameters:
         - name: id
           in: path
@@ -9136,7 +9285,7 @@ paths:
           description: ID de la experiencia laboral
       responses:
         '200':
-          description: Experiencia laboral eliminada exitosamente
+          description: Experiencia eliminada exitosamente
           content:
             application/json:
               schema:
@@ -9150,12 +9299,396 @@ paths:
                     example: true
         '400':
           description: ID inválido
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado (no es el propietario)
+        '404':
+          description: Experiencia laboral no encontrada
+        '500':
+          description: Error interno del servidor
+
+
+  # --- FORMACIONES ACADÉMICAS ENDPOINTS ---
+  /formaciones-academicas:
+    post:
+      summary: Crear una nueva formación académica
+      tags:
+        - FormacionesAcademicas
+      description: |
+        Crea una nueva formación académica para el doctor autenticado. 
+        El doctor se obtiene automáticamente del token JWT.
+        Valida que no exista una formación duplicada (mismo doctor, universidad y especialidad) y que las fechas sean coherentes.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - universidadId
+                - especialidadId
+                - fechaInicio
+              properties:
+                universidadId:
+                  type: integer
+                  example: 5
+                  description: ID de la universidad
+                especialidadId:
+                  type: integer
+                  example: 2
+                  description: ID de la especialidad
+                fechaInicio:
+                  type: string
+                  format: date
+                  example: "2015-01-15"
+                  description: Fecha de inicio de la formación (ISO 8601)
+                fechaFinalizacion:
+                  type: string
+                  format: date
+                  example: "2019-06-30"
+                  description: Fecha de finalización de la formación (ISO 8601, opcional)
+                estado:
+                  type: string
+                  enum: ["Activo", "Inactivo"]
+                  example: "Activo"
+                  default: "Activo"
+                  description: Estado de la formación académica
+      responses:
+        '201':
+          description: Formación académica creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Formación académica creada exitosamente"
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/FormacionAcademica'
+        '400':
+          description: Datos inválidos (fechas inválidas, formación duplicada, campos faltantes, etc.)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Experiencia laboral no encontrada
+          description: Doctor, universidad o especialidad no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Obtener todas las formaciones académicas del doctor autenticado
+      tags:
+        - FormacionesAcademicas
+      description: |
+        Lista todas las formaciones académicas del doctor autenticado con soporte para filtros y paginación.
+        Los resultados se ordenan por estado (Activo primero) y luego por fecha de inicio descendente.
+        
+        **Traducción Automática:**
+        Este endpoint soporta traducción automática de campos mediante query params.
+        Ejemplo: `/api/formaciones-academicas?target=en&translate_fields=universidad.nombre,especialidad.nombre`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: Idioma destino para traducción automática (activa la traducción)
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen para traducción automática
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "universidad.nombre,especialidad.nombre"
+          description: Campos a traducir separados por coma
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: ["Activo", "Inactivo", "Eliminado"]
+          description: Filtrar por estado
+        - name: busqueda
+          in: query
+          schema:
+            type: string
+          description: Buscar en nombre de universidad y especialidad
+        - name: pagina
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página
+        - name: limite
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Cantidad de resultados por página
+      responses:
+        '200':
+          description: Lista de formaciones académicas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Formaciones académicas obtenidas exitosamente"
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      formaciones:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FormacionAcademica'
+                      total:
+                        type: integer
+                        example: 15
+        '400':
+          description: Parámetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /formaciones-academicas/{id}:
+    get:
+      summary: Obtener una formación académica por ID
+      tags:
+        - FormacionesAcademicas
+      description: Obtiene los detalles completos de una formación académica específica por su ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la formación académica
+      responses:
+        '200':
+          description: Formación académica encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Formación académica obtenida exitosamente"
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/FormacionAcademica'
+        '400':
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Formación académica no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Actualizar una formación académica
+      tags:
+        - FormacionesAcademicas
+      description: |
+        Actualiza una formación académica existente. Todos los campos son opcionales, pero al menos uno debe ser proporcionado.
+        Se mantienen las validaciones de negocio (fechas coherentes, no duplicados, etc.).
+        
+        **Autenticación requerida:** Solo el doctor autenticado puede actualizar sus propias formaciones.
+        Si la formación no pertenece al doctor autenticado, se retornará 403 Forbidden.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la formación académica
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                universidadId:
+                  type: integer
+                  example: 7
+                  description: ID de la universidad
+                especialidadId:
+                  type: integer
+                  example: 3
+                  description: ID de la especialidad
+                fechaInicio:
+                  type: string
+                  format: date
+                  example: "2015-02-01"
+                  description: Fecha de inicio
+                fechaFinalizacion:
+                  type: string
+                  format: date
+                  example: "2019-07-15"
+                  description: Fecha de finalización
+                estado:
+                  type: string
+                  enum: ["Activo", "Inactivo", "Eliminado"]
+                  example: "Activo"
+                  description: Estado de la formación
+      responses:
+        '200':
+          description: Formación académica actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Formación académica actualizada exitosamente"
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/FormacionAcademica'
+        '400':
+          description: Datos inválidos (fechas inválidas, formación duplicada, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No tienes permiso para actualizar esta formación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "No tienes permiso para actualizar esta formación académica"
+        '404':
+          description: Formación académica, universidad o especialidad no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Eliminar una formación académica (soft delete)
+      tags:
+        - FormacionesAcademicas
+      description: |
+        Elimina lógicamente una formación académica marcándola como "Eliminado". No se elimina físicamente del sistema para preservar el historial.
+        
+        **Autenticación requerida:** Solo el doctor autenticado puede eliminar sus propias formaciones.
+        Si la formación no pertenece al doctor autenticado, se retornará 403 Forbidden.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la formación académica
+      responses:
+        '200':
+          description: Formación académica eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Formación académica eliminada exitosamente"
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No tienes permiso para eliminar esta formación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "No tienes permiso para eliminar esta formación académica"
+        '404':
+          description: Formación académica no encontrada
           content:
             application/json:
               schema:
@@ -10635,6 +11168,8 @@ paths:
         **Traducción Automática:**
         Este endpoint soporta traducción automática de campos mediante query params.
         Ejemplo: `/api/tipos-seguros/disponibles?target=en&translate_fields=nombre,descripcion`
+      security:
+        - bearerAuth: []
       parameters:
         - name: target
           in: query
@@ -10767,8 +11302,852 @@ paths:
         '409':
           description: No se puede eliminar - tipo de seguro en uso
 
+  # ─── SERVICIOS ─────────────────────────────────────────────────────────────
+  /servicios:
+    post:
+      summary: Crear un nuevo servicio médico
+      tags:
+        - Servicios
+      description: |
+        Crea un nuevo servicio médico para el doctor autenticado.
+        Acepta `multipart/form-data` para subir imágenes opcionales (máx. 10, 5MB c/u).
+
+        **Sedes (ubicaciones donde se imparte el servicio):**
+        Cada sede tiene `centroSaludId` **O** `ubicacionId` (mutuamente excluyentes),
+        y una lista de `horarios` específicos para esa sede.
+        Se envía como JSON string en el campo `sedes` del form-data.
+
+        **Acceso:** Doctor
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - tipoServicioId
+                - especialidadId
+                - nombre
+                - precio
+                - duracionMinutos
+              properties:
+                tipoServicioId:
+                  type: integer
+                  example: 2
+                especialidadId:
+                  type: integer
+                  example: 3
+                nombre:
+                  type: string
+                  example: "Consulta General"
+                descripcion:
+                  type: string
+                  example: "Consulta médica general de 30 minutos"
+                precio:
+                  type: number
+                  example: 1500.00
+                duracionMinutos:
+                  type: integer
+                  example: 30
+                maxPacientesDia:
+                  type: integer
+                  example: 20
+                sedes:
+                  type: array
+                  description: |
+                    Sedes donde se impartirá el servicio, cada una con sus horarios.
+                    Cada sede tiene `centroSaludId` **O** `ubicacionId` (mutuamente excluyentes).
+                  items:
+                    type: object
+                    required: [horarios]
+                    properties:
+                      centroSaludId:
+                        type: integer
+                        description: ID de un centro de salud existente.
+                        example: 1
+                      ubicacionId:
+                        type: integer
+                        description: ID de una ubicación propia del doctor.
+                        example: 7
+                      horarios:
+                        type: array
+                        description: Horarios que el doctor asigna a esta sede.
+                        items:
+                          type: object
+                          required: [nombre, diaSemana, horaInicio, horaFin]
+                          properties:
+                            nombre:
+                              type: string
+                              example: "Lunes mañana"
+                            diaSemana:
+                              type: integer
+                              description: 1=Lunes, 2=Martes ... 7=Domingo
+                              example: 1
+                            horaInicio:
+                              type: string
+                              pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+                              example: "08:00"
+                            horaFin:
+                              type: string
+                              pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+                              example: "12:00"
+                  example:
+                    - centroSaludId: 1
+                      horarios:
+                        - nombre: "Lunes mañana"
+                          diaSemana: 1
+                          horaInicio: "08:00"
+                          horaFin: "12:00"
+                    - ubicacionId: 7
+                      horarios:
+                        - nombre: "Viernes tarde"
+                          diaSemana: 5
+                          horaInicio: "14:00"
+                          horaFin: "18:00"
+                imagenes:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: "Imágenes del servicio (JPEG, PNG, WebP — máx. 10 archivos, 5MB c/u)"
+      responses:
+        '201':
+          description: Servicio creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ServicioDetalle'
+                  message:
+                    type: string
+                    example: "Servicio creado exitosamente"
+        '400':
+          description: Datos inválidos o imagen no permitida
+        '401':
+          description: No autenticado
+        '403':
+          description: Acceso denegado (solo Doctor)
+
+  /servicios/{id}:
+    get:
+      summary: Obtener detalle completo de un servicio
+      tags:
+        - Servicios
+      description: |
+        Retorna el detalle completo de un servicio incluyendo doctor, especialidad,
+        tipo de servicio, horarios disponibles y todas las imágenes.
+        **Acceso:** Doctor, Administrador, Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        '200':
+          description: Detalle del servicio
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ServicioDetalle'
+        '400':
+          description: ID inválido
+        '401':
+          description: No autenticado
+        '404':
+          description: Servicio no encontrado
+
+    put:
+      summary: Actualizar un servicio
+      tags:
+        - Servicios
+      description: |
+        Actualiza los datos de un servicio. Solo el doctor propietario puede modificarlo.
+        Todos los campos son opcionales (PATCH semántico).
+        **Acceso:** Doctor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipoServicioId:
+                  type: integer
+                  example: 2
+                especialidadId:
+                  type: integer
+                  example: 3
+                nombre:
+                  type: string
+                  example: "Consulta General Actualizada"
+                descripcion:
+                  type: string
+                  example: "Nueva descripción del servicio"
+                precio:
+                  type: number
+                  example: 1800.00
+                duracionMinutos:
+                  type: integer
+                  example: 45
+                maxPacientesDia:
+                  type: integer
+                  example: 15
+                estado:
+                  type: string
+                  enum: [Activo, Inactivo]
+                  example: "Activo"
+                sedesAgregar:
+                  type: array
+                  description: Nuevas sedes a agregar al servicio con sus horarios.
+                  items:
+                    type: object
+                    required: [horarios]
+                    properties:
+                      centroSaludId:
+                        type: integer
+                        example: 5
+                      ubicacionId:
+                        type: integer
+                        example: 9
+                      horarios:
+                        type: array
+                        items:
+                          type: object
+                          required: [nombre, diaSemana, horaInicio, horaFin]
+                          properties:
+                            nombre:
+                              type: string
+                              example: "Sábado mañana"
+                            diaSemana:
+                              type: integer
+                              example: 6
+                            horaInicio:
+                              type: string
+                              example: "09:00"
+                            horaFin:
+                              type: string
+                              example: "13:00"
+                sedesEliminar:
+                  type: array
+                  items:
+                    type: integer
+                  description: IDs (centroSaludId) de sedes a desactivar del servicio.
+                  example: [1, 3]
+                horariosEliminar:
+                  type: array
+                  items:
+                    type: integer
+                  description: IDs de horarios existentes del servicio a desactivar.
+                  example: [10, 15]
+      responses:
+        '200':
+          description: Servicio actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ServicioResumen'
+                  message:
+                    type: string
+                    example: "Servicio actualizado exitosamente"
+        '400':
+          description: Datos inválidos o estado no permitido
+        '401':
+          description: No autenticado
+        '403':
+          description: No eres el propietario del servicio
+        '404':
+          description: Servicio no encontrado
+
+    delete:
+      summary: Eliminar un servicio (soft delete)
+      tags:
+        - Servicios
+      description: |
+        Marca el servicio como `Eliminado`. No elimina físicamente el registro.
+        Solo el doctor propietario puede eliminarlo.
+        **Acceso:** Doctor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        '200':
+          description: Servicio eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Servicio eliminado exitosamente"
+        '401':
+          description: No autenticado
+        '403':
+          description: No eres el propietario del servicio
+        '404':
+          description: Servicio no encontrado
+
+  /servicios/{id}/desactivar:
+    patch:
+      summary: Desactivar un servicio
+      tags:
+        - Servicios
+      description: |
+        Cambia el estado del servicio a `Inactivo`. El servicio deja de aparecer
+        en búsquedas pero no se elimina.
+        **Acceso:** Doctor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        '200':
+          description: Servicio desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Servicio desactivado exitosamente"
+        '400':
+          description: El servicio ya está inactivo
+        '401':
+          description: No autenticado
+        '403':
+          description: No eres el propietario del servicio
+        '404':
+          description: Servicio no encontrado
+
+  /servicios/doctor/{doctorId}:
+    get:
+      summary: Listar servicios de un doctor
+      tags:
+        - Servicios
+      description: |
+        Retorna la lista de servicios activos (no eliminados) de un doctor.
+        Soporta filtros opcionales por especialidad, tipo de servicio, estado y rango de precio.
+        **Acceso:** Doctor, Administrador, Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 5
+        - name: especialidadId
+          in: query
+          schema:
+            type: integer
+          description: Filtrar por especialidad
+          example: 3
+        - name: tipoServicioId
+          in: query
+          schema:
+            type: integer
+          description: Filtrar por tipo de servicio
+          example: 2
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [Activo, Inactivo]
+          description: Filtrar por estado (por defecto excluye Eliminados)
+          example: "Activo"
+        - name: precioMin
+          in: query
+          schema:
+            type: number
+          description: Precio mínimo
+          example: 500
+        - name: precioMax
+          in: query
+          schema:
+            type: number
+          description: Precio máximo
+          example: 3000
+      responses:
+        '200':
+          description: Lista de servicios del doctor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServicioResumen'
+                  count:
+                    type: integer
+                    example: 5
+        '400':
+          description: doctorId inválido
+        '401':
+          description: No autenticado
+
+  /servicios/centro/{centroId}:
+    get:
+      summary: Listar servicios de un centro de salud
+      tags:
+        - Servicios
+      description: |
+        Retorna todos los servicios ofrecidos en un centro de salud específico.
+        Los servicios se vinculan al centro a través de la tabla `servicios_centros_salud`.
+        Soporta filtros opcionales por especialidad, tipo de servicio, estado y rango de precio.
+        **Acceso:** Doctor, Administrador, Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: centroId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del centro de salud
+          example: 1
+        - name: especialidadId
+          in: query
+          schema:
+            type: integer
+          description: Filtrar por especialidad
+          example: 3
+        - name: tipoServicioId
+          in: query
+          schema:
+            type: integer
+          description: Filtrar por tipo de servicio
+          example: 2
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [Activo, Inactivo]
+          description: Filtrar por estado (por defecto excluye Eliminados)
+          example: "Activo"
+        - name: precioMin
+          in: query
+          schema:
+            type: number
+          description: Precio mínimo
+          example: 500
+        - name: precioMax
+          in: query
+          schema:
+            type: number
+          description: Precio máximo
+          example: 3000
+      responses:
+        '200':
+          description: Lista de servicios del centro de salud
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServicioResumen'
+                  count:
+                    type: integer
+                    example: 8
+        '400':
+          description: centroId inválido
+        '401':
+          description: No autenticado
+
+  /servicios/{id}/imagenes:
+
+    post:
+      summary: Agregar imágenes a un servicio
+      tags:
+        - Servicios
+      description: |
+        Sube y asocia nuevas imágenes a un servicio existente.
+        Máximo 10 imágenes en total por servicio (JPEG, PNG, WebP — 5MB c/u).
+        **Acceso:** Doctor (propietario del servicio)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - imagenes
+              properties:
+                imagenes:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: "Imágenes a agregar (JPEG, PNG, WebP — máx. 10 en total, 5MB c/u)"
+      responses:
+        '201':
+          description: Imágenes agregadas exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServicioImagen'
+                  message:
+                    type: string
+                    example: "2 imagen(es) agregada(s) exitosamente"
+        '400':
+          description: Sin archivos, tipo no permitido o límite de 10 imágenes superado
+        '401':
+          description: No autenticado
+        '403':
+          description: No eres el propietario del servicio
+        '404':
+          description: Servicio no encontrado
+
+  /servicios/{id}/imagenes/{imagenId}:
+    delete:
+      summary: Eliminar una imagen de un servicio
+      tags:
+        - Servicios
+      description: |
+        Elimina (soft delete) una imagen específica de un servicio.
+        También intenta eliminar el archivo de Supabase Storage.
+        **Acceso:** Doctor (propietario del servicio)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del servicio
+          example: 10
+        - name: imagenId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la imagen a eliminar
+          example: 3
+      responses:
+        '200':
+          description: Imagen eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Imagen eliminada exitosamente"
+        '401':
+          description: No autenticado
+        '403':
+          description: No eres el propietario del servicio
+        '404':
+          description: Servicio o imagen no encontrada
+
 components:
   schemas:
+    # ─── Servicios ───────────────────────────────────────────────────────────
+    ServicioImagen:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        servicioId:
+          type: integer
+          example: 10
+        url:
+          type: string
+          example: "https://xyz.supabase.co/storage/v1/object/public/public-assets/servicios/5/10/img.jpg"
+        orden:
+          type: integer
+          example: 0
+        estado:
+          type: string
+          example: "Activo"
+        creadoEn:
+          type: string
+          format: date-time
+
+    ServicioResumen:
+      type: object
+      description: Servicio en listado (incluye sólo la primera imagen)
+      properties:
+        id:
+          type: integer
+          example: 10
+        doctorId:
+          type: integer
+          example: 5
+        tipoServicioId:
+          type: integer
+          example: 2
+        especialidadId:
+          type: integer
+          example: 3
+        nombre:
+          type: string
+          example: "Consulta General"
+        descripcion:
+          type: string
+          nullable: true
+          example: "Consulta médica general de 30 minutos"
+        precio:
+          type: number
+          example: 1500.00
+        duracionMinutos:
+          type: integer
+          example: 30
+        maxPacientesDia:
+          type: integer
+          nullable: true
+          example: 20
+        calificacionPromedio:
+          type: number
+          nullable: true
+          example: 4.5
+        estado:
+          type: string
+          example: "Activo"
+        creadoEn:
+          type: string
+          format: date-time
+        actualizadoEn:
+          type: string
+          format: date-time
+          nullable: true
+        imagenes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicioImagen'
+        especialidad:
+          type: object
+          properties:
+            id:
+              type: integer
+            nombre:
+              type: string
+        tipoServicio:
+          type: object
+          properties:
+            id:
+              type: integer
+            nombre:
+              type: string
+        centros:
+          type: array
+          description: Centros de salud donde se ofrece el servicio
+          items:
+            type: object
+            properties:
+              id_centro_salud:
+                type: integer
+              estado:
+                type: string
+                example: "Activo"
+              centros_salud:
+                type: object
+                properties:
+                  usuarioId:
+                    type: integer
+                  nombreComercial:
+                    type: string
+                    example: "Clínica Santa María"
+                  foto_perfil:
+                    type: string
+                    nullable: true
+                  ubicacion:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      direccion:
+                        type: string
+                        example: "Av. Independencia #45"
+                      barrio:
+                        type: object
+                        properties:
+                          nombre:
+                            type: string
+        ubicacion:
+          type: object
+          nullable: true
+          description: Ubicación personalizada (cuando el servicio no es en un centro de salud)
+          properties:
+            id:
+              type: integer
+            direccion:
+              type: string
+              example: "Calle 5ta #10, Local 2"
+            barrio:
+              type: object
+              properties:
+                nombre:
+                  type: string
+        horarios:
+          type: array
+          description: Horarios del servicio con su centro/ubicación
+          items:
+            type: object
+            properties:
+              servicioId:
+                type: integer
+              horarioId:
+                type: integer
+              estado:
+                type: string
+                example: "Activo"
+              horario:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nombre:
+                    type: string
+                    example: "Lunes mañana"
+                  diaSemana:
+                    type: integer
+                    description: "1=Lunes … 7=Domingo"
+                    example: 1
+                  horaInicio:
+                    type: string
+                    format: date-time
+                  horaFin:
+                    type: string
+                    format: date-time
+                  centroSalud:
+                    type: object
+                    nullable: true
+                    properties:
+                      usuarioId:
+                        type: integer
+                      nombreComercial:
+                        type: string
+                  ubicacion:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      direccion:
+                        type: string
+                        example: "Av. Independencia #45"
+                      barrio:
+                        type: object
+                        properties:
+                          nombre:
+                            type: string
+                            example: "Los Prados"
+
+    ServicioDetalle:
+      allOf:
+        - $ref: '#/components/schemas/ServicioResumen'
+        - type: object
+          description: Servicio con detalle completo (doctor, horarios completos, todas las imágenes)
+          properties:
+            doctor:
+              type: object
+              properties:
+                usuarioId:
+                  type: integer
+                nombre:
+                  type: string
+                apellido:
+                  type: string
+                especialidadPrincipal:
+                  type: string
+                  nullable: true
+                usuario:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    email:
+                      type: string
+                    fotoPerfil:
+                      type: string
+                      nullable: true
+
+    # ─── Otros schemas ────────────────────────────────────────────────────────
     Provincia:
       type: object
       properties:
@@ -11187,6 +12566,69 @@ components:
           format: date-time
           nullable: true
           example: "2024-02-01T14:20:00Z"
+
+    FormacionAcademica:
+      type: object
+      description: Formación académica de un doctor en una universidad
+      properties:
+        id:
+          type: integer
+          example: 1
+        doctorId:
+          type: integer
+          example: 123
+        universidadId:
+          type: integer
+          example: 5
+        especialidadId:
+          type: integer
+          example: 2
+        fechaInicio:
+          type: string
+          format: date
+          example: "2015-01-15"
+          description: Fecha de inicio de la formación
+        fechaFinalizacion:
+          type: string
+          format: date
+          nullable: true
+          example: "2019-06-30"
+          description: Fecha de finalización (nulo si aún está en curso)
+        estado:
+          type: string
+          enum: ["Activo", "Inactivo", "Eliminado"]
+          example: "Activo"
+        creadoEn:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        actualizadoEn:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-02-01T14:20:00Z"
+        universidad:
+          type: object
+          nullable: true
+          description: Información de la universidad (incluida cuando se consulta con relaciones)
+          properties:
+            nombre:
+              type: string
+              example: "Universidad Autónoma de Santo Domingo"
+            pais:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  example: "República Dominicana"
+        especialidad:
+          type: object
+          nullable: true
+          description: Información de la especialidad (incluida cuando se consulta con relaciones)
+          properties:
+            nombre:
+              type: string
+              example: "Cardiología"
 
     ErrorResponse:
       type: object
@@ -11653,6 +13095,11 @@ components:
       type: object
       properties:
         id:
+        fechaNacimiento:
+          type: string
+          format: date
+          example: "1985-06-20"
+          description: Fecha de nacimiento del doctor (ISO 8601)
           type: integer
           example: 1
         usuarioId:
@@ -11842,6 +13289,34 @@ components:
           type: string
           format: date-time
 
+    DoctorIdioma:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        doctorId:
+          type: integer
+          example: 5
+        nombre:
+          type: string
+          description: Nombre del idioma
+          example: "Inglés"
+        nivel:
+          type: string
+          description: Nivel de dominio del idioma
+          enum: ["Básico", "Intermedio", "Avanzado", "Nativo"]
+          example: "Avanzado"
+        estado:
+          type: string
+          example: "Activo"
+        creadoEn:
+          type: string
+          format: date-time
+        actualizadoEn:
+          type: string
+          format: date-time
+
   securitySchemes:
     bearerAuth:
       type: http
@@ -11851,6 +13326,5 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-
       name: Authorization
       description: Token de registro temporal para endpoints de registro (sin prefijo "Bearer")
