@@ -44,8 +44,6 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
   const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log("Doctor Profile in GeneralInformation:", user);
-
   // Guardar las imágenes originales para detectar cambios
   const originalProfileImage = getUserAvatar(user) || "";
   const originalBannerImage = user?.doctor?.banner || user?.banner || "";
@@ -333,7 +331,6 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
     }
   };
 
-  console.log("Default Values for GeneralInformation form:", defaultValues);
   return (
     <>
       <MCProfileImageUploader
@@ -546,6 +543,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
           placeholder={t("profileForm.specialtyPlaceholder")}
           options={especialidadesOptions}
           disabled={loadingEspecialidades}
+          searchable={true}
         />
 
         <MCSelect
@@ -554,6 +552,7 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
           placeholder={t("profileForm.secondarySpecialtiesPlaceholder")}
           options={especialidadesOptions}
           disabled={loadingEspecialidades}
+          searchable={true}
           multiple
         />
 

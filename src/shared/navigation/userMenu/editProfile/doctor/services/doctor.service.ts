@@ -15,7 +15,20 @@ import type {
   GetFormacionesAcademicasResponse,
   GetFormacionesAcademicasParams,
   GetExperienciasLaboralesResponse,
-  GetExperienciasLaboralesParams
+  GetExperienciasLaboralesParams,
+  CreateExperienciaLaboralRequest,
+  CreateExperienciaLaboralResponse,
+  UpdateExperienciaLaboralRequest,
+  UpdateExperienciaLaboralResponse,
+  DeleteExperienciaLaboralResponse,
+  ExperienciaLaboralError,
+  GetAvailableInsurancesResponse,
+  GetAvailableInsuranceTypesResponse,
+  GetAcceptedInsurancesResponse,
+  AddAcceptedInsuranceRequest,
+  AddAcceptedInsuranceResponse,
+  RemoveAcceptedInsuranceResponse,
+  InsuranceError
 } from './doctor.types';
 
 /**
@@ -332,7 +345,7 @@ export const doctorService = {
   ): Promise<GetFormacionesAcademicasResponse> => {
     try {
       const response = await apiClient.get<GetFormacionesAcademicasResponse>(
-        '/doctores/formaciones-academicas',
+        '/formaciones-academicas',
         { params }
       );
 
@@ -361,8 +374,7 @@ export const doctorService = {
   },
 
   /**
-   * Obtiene las experiencias laborales del doctor
-   * @param doctorId - ID del doctor
+   * Obtiene las experiencias laborales del doctor autenticado
    * @param params - Parámetros opcionales para traducción
    * @returns Respuesta con las experiencias laborales
    * 
@@ -370,12 +382,11 @@ export const doctorService = {
    * Soporta traducción automática de campos mediante query params.
    */
   getExperienciasLaborales: async (
-    doctorId: number,
     params?: GetExperienciasLaboralesParams
   ): Promise<GetExperienciasLaboralesResponse> => {
     try {
       const response = await apiClient.get<GetExperienciasLaboralesResponse>(
-        `/experiencias-laborales/doctor/${doctorId}`,
+        '/experiencias-laborales',
         { params }
       );
 
@@ -390,7 +401,10 @@ export const doctorService = {
         return {
           success: true,
           message: 'No se encontraron experiencias laborales',
-          data: []
+          data: {
+            experiencias: [],
+            total: 0
+          }
         };
       }
       
@@ -399,6 +413,312 @@ export const doctorService = {
         errorData?.message || 
         error.message || 
         'Error al obtener las experiencias laborales. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Crea una nueva experiencia laboral para el doctor autenticado
+   * @param data - Datos de la experiencia laboral
+   * @returns Respuesta con la experiencia laboral creada
+   * 
+   * POST /experiencias-laborales
+   */
+  createExperienciaLaboral: async (
+    data: CreateExperienciaLaboralRequest
+  ): Promise<CreateExperienciaLaboralResponse> => {
+    try {
+      const response = await apiClient.post<CreateExperienciaLaboralResponse>(
+        '/experiencias-laborales',
+        {
+          ...data,
+          trabajaActualmente: data.trabajaActualmente ?? false,
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al crear experiencia laboral:', error);
+      
+      const errorData = error.response?.data as ExperienciaLaboralError;
+      
+      if (error.response?.status === 400) {
+        throw new Error(
+          errorData?.message || 
+          'Datos de experiencia laboral inválidos. Verifica los campos requeridos.'
+        );
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al crear la experiencia laboral. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Actualiza una experiencia laboral existente
+   * @param id - ID de la experiencia laboral
+   * @param data - Datos a actualizar
+   * @returns Respuesta con la experiencia laboral actualizada
+   * 
+   * PUT /experiencias-laborales/{id}
+   */
+  updateExperienciaLaboral: async (
+    id: number,
+    data: UpdateExperienciaLaboralRequest
+  ): Promise<UpdateExperienciaLaboralResponse> => {
+    try {
+      const response = await apiClient.put<UpdateExperienciaLaboralResponse>(
+        `/experiencias-laborales/${id}`,
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al actualizar experiencia laboral:', error);
+      
+      const errorData = error.response?.data as ExperienciaLaboralError;
+      
+      if (error.response?.status === 404) {
+        throw new Error('Experiencia laboral no encontrada.');
+      }
+      
+      if (error.response?.status === 400) {
+        throw new Error(
+          errorData?.message || 
+          'Datos de experiencia laboral inválidos.'
+        );
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al actualizar la experiencia laboral. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Elimina una experiencia laboral (soft delete)
+   * @param id - ID de la experiencia laboral a eliminar
+   * @returns Respuesta de confirmación
+   * 
+   * DELETE /experiencias-laborales/{id}
+   */
+  deleteExperienciaLaboral: async (
+    id: number
+  ): Promise<DeleteExperienciaLaboralResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteExperienciaLaboralResponse>(
+        `/experiencias-laborales/${id}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al eliminar experiencia laboral:', error);
+      
+      const errorData = error.response?.data as ExperienciaLaboralError;
+      
+      if (error.response?.status === 404) {
+        throw new Error('Experiencia laboral no encontrada.');
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al eliminar la experiencia laboral. Intenta nuevamente.'
+      );
+    }
+  },
+
+  // --- MÉTODOS PARA SEGUROS MÉDICOS ACEPTADOS ---
+
+  /**
+   * Obtiene todos los tipos de seguros disponibles
+   * @param language - Idioma para traducción automática (opcional, por defecto 'es')
+   * @returns Lista de tipos de seguros activos
+   * 
+   * Soporta traducción automática mediante query params:
+   * - target: idioma destino
+   * - source: idioma origen (español)
+   * - translate_fields: campos a traducir (nombre,descripcion)
+   */
+  getAvailableInsuranceTypes: async (language?: string): Promise<GetAvailableInsuranceTypesResponse> => {
+    try {
+      // Construir query params
+      const params: Record<string, string> = {};
+
+      // Agregar traducción si se especifica un idioma diferente al español
+      if (language && language !== 'es') {
+        params.target = language;
+        params.source = 'es';
+        params.translate_fields = 'nombre,descripcion';
+      }
+
+      const response = await apiClient.get<GetAvailableInsuranceTypesResponse>(
+        '/tipos-seguros/disponibles',
+        { params }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener tipos de seguros disponibles:', error);
+      
+      const errorData = error.response?.data as InsuranceError;
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener tipos de seguros disponibles. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Obtiene todos los seguros disponibles
+   * @param language - Idioma para traducción automática (opcional, por defecto 'es')
+   * @returns Lista de seguros disponibles para agregar
+   * 
+   * Soporta traducción automática mediante query params:
+   * - target: idioma destino
+   * - source: idioma origen (español)
+   * - translate_fields: campos a traducir (nombre,descripcion)
+   */
+  getAvailableInsurances: async (language?: string): Promise<GetAvailableInsurancesResponse> => {
+    try {
+      // Construir query params
+      const params: Record<string, string> = {};
+
+      // Agregar traducción si se especifica un idioma diferente al español
+      if (language && language !== 'es') {
+        params.target = language;
+        params.source = 'es';
+        params.translate_fields = 'nombre,descripcion';
+      }
+
+      const response = await apiClient.get<GetAvailableInsurancesResponse>(
+        '/seguros/disponibles',
+        { params }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener seguros disponibles:', error);
+      
+      const errorData = error.response?.data as InsuranceError;
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener seguros disponibles. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Obtiene los seguros aceptados por el doctor autenticado
+   * @param language - Idioma para traducción automática (opcional, por defecto 'es')
+   * @returns Lista de seguros aceptados por el doctor
+   * 
+   * Soporta traducción automática mediante query params:
+   * - target: idioma destino
+   * - source: idioma origen (español)
+   * - translate_fields: campos a traducir (nombre,descripcion)
+   */
+  getAcceptedInsurances: async (language?: string): Promise<GetAcceptedInsurancesResponse> => {
+    try {
+      // Construir query params
+      const params: Record<string, string> = {};
+
+      // Agregar traducción si se especifica un idioma diferente al español
+      if (language && language !== 'es') {
+        params.target = language;
+        params.source = 'es';
+        params.translate_fields = 'nombre,descripcion';
+      }
+
+      const response = await apiClient.get<GetAcceptedInsurancesResponse>(
+        '/seguros/seguros-aceptados',
+        { params }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener seguros aceptados:', error);
+      
+      const errorData = error.response?.data as InsuranceError;
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener tus seguros aceptados. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Agrega un seguro a la lista de seguros aceptados por el doctor (sin límite)
+   * @param data - ID del seguro y ID del tipo de seguro
+   * @returns Respuesta con el seguro agregado
+   */
+  addAcceptedInsurance: async (data: AddAcceptedInsuranceRequest): Promise<AddAcceptedInsuranceResponse> => {
+    try {
+      const response = await apiClient.post<AddAcceptedInsuranceResponse>(
+        '/seguros/seguros-aceptados',
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al agregar seguro aceptado:', error);
+      
+      const errorData = error.response?.data as InsuranceError;
+      
+      if (error.response?.status === 400) {
+        throw new Error(
+          errorData?.message || 
+          'El seguro ya está en tu lista de seguros aceptados.'
+        );
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al agregar seguro. Intenta nuevamente.'
+      );
+    }
+  },
+
+  /**
+   * Elimina un seguro de la lista de seguros aceptados por el doctor
+   * @param seguroId - ID del seguro a eliminar
+   * @param tipoSeguroId - ID del tipo de seguro
+   * @returns Respuesta de confirmación
+   */
+  removeAcceptedInsurance: async (
+    seguroId: number,
+    tipoSeguroId: number
+  ): Promise<RemoveAcceptedInsuranceResponse> => {
+    try {
+      const response = await apiClient.delete<RemoveAcceptedInsuranceResponse>(
+        `/seguros/seguros-aceptados/${seguroId}/${tipoSeguroId}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al eliminar seguro aceptado:', error);
+      
+      const errorData = error.response?.data as InsuranceError;
+      
+      if (error.response?.status === 404) {
+        throw new Error('Seguro no encontrado.');
+      }
+      
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al eliminar seguro. Intenta nuevamente.'
       );
     }
   },

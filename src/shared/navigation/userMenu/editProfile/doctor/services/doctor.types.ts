@@ -189,13 +189,13 @@ export interface GetFormacionesAcademicasParams {
 export interface ExperienciaLaboral {
   id: number;
   doctorId: number;
-  cargo: string;
+  posicion: string;
   institucion: string;
-  ubicacion: string | null;
+  ubicacion?: string | null;
   fechaInicio: string; // ISO Date string
-  fechaFin: string | null; // ISO Date string
-  actualmenteAqui: boolean;
-  descripcion: string | null;
+  fechaFinalizacion: string | null; // ISO Date string
+  trabajaActualmente: boolean;
+  descripcion?: string | null;
   estado: string;
   creadoEn: string;
   actualizadoEn: string | null;
@@ -208,7 +208,10 @@ export interface ExperienciaLaboral {
 export interface GetExperienciasLaboralesResponse {
   success: boolean;
   message: string;
-  data: ExperienciaLaboral[];
+  data: {
+    experiencias: ExperienciaLaboral[];
+    total: number;
+  };
 }
 
 /**
@@ -217,6 +220,156 @@ export interface GetExperienciasLaboralesResponse {
 export interface GetExperienciasLaboralesParams {
   target?: string; // Código de idioma para traducción
   translate_fields?: string; // Campos a traducir
+}
+
+/**
+ * Request para crear una nueva experiencia laboral
+ * POST /experiencias-laborales
+ */
+export interface CreateExperienciaLaboralRequest {
+  posicion: string;
+  institucion: string;
+  ubicacion?: string | null;
+  fechaInicio: string; // YYYY-MM format o ISO Date
+  fechaFinalizacion?: string | null; // YYYY-MM format o ISO Date
+  trabajaActualmente?: boolean;
+  descripcion?: string | null;
+}
+
+/**
+ * Respuesta al crear una experiencia laboral
+ */
+export interface CreateExperienciaLaboralResponse {
+  success: boolean;
+  message: string;
+  data: ExperienciaLaboral;
+}
+
+/**
+ * Request para actualizar una experiencia laboral
+ * PUT /experiencias-laborales/{id}
+ */
+export interface UpdateExperienciaLaboralRequest {
+  posicion?: string;
+  institucion?: string;
+  ubicacion?: string | null;
+  fechaInicio?: string; // YYYY-MM format o ISO Date
+  fechaFinalizacion?: string | null; // YYYY-MM format o ISO Date
+  trabajaActualmente?: boolean;
+  descripcion?: string | null;
+  estado?: string;
+}
+
+/**
+ * Respuesta al actualizar una experiencia laboral
+ */
+export interface UpdateExperienciaLaboralResponse {
+  success: boolean;
+  message: string;
+  data: ExperienciaLaboral;
+}
+
+/**
+ * Respuesta al eliminar una experiencia laboral
+ * DELETE /experiencias-laborales/{id}
+ */
+export interface DeleteExperienciaLaboralResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Error al gestionar experiencias laborales
+ */
+export interface ExperienciaLaboralError {
+  success: false;
+  message: string;
+  error?: string;
+  detalles?: string[] | string;
+  statusCode?: number;
+}
+
+// --- RE-EXPORTAR TIPOS RELACIONADOS ---
+
+// --- TIPOS PARA SEGUROS MÉDICOS ---
+
+export interface TipoSeguro {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado?: string;
+  creadoEn?: string;
+}
+
+export interface GetAvailableInsuranceTypesResponse {
+  success: boolean;
+  message?: string;
+  data: TipoSeguro[];
+}
+
+export interface Seguro {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  idTipoSeguro?: number;
+  tipoSeguro?: TipoSeguro | string;
+}
+
+export interface GetAvailableInsurancesResponse {
+  success: boolean;
+  data: Seguro[];
+}
+
+export interface GetAcceptedInsurancesResponse {
+  success: boolean;
+  data: Array<{
+    creadoEn: string;
+    estado: string;
+    seguro: {
+      id: number;
+      nombre: string;
+      descripcion?: string;
+      urlImage?: string | null;
+      creadoEn: string;
+      estado: string;
+    };
+    tipoSeguro: TipoSeguro;
+  }>;
+}
+
+export interface AddAcceptedInsuranceRequest {
+  idSeguro: number;
+  idTipoSeguro: number;
+}
+
+export interface AddAcceptedInsuranceResponse {
+  success: boolean;
+  message: string;
+  data: {
+    creadoEn: string;
+    estado: string;
+    seguro: {
+      id: number;
+      nombre: string;
+      descripcion?: string;
+      urlImage?: string | null;
+      creadoEn: string;
+      estado: string;
+    };
+    tipoSeguro: TipoSeguro;
+  };
+}
+
+export interface RemoveAcceptedInsuranceResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface InsuranceError {
+  success: false;
+  message: string;
+  error?: string;
+  statusCode?: number;
 }
 
 // --- RE-EXPORTAR TIPOS RELACIONADOS ---

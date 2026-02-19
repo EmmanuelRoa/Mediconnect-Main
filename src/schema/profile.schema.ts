@@ -71,13 +71,27 @@ export function doctorExperienceSchema(t: (key: string) => string) {
     experiences: z
       .array(
         z.object({
+          id: z.number().optional(),
           hospital: z.string().min(1, t("validation.hospitalRequired")),
           position: z.string().min(1, t("validation.positionRequired")),
           startMonth: z.string().min(1, t("validation.startMonthRequired")),
           startYear: z.string().min(1, t("validation.startYearRequired")),
-          endMonth: z.string().min(1, t("validation.endMonthRequired")),
-          endYear: z.string().min(1, t("validation.endYearRequired")),
-        }),
+          endMonth: z.string().optional(),
+          endYear: z.string().optional(),
+          isCurrently: z.boolean().optional(),
+        }).refine(
+          (data) => {
+            // Si no está trabajando actualmente, endMonth y endYear son requeridos
+            if (!data.isCurrently) {
+              return !!data.endMonth && !!data.endYear;
+            }
+            return true;
+          },
+          {
+            message: t("validation.endDateRequired"),
+            path: ["endMonth"],
+          }
+        ),
       )
       .min(1, t("validation.experienceAtLeastOne")),
   });

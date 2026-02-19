@@ -34,7 +34,7 @@ const DoctorEducationSection = ({ isMyProfile = false, onOpenSheet }: Props) => 
         setFormaciones(response.data || []);
       } catch (err) {
         console.error("Error al obtener formaciones académicas:", err);
-        setError("Error al cargar las formaciones académicas");
+        setError(t("profile.education.errorLoadingData", "Error al cargar las formaciones académicas"));
       } finally {
         setIsLoading(false);
       }

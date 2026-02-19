@@ -20,6 +20,7 @@
     "startYearRequired": "El año de inicio es requerido",
     "endMonthRequired": "El mes de finalización es requerido",
     "endYearRequired": "El año de finalización es requerido",
+    "endDateRequired": "La fecha de finalización es requerida cuando no trabaja actualmente",
     "educationAtLeastOne": "Se requiere al menos una formación académica",
     "hospitalRequired": "La organización/hospital es requerida",
     "positionRequired": "El cargo es requerido",
@@ -218,11 +219,23 @@
     "endDate": "Fecha de Finalización",
     "selectMonth": "Mes",
     "selectYear": "Año",
+    "currentlyWorking": "Actualmente trabajo aquí",
     "addExperience": "Agregar Experiencia",
     "deleteExperience": "Eliminar experiencia",
     "confirmDeleteTitle": "¿Eliminar experiencia?",
     "confirmDeleteDescription": "Esta acción no se puede deshacer. ¿Estás seguro que deseas eliminar esta experiencia laboral?",
-    "dragHandle": "Arrastrar para reordenar"
+    "dragHandle": "Arrastrar para reordenar",
+    "errorLoading": "Error al cargar experiencias laborales",
+    "savedSuccessfully": "Experiencias guardadas exitosamente",
+    "errorSaving": "Error al guardar experiencias laborales",
+    "createdSuccessfully": "Experiencia creada exitosamente",
+    "updatedSuccessfully": "Experiencia actualizada exitosamente",
+    "deletedSuccessfully": "Experiencia eliminada exitosamente",
+    "errorDeleting": "Error al eliminar experiencia",
+    "deleting": "Eliminando...",
+    "saving": "Guardando...",
+    "save": "Guardar experiencias",
+    "saveExperience": "Guardar experiencia"
   },
 
   "months": {
@@ -276,14 +289,16 @@
       "loading": "Cargando formación académica...",
       "addEducation": "Agrega tu formación académica para completar tu perfil profesional",
       "noEducation": "Este doctor no ha registrado su formación académica.",
-      "addButton": "Agregar formación académica"
+      "addButton": "Agregar formación académica",
+      "errorLoadingData": "Error al cargar la formación académica. Por favor, intenta nuevamente más tarde."
     },
     "experience": {
       "title": "Experiencia Profesional",
       "loading": "Cargando experiencia profesional...",
       "addExperience": "Agrega tu experiencia profesional para completar tu perfil",
       "noExperience": "Este doctor no ha registrado su experiencia profesional.",
-      "addButton": "Agregar experiencia profesional"
+      "addButton": "Agregar experiencia profesional",
+      "present": "Presente"
     },
     "insurance": {
       "title": "Seguros Médicos Aceptados",

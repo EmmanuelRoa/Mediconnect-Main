@@ -109,8 +109,8 @@ function PatientProfilePage() {
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
   
-  // Definir loadInsurances con useCallback primero
-  const loadInsurances = useCallback(async () => {
+  // Funciones de carga de datos sin useCallback (no son necesarios como dependencias)
+  const loadInsurances = async () => {
     try {
       setIsLoadingInsurances(true);
       const response = await patientService.getMyInsurances(i18n.language);
@@ -132,10 +132,9 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingInsurances(false);
     }
-  }, [i18n.language]);
+  };
   
-  // Cargar alergias del usuario
-  const loadAllergies = useCallback(async () => {
+  const loadAllergies = async () => {
     try {
       setIsLoadingAllergies(true);
       const response = await patientService.getMyAllergies(i18n.language);
@@ -148,10 +147,9 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingAllergies(false);
     }
-  }, [i18n.language]);
+  };
   
-  // Cargar condiciones médicas del usuario
-  const loadConditions = useCallback(async () => {
+  const loadConditions = async () => {
     try {
       setIsLoadingConditions(true);
       const response = await patientService.getMyConditions(i18n.language);
@@ -164,64 +162,49 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingConditions(false);
     }
+  };
+  
+  // ✅ EFECTO 1: Carga inicial de todos los datos médicos
+  // Se ejecuta solo al montar el componente y cuando cambia el idioma
+  useEffect(() => {
+    const loadAllMedicalData = async () => {
+      // Carga paralela para mejor performance
+      await Promise.all([
+        loadInsurances(),
+        loadAllergies(),
+        loadConditions(),
+      ]);
+    };
+    
+    loadAllMedicalData();
   }, [i18n.language]);
   
-  // Cargar seguros del usuario
+  // ✅ EFECTO 2: Suscripción a eventos globales de cambios
+  // Consolida todos los event listeners en un solo useEffect
   useEffect(() => {
-    loadInsurances();
-  }, [loadInsurances]);
-  
-  // Cargar alergias del usuario
-  useEffect(() => {
-    loadAllergies();
-  }, [loadAllergies]);
-  
-  // Cargar condiciones médicas del usuario
-  useEffect(() => {
-    loadConditions();
-  }, [loadConditions]);
-  
-  // Escuchar evento global de cambios en seguros (desde otros componentes como MCUserMenu)
-  useEffect(() => {
-    const unsubscribe = onInsuranceChanged(() => {
-      loadInsurances();
-    });
+    const unsubscribeInsurance = onInsuranceChanged(loadInsurances);
+    const unsubscribeAllergies = onAllergiesChanged(loadAllergies);
+    const unsubscribeConditions = onConditionsChanged(loadConditions);
     
-    return unsubscribe;
-  }, [loadInsurances]);
+    // Cleanup: desuscribirse de todos los eventos al desmontar
+    return () => {
+      unsubscribeInsurance();
+      unsubscribeAllergies();
+      unsubscribeConditions();
+    };
+  }, [i18n.language]);
   
-  // Escuchar evento global de cambios en alergias
-  useEffect(() => {
-    const unsubscribe = onAllergiesChanged(() => {
-      loadAllergies();
-    });
-    
-    return unsubscribe;
-  }, [loadAllergies]);
-  
-  // Escuchar evento global de cambios en condiciones médicas
-  useEffect(() => {
-    const unsubscribe = onConditionsChanged(() => {
-      loadConditions();
-    });
-    
-    return unsubscribe;
-  }, [loadConditions]);
-  
-  // Callback para cuando se modifiquen los seguros en el Sheet local
+  // Callbacks para cambios locales (desde el Sheet)
   const handleInsurancesChanged = useCallback(() => {
     loadInsurances();
-    // Emitir evento para notificar a otros componentes
     emitInsuranceChanged();
-  }, [loadInsurances]);
+  }, [i18n.language]);
   
-  // Callback para cuando se modifiquen alergias o condiciones médicas en el Sheet local
   const handleClinicalHistoryChanged = useCallback(() => {
     loadAllergies();
     loadConditions();
-    // Emitir evento para notificar a otros componentes
     emitClinicalHistoryChanged();
-  }, [loadAllergies, loadConditions]);
+  }, [i18n.language]);
   
   // Calcular la edad del paciente
   const patientAge = getPatientAge(user?.paciente || null);

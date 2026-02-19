@@ -33,6 +33,7 @@ import {
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import { useTranslation } from "react-i18next";
+import { getUserFullName } from "@/services/auth/auth.types";
 
 interface Props {
   doctor: any;
@@ -63,7 +64,7 @@ function DoctorProfileBannerMobile({
           />
         ) : (
           <MCUserBanner
-            name={doctor?.name || "IliaTopuria"}
+            name={getUserFullName(doctor) || "IliaTopuria"}
             className="w-full h-full"
           />
         )}
@@ -77,7 +78,7 @@ function DoctorProfileBannerMobile({
                 alt={t("profileForm.profilePhoto")}
               />
               <AvatarFallback>
-                {doctor.name
+                {getUserFullName(doctor)
                   .split(" ")
                   .map((n: string) => n[0])
                   .join("")
@@ -86,7 +87,7 @@ function DoctorProfileBannerMobile({
             </UiAvatar>
           ) : (
             <MCUserAvatar
-              name={doctor?.name || "IliaTopuria"}
+              name={getUserFullName(doctor) || "IliaTopuria"}
               size={112}
               className="border-4 border-background rounded-full h-full w-full"
             />
@@ -100,7 +101,7 @@ function DoctorProfileBannerMobile({
           <div className="flex-1">
             <div className="flex items-center gap-1 mb-1">
               <h3 className="text-lg font-semibold text-foreground">
-                {doctor?.name || "Ilia Topuria"}
+                {getUserFullName(doctor) || "Ilia Topuria"}
               </h3>
               <BadgeCheck className="w-4 h-4 text-background" fill="#8bb1ca" />
             </div>

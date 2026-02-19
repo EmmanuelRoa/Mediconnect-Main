@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
@@ -16,27 +15,10 @@ import MCDashboardContent from "@/shared/layout/MCDashboardContent"; // <-- impo
 
 function DoctorProfilePage() {
   const { doctorId } = useParams();
-  const { t } = useTranslation("doctor");
   const [openSheet, setOpenSheet] = useState(false);
   const isMobile = useIsMobile();
   const user = useAppStore((state) => state.user); 
   const [sheetTab, setSheetTab] = useState<"general" | "education" | "insurance" | "experience" | "language">("general");
-
-  console.log("Doctor from store:", user);
-  
-  // Mock data - en producción esto vendría de una API
-  const doctor = {
-    name: "LeBron James",
-    avatar: "",
-    banner: "",
-    specialty: "Cardiología",
-    rating: 4.8,
-    yearsOfExperience: 15,
-    languages: ["es", "en", "fr"],
-    isFavorite: false,
-    about:
-      "LeBron James integra toda la familia, enfocándose en prevenir, diagnosticar y tratar enfermedades comunes. Nuestro médico de familia acompaña a cada paciente en todas las etapas de su vida, considerando su bienestar físico, emocional y social.",
-  };
 
   const services = [
     {
@@ -164,7 +146,7 @@ function DoctorProfilePage() {
             {/* Columna principal */}
             <div className="flex flex-col gap-4 lg:gap-6 order-1">
               <DoctorAboutSection 
-                doctor={user?.doctor || doctor} 
+                doctor={user?.doctor || undefined} 
                 isMyProfile={isMyProfile}
                 onOpenSheet={() => {
                   setSheetTab("general");
@@ -173,7 +155,10 @@ function DoctorProfilePage() {
               />
               <DoctorInsurancesSection
                 isMyProfile={isMyProfile}
-                onOpenSheet={() => setOpenSheet(true)}
+                onOpenSheet={() => {
+                  setSheetTab("insurance");
+                  setOpenSheet(true);
+                }}
               />
               <DoctorServicesSection services={services} />
               <DoctorCentersSection centers={centers} />
@@ -181,13 +166,19 @@ function DoctorProfilePage() {
               <div className="flex flex-col gap-4 lg:hidden">
                 <DoctorEducationSection 
                   isMyProfile={isMyProfile}
-                  onOpenSheet={() => setOpenSheet(true)}
+                  onOpenSheet={() => {
+                    setSheetTab("education");
+                    setOpenSheet(true);
+                  }}
                 />
                 {user?.id && (
                   <DoctorExperienceSection 
                     doctorId={user.id}
                     isMyProfile={isMyProfile}
-                    onOpenSheet={() => setOpenSheet(true)}
+                    onOpenSheet={() => {
+                      setSheetTab("experience");
+                      setOpenSheet(true);
+                    }}
                   />
                 )}
               </div>
@@ -197,7 +188,10 @@ function DoctorProfilePage() {
               <div className="sticky top-24 space-y-6">
                 <DoctorEducationSection 
                   isMyProfile={isMyProfile}
-                  onOpenSheet={() => setOpenSheet(true)}
+                  onOpenSheet={() => {
+                      setSheetTab("education");
+                      setOpenSheet(true);
+                  }}
                 />
                 {user?.id && (
                   <DoctorExperienceSection 

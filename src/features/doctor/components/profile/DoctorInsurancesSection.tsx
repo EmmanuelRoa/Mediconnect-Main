@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import MCButton from "@/shared/components/forms/MCButton";
 import segurosService from "@/services/seguros/seguros.service";
 import type { SeguroAceptado } from "@/services/seguros/seguros.types";
+import { onDoctorInsuranceChanged } from "@/lib/events/insuranceEvents";
 
 interface Props {
   isMyProfile?: boolean;
@@ -15,26 +16,36 @@ const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet }: Props) =>
   const [seguros, setSeguros] = useState<SeguroAceptado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const fetchSeguros = async () => {
+    try {
+      setIsLoading(true);
+      const response = await segurosService.obtenerSegurosAceptados({
+        target: i18n.language,
+        translate_fields: 'nombre'
+      });
+      setSeguros(response.data || []);
+    } catch (err) {
+      console.error("Error al obtener seguros aceptados:", err);
+      setError("Error al cargar los seguros");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Cargar seguros inicialmente y cuando cambie el idioma
   useEffect(() => {
-    const fetchSeguros = async () => {
-      try {
-        setIsLoading(true);
-        const response = await segurosService.obtenerSegurosAceptados({
-          target: i18n.language,
-          translate_fields: 'nombre'
-        });
-        setSeguros(response.data || []);
-      } catch (err) {
-        console.error("Error al obtener seguros aceptados:", err);
-        setError("Error al cargar los seguros");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchSeguros();
   }, [i18n.language]);
+
+  // Escuchar eventos de cambio en seguros del doctor
+  useEffect(() => {
+    const unsubscribe = onDoctorInsuranceChanged(() => {
+      fetchSeguros();
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <Card className="animate-fade-in rounded-4xl border-0 shadow-md bg-background">
@@ -80,9 +91,16 @@ const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet }: Props) =>
                     {seguroData.seguro.nombre.substring(0, 2)}
                   </div>
                 )}
-                <span className="text-sm font-medium text-foreground">
-                  {seguroData.seguro.nombre}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground">
+                    {seguroData.seguro.nombre}
+                  </span>
+                  {seguroData.tipoSeguro?.nombre && (
+                    <span className="text-xs text-muted-foreground">
+                      {seguroData.tipoSeguro.nombre}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
             <div className="flex items-center gap-3 p-2">

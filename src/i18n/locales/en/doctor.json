@@ -20,6 +20,7 @@
     "startYearRequired": "Start year is required",
     "endMonthRequired": "End month is required",
     "endYearRequired": "End year is required",
+    "endDateRequired": "End date is required when not currently working",
     "educationAtLeastOne": "At least one education entry is required",
     "hospitalRequired": "Organization/Hospital is required",
     "positionRequired": "Position is required",
@@ -216,11 +217,23 @@
     "endDate": "End Date",
     "selectMonth": "Month",
     "selectYear": "Year",
+    "currentlyWorking": "Currently working here",
     "addExperience": "Add Experience",
     "deleteExperience": "Delete experience",
     "confirmDeleteTitle": "Delete experience?",
     "confirmDeleteDescription": "This action cannot be undone. Are you sure you want to delete this work experience?",
-    "dragHandle": "Drag to reorder"
+    "dragHandle": "Drag to reorder",
+    "errorLoading": "Error loading work experiences",
+    "savedSuccessfully": "Experiences saved successfully",
+    "errorSaving": "Error saving work experiences",
+    "createdSuccessfully": "Experience created successfully",
+    "updatedSuccessfully": "Experience updated successfully",
+    "deletedSuccessfully": "Experience deleted successfully",
+    "errorDeleting": "Error deleting experience",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "save": "Save experiences",
+    "saveExperience": "Save experience"
   },
 
   "months": {
@@ -274,14 +287,16 @@
       "loading": "Loading academic education...",
       "addEducation": "Add your academic education to complete your professional profile",
       "noEducation": "This doctor has not registered their academic education.",
-      "addButton": "Add academic education"
+      "addButton": "Add academic education",
+      "errorLoadingData": "Error loading academic education. Please try again later."
     },
     "experience": {
       "title": "Professional Experience",
       "loading": "Loading professional experience...",
       "addExperience": "Add your professional experience to complete your profile",
       "noExperience": "This doctor has not registered their professional experience.",
-      "addButton": "Add professional experience"
+      "addButton": "Add professional experience",
+      "present": "Present"
     },
     "insurance": {
       "title": "Accepted Medical Insurance",

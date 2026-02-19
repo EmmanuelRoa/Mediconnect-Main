@@ -13,8 +13,6 @@ import {
   MessageCircle,
   Heart,
   HeartOff,
-  Edit,
-  Languages,
   Stethoscope,
 } from "lucide-react";
 import {
@@ -34,6 +32,11 @@ import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
 import { MCUserBanner } from "@/shared/navigation/userMenu/MCUserBanner";
 import { useTranslation } from "react-i18next";
 import { getDoctorRating, getUserAvatar, getUserFullName } from "@/services/auth/auth.types";
+import { ROUTES } from "@/router/routes";
+import { useNavigate } from "react-router-dom";
+import { useVerifyInfoStore } from "@/stores/useVerifyInfoStore";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface Props {
   doctor: any;
@@ -51,6 +54,32 @@ function DoctorProfileBanner({
   isMyProfile,
 }: Props) {
   const { t } = useTranslation("doctor");
+  const navigate = useNavigate();
+
+  const logout = useAppStore((state) => state.logout);
+  const setToast = useGlobalUIStore((state) => state.setToast);
+  const clearAllVerifyInfo = useVerifyInfoStore((state) => state.clearAll);
+  
+  const handleLogout = () => {
+    logout();
+    clearAllVerifyInfo(); // Limpiar datos de verificación
+    setToast({
+      message: t("profileForm.menu.logoutSuccess", "Sesión cerrada exitosamente"),
+      type: "success",
+      open: true,
+    });
+    navigate(ROUTES.LOGIN);
+  };
+  
+  const handleCopyProfile = () => {
+    const profileUrl = `${window.location.origin}${ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctor?.id || "")}`;
+    navigator.clipboard.writeText(profileUrl);
+    setToast({
+      message: t("profileForm.menu.profileCopied", "Enlace de perfil copiado al portapapeles"),
+      type: "success",
+      open: true,
+    });
+  };
 
   return (
     <div className="shadow-md rounded-4xl border-0 mx-auto">
@@ -148,20 +177,20 @@ function DoctorProfileBanner({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(ROUTES.SETTINGS.ROOT)}>
                           <Settings className="w-4 h-4 mr-2" />
                           {t("profileForm.menu.settings")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVACY.ROOT)}>
                           <Shield className="w-4 h-4 mr-2" />
                           {t("profileForm.menu.privacy")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyProfile}>
                           <Copy className="w-4 h-4 mr-2" />
                           {t("profileForm.menu.copyProfile")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout}>
                           <LogOut className="w-4 h-4 mr-2 text-red-500" />
                           <span className="text-red-500">
                             {t("profileForm.menu.logout")}
