@@ -36,7 +36,6 @@ import VerifyNewEmailPage from "@/features/account/settings/pages/VerifyNewEmail
 import ChangePasswordPage from "@/features/account/settings/pages/ChangePasswordPage";
 import DeleteAccountPage from "@/features/account/settings/pages/DeleteAccountPage";
 import VerifyIdentityPage from "@/features/account/settings/pages/VerifyIdentityPage";
-
 import PrivacyOverviewPage from "@/features/account/privacy/pages/PrivacyOverviewPage";
 import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisibilityPage";
 import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
@@ -51,7 +50,8 @@ import { useAppStore } from "@/stores/useAppStore";
 import VerifyInfo from "@/features/verifyInfo/pages/VerifyInfo";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import CreateServicesPage from "@/features/doctor/pages/CreateServicesPage";
-
+import RequestPage from "@/features/request/pages/RequestPage";
+import AppointmentConsultation from "@/features/doctor/pages/AppointmentConsultation";
 function AppRouter() {
   const userRole = useAppStore((state) => state.user?.role);
   return (
@@ -242,13 +242,25 @@ function AppRouter() {
               }
             />
 
+            <Route
+              path={ROUTES.COMMON.REQUESTS}
+              element={
+                <ProtectedRoute doctor center>
+                  <RequestPage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path={ROUTES.DOCTOR.SERVICES} element={<MyServicesPage />} />
             <Route path={ROUTES.DOCTOR.PATIENTS} element={<MyPatientsPage />} />
 
             <Route path={ROUTES.COMMON.CHAT} element={<ChatPage />} />
             <Route path={ROUTES.COMMON.CHAT_WITH} element={<ChatPage />} />
             <Route path={ROUTES.COMMON.SERVICE} element={<ServicesPage />} />
-
+            <Route
+              path={ROUTES.DOCTOR.CONSULTATION}
+              element={<AppointmentConsultation></AppointmentConsultation>}
+            ></Route>
             <Route
               path={ROUTES.DOCTOR.CREATE_SERVICE}
               element={<CreateServicesPage />}
