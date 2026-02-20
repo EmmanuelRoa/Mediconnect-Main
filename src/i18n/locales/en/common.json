@@ -511,8 +511,14 @@
   "appointments": {
     "join": "Join",
     "viewDetails": "View Details",
+    "viewAppointment": "View Appointment",
     "reschedule": "Reschedule",
     "cancel": "Cancel",
+    "accept": "Accept",
+    "reject": "Reject",
+    "continueConsultation": "Continue Consultation",
+    "joinTeleconsult": "Join Teleconsultation",
+    "markCompleted": "Mark as Completed",
     "openChat": "Open chat"
   },
   "requests": {
