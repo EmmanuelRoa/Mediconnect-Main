@@ -82,7 +82,7 @@ export const ConfirmationScreen = ({
                   <p className="font-semibold text-base truncate">
                     {doctorName}
                   </p>
-                  {userRole === "DOCTOR" && (
+                  {userRole === "PATIENT" && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {doctorSpecialty}
                     </p>
@@ -135,9 +135,11 @@ export const ConfirmationScreen = ({
               </div>
               <div className="text-left">
                 <p className="font-semibold">{doctorName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {doctorSpecialty}
-                </p>
+                {userRole === "PATIENT" && (
+                  <p className="text-sm text-muted-foreground">
+                    {doctorSpecialty}
+                  </p>
+                )}
               </div>
               <div className="ml-auto text-left space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
