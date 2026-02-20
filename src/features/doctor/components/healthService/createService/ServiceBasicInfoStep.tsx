@@ -10,10 +10,13 @@ import PriceModal from "./Modals/PriceModal";
 import DurationModal from "./Modals/DurationModal";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import MCInput from "@/shared/components/forms/MCInput";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { especialidadesService } from "@/features/onboarding/services/especialidades.service";
+import type { SelectOption } from "@/features/onboarding/services/especialidades.types";
+import i18n from "@/i18n/config";
 
 function ServiceBasicInfoStep() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const formRef = useRef<any>(null);
   const submitRef = useRef<any>(null);
 
@@ -26,6 +29,9 @@ function ServiceBasicInfoStep() {
     duration: true,
   });
 
+  const [especialidadesOptions, setEspecialidadesOptions] = useState<SelectOption[]>([]);
+  const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
+
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
   const setCreateServiceData = useCreateServicesStore(
     (s) => s.setCreateServiceData,
@@ -33,6 +39,7 @@ function ServiceBasicInfoStep() {
 
   const goToNextStep = useCreateServicesStore((s) => s.goToNextStep);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
+
 
   // Actualizar el formulario cuando cambien los datos del store
   useEffect(() => {
@@ -60,6 +67,25 @@ function ServiceBasicInfoStep() {
     createServiceData.pricePerSession,
     createServiceData.description,
   ]);
+
+  //Cargar especialidades para el select
+  useEffect(() => {
+    const fetchEspecialidades = async () => {
+      setLoadingEspecialidades(true);
+      try {
+        const language = i18n.language === "es" ? "es" : i18n.language; // Obtener el idioma actual, por defecto español
+        const data = await especialidadesService.getAllActiveEspecialidades(language);
+        setEspecialidadesOptions(data);
+      } catch (error) {
+        console.error("Error fetching especialidades:", error);
+        setEspecialidadesOptions([]); // En caso de error, establecer opciones vacías
+      } finally {
+        setLoadingEspecialidades(false);
+      }
+    };
+
+    fetchEspecialidades();
+  }, [i18n.language]);
 
   const handleSubmit = (data: any) => {
     const formattedData = {
@@ -115,8 +141,8 @@ function ServiceBasicInfoStep() {
 
   return (
     <ServicesLayoutsSteps
-      title="Haz crecer tu servicio médico con información detallada"
-      description="Empieza con una opción accesible para atraer a más pacientes y optimizar tu agenda de manera eficiente."
+      title={t("createService.basicInfoTitle")}
+      description={t("createService.descriptionInfo")}
     >
       <MCFormWrapper
         formRef={formRef}
@@ -136,9 +162,11 @@ function ServiceBasicInfoStep() {
         <div className="space-y-4 mb-6">
           <MCSelect
             name="specialty"
-            label={t("form.specialty")}
-            options={specialtyOptions}
-            placeholder={t("form.selectSpecialty")}
+            label={t("createService.inputs.specialtyLabel")}
+            options={especialidadesOptions}
+            placeholder={t("createService.inputs.specialtyPlaceholder")}
+            disabled={loadingEspecialidades}
+            searchable={true}
           />
           <MCSelect
             name="selectedModality"

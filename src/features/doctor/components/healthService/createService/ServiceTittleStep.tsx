@@ -5,33 +5,35 @@ import MCAnimatedInput from "@/shared/components/forms/MCAnimatedInput";
 import ServicesLayoutsSteps from "./ServicesLayoutsSteps";
 import { useTranslation } from "react-i18next";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
 function ServiceTittleStep() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
   const nameSchema = serviceSchema(t).pick({ name: true });
   const setName = useCreateServicesStore((s) => s.setCreateServiceField);
   const name = useCreateServicesStore((s) => s.createServiceData.name);
   const setIsTitleSeted = useCreateServicesStore((s) => s.setIsTitleSeted);
+  const [isFormValid, setIsFormValid] = useState(false);
+
   const handleSubmit = (data: { name: string }) => {
     setName("name", data.name);
     setIsTitleSeted(true);
   };
 
-  useEffect(() => {
-    console.log(name);
-  }, [name]);
+  const isButtondisabled = !isFormValid || !name || name.trim() === "";
 
   return (
-    <ServicesLayoutsSteps title="Ponle un título a tu servicio">
+    <ServicesLayoutsSteps title={t("createService.title")}>
       <MCFormWrapper
         schema={nameSchema}
         defaultValues={{ name }}
         onSubmit={handleSubmit}
+        onValidationChange={setIsFormValid}
         className="w-full"
       >
         <MCAnimatedInput
           name="name"
-          label="Nombre del servicio"
+          label={t("createService.inputs.nameLabel")}
           onChange={(value) => setName("name", value)}
         />
         <AuthFooterContainer
@@ -40,6 +42,7 @@ function ServiceTittleStep() {
           }}
           continueButtonProps={{
             type: "submit",
+            disabled: isButtondisabled,
           }}
         />
       </MCFormWrapper>

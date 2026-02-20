@@ -32,7 +32,7 @@ const MCDashboardContent: React.FC<Props> = ({
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation("doctor");
 
   return (
     <div

@@ -457,6 +457,26 @@
     }
   },
 
+  "createService": {
+    "title": "Ponle un nombre a tu servicio",
+    "steps": {
+      "serviceDetails": "Detalles del servicio",
+      "location": "Ubicación y disponibilidad",
+      "comercialSchedule": "Horario comercial",
+      "images": "Imágenes",
+      "summary": "Resumen"
+    },
+    "inputs": {
+      "nameLabel": "Nombre del servicio",
+      "namePlaceholder": "Ej. Consulta general",
+      "specialtyLabel": "Especialidad",
+      "specialtyPlaceholder": "Selecciona una especialidad"
+    },
+    "basicInfoTitle": "Haz crecer tu servicio médico con información detallada",
+    "descriptionInfo": "Empieza con una opción accesible para atraer a más pacientes y optimizar tu agenda de manera eficiente.",
+    "actualStep": "Paso",
+    "of": "de"
+  },
   "filters": {
     "labels": {
       "serviceType": "Tipo de servicio",
@@ -528,5 +548,7 @@
       "reviews": "reseñas",
       "review": "reseña"
     }
-  }
+  },
+
+  "Abandonar": "Abandonar"
 }

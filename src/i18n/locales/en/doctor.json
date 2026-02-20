@@ -455,6 +455,27 @@
     }
   },
 
+  "createService": {
+    "title": "Put a name to your service",
+    "steps": {
+      "serviceDetails": "Service Details",
+      "location": "Location & Availability",
+      "comercialSchedule": "Commercial Schedule",
+      "images": "Images",
+      "summary": "Summary"
+    },
+    "inputs": {
+      "nameLabel": "Service name",
+      "namePlaceholder": "e.g. General consultation",
+      "specialtyLabel": "Specialty",
+      "specialtyPlaceholder": "Select a specialty"
+    },
+    "basicInfoTitle": "Grow your medical service with detailed information",
+    "descriptionInfo": "Start with an accessible option to attract more patients and optimize your schedule efficiently.",
+    "actualStep": "Step",
+    "of": "of"
+  },
+
   "filters": {
     "labels": {
       "serviceType": "Service type",
@@ -526,5 +547,7 @@
       "reviews": "reviews",
       "review": "review"
     }
-  }
+  },
+
+  "Abandonar": "Abandon"
 }

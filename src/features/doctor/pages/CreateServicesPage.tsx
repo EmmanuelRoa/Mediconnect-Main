@@ -126,7 +126,7 @@ function CreateServicesPage() {
             {filteredTitleByStep[getVisibleStepNumber() - 1]}
           </h1>
           <span className="opacity-40">
-            Paso {getVisibleStepNumber()} de {getTotalSteps()}
+            {t("createService.actualStep")} {getVisibleStepNumber()} {t("createService.of")} {getTotalSteps()}
           </span>
         </div>
         <div className="w-full mt-4">
