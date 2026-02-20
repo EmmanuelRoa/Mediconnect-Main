@@ -24,7 +24,7 @@ function FilterMyAppointments({
   filters,
   onFiltersChange,
 }: FilterMyAppointmentsProps) {
-  const { t } = useTranslation("patient");
+  const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
 
   const statusOptions: OptionType[] = [
