@@ -387,6 +387,42 @@ export interface LanguageError {
   statusCode?: number;
 }
 
+export interface DoctorServices{
+  id: number;
+  doctorId: number;
+  especialidadId: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  duracionMinutos: number;
+  maxPacientesDia: number;
+  calificacionPromedio: number;
+  modalidad: string;
+  estado: string;
+  sesiones: number;
+}
+
+export interface CreateDoctorServiceRequest{
+  especialidadId: number;
+  nombre: string;
+  descripcion?: string;
+  precio: number;
+  duracionMinutos: number;
+  sesiones: number;
+  maxPacientesDia?: number;
+  modalidad: string;
+  centroSaludIds?: number[];
+  ubicacionIds?: number[];
+  horariosIds?: number[];
+  imagenes?: (File | Blob)[];
+}
+
+export interface CreateDoctorServiceResponse{
+  success: boolean;
+  message: string;
+  data: any;
+}
+
 // --- RE-EXPORTAR TIPOS RELACIONADOS ---
 
 /**

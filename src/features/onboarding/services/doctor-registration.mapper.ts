@@ -1,6 +1,8 @@
 import type { DoctorOnboardingSchemaType } from '@/types/OnbordingTypes';
 import type { RegisterDoctorRequest } from './doctor-registration.types';
 import { base64ToFile } from '@/utils/base64ToFile';
+import type { CreateDoctorServiceRequest, CreateDoctorServiceResponse } from '@/shared/navigation/userMenu/editProfile/doctor/services';
+import type { CreateServiceType } from '@/types/CreateServiceType';
 
 /**
  * Normaliza tipos MIME parciales a sus formas completas
@@ -262,6 +264,47 @@ export async function mapDoctorOnboardingToRequest(
     descripciones_documentos: undefined, // TODO: Agregar al formulario si se necesita
     descripciones_titulos: undefined, // TODO: Agregar al formulario si se necesita
     descripciones_certificaciones: undefined, // TODO: Agregar al formulario si se necesita
+  };
+
+  return request;
+}
+
+export async function mapDoctorServices(
+  doctorData: CreateServiceType
+): Promise<CreateDoctorServiceRequest> {
+  
+  const images = Array.isArray(doctorData.images) ? doctorData.images : [doctorData.images];
+
+  if(images.length === 0 || images.length > 8) {
+    throw new Error('Se requieren entre 1 y 8 imágenes para el servicio');
+  }
+
+  const convertedImages = await Promise.all(
+    images.map(async (img: any, index: number) => {
+      const file = await urlToFile(
+        img.url,
+        `service-image-${index + 1}`,
+        img.type
+      );
+      return file;
+    })
+  );
+
+  const modalidad = doctorData.selectedModality === 'presencial'
+    ? 'Presencial'
+    : doctorData.selectedModality === 'teleconsulta'
+      ? 'Teleconsulta'
+      : 'Mixta';
+  const request: CreateDoctorServiceRequest = {
+    especialidadId: parseInt(doctorData.specialty), // Asegurarse que sea número
+    nombre: doctorData.name,
+    descripcion: doctorData.description,
+    precio: doctorData.pricePerSession,
+    duracionMinutos: doctorData.duration.hours * 60 + doctorData.duration.minutes,
+    sesiones: doctorData.numberOfSessions,
+    modalidad: modalidad,
+    horariosIds: doctorData.comercial_schedule || undefined,
+    imagenes: convertedImages,
   };
 
   return request;

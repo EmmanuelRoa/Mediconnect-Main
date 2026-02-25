@@ -825,7 +825,16 @@
       "location": "Location",
       "selectLocation": "Select location",
       "errorEndTime": "End time must be after start time",
-      "errorMinDuration": "The time range must allow at least one appointment of"
+      "errorMinDuration": "The time range must allow at least one appointment of",
+      "noSchedules": "No schedules added yet. Add your first schedule to start receiving patients.",
+      "successCreating": "Schedule created successfully",
+      "errorCreating": "Error creating schedule. Please try again.",
+      "creating": "Creating schedule...",
+      "createSchedule": "Create schedule",
+      "validatingSchedules": "Validating schedules...",
+      "conflictDetected": "Conflict detected in schedule",
+      "conflictDays": "Conflicting days",
+      "noConflicts": "Selected schedules are compatible"
     },
     "images": {
       "title": "Show your services and experience",
@@ -853,7 +862,15 @@
       "location": "Location",
       "virtualConsultation": "Virtual consultation",
       "virtualConsultationDescription": "The consultation will be held through Mediconnect's teleconsultation platform.",
-      "save": "Save"
+      "saving": "Saving...",
+      "save": "Save service",
+      "successMessage": "Service created successfully!",
+      "errorMessage": "Error creating service. Please try again.",
+      "validationError": "Service data is invalid. Please check the information.",
+      "conflictError": "A similar service already exists. Please check your services.",
+      "authError": "You don't have permission to create this service.",
+      "serverError": "Server error. Please try again later.",
+      "networkError": "Connection error. Please check your internet connection."
     },
     "modals": {
       "description": {

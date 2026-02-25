@@ -6,6 +6,10 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import PhotoGallery from "../PhotoGallery";
 import MapScheduleLocation from "@/shared/components/maps/MapScheduleLocation";
 import { useNavigate } from "react-router-dom";
+import { mapDoctorServices } from "@/features/onboarding/services/doctor-registration.mapper";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useState } from "react";
 
 const locationsData = [
   {
@@ -34,13 +38,104 @@ const mappedLocations = locationsData.map((loc) => ({
 function ServiceReviewStep() {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const setToast = useGlobalUIStore((state) => state.setToast);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const serviceCreateData = useCreateServicesStore((s) => s.createServiceData);
   const goToPreviousStep = useCreateServicesStore((s) => s.goToPreviousStep);
-  const navigate = useNavigate();
+  const clearCreateServiceData = useCreateServicesStore((s) => s.clearComercialScheduleData); // ✅ Opcional: limpiar datos después de crear
 
-  const handleSubmit = () => {
-    navigate("/doctor/services");
+  const handleSubmit = async () => {
+    console.log("Service data to submit:", serviceCreateData);
+    
+    setIsSubmitting(true);
+
+    try {
+      // ✅ Mapear datos
+      const request = await mapDoctorServices(serviceCreateData);
+      
+      // ✅ Crear servicio
+      const response = await doctorService.createService(request);
+      console.log("Create service response:", response);
+
+      // ✅ Mostrar mensaje de éxito
+      setToast({
+        type: "success",
+        message: t("createService.review.successMessage"),
+        open: true,
+      });
+
+      clearCreateServiceData();
+
+      // ✅ Navegar a la página de servicios
+      navigate("/doctor/services");
+
+    } catch (error: any) {
+      console.log("Error al crear el servicio:", error);
+
+      // ✅ Determinar el mensaje de error apropiado
+      let errorMessage = t("createService.review.errorMessage");
+
+      // ✅ Caso 1: Error de Axios original (Opción 1)
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Si el backend envía un mensaje específico
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        // Errores por código de estado
+        else if (error.response.status === 400) {
+          errorMessage = t("createService.review.validationError");
+        }
+        else if (error.response.status === 409) {
+          errorMessage = t("createService.review.conflictError");
+        }
+        else if (error.response.status === 401 || error.response.status === 403) {
+          errorMessage = t("createService.review.authError");
+        }
+        else if (error.response.status >= 500) {
+          errorMessage = t("createService.review.serverError");
+        }
+      }
+      // ✅ Caso 2: Error personalizado (Opción 2)
+      else if (error.statusCode) {
+        errorMessage = error.message;
+        
+        if (error.statusCode === 400) {
+          errorMessage = error.message || t("createService.review.validationError");
+        }
+        else if (error.statusCode === 409) {
+          errorMessage = t("createService.review.conflictError");
+        }
+        else if (error.statusCode === 401 || error.statusCode === 403) {
+          errorMessage = t("createService.review.authError");
+        }
+        else if (error.statusCode >= 500) {
+          errorMessage = t("createService.review.serverError");
+        }
+      }
+      // ✅ Caso 3: Error de JavaScript simple
+      else if (error.message) {
+        errorMessage = error.message;
+      }
+      // ✅ Error de red
+      else if (!error.response && error.code === "ERR_NETWORK") {
+        errorMessage = t("createService.review.networkError");
+      }
+
+      // ✅ Mostrar mensaje de error
+      setToast({
+        type: "error",
+        message: errorMessage,
+        open: true,
+      });
+
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const modality = serviceCreateData.selectedModality;
@@ -151,10 +246,14 @@ function ServiceReviewStep() {
           type="Save"
           continueButtonProps={{
             onClick: handleSubmit,
-            children: t("createService.review.save"),
+            children: isSubmitting 
+              ? t("createService.review.saving") 
+              : t("createService.review.save"),
+            disabled: isSubmitting, // ✅ Deshabilitar mientras se envía
           }}
           backButtonProps={{
             onClick: () => goToPreviousStep(),
+            disabled: isSubmitting, // ✅ Deshabilitar también el botón de atrás
           }}
         />
       </div>

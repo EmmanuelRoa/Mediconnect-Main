@@ -7,7 +7,8 @@ import MCSelect from "@/shared/components/forms/MCSelect";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { useCreateServicesStore } from "@/stores/useCreateServicesStore";
 import { comercialScheduleSchema } from "@/schema/createService.schema";
-
+import { scheduleService } from "@/shared/navigation/userMenu/editProfile/doctor/services/schedule.services";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 const LOCATIONS_DATA = [
@@ -30,6 +31,8 @@ const LOCATIONS_DATA = [
 interface ManageLocationProps {
   locationSelected?: number | undefined;
   children: React.ReactNode;
+  scheduleData?: any;
+  onScheduleCreated?: () => void;
 }
 
 interface DaysSelectorProps {
@@ -41,20 +44,28 @@ function timeToMinutes(time: string): number {
   if (!time) return 0;
 
   let [hour, minute] = [0, 0];
-  let isPM = false;
-
+  
+  // Detectar si tiene AM/PM
   const ampmMatch = time.match(/(am|pm)$/i);
+  
   if (ampmMatch) {
-    isPM = ampmMatch[1].toLowerCase() === "pm";
+    // Formato 12 horas (con AM/PM)
+    const isPM = ampmMatch[1].toLowerCase() === "pm";
     time = time.replace(/(am|pm)$/i, "").trim();
+    
+    const parts = time.split(":");
+    hour = parseInt(parts[0], 10);
+    minute = parseInt(parts[1], 10);
+    
+    // Conversión 12h → 24h
+    if (isPM && hour < 12) hour += 12;
+    if (!isPM && hour === 12) hour = 0;
+  } else {
+    // Formato 24 horas (sin AM/PM) - NO hacer conversión
+    const parts = time.split(":");
+    hour = parseInt(parts[0], 10);
+    minute = parseInt(parts[1], 10);
   }
-
-  const parts = time.split(":");
-  hour = parseInt(parts[0], 10);
-  minute = parseInt(parts[1], 10);
-
-  if (isPM && hour < 12) hour += 12;
-  if (!isPM && hour === 12) hour = 0;
 
   return hour * 60 + minute;
 }
@@ -129,15 +140,19 @@ function DaysSelector({ name, onChange }: DaysSelectorProps) {
   );
 }
 
-function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
+function ManageSchedule({ locationSelected, scheduleData, children, onScheduleCreated }: ManageLocationProps) {
   const { t } = useTranslation("doctor");
   const submitRef = useRef<(() => void) | null>(null);
   const formRef = useRef<any>(null);
+  const setToast = useGlobalUIStore((state) => state.setToast);
+  const closeModalRef = useRef<{ close: () => void }>(null);
 
   const [startTimeTouched, setStartTimeTouched] = useState(false);
   const [endTimeTouched, setEndTimeTouched] = useState(false);
   const [shouldLoadData, setShouldLoadData] = useState(false);
   const [modalKey, setModalKey] = useState(0);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const serviceDuration = useCreateServicesStore(
     (s) => s.createServiceData.duration,
@@ -175,23 +190,92 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
   const minDurationMinutes =
     (serviceDuration?.hours || 0) * 60 + (serviceDuration?.minutes || 0);
 
+
   const handleTriggerClick = useCallback(() => {
-    setComercialScheduleField("startTime", "");
-    setComercialScheduleField("endTime", "");
-    setStartTimeTouched(false);
-    setEndTimeTouched(false);
+
+    if (scheduleData) {
+      setComercialScheduleField("name", scheduleData.nombre);
+      setComercialScheduleField("day", scheduleData.dias);
+      setComercialScheduleField("startTime", scheduleData.horaInicio);
+      setComercialScheduleField("endTime", scheduleData.horaFin);
+      setComercialScheduleField("locationId", scheduleData.ubicacionId?.toString());
+      
+      setStartTimeTouched(true);
+      setEndTimeTouched(true);
+    } else {
+      // ✅ Si no hay datos, limpiar el formulario
+      setComercialScheduleField("name", "");
+      setComercialScheduleField("day", []);
+      setComercialScheduleField("startTime", "");
+      setComercialScheduleField("endTime", "");
+      setComercialScheduleField("locationId", undefined);
+      
+      setStartTimeTouched(false);
+      setEndTimeTouched(false);
+    }
+    
     setShouldLoadData(true);
     setModalKey((prev) => prev + 1);
-  }, [setComercialScheduleField]);
 
-  const handleSubmit = (data: any) => {
+  }, [setComercialScheduleField, scheduleData]);
+
+  const handleSubmit = async (data: any) => {
     console.log("Datos enviados desde modal:", data);
-    setComercialScheduleData(data);
+    
+    // Normalizar el formato de tiempo agregando :00 si no tiene segundos
+    const normalizeTime = (time: string) => {
+      if (!time) return time;
+      const parts = time.split(':');
+      return parts.length === 2 ? `${time}:00` : time;
+    };
+
+    const normalizedData = {
+      ...data,
+      startTime: normalizeTime(data.startTime),
+      endTime: normalizeTime(data.endTime),
+    };
+
+    setIsLoading(true);
+
+    try {
+      const response = await scheduleService.createScheduleService({
+        nombre: normalizedData.name,
+        diasSemana: normalizedData.day,
+        horaInicio: normalizedData.startTime,
+        horaFin: normalizedData.endTime
+      });
+      console.log("Respuesta del servicio de horario:", response);
+
+      setComercialScheduleData(normalizedData);
+
+      setToast({
+        type: "success",
+        message: t("createService.schedule.successCreating"),
+        open: true,
+      });
+      
+      // ✅ Llamar al callback para recargar los horarios
+      onScheduleCreated?.();
+
+      // ✅ Cerrar el modal solo si fue exitoso
+      closeModalRef.current?.close();
+
+    } catch (error: any) {
+      console.error("Error al crear el horario:", error);
+      
+      setToast({
+        type: "error",
+        message: error.message || t("createService.schedule.errorCreating"),
+        open: true,
+      });
+
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     submitRef.current?.();
-    console.log("mi data:", comercialScheduleData);
   };
 
   const handleClose = () => {
@@ -228,7 +312,8 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
     startTimeTouched &&
     endTimeTouched &&
     timeToMinutes(comercialScheduleData.startTime) >=
-      timeToMinutes(comercialScheduleData.endTime);
+    timeToMinutes(comercialScheduleData.endTime);
+
 
   const hasInsufficientDuration =
     comercialScheduleData.startTime &&
@@ -236,8 +321,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
     startTimeTouched &&
     endTimeTouched &&
     timeToMinutes(comercialScheduleData.endTime) -
-      timeToMinutes(comercialScheduleData.startTime);
-  minDurationMinutes;
+    timeToMinutes(comercialScheduleData.startTime) < minDurationMinutes;
 
   const triggerWithHandler = React.isValidElement(children)
     ? React.cloneElement(children as React.ReactElement<any>, {
@@ -248,14 +332,18 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
   return (
     <MCModalBase
       id="manage-location-modal"
-      title={t("createService.schedule.manageSchedule")}
+      title={scheduleData ? t("createService.schedule.manageSchedule") : t("createService.schedule.createSchedule")}
       size="mdAuto"
       variant="decide"
       trigger={triggerWithHandler}
       triggerClassName="w-full"
       onConfirm={handleConfirm}
       onClose={handleClose}
+      closeRef={closeModalRef}
+      autoCloseOnConfirm={false}
       disabledConfirm={
+        isLoading ||
+        !comercialScheduleData.name ||
         !comercialScheduleData.startTime ||
         !comercialScheduleData.endTime ||
         !startTimeTouched ||
@@ -265,14 +353,15 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
         !!hasTimeConflict ||
         !!hasInsufficientDuration
       }
+      confirmText={isLoading ? t("createService.schedule.creating") : undefined}
     >
       <MCFormWrapper
         schema={comercialScheduleFormSchema}
         defaultValues={{
           name: comercialScheduleData.name || "",
           day: comercialScheduleData.day || [],
-          startTime: "",
-          endTime: "",
+          startTime: comercialScheduleData.startTime || "",
+          endTime: comercialScheduleData.endTime || "",
           locationId: comercialScheduleData.locationId || undefined,
         }}
         onSubmit={handleSubmit}
@@ -287,6 +376,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
           placeholder={t("createService.schedule.scheduleNamePlaceholder")}
           value={comercialScheduleData.name || ""}
           onChange={(e) => setComercialScheduleField("name", e.target.value)}
+          disabled={isLoading}
         />
 
         <DaysSelector
@@ -305,6 +395,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
             setComercialScheduleField("startTime", e.target.value);
             setStartTimeTouched(true);
           }}
+          disabled={isLoading}
         />
 
         <MCInput
@@ -318,6 +409,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
             setComercialScheduleField("endTime", e.target.value);
             setEndTimeTouched(true);
           }}
+          disabled={isLoading}
         />
 
         {isPresentialOrMixed && (
@@ -328,6 +420,7 @@ function ManageSchedule({ locationSelected, children }: ManageLocationProps) {
             options={locationOptions}
             searchable
             onChange={(value) => setComercialScheduleField("locationId", value)}
+            disabled={isLoading}
           />
         )}
 

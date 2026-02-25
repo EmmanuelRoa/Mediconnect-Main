@@ -33,7 +33,9 @@ import type {
   UpdateDoctorLanguageRequest,
   UpdateDoctorLanguageResponse,
   DeleteDoctorLanguageResponse,
-  LanguageError
+  LanguageError,
+  CreateDoctorServiceResponse,
+  CreateDoctorServiceRequest
 } from './doctor.types';
 
 /**
@@ -812,6 +814,29 @@ export const doctorService = {
         error.message || 
         'Error al eliminar idioma. Intenta nuevamente.'
       );
+    }
+  },
+
+  
+  createService: async (data: CreateDoctorServiceRequest): Promise<CreateDoctorServiceResponse> => {
+    try {
+      const response = await apiClient.post<CreateDoctorServiceResponse>(
+        '/servicios',
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al crear servicio:', error);
+      
+      const errorData = error.response?.data;
+      
+      throw {
+        message: errorData?.message || 'Error al crear servicio. Intenta nuevamente.',
+        statusCode: error.response?.status || 500,
+        response: error.response,
+        originalError: error
+      };
     }
   },
 };

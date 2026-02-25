@@ -832,7 +832,16 @@
       "location": "Ubicación",
       "selectLocation": "Seleccionar ubicación",
       "errorEndTime": "La hora de fin debe ser posterior a la hora de inicio",
-      "errorMinDuration": "El rango de horario debe permitir al menos una cita de"
+      "errorMinDuration": "El rango de horario debe permitir al menos una cita de ",
+      "noSchedules": "No hay horarios registrados todavía. Agrega tu primer horario para que los pacientes puedan reservar.",
+      "successCreating": "Horario creado exitosamente",
+      "errorCreating": "Error al crear el horario. Por favor, intenta nuevamente.",
+      "creating": "Creando horario...",
+      "createSchedule": "Crear horario",
+      "validatingSchedules": "Validando horarios...",
+      "conflictDetected": "Conflicto de horarios detectado",
+      "conflictDays": "Días en conflicto",
+      "noConflicts": "Los horarios seleccionados son compatibles"
     },
     "images": {
       "title": "Muestra tus servicios y experiencia",
@@ -860,7 +869,15 @@
       "location": "Ubicación",
       "virtualConsultation": "Consulta virtual",
       "virtualConsultationDescription": "La consulta se realizará a través de la plataforma de teleconsultas de Mediconnect.",
-      "save": "Guardar"
+      "saving": "Saving...",
+      "save": "Save service",
+      "successMessage": "Service created successfully!",
+      "errorMessage": "Error creating service. Please try again.",
+      "validationError": "Service data is invalid. Please check the information.",
+      "conflictError": "A similar service already exists. Please check your services.",
+      "authError": "You don't have permission to create this service.",
+      "serverError": "Server error. Please try again later.",
+      "networkError": "Connection error. Please check your internet connection."
     },
     "modals": {
       "description": {

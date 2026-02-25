@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useImperativeHandle, useState } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
@@ -39,12 +39,14 @@ interface MCModalBaseProps {
   secondaryText?: string;
   typeclose?: "Arrow" | "X";
   zIndex?: number;
+  closeRef?: React.RefObject<{ close: () => void } | null>;
   borderHeader?: boolean;
   borderFooter?: boolean;
   actionOne?: boolean;
   defaultOpen?: boolean;
   disabledConfirm?: boolean; // Nueva prop para deshabilitar el botón de confirmar
   description?: string; // <-- Agrega esta línea
+  autoCloseOnConfirm?: boolean;
 }
 
 export function MCModalBase({
@@ -60,6 +62,7 @@ export function MCModalBase({
   variant = "info",
   onConfirm,
   onSecondary,
+  closeRef,
   confirmText = "Confirmar",
   secondaryText = "Cancelar",
   zIndex = 50,
@@ -69,6 +72,7 @@ export function MCModalBase({
   defaultOpen = false,
   disabledConfirm = false, // Valor por defecto
   description = "", // <-- Agrega aquí
+  autoCloseOnConfirm = true,
 }: MCModalBaseProps) {
   const isControlled = externalIsOpen !== undefined;
   const isMobile = useIsMobile();
@@ -90,6 +94,10 @@ export function MCModalBase({
       }
     }
   };
+
+  useImperativeHandle(closeRef, () => ({
+    close: () => handleOpenChange(false)
+  }));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -132,7 +140,9 @@ export function MCModalBase({
 
   const handleConfirm = () => {
     onConfirm?.();
-    handleOpenChange(false);
+    if (autoCloseOnConfirm) {
+      handleOpenChange(false);
+    }
   };
 
   const handleSecondary = () => {

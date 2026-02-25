@@ -6,8 +6,8 @@ export const UploadedFileSchema = z.object({
   type: z.string(),
 });
 
-// Regex para validar formato de tiempo HH:mm:ss
-const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
+// Regex para validar formato de tiempo HH:mm o HH:mm:ss
+const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])(:(?:[0-5][0-9]))?$/;
 // Default service schema (sin traducción)
 export const defaultServiceSchema = z.object({
   name: z
@@ -121,8 +121,7 @@ export const defaultComercialScheduleSchema = z
     name: z
       .string()
       .min(1, "Name is required")
-      .max(30, "Name cannot exceed 30 characters")
-      .optional(),
+      .max(30, "Name cannot exceed 30 characters"),
     day: z
       .array(z.number().int().min(0).max(6))
       .min(1, "Debe seleccionar al menos un día"),
@@ -147,8 +146,7 @@ export const comercialScheduleSchema = (t: (key: string) => string) =>
       name: z
         .string()
         .min(1, t("validation.name.required"))
-        .max(30, t("validation.name.maxLength30"))
-        .optional(),
+        .max(30, t("validation.name.maxLength30")),
       day: z
         .array(z.number().int().min(0).max(6))
         .min(1, t("validation.day.selectAtLeastOne")),

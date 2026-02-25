@@ -120,7 +120,7 @@ function DoctorProfilePage() {
   ];
 
   const isMyProfile = user?.id === (doctorId ? Number(doctorId) : undefined);
-  console.log("Doctor data:", user?.doctor);
+   
   return (
     <MCDashboardContent mainWidth="w-[100%]" noBg>
       <div className="min-h-screen w-full">

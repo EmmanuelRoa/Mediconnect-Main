@@ -26,6 +26,7 @@ export async function mapCenterOnboardingToRequest(
     token,
     nombreComercial: centerData.name,
     rnc: centerData.rnc,
+    descripcion: centerData.Description ?? "",
     telefono: centerData.phone,
     email: centerData.email,
     direccion: centerData.address,
@@ -54,6 +55,7 @@ export const centerRegistrationService = {
       formData.append('rnc', request.rnc);
       formData.append('telefono', request.telefono);
       formData.append('email', request.email);
+      formData.append('descripcion', request.descripcion);
       formData.append('direccion', request.direccion);
       formData.append('barrioId', request.barrioId.toString());
       formData.append('sitioWeb', request.sitioWeb);

@@ -2,6 +2,7 @@ export interface RegisterCenterRequest {
   token: string;
   nombreComercial: string;
   rnc: string;
+  descripcion: string;
   telefono: string;
   email: string;
   direccion: string;

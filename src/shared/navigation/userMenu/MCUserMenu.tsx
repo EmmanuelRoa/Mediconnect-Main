@@ -73,7 +73,7 @@ export function MCUserMenu() {
   };
 
   const userData = getUserData();
-
+  
   // Función para manejar cambio de tema
   const handleThemeChange = useCallback(
     async (newTheme: Theme, event: React.MouseEvent) => {

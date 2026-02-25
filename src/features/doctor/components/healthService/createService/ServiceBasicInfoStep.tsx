@@ -33,6 +33,11 @@ function ServiceBasicInfoStep() {
   const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
   const [isFormValid, setIsFormValid] = useState(false);
 
+  // Debug: Log isFormValid changes
+  useEffect(() => {
+    console.log("isFormValid:", isFormValid);
+  }, [isFormValid]);
+
 
   const createServiceData = useCreateServicesStore((s) => s.createServiceData);
   const setCreateServiceData = useCreateServicesStore(
@@ -62,8 +67,19 @@ function ServiceBasicInfoStep() {
         "description",
         createServiceData.description || "",
       );
+      formRef.current.setValue(
+        "selectedModality",
+        createServiceData.selectedModality || "presencial",
+      );
+      formRef.current.setValue(
+        "specialty",
+        createServiceData.specialty || "",
+        { shouldValidate: true },
+      );
     }
   }, [
+    createServiceData.specialty,
+    createServiceData.selectedModality,
     createServiceData.numberOfSessions,
     createServiceData.duration,
     createServiceData.pricePerSession,
@@ -112,6 +128,24 @@ function ServiceBasicInfoStep() {
     goToPreviousStep();
   };
 
+  const handleEspecialidadChange = (option: any | null) => {
+    const value = option ? option : "";
+    formRef.current.setValue("specialty", value, { shouldValidate: true });
+    setCreateServiceData({
+      ...createServiceData,
+      specialty: value,
+    });
+  };
+
+  const handleModalityChange = (option: any | null) => {
+    const value = option ? option : "";
+    formRef.current.setValue("selectedModality", value, { shouldValidate: true });
+    setCreateServiceData({
+      ...createServiceData,
+      selectedModality: value,
+    });
+  };
+
   const modalityOptions = [
     { value: "presencial", label: t("modality.presencial") },
     { value: "teleconsulta", label: t("modality.teleconsulta") },
@@ -136,10 +170,12 @@ function ServiceBasicInfoStep() {
     return "0m";
   };
 
-  const isButtonDisabled = !isFormValid || !createServiceData.specialty 
-  || createServiceData.specialty.trim() === "" || !createServiceData.selectedModality 
-  || createServiceData.selectedModality.trim() === "" || !createServiceData.pricePerSession 
-  || createServiceData.pricePerSession <= 0;
+  const isButtonDisabled =
+  !isFormValid ||
+  !createServiceData.specialty?.trim() ||
+  !createServiceData.selectedModality?.trim() ||
+  !createServiceData.pricePerSession ||
+  createServiceData.pricePerSession <= 0;
 
   return (
     <ServicesLayoutsSteps
@@ -168,6 +204,7 @@ function ServiceBasicInfoStep() {
             label={t("form.specialty")}
             options={especialidadesOptions}
             placeholder={t("form.selectSpecialty")}
+            onChange={handleEspecialidadChange}
             disabled={loadingEspecialidades}
             searchable={true}
           />
@@ -176,6 +213,7 @@ function ServiceBasicInfoStep() {
             label={t("form.modality")}
             options={modalityOptions}
             placeholder={t("form.selectModality")}
+            onChange={handleModalityChange}
           />
           <DescriptionModal>
             <MCInput

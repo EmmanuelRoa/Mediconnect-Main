@@ -36,6 +36,7 @@ import type { Theme } from "@/stores/useGlobalUISlice";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/router/routes";
 import { useCallback } from "react";
+import { Avatar, AvatarImage } from "@/shared/ui/avatar";
 const isMac =
   typeof window !== "undefined" &&
   /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -312,7 +313,17 @@ export function MCUserMenuContent({
           <div className="flex items-center gap-3 min-w-0">
             {/* Avatar: tamaño fijo igual en mobile y desktop */}
             <div className="flex-shrink-0">
-              <MCUserAvatar name={userData.name} size={44} square={false} />
+              {userData.avatar ? (
+                <Avatar className="h-[54px] w-[54px] rounded-full shadow-lg transition-all">
+                  <AvatarImage
+                    alt={userData.name}
+                    src={userData.avatar}
+                    className="object-cover"
+                  />
+                </Avatar>
+              ) : (
+                <MCUserAvatar name={userData.name} size={44} square={false} />
+              )}
             </div>
 
             {/* Texto: ocupa el espacio restante con truncado */}

@@ -202,6 +202,7 @@ function SetCredentialsPage() {
           rnc: centerBasicInfo.rnc,
           email: centerBasicInfo.email,
           urlImg: centerBasicInfo.urlImg ?? undefined,
+          descripcion: centerBasicInfo.Description,
         };
 
         setCenterOnboardingData(updatedCenterData); 
