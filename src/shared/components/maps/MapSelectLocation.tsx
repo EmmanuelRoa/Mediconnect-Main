@@ -369,6 +369,10 @@ export default function MapSelectLocation({
   }, [value, isMapLoaded]);
 
   useEffect(() => {
+    neighborhoodGeoRef.current = neighborhoodGeo ?? null;
+  }, [neighborhoodGeo]);
+  
+  useEffect(() => {
     if (isFullscreen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -378,10 +382,6 @@ export default function MapSelectLocation({
       document.body.style.overflow = "";
     };
   }, [isFullscreen]);
-
-   useEffect(() => {
-    neighborhoodGeoRef.current = neighborhoodGeo ?? null;
-  }, [neighborhoodGeo]);
 
   useEffect(() => {
     const map = mapRef.current;

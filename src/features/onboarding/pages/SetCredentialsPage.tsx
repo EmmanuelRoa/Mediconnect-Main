@@ -15,6 +15,7 @@ import { mapDoctorOnboardingToRequest } from "@/features/onboarding/services/doc
 import { authService } from "@/services/auth/auth.service";
 import { normalizeLoginResponse } from "@/services/auth/auth.types";
 import { ROUTES } from "@/router/routes";
+import centerRegistrationService, { mapCenterOnboardingToRequest } from "../services/centro-registration.services";
 
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
@@ -191,23 +192,50 @@ function SetCredentialsPage() {
         setCenterOnboardingData &&
         centerBasicInfo
       ) {
-        setCenterOnboardingData({
+        const updatedCenterData = {
           ...centerBasicInfo,
           password: data.password,
           confirmPassword: data.confirmPassword,
-          role: "Center",
+          role: "Center" as const,
           name: centerBasicInfo.name,
           address: centerBasicInfo.address,
           rnc: centerBasicInfo.rnc,
           email: centerBasicInfo.email,
           urlImg: centerBasicInfo.urlImg ?? undefined,
+        };
+
+        setCenterOnboardingData(updatedCenterData); 
+        
+        if(!registrationToken) {
+          throw new Error(t('setCredentialsPage.errors.noRegistrationToken'));
+        }
+
+        const request = await mapCenterOnboardingToRequest(updatedCenterData, registrationToken);
+
+        await centerRegistrationService.registerCenter(request);
+
+        const loginResponse = await authService.login({
+          email: updatedCenterData.email,
+          password: updatedCenterData.password,
         });
-        setAccessPage(
-          true,
-          [{ page: "/auth/register-success", reason: "register" }],
-          "register"
-        );
-        navigate("/auth/register-success", { replace: true });
+
+        const { accessToken, refreshToken, user } = normalizeLoginResponse(loginResponse);
+
+        login(accessToken, refreshToken, user);
+
+        setToast({
+          message: t('setCredentialsPage.messages.registrationAndLoginSuccess') || '¡Registro exitoso! Bienvenido a Mediconnect',
+          type: 'success',
+          open: true,
+        });
+
+        navigate(ROUTES.COMMON.DASHBOARD, { replace: true });
+
+        setTimeout(() => {
+          clearOnboarding();
+          clearAuthFlow();
+        }, 0);
+
       }
     } catch (error: any) {
       console.error('Error al procesar el registro:', error);

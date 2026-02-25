@@ -46,7 +46,7 @@ export function HealthCertificateUpload({
     <MCImageUpload
       title={t("healthCertificateUpload.title")}
       description={t("healthCertificateUpload.description")}
-      imageSrc={"" /*centerDocImg*/}
+      imageSrc={/*centerDocImg*/ "https://res.cloudinary.com/dy2wtanhl/image/upload/v1771699898/center_xlqj9h.png"}
       modalId="health-certificate"
       cropTitle={t("healthCertificateUpload.cropTitle")}
       aspectRatio={1.6}

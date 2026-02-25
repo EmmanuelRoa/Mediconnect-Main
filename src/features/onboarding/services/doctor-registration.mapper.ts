@@ -7,7 +7,7 @@ import { base64ToFile } from '@/utils/base64ToFile';
  * @param type - Tipo MIME parcial o completo
  * @returns Tipo MIME normalizado
  */
-function normalizeMimeType(type?: string): string {
+export function normalizeMimeType(type?: string): string {
   if (!type) {
     console.warn('[normalizeMimeType] Tipo vacío, usando image/jpeg por defecto');
     return 'image/jpeg';
@@ -44,7 +44,7 @@ function normalizeMimeType(type?: string): string {
  * @param mimeType - Tipo MIME del archivo
  * @returns Extensión del archivo con el punto (ej: '.jpg', '.pdf')
  */
-function getExtensionFromMimeType(mimeType: string): string {
+export function getExtensionFromMimeType(mimeType: string): string {
   const mimeToExt: Record<string, string> = {
     'image/jpeg': '.jpg',
     'image/jpg': '.jpg',
@@ -84,7 +84,7 @@ function getExtensionFromMimeType(mimeType: string): string {
  * @param base64Url - URL base64 con formato data:mime;base64,data
  * @returns Tipo MIME extraído o 'image/jpeg' por defecto
  */
-function getMimeTypeFromBase64(base64Url: string): string {
+export function getMimeTypeFromBase64(base64Url: string): string {
   if (base64Url.startsWith('data:')) {
     const match = base64Url.match(/data:([^;]+);/);
     if (match && match[1]) {
@@ -103,7 +103,7 @@ function getMimeTypeFromBase64(base64Url: string): string {
  * @param mimeType - Tipo MIME del archivo (puede ser parcial como 'pdf' o completo como 'application/pdf')
  * @returns Promise<File>
  */
-async function urlToFile(
+export async function urlToFile(
   url: string,
   fileName: string,
   mimeType?: string
