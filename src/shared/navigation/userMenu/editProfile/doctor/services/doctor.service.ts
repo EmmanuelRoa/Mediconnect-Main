@@ -36,8 +36,9 @@ import type {
   LanguageError,
   CreateDoctorServiceResponse,
   CreateDoctorServiceRequest,
-  GetServicesOfDoctor,
-  GetServicesOfDoctorResponse
+  GetServicesOfDoctorResponse,
+  UpdateStatusDoctorServiceResponse,
+  DeleteDoctorServiceResponse,
 } from './doctor.types';
 
 /**
@@ -885,6 +886,27 @@ export const doctorService = {
     }
   },
 
+  /**
+   * Obtiene un servicio por su id
+   * @param serviceId - ID del servicio
+   * @returns Respuesta con el servicio
+   */
+  getServiceById: async (serviceId: number): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/servicios/${serviceId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener servicio por id:', error);
+      const errorData = error.response?.data;
+      throw {
+        message: errorData?.message || 'Error al obtener el servicio. Intenta nuevamente.',
+        statusCode: error.response?.status || 500,
+        response: error.response,
+        originalError: error,
+      };
+    }
+  },
+
   getServicesOfDoctor: async (doctorId: number, params: any | null = null): Promise<GetServicesOfDoctorResponse> => {
     try {
       const response = await apiClient.get<GetServicesOfDoctorResponse>(
@@ -903,6 +925,47 @@ export const doctorService = {
         error.message || 
         'Error al obtener servicios del doctor. Intenta nuevamente.'
       );
+    }
+  },
+
+  updateStatusOfService: async (serviceId: number, newStatus: string): Promise<UpdateStatusDoctorServiceResponse> => {
+    try {
+      const response = await apiClient.put<UpdateStatusDoctorServiceResponse>(
+        `/servicios/${serviceId}`,
+        { estado: newStatus }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al actualizar estado del servicio:', error);
+      
+      const errorData = error.response?.data;
+      
+      throw {
+        message: errorData?.message || 'Error al actualizar estado del servicio. Intenta nuevamente.',
+        statusCode: error.response?.status || 500,
+        response: error.response,
+        originalError: error
+      };
+    }
+  },
+
+  deleteService: async (serviceId: number): Promise<DeleteDoctorServiceResponse> => {
+    try {
+      const response = await apiClient.delete<DeleteDoctorServiceResponse>(
+        `/servicios/${serviceId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al eliminar servicio:', error);
+      
+      const errorData = error.response?.data;
+      
+      throw {
+        message: errorData?.message || 'Error al eliminar servicio. Intenta nuevamente.',
+        statusCode: error.response?.status || 500,
+        response: error.response,
+        originalError: error
+      };
     }
   },
 };

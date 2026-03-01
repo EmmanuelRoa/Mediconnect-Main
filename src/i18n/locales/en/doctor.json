@@ -643,7 +643,7 @@
       "service": "Service",
       "specialty": "Specialty",
       "location": "Location",
-      "type": "Type",
+      "modality": "Modality",
       "price": "Price",
       "duration": "Duration",
       "rating": "Rating",
@@ -693,6 +693,19 @@
       "noServices": "You have no registered services",
       "noServicesDescription": "Add your first service to start receiving patients.",
       "clearFilters": "Clear filters"
+    },
+    "messages": {
+      "missingServiceId": "Error: Missing service ID",
+      "deactivateSuccess": "Service deactivated successfully",
+      "deactivateDescription": "This service has been deactivated. Patients will not be able to book it until you activate it again.",
+      "deactivateError": "Error deactivating service. Please try again.",
+      "tryAgain": "Please try again",
+      "activateSuccess": "Service activated successfully",
+      "activateDescription": "This service has been activated. Patients can now book it.",
+      "activateError": "Error activating service. Please try again.",
+      "deleteSuccess": "Service deleted successfully",
+      "deleteDescription": "This service has been deleted. All related information has been removed.",
+      "deleteError": "Error deleting service. Please try again."
     }
   },
 
@@ -724,7 +737,8 @@
 
   "filters": {
     "labels": {
-      "serviceType": "Service type",
+      "serviceType": "Service Modality",
+      "specialty": "Specialty",
       "priceRange": "Price range",
       "duration": "Duration",
       "rating": "Rating",
@@ -733,12 +747,14 @@
       "onlyConnected": "Only connected"
     },
     "placeholders": {
-      "serviceType": "Select type",
+      "serviceType": "Select modality",
       "priceRange": "Select range",
       "duration": "Select duration",
       "rating": "Minimum rating",
       "status": "Select status",
-      "centerType": "Select type"
+      "centerType": "Select type",
+      "specialty": "Select specialty",
+      "Loading": "Loading..."
     },
     "serviceTypes": {
       "presencial": "In-person",

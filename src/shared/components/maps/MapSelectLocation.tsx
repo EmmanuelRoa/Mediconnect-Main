@@ -404,15 +404,28 @@ export default function MapSelectLocation({
     if (!mapRef.current || !markerRef.current || !value || !isMapLoaded) return;
 
     const currentLngLat = markerRef.current.getLngLat();
-    if (
-      Math.abs(currentLngLat.lng - value.lng) > 0.0001 || 
-      Math.abs(currentLngLat.lat - value.lat) > 0.0001
-    ) {
+    const shouldUpdatePosition =
+      Math.abs(currentLngLat.lng - value.lng) > 0.0001 ||
+      Math.abs(currentLngLat.lat - value.lat) > 0.0001;
+
+    if (shouldUpdatePosition) {
       if (value.lat !== 0 && value.lng !== 0) {
         markerRef.current.setLngLat([value.lng, value.lat]);
+
+        // Zoom automático al marcador seleccionado
+        const map = mapRef.current;
+        if (map) {
+          const targetZoom = isMobile ? 15 : 16;
+          try {
+            map.easeTo({ center: [value.lng, value.lat], zoom: targetZoom, duration: 800 });
+          } catch (e) {
+            // fallback si easeTo falla por alguna razón
+            map.flyTo({ center: [value.lng, value.lat], zoom: targetZoom, speed: 0.8 });
+          }
+        }
       }
     }
-  }, [value, isMapLoaded]);
+  }, [value, isMapLoaded, isMobile]);
 
   useEffect(() => {
     neighborhoodGeoRef.current = neighborhoodGeo ?? null;

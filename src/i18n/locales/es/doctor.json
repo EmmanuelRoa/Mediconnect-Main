@@ -650,7 +650,7 @@
       "service": "Servicio",
       "specialty": "Especialidad",
       "location": "Ubicación",
-      "type": "Tipo",
+      "modality": "Modalidad",
       "price": "Precio",
       "duration": "Duración",
       "rating": "Calificación",
@@ -700,6 +700,19 @@
       "noServices": "No tienes servicios registrados",
       "noServicesDescription": "Agrega tu primer servicio para comenzar a recibir pacientes.",
       "clearFilters": "Limpiar filtros"
+    },
+    "messages": {
+      "missingServiceId": "ID de servicio faltante. Por favor, intenta nuevamente.",
+      "deactivateSuccess": "Servicio desactivado exitosamente",
+      "deactivateDescription": "Este servicio ha sido desactivado. Los pacientes no podrán reservarlo hasta que lo actives nuevamente.",
+      "deactivateError": "Error al desactivar el servicio. Por favor, inténtalo nuevamente.",
+      "tryAgain": "Por favor, inténtalo nuevamente",
+      "activateSuccess": "Servicio activado exitosamente",
+      "activateDescription": "Este servicio ha sido activado. Los pacientes pueden reservarlo ahora.",
+      "activateError": "Error al activar el servicio. Por favor, inténtalo nuevamente.",
+      "deleteSuccess": "Servicio eliminado exitosamente",
+      "deleteDescription": "Este servicio ha sido eliminado. Toda la información relacionada ha sido borrada.",
+      "deleteError": "Error al eliminar el servicio. Por favor, inténtalo nuevamente."
     }
   },
 
@@ -731,7 +744,8 @@
 
   "filters": {
     "labels": {
-      "serviceType": "Tipo de servicio",
+      "serviceType": "Modalidad de servicio",
+      "specialty": "Especialidad",
       "priceRange": "Rango de precio",
       "duration": "Duración",
       "rating": "Calificación",
@@ -740,12 +754,14 @@
       "onlyConnected": "Solo conectados"
     },
     "placeholders": {
-      "serviceType": "Seleccionar tipo",
+      "serviceType": "Seleccionar modalidad",
       "priceRange": "Seleccionar rango",
       "duration": "Seleccionar duración",
       "rating": "Calificación mínima",
       "status": "Seleccionar estado",
-      "centerType": "Seleccionar tipo"
+      "centerType": "Seleccionar tipo",
+      "specialty": "Seleccionar especialidad",
+      "Loading": "Cargando opciones..."
     },
     "serviceTypes": {
       "presencial": "Presencial",

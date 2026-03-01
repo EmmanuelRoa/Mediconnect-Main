@@ -498,6 +498,21 @@ export interface GetServicesOfDoctorResponse {
   data: GetServicesOfDoctor[];
 }
 
+export interface UpdateStatusDoctorServiceRequest {
+  estado: string; // "Activo" | "Inactivo"
+}
+
+export interface UpdateStatusDoctorServiceResponse {
+  success: boolean;
+  message: string;
+  data: GetServicesOfDoctor;
+}
+
+export interface DeleteDoctorServiceResponse {
+  success: boolean;
+  message: string;
+}
+
 // --- RE-EXPORTAR TIPOS RELACIONADOS ---
 
 /**

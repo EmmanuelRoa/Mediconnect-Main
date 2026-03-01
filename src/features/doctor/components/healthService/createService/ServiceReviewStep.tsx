@@ -11,7 +11,7 @@ import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/s
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { useState } from "react";
 
-function ServiceReviewStep() {
+function ServiceReviewStep({ isEditMode = false, originalData = null }) {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -112,6 +112,28 @@ function ServiceReviewStep() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleUpdate = async () => {
+    // Lógica similar a handleSubmit pero para actualizar un servicio existente
+    setIsSubmitting(true);
+
+      try {
+        // ✅ Mapear datos
+        console.log("Datos a mapear para actualización:", serviceCreateData);
+        const request = await mapDoctorServices(serviceCreateData);
+        console.log("Mapped request for update:", request);
+
+      } catch (error) {
+        console.log("Error al actualizar el servicio:", error);
+        setToast({
+          type: "error",
+          message: t("createService.review.updateErrorMessage"),
+          open: true,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
   };
 
   const modality = serviceCreateData.selectedModality;
@@ -228,7 +250,7 @@ function ServiceReviewStep() {
         <AuthFooterContainer
           type="Save"
           continueButtonProps={{
-            onClick: handleSubmit,
+            onClick: isEditMode ? handleUpdate : handleSubmit,
             children: isSubmitting 
               ? t("createService.review.saving") 
               : t("createService.review.save"),
