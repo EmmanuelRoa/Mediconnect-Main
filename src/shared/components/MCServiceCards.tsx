@@ -24,7 +24,7 @@ interface MCServiceCardProps {
   price: string;
   description: string;
   rating: number;
-  review?: number;
+  reviews?: number;
   duration: string;
   modalidad: string;
   onDetails?: () => void;
@@ -44,7 +44,7 @@ const MCServiceCards = ({
   price,
   description,
   rating,
-  review,
+  reviews,
   duration,
   modalidad,
   onDetails,
@@ -60,7 +60,7 @@ const MCServiceCards = ({
   const navigate = useNavigate();
   const currentUser = useAppStore((state) => state.user?.rol);
 
-  const getTypeIcon = () => {
+  const getTypeIcon = () => { 
     if (modalidad.toLowerCase().includes("mixta"))
       return <ClipboardPlus size={16} className="text-secondary mb-0.5" />;
     if (modalidad.toLowerCase().includes("virtual"))

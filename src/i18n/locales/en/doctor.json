@@ -615,6 +615,10 @@
         "deactivate": "Deactivate service",
         "activate": "Activate service",
         "delete": "Delete service"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
       }
     },
     "centers": {
@@ -706,6 +710,10 @@
       "deleteSuccess": "Service deleted successfully",
       "deleteDescription": "This service has been deleted. All related information has been removed.",
       "deleteError": "Error deleting service. Please try again."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
     }
   },
 
@@ -716,6 +724,7 @@
     "edit": "Edit",
     "photoAlt": "Medical consultation",
     "reviewCount": "12 reviews",
+    "location": "Ubicación",
     "specialty": "Family Medicine",
     "duration": "60 minutes",
     "type": "In-person / mixed",
@@ -732,7 +741,7 @@
       "rating": "Rating",
       "experience": "Years of experience"
     },
-    "reviews": { "title": "Reviews" }
+    "reviews": { "title": "Reviews", "titleForOne": "Review" }
   },
 
   "filters": {
@@ -902,7 +911,10 @@
       "networkError": "Connection error. Please check your internet connection.",
       "locationError": "Error with the selected location. Please review your location information.",
       "updateErrorMessage": "Error updating service. Please try again.",
-      "updateSuccessMessage": "Service updated successfully!"
+      "updateSuccessMessage": "Service updated successfully!",
+      "modalityPresencial": "In-person",
+      "modalityTeleconsulta": "Teleconsultation",
+      "modalityMixta": "Mixed"
     },
     "modals": {
       "description": {

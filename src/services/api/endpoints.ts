@@ -52,14 +52,28 @@ export const API_ENDPOINTS = {
   
   // --- CONVERSACIONES Y MENSAJES ---
   CONVERSATIONS: {
-    BASE: '/conversations',
-    BY_ID: (id: string | number) => `/conversations/${id}`,
-    MESSAGES: (conversationId: string | number) => `/conversations/${conversationId}/messages`,
+    BASE: '/conversaciones',
+    BY_ID: (id: string | number) => `/conversaciones/${id}`,
+    GET_OR_CREATE: '/conversaciones/obtener-o-crear',
+    MESSAGES: (conversacionId: string | number) => `/conversaciones/${conversacionId}/mensajes`,
+    SEND_MESSAGE: (conversacionId: string | number) => `/conversaciones/${conversacionId}/mensajes`,
+    MARK_READ: (conversacionId: string | number) => `/conversaciones/${conversacionId}/marcar-leidos`,
+    UNREAD_COUNT: (conversacionId: string | number) => `/conversaciones/${conversacionId}/no-leidos`,
+    SEARCH_MESSAGES: (conversacionId: string | number) => `/conversaciones/${conversacionId}/buscar`,
   },
   
   MESSAGES: {
-    BASE: '/messages',
-    BY_ID: (id: string | number) => `/messages/${id}`,
+    BASE: '/mensajes',
+    BY_ID: (id: string | number) => `/mensajes/${id}`,
+    EDIT: (id: string | number) => `/mensajes/${id}`,
+    DELETE: (id: string | number) => `/mensajes/${id}`,
+  },
+  
+  // --- MEDIA / ARCHIVOS ---
+  MEDIA: {
+    UPLOAD: '/media',
+    DOWNLOAD: (mediaId: string | number) => `/media/${mediaId}`,
+    DELETE: (mediaId: string | number) => `/media/${mediaId}`,
   },
   
   // --- NOTIFICACIONES ---

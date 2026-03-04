@@ -30,6 +30,8 @@ export const BaseDoctorSchema = z.object({
   role: z.literal("Doctor"),
   nationality: z.string(),
   identityDocument: z.string(),
+  language: z.string(),
+  proficiencyLevel: z.string(),
   exequatur: z.string(),
   mainSpecialty: z.string(),
   secondarySpecialties: z.array(z.string()).optional(),
@@ -148,6 +150,8 @@ export function DoctorOnboardingSchema(t: (key: string) => string) {
       .refine((val) => ValidateDominicanID(val), {
         message: t("validation.identityDocumentInvalid"),
       }),
+    language: z.string().min(1, t("validation.languageRequired")),
+    proficiencyLevel: z.string().min(1, t("validation.proficiencyLevelRequired")),
     exequatur: z.coerce
       .string()
       .min(1, t("validation.exequaturRequired"))
@@ -193,6 +197,8 @@ export function DoctorBasicInfoSchema(t: (key: string) => string) {
     birthDate: true,
     nationality: true,
     identityDocument: true,
+    language: true,
+    proficiencyLevel: true,
     phone: true,
   }).extend({
     name: z.string().min(1, t("validation.nameRequired")),
@@ -209,6 +215,8 @@ export function DoctorBasicInfoSchema(t: (key: string) => string) {
       .refine((val) => ValidateDominicanID(val), {
         message: t("validation.identityDocumentInvalid"),
       }),
+    language: z.string().min(1, t("validation.languageRequired")),
+    proficiencyLevel: z.string().min(1, t("validation.proficiencyLevelRequired")),
     phone: z.coerce
       .string()
       .min(1, t("validation.phoneRequired"))

@@ -5,9 +5,10 @@ import { useAppStore } from "@/stores/useAppStore";
 import { DoctorBasicInfoSchema } from "@/schema/OnbordingSchema";
 import { useTranslation } from "react-i18next";
 import MCPhoneInput from "@/shared/components/forms/MCPhoneInput";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { authService } from "@/services/auth/auth.service";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { AVAILABLE_LANGUAGES, PROFICIENCY_LEVELS } from "@/features/onboarding/constants/languages.constants";
 
 type PersonalIdentificationStep1Props = {
   children?: React.ReactNode;
@@ -147,6 +148,24 @@ function PersonalIdentificationStep1({
     },
   ];
 
+  // Traducir opciones de idioma basado en el idioma actual
+  const { i18n } = useTranslation();
+  const currentLanguage = i18n.language;
+
+  const languageOptions = useMemo(() => {
+    return AVAILABLE_LANGUAGES.map((lang) => ({
+      value: lang.value,
+      label: currentLanguage === "en" ? lang.labelEn : lang.label,
+    }));
+  }, [currentLanguage]);
+
+  const proficiencyOptions = useMemo(() => {
+    return PROFICIENCY_LEVELS.map((level) => ({
+      value: level.value,
+      label: currentLanguage === "en" ? level.labelEn : level.label,
+    }));
+  }, [currentLanguage]);
+
   const handleSubmit = () => {
     onNext?.();
   };
@@ -269,6 +288,34 @@ function PersonalIdentificationStep1({
             placeholder={t("personalIdentificationStep.phonePlaceholder")}
             onChange={(e) => setDoctorField?.("phone", e.target.value)}
           />
+
+          {/* Idioma y Nivel de Dominio */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <MCSelect
+              name="language"
+              label={t("personalIdentificationStep.languageLabel")}
+              placeholder={t("personalIdentificationStep.languagePlaceholder")}
+              options={languageOptions}
+              onChange={(value) =>
+                setDoctorField?.(
+                  "language",
+                  Array.isArray(value) ? value[0] : value,
+                )
+              }
+            />
+            <MCSelect
+              name="proficiencyLevel"
+              label={t("personalIdentificationStep.proficiencyLevelLabel")}
+              placeholder={t("personalIdentificationStep.proficiencyLevelPlaceholder")}
+              options={proficiencyOptions}
+              onChange={(value) =>
+                setDoctorField?.(
+                  "proficiencyLevel",
+                  Array.isArray(value) ? value[0] : value,
+                )
+              }
+            />
+          </div>
         </div>
         {children}
       </MCFormWrapper>

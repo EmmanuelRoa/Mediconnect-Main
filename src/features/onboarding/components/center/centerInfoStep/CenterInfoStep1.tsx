@@ -27,20 +27,6 @@ function CenterInfoStep1({
   const setCenterField = useAppStore((state) => state.setCenterField);
   const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
 
-  const typeOptions = [
-    { value: "clinica", label: t("centerInfoStep.typeOptions.clinica") },
-    { value: "hospital", label: t("centerInfoStep.typeOptions.hospital") },
-    {
-      value: "laboratorio",
-      label: t("centerInfoStep.typeOptions.laboratorio"),
-    },
-    {
-      value: "centro_diagnostico",
-      label: t("centerInfoStep.typeOptions.centro_diagnostico"),
-    },
-    { value: "otro", label: t("centerInfoStep.typeOptions.otro") },
-  ];
-
   const handleSubmit = (data: any) => {
     onValidationChange?.(true);
     onNext?.();

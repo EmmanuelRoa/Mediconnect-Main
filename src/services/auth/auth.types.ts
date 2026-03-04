@@ -381,7 +381,7 @@ export interface RefreshTokenResponse {
 /**
  * Obtiene el nombre completo del usuario según su rol
  */
-export function getUserFullName(user: User | null): string {
+export function getUserFullName(user: User | any | null): string {
   if (!user) return '';
   
   if (user.doctor) {
@@ -390,16 +390,53 @@ export function getUserFullName(user: User | null): string {
     return `${user.paciente.nombre} ${user.paciente.apellido || ''}`.trim();
   } else if (user.centroSalud && user.centroSalud.nombre) {
     return user.centroSalud.nombre;
+  } else if(user.nombre && user.apellido){
+    return `${user.nombre} ${user.apellido}`;
   }
   
   // Fallback: usar el email
   return user.email.split('@')[0];
 }
 
+export function getUserName(user: User | any | null): string {
+  if (!user) return '';
+
+  if (user.doctor) {
+    return user.doctor.nombre;
+  } else if (user.paciente && user.paciente.nombre) {
+    return user.paciente.nombre;
+  } else if (user.centroSalud && user.centroSalud.nombre) {
+    return user.centroSalud.nombre;
+  } else if(user.nombre){
+    return user.nombre;
+  }
+  // Fallback: usar el email
+  return user.email.split('@')[0];
+}
+
+export function getUserLastName(user: User | any | null): string {
+  if (!user) return '';
+  if (user.doctor) {
+    return user.doctor.apellido;
+  }
+  if (user.paciente && user.paciente.apellido) {
+    return user.paciente.apellido;
+  }
+
+  if(user.apellido){
+    return user.apellido;
+  }
+
+  // Para centros de salud o si no hay apellido, retornar cadena vacía
+  return '';
+}
+
+
+
 /**
  * Obtener el telefono del usuario según su rol
  */
-export function getUserPhone(user: User | null): string {
+export function getUserPhone(user: User | any | null): string {
   if (!user) return '';
   
   // Primero verificar si hay teléfono directo en el usuario
@@ -434,13 +471,17 @@ export function getUserPhone(user: User | null): string {
     return user.centroSalud.telefono;
   }
   
+  if(user.usuario?.telefono){
+    return user.usuario.telefono;
+  }
+
   return '';
 }
 
 /**
  * Obtiene las iniciales del usuario para el avatar
  */
-export function getUserInitials(user: User | null): string {
+export function getUserInitials(user: User | any | null): string {
   if (!user) return '';
   const fullName = getUserFullName(user);
   const names = fullName.split(' ');
@@ -485,7 +526,7 @@ export function getUserAppRole(user: User | null): AppUserRole | null {
  * Busca primero en user.fotoPerfil (para usuarios de Google u otros con foto directa)
  * Luego busca en el objeto específico del rol (doctor, paciente, centroSalud)
  */
-export function getUserAvatar(user: User | null): string | undefined {
+export function getUserAvatar(user: User | any | null): string | undefined {
   if (!user) return undefined;
   
   // Primero verificar si hay foto de perfil directa en el usuario
@@ -504,6 +545,10 @@ export function getUserAvatar(user: User | null): string | undefined {
   
   if (user.centroSalud?.fotoPerfil) {
     return user.centroSalud.fotoPerfil;
+  }
+
+  if(user.usuario?.fotoPerfil){
+    return user.usuario.fotoPerfil;
   }
   
   // Si no hay foto de perfil, retornar undefined para que se muestre el avatar generado

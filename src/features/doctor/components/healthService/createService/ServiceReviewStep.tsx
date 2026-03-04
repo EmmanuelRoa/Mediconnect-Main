@@ -215,7 +215,7 @@ function ServiceReviewStep({ isEditMode = false, serviceId }: { isEditMode?: boo
               {t("createService.review.modality")}
             </h4>
             <p className={isMobile ? "text-base" : "text-lg"}>
-              {serviceCreateData.selectedModality}
+              {serviceCreateData.selectedModality === "presencial" ? t("createService.review.modalityPresencial") : serviceCreateData.selectedModality === "teleconsulta" ? t("createService.review.modalityTeleconsulta") : t("createService.review.modalityMixta")}
             </p>
           </div>
           <div>

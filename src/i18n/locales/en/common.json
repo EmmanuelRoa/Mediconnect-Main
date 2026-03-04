@@ -57,13 +57,53 @@
     "schedule": "Schedule",
     "rating": "Rating",
     "yearsOfExperience": "Years of experience",
+    "options": {
+      "all": "All",
+      "providerType": {
+        "doctor": "Doctor",
+        "clinic": "Clinic",
+        "hospital": "Hospital"
+      },
+      "modality": {
+        "Presencial": "In-Person",
+        "Virtual": "Virtual",
+        "hibrido": "Mixed"
+      },
+      "gender": {
+        "masculino": "Male",
+        "femenino": "Female",
+        "other": "Other"
+      },
+      "schedule": {
+        "mañana": "Morning",
+        "tarde": "Afternoon",
+        "noche": "Evening"
+      },
+      "rating": {
+        "3": "3 stars or more",
+        "3.5": "3.5 stars or more",
+        "4": "4 stars or more",
+        "4.5": "4.5 stars or more"
+      },
+      "years": {
+        "1": "1 year or more",
+        "3": "3 years or more",
+        "5": "5 years or more",
+        "10": "10 years or more"
+      }
+    },
     "selectedProviders": "{{count}} of {{max}} providers selected for comparison",
     "compare": "Compare",
     "providersFound": "{{count}} providers found",
     "noProvidersFound": "No providers found",
     "noResultsDescription": "No results for the selected filters. Try changing the filters or search.",
     "viewList": "View List",
-    "viewMap": "View Map"
+    "viewMap": "View Map",
+    "address": "Address",
+    "province": "Province",
+    "municipality": "Municipality",
+    "loadingProviderTypes": "Loading provider types...",
+    "loadingSpecialties": "Loading specialties..."
   },
   "validation": {
     "emailRequired": "Email is required",
@@ -468,8 +508,11 @@
     "menu": "Menu",
     "conversations": "Conversations",
     "searchChats": "Search Chats",
+    "loading": "Loading conversations...",
     "noConversationsFound": "No conversations found",
-    "microphoneError": "Could not access microphone. Check permissions."
+    "microphoneError": "Could not access microphone. Check permissions.",
+    "noConversations": "No conversations yet. Start a new chat to connect with your doctors or patients.",
+    "loadingOlderMessages": "Loading older messages..."
   },
   "filePreview": {
     "imageAlt": "Image preview",
@@ -487,8 +530,15 @@
   },
   "messageBubble": {
     "imageAlt": "Sent image",
-    "download": "Download"
+    "download": "Download",
+    "deleted": "This message was deleted",
+    "deleteError": "Error deleting message. Please try again.",
+    "confirmDelete": "Are you sure you want to delete this message?",
+    "confirmDeleteTitle": "Delete message",
+    "delete": "Delete",
+    "cancel": "Cancel"
   },
+  "cancel": "Cancel",
   "prescription": {
     "diagnosisTittle": "Diagnosis",
     "diagnosisTittlePlaceholder": "Diagnosis title",
@@ -582,5 +632,10 @@
     "noReceivedDescription": "You have not received any connection requests yet.",
     "noSentTitle": "No sent requests",
     "noSentDescription": "You have not sent any connection requests yet."
+  },
+  "chat": {
+    "chatListItem": {
+      "noMessages": "No messages yet"
+    }
   }
 }

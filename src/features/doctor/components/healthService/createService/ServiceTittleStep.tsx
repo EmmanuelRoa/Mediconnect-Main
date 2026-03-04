@@ -5,7 +5,8 @@ import MCAnimatedInput from "@/shared/components/forms/MCAnimatedInput";
 import ServicesLayoutsSteps from "./ServicesLayoutsSteps";
 import { useTranslation } from "react-i18next";
 import AuthFooterContainer from "@/features/auth/components/AuthFooterContainer";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 function ServiceTittleStep() {
@@ -22,19 +23,27 @@ function ServiceTittleStep() {
     setName("name", data.name);
     setIsTitleSeted(true);
   };
+  const formRef = useRef<UseFormReturn<any> | null>(null);
+
+  useEffect(() => {
+    // If the `name` is populated asynchronously (edit mode), reset the form value so Controller/defaultValue reflects it
+    if (formRef.current) {
+      formRef.current.reset({ name });
+    }
+  }, [name]);
 
   const isButtondisabled = !name || name.trim() === "";
 
   return (
     <ServicesLayoutsSteps title={t("createService.title.title")}>
       <MCFormWrapper
-        key={name || "service-title"}
-        schema={nameSchema}
-        defaultValues={{ name }}
-        onSubmit={handleSubmit}
-        onValidationChange={setIsFormValid}
-        className={`w-full ${isMobile ? "px-2" : ""}`}
-      >
+          schema={nameSchema}
+          defaultValues={{ name }}
+          formRef={formRef}
+          onSubmit={handleSubmit}
+          onValidationChange={setIsFormValid}
+          className={`w-full ${isMobile ? "px-2" : ""}`}
+        >
         <MCAnimatedInput
           name="name"
           label={t("createService.title.serviceName")}

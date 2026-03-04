@@ -40,6 +40,7 @@ import { ROUTES } from "@/router/routes";
 import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
 import { useAppStore } from "@/stores/useAppStore";
 import type { GetServicesOfDoctor } from "@/shared/navigation/userMenu/editProfile/doctor/services";
+import i18n from "@/i18n/config";
 
 const ITEMS_PER_PAGE = 8;
 const TABLE_PAGE_SIZE = 15;
@@ -92,7 +93,12 @@ function MyServicesPage() {
         setIsLoading(true);
 
         const response = await doctorService.getServicesOfDoctor(
-          Number(user.id)
+          Number(user.id),
+          {
+            target: i18n.language || "es", // Asegura que se envíe el idioma actual
+            source: i18n.language === "es" ? "en" : "es",
+            translate_fields: "nombre,descripcion,modalidad", // Campos que deseas traducir
+          }
         );
         if (response && response.success && Array.isArray(response.data)) {
           setServices(response.data);
@@ -272,6 +278,7 @@ function MyServicesPage() {
       duration: `${service.duracionMinutos} min`,
       modalidad: service.modalidad,
       isOwner: true,
+      onDetails: () => navigate(`/service/${service.id}`),
       onEdit: () => navigate(ROUTES.DOCTOR.EDIT_SERVICE.replace(":serviceId", service.id.toString())),
       onDeactivate: () => handleServiceAction(service.id, "deactivate"),
       onActivate: () => handleServiceAction(service.id, "activate"),
@@ -339,7 +346,11 @@ function MyServicesPage() {
       
       // Recargar servicios después de la acción
       if (user?.id) {
-        const response = await doctorService.getServicesOfDoctor(Number(user.id));
+        const response = await doctorService.getServicesOfDoctor(Number(user.id), {
+          target: i18n.language || "es", // Asegura que se envíe el idioma actual
+          source: i18n.language === "es" ? "en" : "es",
+          translate_fields: "nombre,descripcion,modalidad", // Campos que deseas traducir
+        });
         if (response?.success && Array.isArray(response.data)) {
           setServices(response.data);
         }
@@ -393,8 +404,14 @@ function MyServicesPage() {
             { title: t("services.table.rating"), key: "rating" },
             { title: t("services.table.status"), key: "estado" },
           ],
-          data: transformedServicesForTable,
-          fileName: "mis-servicios",
+          data: transformedServicesForTable.map((item) => ({
+            ...item,
+            estado:
+              item.estado === "Activo"
+                ? t("services.status.active")
+                : t("services.status.inactive"),
+          })),
+          fileName: `${i18n.t("services.management.title")} - ${new Date().getFullYear()}`,
           title: t("services.management.title"),
           subtitle: t("services.table.service"),
         });

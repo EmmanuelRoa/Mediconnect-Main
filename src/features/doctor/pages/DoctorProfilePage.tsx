@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import DoctorProfileBanner from "../components/profile/DoctorProfileBanner";
 import DoctorProfileBannerMobile from "../components/profile/DoctorProfileBannerMobile";
@@ -21,64 +24,23 @@ function DoctorProfilePage() {
   const user = useAppStore((state) => state.user); 
   const [sheetTab, setSheetTab] = useState<"general" | "education" | "insurance" | "experience" | "language">("general");
 
-  const services = [
-    {
-      id: "1",
-      title: "Laboratorios clínicos",
-      description:
-        "Evaluación médica completa con laboratorios ambulatorios realizados por laboratoristas profesionales y con las autorizaciones correspondientes.",
-      duration: "1 hora",
-      price: "RD$800",
-      type: "presencial" as const,
-      image:
-        "https://i.pinimg.com/736x/26/96/86/2696865c46c902b5a2a0cdd58b98ba95.jpg",
-      rating: 4.7,
-      reviews: 12,
-      status: "active",
-    },
-    {
-      id: "2",
-      title: "Consulta virtual",
-      description:
-        "Consulta médica por videollamada para seguimiento y evaluación de síntomas.",
-      duration: "30 min",
-      price: "RD$1,200",
-      type: "virtual" as const,
-      image:
-        "https://i.pinimg.com/736x/5a/be/8f/5abe8ff7a562514b3a552a78369e0ed7.jpg",
-      rating: 4.9,
-      reviews: 20,
-      status: "active",
-    },
-    {
-      id: "3",
-      title: "Chequeo general anual",
-      description:
-        "Evaluación médica completa anual para monitorear la salud general y prevenir enfermedades.",
-      duration: "1 hora",
-      price: "RD$2,500",
-      type: "presencial" as const,
-      image:
-        "https://i.pinimg.com/736x/2d/79/92/2d799226aaefb127794b72128c3889cd.jpg",
-      rating: 4.8,
-      reviews: 15,
-      status: "active",
-    },
-    {
-      id: "4",
-      title: "Consulta de seguimiento",
-      description:
-        "Consulta médica para seguimiento de condiciones crónicas o tratamiento en curso.",
-      duration: "30 min",
-      price: "RD$1,000",
-      type: "mixta" as const,
-      image:
-        "https://i.pinimg.com/736x/16/51/d6/1651d6e629be1f7033e364dda83a83cd.jpg",
-      rating: 4.6,
-      reviews: 8,
-      status: "inactive",
-    },
-  ];
+  const isMyProfile = !doctorId || user?.id === Number(doctorId);
+
+  // Determinar el ID del doctor a mostrar
+  const profileDoctorId = doctorId ? Number(doctorId) : user?.id;
+
+  // Fetch del perfil público cuando es otro doctor
+  const { data: fetchedDoctorProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["doctor-profile", profileDoctorId],
+    queryFn: () => doctorService.getDoctorById(profileDoctorId!),
+    enabled: !isMyProfile && !!profileDoctorId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Usar los datos del store si es mi perfil, o los fetched si es otro doctor
+  const doctorProfile = isMyProfile ? user : fetchedDoctorProfile?.data;
+  // Para secciones que esperan el objeto doctor anidado (Doctor type)
+  const doctorData = doctorProfile;
 
   const centers = [
     {
@@ -119,8 +81,19 @@ function DoctorProfilePage() {
     },
   ];
 
-  const isMyProfile = user?.id === (doctorId ? Number(doctorId) : undefined);
-   
+  if (isLoadingProfile) {
+    return (
+      <MCDashboardContent mainWidth="w-[100%]" noBg>
+        <div className="min-h-screen w-full space-y-6 p-6">
+          <Skeleton className="w-full h-60 rounded-4xl" />
+          <Skeleton className="w-2/3 h-8" />
+          <Skeleton className="w-full h-40" />
+          <Skeleton className="w-full h-40" />
+        </div>
+      </MCDashboardContent>
+    );
+  }
+
   return (
     <MCDashboardContent mainWidth="w-[100%]" noBg>
       <div className="min-h-screen w-full">
@@ -128,13 +101,13 @@ function DoctorProfilePage() {
         <div className="w-full">
           {isMobile ? (
             <DoctorProfileBannerMobile
-              doctor={user}
+              doctor={doctorProfile}
               setOpenSheet={setOpenSheet}
               isMyProfile={isMyProfile}
             />
           ) : (
             <DoctorProfileBanner
-              doctor={user}
+              doctor={doctorProfile}
               setOpenSheet={setOpenSheet}
               isMyProfile={isMyProfile}
             />
@@ -147,7 +120,7 @@ function DoctorProfilePage() {
             {/* Columna principal */}
             <div className="flex flex-col gap-4 lg:gap-6 order-1">
               <DoctorAboutSection 
-                doctor={user?.doctor || undefined} 
+                doctor={doctorData || undefined} 
                 isMyProfile={isMyProfile}
                 onOpenSheet={() => {
                   setSheetTab("general");
@@ -161,7 +134,10 @@ function DoctorProfilePage() {
                   setOpenSheet(true);
                 }}
               />
-              <DoctorServicesSection services={services} />
+              <DoctorServicesSection 
+                doctorId={profileDoctorId} 
+                isMyProfile={isMyProfile} 
+              />
               <DoctorCentersSection centers={centers} />
               {/* Educación y Experiencia - solo en mobile */}
               <div className="flex flex-col gap-4 lg:hidden">

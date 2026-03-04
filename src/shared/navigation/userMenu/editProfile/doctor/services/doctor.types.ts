@@ -460,13 +460,38 @@ export interface ServicioHorario {
   horario: HorarioDetalle;
 }
 
-export interface ServicioUbicacionBarrio {
+export interface ServicioUbicacionSeccion {
+  id: number;
+  nombre: string;
+  id_municipio: number;
+  distritoMunicipal: any | null;
+  municipio: ServicioUbicacionMunicipio;
+}
+
+export interface ServicioUbicacionMunicipio {
+  id: number;
+  nombre: string;
+  provincia: ServicioUbicacionProvincia;
+}
+
+export interface ServicioUbicacionProvincia {
+  id: number;
   nombre: string;
 }
+
+export interface ServicioUbicacionBarrio {
+  id: number;
+  nombre: string;
+  seccion: ServicioUbicacionSeccion;
+}
+
+
 
 export interface ServicioUbicacion {
   id: number;
   direccion: string;
+  nombre: string;
+  codigoPostal: string | null;
   barrio: ServicioUbicacionBarrio;
 }
 
@@ -556,6 +581,109 @@ export interface UpdateDoctorServiceRequest {
   horarioIds?: number[];
 }
 
+// --- TIPOS PARA DETALLE DEL SERVICIO ---
+
+export interface ServiceDetailDoctor {
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  tipoDocIdentificacion: string;
+  numeroDocumentoIdentificacion: string;
+  fechaNacimiento: string;
+  genero: string;
+  nacionalidad: string;
+  exequatur: string;
+  biografia: string;
+  anosExperiencia: number;
+  estadoVerificacion: string;
+  calificacionPromedio: number;
+  estado: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  duracionCitaPromedio: number;
+  tarifas: number | null;
+  usuario: {
+    id: number;
+    email: string;
+    fotoPerfil: string;
+  };
+}
+
+export interface ServiceDetailUbicacionBarrio {
+  id: number;
+  nombre: string;
+  seccion: {
+    id: number;
+    nombre: string;
+    id_municipio: number;
+    distritoMunicipal: any | null;
+    municipio: {
+      id: number;
+      nombre: string;
+      provincia: {
+        id: number;
+        nombre: string;
+      };
+    };
+  };
+}
+
+export interface ServiceDetailUbicacion {
+  id: number;
+  direccion: string;
+  nombre: string;
+  codigoPostal: string | null;
+  barrio: ServiceDetailUbicacionBarrio;
+  latitud: number;
+  longitud: number;
+}
+
+export interface ServiceDetailResena {
+  id: number;
+  servicioId: number;
+  pacienteId: number;
+  calificacion: number;
+  comentario: string;
+  estado: string;
+  creadoEn: string;
+  paciente?: {
+    usuario: {
+      id: number;
+      nombre: string;
+      apellido: string;
+      fotoPerfil?: string;
+    };
+  };
+}
+
+export interface ServiceDetail {
+  id: number;
+  doctorId: number;
+  especialidadId: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  duracionMinutos: number;
+  maxPacientesDia: number | null;
+  calificacionPromedio: number;
+  modalidad: string;
+  estado: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  imagenes: ServicioImagen[];
+  doctor: ServiceDetailDoctor;
+  especialidad: ServicioEspecialidad;
+  horarios: ServicioHorario[];
+  centros: any[];
+  ubicacionId: number | null;
+  ubicacion: ServiceDetailUbicacion[];
+  resenas: ServiceDetailResena[];
+}
+
+export interface GetServiceByIdResponse {
+  success: boolean;
+  data: ServiceDetail;
+}
 
 // --- RE-EXPORTAR TIPOS RELACIONADOS ---
 

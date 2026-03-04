@@ -57,13 +57,53 @@
     "schedule": "Horario",
     "rating": "Calificación",
     "yearsOfExperience": "Años de experiencia",
+    "options": {
+      "all": "Todos",
+      "providerType": {
+        "doctor": "Doctor",
+        "clinic": "Clínica",
+        "hospital": "Hospital"
+      },
+      "modality": {
+        "Presencial": "Presencial",
+        "Virtual": "Virtual",
+        "hibrido": "Mixta"
+      },
+      "gender": {
+        "masculino": "Masculino",
+        "femenino": "Femenino",
+        "other": "Otro"
+      },
+      "schedule": {
+        "mañana": "Mañana",
+        "tarde": "Tarde",
+        "noche": "Noche"
+      },
+      "rating": {
+        "3": "3 estrellas o más",
+        "3.5": "3.5 estrellas o más",
+        "4": "4 estrellas o más",
+        "4.5": "4.5 estrellas o más"
+      },
+      "years": {
+        "1": "1 año o más",
+        "3": "3 años o más",
+        "5": "5 años o más",
+        "10": "10 años o más"
+      }
+    },
     "selectedProviders": "{{count}} de {{max}} proveedores seleccionados para comparar",
     "compare": "Comparar",
     "providersFound": "{{count}} proveedores encontrados",
     "noProvidersFound": "No se encontraron proveedores",
     "noResultsDescription": "No hay resultados para los filtros seleccionados. Intenta cambiar los filtros o la búsqueda.",
     "viewList": "Ver Lista",
-    "viewMap": "Ver Mapa"
+    "viewMap": "Ver Mapa",
+    "address": "Dirección",
+    "province": "Provincia",
+    "municipality": "Municipio",
+    "loadingProviderTypes": "Cargando tipos de proveedores...",
+    "loadingSpecialties": "Cargando especialidades..."
   },
   "validation": {
     "emailRequired": "El correo electrónico es obligatorio",
@@ -466,9 +506,12 @@
     "back": "Volver",
     "menu": "Menú",
     "conversations": "Conversaciones",
+    "loading": "Cargando conversaciones...",
     "searchChats": "Buscar Chats",
     "noConversationsFound": "No se encontraron conversaciones",
-    "microphoneError": "No se pudo acceder al micrófono. Verifica los permisos."
+    "microphoneError": "No se pudo acceder al micrófono. Verifica los permisos.",
+    "noConversations": "Aún no hay conversaciones. Inicia un nuevo chat para conectar con tus doctores o pacientes.",
+    "loadingOlderMessages": "Cargando mensajes anteriores..."
   },
   "filePreview": {
     "imageAlt": "Vista previa de imagen",
@@ -486,8 +529,15 @@
   },
   "messageBubble": {
     "imageAlt": "Imagen enviada",
-    "download": "Descargar"
+    "download": "Descargar",
+    "deleted": "Este mensaje fue eliminado",
+    "deleteError": "Error al eliminar el mensaje. Por favor, intenta nuevamente.",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este mensaje?",
+    "confirmDeleteTitle": "Eliminar mensaje",
+    "delete": "Eliminar",
+    "cancel": "Cancelar"
   },
+  "cancel": "Cancelar",
   "prescription": {
     "diagnosisTittle": "Diagnóstico",
     "diagnosisTittlePlaceholder": "Título del diagnóstico",
@@ -581,5 +631,10 @@
     "noReceivedDescription": "No has recibido ninguna solicitud de conexión aún.",
     "noSentTitle": "No hay solicitudes enviadas",
     "noSentDescription": "No has enviado ninguna solicitud de conexión aún."
+  },
+  "chat": {
+    "chatListItem": {
+      "noMessages": "Sin mensajes aún"
+    }
   }
 }

@@ -115,7 +115,7 @@ const ubicacionesService = {
 
     async getLocationsByDoctor(language: string, params: any): Promise<any> {
         try {
-            const response = await apiClient.get(`${API_ENDPOINTS.UBICACIONES.LOCATIONS_BY_DOCTOR}`, { params: { target: language, translate_fields: 'name,address' } });
+            const response = await apiClient.get(`${API_ENDPOINTS.UBICACIONES.LOCATIONS_BY_DOCTOR}`, { params: { target: language, translate_fields: 'nombre' } });
             return (response.data.data || []);
         } catch (error) {
             console.error(`Error obteniendo ubicaciones para doctorId ${params.doctorId}:`, error);

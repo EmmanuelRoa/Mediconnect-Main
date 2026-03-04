@@ -25,6 +25,8 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { Map as MapIcon, List as ListIcon } from "lucide-react";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import FiltersSearchProviders from "../components/filters/FiltersSearchProviders";
+import useTiposCentros from "@/features/onboarding/services/useTiposCentros";
+import { useEspecialidades } from "@/features/onboarding/services";
 
 interface SearchProviderFilters {
   name: string;
@@ -39,36 +41,6 @@ interface SearchProviderFilters {
   rating: number | null;
 }
 
-const TIPO_PROVEEDOR_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "doctor", label: "Doctor" },
-  { value: "hospital", label: "Hospital" },
-  { value: "clinic", label: "Clínica" },
-];
-
-const ESPECIALIDAD_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "Cardiología", label: "Cardiología" },
-  { value: "Pediatría", label: "Pediatría" },
-  { value: "Dermatología", label: "Dermatología" },
-  { value: "Medicina General", label: "Medicina General" },
-  { value: "Ginecología", label: "Ginecología" },
-  { value: "Neurología", label: "Neurología" },
-  { value: "Psiquiatría", label: "Psiquiatría" },
-];
-
-const MODALIDAD_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "presencial", label: "Presencial" },
-  { value: "virtual", label: "Virtual" },
-  { value: "hibrido", label: "Híbrido" },
-];
-
-const GENERO_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "masculino", label: "Masculino" },
-  { value: "femenino", label: "Femenino" },
-];
 
 const IDIOMAS_OPTIONS = [
   { value: "all", label: "Todos" },
@@ -77,28 +49,7 @@ const IDIOMAS_OPTIONS = [
   { value: "Francés", label: "Francés" },
 ];
 
-const HORARIO_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "mañana", label: "Mañana" },
-  { value: "tarde", label: "Tarde" },
-  { value: "noche", label: "Noche" },
-];
 
-const CALIFICACION_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "4.5", label: "4.5 estrellas o más" },
-  { value: "4", label: "4 estrellas o más" },
-  { value: "3.5", label: "3.5 estrellas o más" },
-  { value: "3", label: "3 estrellas o más" },
-];
-
-const YEARS_OF_EXPERIENCE_OPTIONS = [
-  { value: "all", label: "Todos" },
-  { value: "1", label: "1 año o más" },
-  { value: "3", label: "3 años o más" },
-  { value: "5", label: "5 años o más" },
-  { value: "10", label: "10 años o más" },
-];
 
 const filterProvider = (
   provider: Provider,
@@ -323,20 +274,67 @@ const DesktopFilters = memo(
     onFilterChange,
     onYearsChange,
     t,
+    isLoadingCentro,
+    tiposCentroOptions,
+    isLoadingEspecialidades,
+    especialidadesOptions
   }: {
     searchFilters: SearchProviderFilters;
     onFilterChange: (key: string, values: string[]) => void;
     onYearsChange: (value: number | null) => void;
     t: any;
+    isLoadingCentro: boolean;
+    tiposCentroOptions: { value: string; label: string }[];
+    isLoadingEspecialidades: boolean;
+    especialidadesOptions: { value: string; label: string }[];
   }) => {
+
+    const MODALIDAD_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "presencial", label: t("search.options.modality.Presencial") },
+      { value: "teleconsulta", label: t("search.options.modality.Virtual") },
+      { value: "Mixta", label: t("search.options.modality.hibrido") },
+    ];
+
+    const GENERO_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "M", label: t("search.options.gender.masculino") },
+      { value: "F", label: t("search.options.gender.femenino") },
+      { value: "O", label: t("search.options.gender.other") }
+    ];
+
+    const HORARIO_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "mañana", label: t("search.options.schedule.mañana") },
+      { value: "tarde", label: t("search.options.schedule.tarde") },
+      { value: "noche", label: t("search.options.schedule.noche") },
+    ];
+
+    const CALIFICACION_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "4.5", label: t("search.options.rating.4.5") },
+      { value: "4", label: t("search.options.rating.4") },
+      { value: "3.5", label: t("search.options.rating.3.5") },
+      { value: "3", label: t("search.options.rating.3") },
+    ];
+
+    const YEARS_OF_EXPERIENCE_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "1", label: t("search.options.years.1") },
+      { value: "3", label: t("search.options.years.3") },
+      { value: "5", label: t("search.options.years.5") },
+      { value: "10", label: t("search.options.years.10") },
+    ];
+
     return (
       <div className="flex gap-2 w-full justify-end max-w-6xl">
         <MCFilterSelect
           name="providerType"
-          placeholder={t("search.providerType", "Tipo")}
-          options={TIPO_PROVEEDOR_OPTIONS}
+          placeholder={isLoadingCentro ? t("search.loadingProviderTypes") : t("search.providerType", "Tipo")}
+          options={tiposCentroOptions}
           multiple
           noBadges
+          disabled={isLoadingCentro}
           value={searchFilters.providerType}
           onChange={(values) =>
             onFilterChange(
@@ -347,10 +345,11 @@ const DesktopFilters = memo(
         />
         <MCFilterSelect
           name="specialty"
-          placeholder={t("search.specialty", "Especialidad")}
-          options={ESPECIALIDAD_OPTIONS}
+          placeholder={ isLoadingEspecialidades ? t("search.loadingSpecialties") : t("search.specialty", "Especialidad")}
+          options={especialidadesOptions}
           multiple
           noBadges
+          disabled={isLoadingEspecialidades}
           value={searchFilters.specialty}
           onChange={(values) =>
             onFilterChange(
@@ -470,6 +469,10 @@ function Search() {
     scheduledAppointments: ["all"],
     rating: null,
   });
+
+  const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
+  const { data: especialidadesOptions = [], isLoading: isLoadingEspecialidades } = useEspecialidades();
+
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     Object.entries(searchFilters).forEach(([key, value]) => {
@@ -480,6 +483,7 @@ function Search() {
     });
     return count;
   }, [searchFilters]);
+
   const handleClearFilters = useCallback(() => {
     setSearchFilters({
       name: "",
@@ -494,17 +498,20 @@ function Search() {
       rating: null,
     });
   }, []);
+
   const updateSearchFilters = useCallback(
     (newFilters: Partial<SearchProviderFilters>) => {
       setSearchFilters((prev) => ({ ...prev, ...newFilters }));
     },
     [],
   );
+
   const filteredProviders = useMemo(() => {
     return allProviders.filter((provider) =>
       filterProvider(provider, searchFilters),
     );
   }, [searchFilters]);
+
   const handleProviderSelect = useCallback((id: string) => {
     setSelectedProviders((prev) =>
       prev.includes(id)
@@ -514,17 +521,21 @@ function Search() {
           : prev,
     );
   }, []);
+
   const handleClinicConnect = useCallback((id: string) => {
     setConnectedClinics((prev) =>
       prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
     );
   }, []);
+
   const handleViewProfile = useCallback((id: string) => {
     console.log("Ver perfil de:", id);
   }, []);
+
   const handleRemoveFromComparison = useCallback((id: string) => {
     setSelectedProviders((prev) => prev.filter((pid) => pid !== id));
   }, []);
+
   const handleFilterChange = useCallback(
     (filterKey: string, values: string[]) => {
       updateSearchFilters({
@@ -533,6 +544,7 @@ function Search() {
     },
     [updateSearchFilters],
   );
+
   const handleYearsChange = useCallback(
     (value: number | null) => {
       updateSearchFilters({
@@ -541,9 +553,11 @@ function Search() {
     },
     [updateSearchFilters],
   );
+
   const toggleMapView = useCallback(() => {
     setShowMap((prev) => !prev);
   }, []);
+
   const selectedProvidersData = useMemo(
     () =>
       allProviders.filter((provider) =>
@@ -551,6 +565,7 @@ function Search() {
       ),
     [selectedProviders],
   );
+  
   return (
     <div className="min-h-screen flex flex-col bg-background rounded-4xl">
       <motion.div
@@ -588,6 +603,10 @@ function Search() {
                 searchFilters={searchFilters}
                 onFilterChange={handleFilterChange}
                 onYearsChange={handleYearsChange}
+                isLoadingCentro={isLoadingCentro}
+                tiposCentroOptions={tiposCentroOptions}
+                isLoadingEspecialidades={isLoadingEspecialidades}
+                especialidadesOptions={especialidadesOptions}
                 t={t}
               />
             )}

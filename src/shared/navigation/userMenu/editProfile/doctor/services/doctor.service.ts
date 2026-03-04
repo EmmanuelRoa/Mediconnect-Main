@@ -42,7 +42,11 @@ import type {
   AddImageToServiceResponse,
   RemoveImageFromServiceResponse,
   UpdateDoctorServiceRequest,
+  GetServiceByIdResponse,
+  Doctor,
 } from './doctor.types';
+import type { get } from 'react-hook-form';
+
 
 /**
  * Servicio para gestionar el perfil del doctor autenticado
@@ -104,6 +108,22 @@ export const doctorService = {
    * - nacionalidad: Nacionalidad del doctor
    * - estado: Estado del perfil (Activo/Inactivo)
    */
+  getDoctorById: async (id: number): Promise<{ success: boolean; data: Doctor }> => {
+    try {
+      const response = await apiClient.get<{ success: boolean; data: Doctor }>(
+        `/doctores/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener perfil de doctor por ID:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      if (error.response?.status === 404) {
+        throw new Error('Perfil de doctor no encontrado.');
+      }
+      throw new Error(errorData?.message || 'Error al obtener el perfil del doctor.');
+    }
+  },
+
   updateProfile: async (
     data: UpdateDoctorProfileRequest
   ): Promise<UpdateDoctorProfileResponse> => {
@@ -588,6 +608,37 @@ export const doctorService = {
     }
   },
 
+
+  getPopularInsurances: async (language?: string): Promise<GetAvailableInsurancesResponse> => {
+    try {
+      // Construir query params
+      const params: Record<string, string> = {};
+
+      // Agregar traducción si se especifica un idioma diferente al español
+      if (language && language !== 'es') {
+        params.target = language;
+        params.source = 'es';
+        params.translate_fields = 'nombre,descripcion';
+      }
+
+      const response = await apiClient.get<GetAvailableInsurancesResponse>(
+        '/seguros/mas-utilizados',
+        { params }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener seguros populares:', error);
+
+      const errorData = error.response?.data as InsuranceError;
+
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener seguros populares. Intenta nuevamente.'
+      );
+    }
+  },
+
   /**
    * Obtiene los seguros aceptados por el doctor autenticado
    * @param language - Idioma para traducción automática (opcional, por defecto 'es')
@@ -894,9 +945,12 @@ export const doctorService = {
    * @param serviceId - ID del servicio
    * @returns Respuesta con el servicio
    */
-  getServiceById: async (serviceId: number): Promise<any> => {
+  getServiceById: async (serviceId: number, params: any | null = null): Promise<GetServiceByIdResponse> => {
     try {
-      const response = await apiClient.get(`/servicios/${serviceId}`);
+      const response = await apiClient.get<GetServiceByIdResponse>(
+        `/servicios/${serviceId}`, 
+        { params }
+      );
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener servicio por id:', error);
@@ -927,6 +981,24 @@ export const doctorService = {
         errorData?.message || 
         error.message || 
         'Error al obtener servicios del doctor. Intenta nuevamente.'
+      );
+    }
+  },
+
+  getServicesByDistance: async (lat: number, lng: number, radiusKm: number, params: any | null = null): Promise<GetServicesOfDoctorResponse> => {
+    try {
+      const response = await apiClient.get<GetServicesOfDoctorResponse>(
+        `/servicios/cercanos`,
+        { params: { lat, lng, radio: radiusKm, ...params } }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener servicios por distancia:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener servicios por distancia. Intenta nuevamente.'
       );
     }
   },

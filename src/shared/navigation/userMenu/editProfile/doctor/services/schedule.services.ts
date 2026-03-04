@@ -1,14 +1,23 @@
 import apiClient from "@/services/api/client";
 import type { CreateScheduleServiceRequest, CreateScheduleServiceResponse, GetScheduleServicesResponse, ScheduleServiceResponse, ValidateScheduleRequest, ValidateScheduleResponse } from "./schedule.types";
+import i18n from "@/i18n/config";
 
 export const scheduleService = {
   getScheduleServices: async (doctorId: string): Promise<GetScheduleServicesResponse> => {
     try {
-      const response = await apiClient.get<GetScheduleServicesResponse>(
-        `/horarios/doctor/${doctorId}`
+      const response = await apiClient.get(
+        `/horarios/doctor/${doctorId}`,
+        {
+          // Enviar los parámetros de traducción como query params para que Axios los acepte
+          params: {
+            source: i18n.language === "es" ? "en" : "es",
+            target: i18n.language === "es" ? "es" : "en",
+            translate_fields: "nombre,descripcion",
+          },
+        }
       );
 
-      return response.data;
+      return response.data as GetScheduleServicesResponse;
     }catch (error) {
       console.error("Error en scheduleService.getScheduleServices:", error);
       throw error;

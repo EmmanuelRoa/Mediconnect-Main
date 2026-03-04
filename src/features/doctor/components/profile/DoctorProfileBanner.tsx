@@ -42,11 +42,11 @@ import { useNavigate } from "react-router-dom";
 import { useVerifyInfoStore } from "@/stores/useVerifyInfoStore";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useStartConversation } from "@/lib/hooks/useStartConversation";
 
 interface Props {
   doctor: any;
   setOpenSheet: (open: boolean) => void;
-  onSendMessage?: () => void;
   onToggleFavorite?: () => void;
   isMyProfile?: boolean;
 }
@@ -68,7 +68,6 @@ const AVAILABLE_LANGUAGES = [
 function DoctorProfileBanner({
   doctor,
   setOpenSheet,
-  onSendMessage,
   onToggleFavorite,
   isMyProfile,
 }: Props) {
@@ -79,6 +78,15 @@ function DoctorProfileBanner({
   const logout = useAppStore((state) => state.logout);
   const setToast = useGlobalUIStore((state) => state.setToast);
   const clearAllVerifyInfo = useVerifyInfoStore((state) => state.clearAll);
+  const currentUser = useAppStore((state) => state.user);
+
+  const { startConversation, isLoading: isStartingConversation } = useStartConversation();
+
+  // El ID de usuario del doctor que se está viendo
+  const doctorUserId: number | undefined = doctor?.id ?? doctor?.usuarioId;
+
+  // Solo los pacientes pueden iniciar conversaciones con doctores
+  const canMessage = !isMyProfile && currentUser?.rol === 'PATIENT' && !!doctorUserId;
 
   const fetchLanguages = async () => {
     if (!isMyProfile) return; // Solo cargar si es mi perfil
@@ -105,6 +113,12 @@ function DoctorProfileBanner({
     const lang = AVAILABLE_LANGUAGES.find(l => l.label === nombre);
     return i18n.language === 'en' ? (lang?.labelEn || nombre) : nombre;
   };
+
+  const getDoctorSpecialty = (especialidades: any) => {
+    if(!especialidades || especialidades.length === 0) return t("profileForm.generalPractitioner", "Sin especialidad");
+
+    return especialidades.map((e: any) => e.especialidades.nombre).join(", ");
+  }
   
   const handleLogout = () => {
     logout();
@@ -127,12 +141,13 @@ function DoctorProfileBanner({
     });
   };
 
+  console.log("DoctorProfileBanner renderizado con doctor:", doctor);
   return (
     <div className="shadow-md rounded-4xl border-0 mx-auto">
       <div className="relative h-60 flex items-end rounded-t-4xl  ">
-        {doctor?.banner ? (
+        {doctor?.banner || doctor?.usuario?.banner ? (
           <img
-            src={doctor.banner}
+            src={doctor?.banner || doctor?.usuario?.banner}
             alt={t("profileForm.bannerImage")}
             className="absolute top-0 left-0 w-full h-full object-cover rounded-t-4xl "
             style={{ zIndex: 1 }}
@@ -179,7 +194,7 @@ function DoctorProfileBanner({
                     fill="#8bb1ca"
                   />
                 </h3>
-                <p className="text-primary">{doctor.specialty}</p>
+                <p className="text-primary">{getDoctorSpecialty(doctor?.doctor?.especialidades ?? doctor.especialidades)}</p>
                 <div>
                   <span className="text-sm mt-1 text-muted-foreground font-medium flex items-center gap-2">
                     <span className="flex items-center gap-1">
@@ -188,12 +203,12 @@ function DoctorProfileBanner({
                         size={18}
                         className="text-[#F7B500]"
                       />
-                      {getDoctorRating(doctor.calificacionPromedio)}
+                      {getDoctorRating(doctor?.doctor?.calificacionPromedio ?? doctor.calificacionPromedio) || t("profileForm.noRating", "Sin calificación")}
                     </span>
                     &#8226;{" "}
                     <span className="flex items-center gap-1">
                       <Stethoscope size={18} className="text-secondary" />
-                      {doctor.yearsOfExperience}{" "}
+                      {doctor?.doctor?.anosExperiencia ?? doctor.anosExperiencia}{" "}
                       {t("profileForm.yearsExperience")}
                     </span>
                     {languages.length > 0 && (
@@ -251,15 +266,20 @@ function DoctorProfileBanner({
                   </>
                 ) : (
                   <>
-                    <MCButton
-                      variant="primary"
-                      size="m"
-                      className="font-medium rounded-full transition-colors transition-opacity transition-transform duration-200 focus:outline-none px-6 py-3 text-base md:px-8 md:py-6 md:text-lg bg-transparent border border-primary text-primary hover:bg-primary/10 hover:opacity-90 active:bg-primary/20 active:opacity-80 active:scale-95 active:shadow-inner"
-                      onClick={onSendMessage}
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      {t("profileForm.sendMessage")}
-                    </MCButton>
+                    {canMessage && (
+                      <MCButton
+                        variant="primary"
+                        size="m"
+                        className="font-medium rounded-full transition-colors transition-opacity transition-transform duration-200 focus:outline-none px-6 py-3 text-base md:px-8 md:py-6 md:text-lg bg-transparent border border-primary text-primary hover:bg-primary/10 hover:opacity-90 active:bg-primary/20 active:opacity-80 active:scale-95 active:shadow-inner"
+                        onClick={() => startConversation(doctorUserId!)}
+                        disabled={isStartingConversation}
+                      >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        {isStartingConversation
+                          ? t("profileForm.openingChat", "Abriendo chat...")
+                          : t("profileForm.sendMessage")}
+                      </MCButton>
+                    )}
                     <MCButton
                       variant={doctor.isFavorite ? "secondary" : "outline"}
                       size="m"

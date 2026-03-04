@@ -160,11 +160,11 @@ function CreateServicesPage() {
         const locationData = {
           name: svc.ubicacion[0]?.nombre || "",
           address: svc.ubicacion[0]?.direccion || "",
-          province: provinceInLocation.id || "",
-          municipality: municipalityInLocation.id || "",
-          section: sectionInLocation.id || "",
-          district: districtInLocation.id || "",
-          neighborhood: neighborhoodInLocation.id || "",
+          province: provinceInLocation.id ? String(provinceInLocation.id) : "",
+          municipality: municipalityInLocation.id ? String(municipalityInLocation.id) : "",
+          section: sectionInLocation.id ? String(sectionInLocation.id) : "",
+          district: districtInLocation.id ? String(districtInLocation.id) : "",
+          neighborhood: neighborhoodInLocation.id ? String(neighborhoodInLocation.id) : "",
           coordinates: {
             latitude: svc.ubicacion[0]?.latitud ?? undefined,
             longitude: svc.ubicacion[0]?.longitud ?? undefined,

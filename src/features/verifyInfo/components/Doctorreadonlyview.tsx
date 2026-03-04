@@ -59,14 +59,6 @@ function DoctorReadOnlyView({ data }: DoctorReadOnlyViewProps) {
       </div>
       <div>
         <p className="text-sm text-muted-foreground mb-1">
-          {t("verification.identification.physicalAddress")}
-        </p>
-        <p className="font-medium text-foreground break-words">
-          {data.address}
-        </p>
-      </div>
-      <div>
-        <p className="text-sm text-muted-foreground mb-1">
           {t("verification.identification.primarySpecialty")}
         </p>
         <p className="font-medium text-foreground">{data.primarySpecialty}</p>

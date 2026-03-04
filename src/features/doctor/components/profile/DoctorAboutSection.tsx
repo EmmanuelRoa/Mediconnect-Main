@@ -19,9 +19,9 @@ function DoctorAboutSection({ doctor, isMyProfile = false, onOpenSheet }: Props)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {doctor.biografia ? (
+        {doctor.biografia || doctor?.doctor?.biografia ? (
           <p className="text-muted-foreground leading-relaxed px-6">
-            {doctor.biografia}
+            {doctor.biografia || doctor?.doctor?.biografia}
           </p>
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-center px-6">

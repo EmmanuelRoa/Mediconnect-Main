@@ -622,6 +622,10 @@
         "deactivate": "Desactivar servicio",
         "activate": "Activar servicio",
         "delete": "Eliminar servicio"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
       }
     },
     "centers": {
@@ -713,6 +717,10 @@
       "deleteSuccess": "Servicio eliminado exitosamente",
       "deleteDescription": "Este servicio ha sido eliminado. Toda la información relacionada ha sido borrada.",
       "deleteError": "Error al eliminar el servicio. Por favor, inténtalo nuevamente."
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
     }
   },
 
@@ -721,6 +729,7 @@
     "share": "Compartir",
     "copied": "¡Copiado!",
     "edit": "Editar",
+    "location": "Ubicación",
     "photoAlt": "Consulta médica",
     "reviewCount": "12 reseñas",
     "specialty": "Medicina Familiar",
@@ -739,7 +748,7 @@
       "rating": "Calificación",
       "experience": "Años de experiencia"
     },
-    "reviews": { "title": "Reseñas" }
+    "reviews": { "title": "Reseñas", "titleForOne": "Reseña" }
   },
 
   "filters": {
@@ -909,7 +918,10 @@
       "networkError": "Error de conexión. Por favor, verifica tu conexión a internet.",
       "locationError": "Error con la ubicación seleccionada. Por favor, elige una ubicación diferente o inténtalo nuevamente más tarde.",
       "updateErrorMessage": "Error al actualizar el servicio. Por favor, inténtalo nuevamente.",
-      "updateSuccessMessage": "Servicio actualizado exitosamente!"
+      "updateSuccessMessage": "Servicio actualizado exitosamente!",
+      "modalityPresencial": "Presencial",
+      "modalityTeleconsulta": "Teleconsulta",
+      "modalityMixta": "Mixta"
     },
     "modals": {
       "description": {

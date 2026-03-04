@@ -70,8 +70,6 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
     setIsOpen(false);
 
     try {
-      console.log("🔴 Deactivating service:", serviceId);
-
       // Llamar a la API para desactivar
       const response = await doctorService.updateStatusOfService(
         Number(serviceId),
@@ -79,8 +77,6 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
       );
 
       if (response?.success) {
-        console.log("✅ Service deactivated successfully");
-        
         toast.success(
           t("services.messages.deactivateSuccess", "Servicio desactivado correctamente"),
           {
@@ -128,8 +124,6 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
     setIsOpen(false);
 
     try {
-      console.log("🟢 Activating service:", serviceId);
-
       // Llamar a la API para activar
       const response = await doctorService.updateStatusOfService(
         Number(serviceId),
@@ -137,8 +131,6 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
       );
 
       if (response?.success) {
-        console.log("✅ Service activated successfully");
-        
         toast.success(
           t("services.messages.activateSuccess", "Servicio activado correctamente"),
           {
@@ -186,14 +178,15 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
     setIsOpen(false);
 
     try {
-      console.log("🗑️ Deleting service:", serviceId);
-
       // Llamar a la API para eliminar
       const response = await doctorService.deleteService(Number(serviceId));
 
-      if (response?.success) {
-        console.log("✅ Service deleted successfully");
-        
+      if (response?.success) {        
+        // Ejecutar callback adicional si existe (para recargar datos)
+        if (onDelete) {
+          onDelete();
+        }
+
         toast.success(
           t("services.messages.deleteSuccess", "Servicio eliminado correctamente"),
           {
@@ -203,11 +196,6 @@ const ServicesActions: React.FC<ServicesActionsProps> = ({
             ),
           }
         );
-
-        // Ejecutar callback adicional si existe (para recargar datos)
-        if (onDelete) {
-          onDelete();
-        }
       } else {
         throw new Error(response?.message || "Error desconocido");
       }

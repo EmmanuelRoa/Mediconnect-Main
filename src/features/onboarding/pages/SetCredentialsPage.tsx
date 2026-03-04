@@ -16,6 +16,8 @@ import { authService } from "@/services/auth/auth.service";
 import { normalizeLoginResponse } from "@/services/auth/auth.types";
 import { ROUTES } from "@/router/routes";
 import centerRegistrationService, { mapCenterOnboardingToRequest } from "../services/centro-registration.services";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
+import { AVAILABLE_LANGUAGES, PROFICIENCY_LEVELS } from "@/features/onboarding/constants/languages.constants";
 
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
@@ -169,6 +171,35 @@ function SetCredentialsPage() {
 
         // Guardar los tokens y datos del usuario en el store
         login(accessToken, refreshToken, user);
+
+        // Agregar el idioma del doctor si fue seleccionado
+        if (updatedDoctorData.language && updatedDoctorData.proficiencyLevel) {
+          try {
+            // Convertir el ID del idioma a nombre
+            const selectedLanguage = AVAILABLE_LANGUAGES.find(
+              lang => lang.value === updatedDoctorData.language
+            );
+            
+            // Convertir el ID del nivel de dominio a nombre
+            const selectedProficiency = PROFICIENCY_LEVELS.find(
+              level => level.value === updatedDoctorData.proficiencyLevel
+            );
+
+            if (selectedLanguage && selectedProficiency) {
+              // Usar el label en español ya que es el idioma base del sistema
+              await doctorService.addDoctorLanguage({
+                nombre: selectedLanguage.label,
+                nivel: selectedProficiency.label,
+              });
+              
+              console.log('Idioma agregado exitosamente al perfil del doctor');
+            }
+          } catch (languageError) {
+            // No fallar el registro si hay error al agregar el idioma
+            // El doctor puede agregarlo después desde su perfil
+            console.error('Error al agregar idioma durante el registro:', languageError);
+          }
+        }
 
         // Mostrar mensaje de éxito
         setToast({
