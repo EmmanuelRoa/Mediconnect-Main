@@ -7,16 +7,21 @@ import { useTranslation } from "react-i18next";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { patientInsuranceSchema } from "@/schema/profile.schema";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import { patientService } from "./services/patient.service";
-import type { Seguro, TipoSeguro } from "./services/patient.types";
 import { toast } from "sonner";
+import { 
+  useAvailableInsurances,
+  useAvailableInsuranceTypes,
+  useMyInsurances,
+  useAddInsurance,
+  useRemoveInsurance
+} from "@/features/patient/hooks";
 
 interface InsuranceProps {
   onInsurancesChanged?: () => void;
 }
 
 function Insurance({ onInsurancesChanged }: InsuranceProps = {}) {
-  const { t, i18n } = useTranslation("patient");
+  const { t } = useTranslation("patient");
   const isMobile = useIsMobile();
 
   const setPatientInsurance = useProfileStore(
@@ -25,75 +30,30 @@ function Insurance({ onInsurancesChanged }: InsuranceProps = {}) {
 
   const patientInsurance = useProfileStore((state) => state.patientInsurance);
 
-  // Estados para las listas de seguros
-  const [availableInsurances, setAvailableInsurances] = useState<Seguro[]>([]);
-  const [availableInsuranceTypes, setAvailableInsuranceTypes] = useState<TipoSeguro[]>([]);
-  const [myInsurances, setMyInsurances] = useState<Seguro[]>([]);
+  // React Query hooks para datos con caché
+  const { data: availableInsurances = [], isLoading: isLoadingInsurances } = useAvailableInsurances();
+  const { data: availableInsuranceTypes = [] } = useAvailableInsuranceTypes();
+  const { data: myInsurances = [] } = useMyInsurances();
+
+  // Mutation hooks
+  const addInsurance = useAddInsurance();
+  const removeInsurance = useRemoveInsurance();
+
+  // Estado local para UI
   const [selectedInsuranceType, setSelectedInsuranceType] = useState<number | null>(null);
 
-  // Estados de carga
-  const [isLoadingInsurances, setIsLoadingInsurances] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Estado de carga global (cualquier mutación en progreso)
+  const isSubmitting = addInsurance.isPending || removeInsurance.isPending;
 
-  // Cargar datos iniciales
+  // Actualizar el store cuando cambian los seguros
   useEffect(() => {
-    loadInsurancesData();
-  }, []);
-
-  // Recargar datos cuando cambie el idioma
-  useEffect(() => {
-    // Solo recargar si ya se cargaron inicialmente
-    if (!isLoadingInsurances) {
-      loadInsurancesData();
+    if (myInsurances.length > 0) {
+      setPatientInsurance({
+        ...patientInsurance,
+        insuranceProvider: myInsurances.map(i => i.id.toString()),
+      });
     }
-  }, [i18n.language]);
-
-  async function loadInsurancesData() {
-    try {
-      setIsLoadingInsurances(true);
-      const [typesResponse, availableResponse, myResponse] = await Promise.all([
-        patientService.getAvailableInsuranceTypes(i18n.language),
-        patientService.getAvailableInsurances(i18n.language),
-        patientService.getMyInsurances(i18n.language),
-      ]);
-
-      if (typesResponse.success) {
-        setAvailableInsuranceTypes(typesResponse.data);
-      }
-
-      if (availableResponse.success) {
-        setAvailableInsurances(availableResponse.data);
-      }
-
-      if (myResponse.success) {
-        // Transformar la estructura anidada de la API a objetos Seguro
-        const transformedInsurances: Seguro[] = myResponse.data.map(item => ({
-          id: item.seguro.id,
-          nombre: item.seguro.nombre,
-          descripcion: item.seguro.descripcion,
-          idTipoSeguro: item.tipoSeguro.id,
-          tipoSeguro: item.tipoSeguro,
-        }));
-        
-        setMyInsurances(transformedInsurances);
-        
-        // Actualizar el store también
-        setPatientInsurance({
-          ...patientInsurance,
-          insuranceProvider: transformedInsurances.map(i => i.id.toString()),
-        });
-      }
-    } catch (error) {
-      console.error("Error al cargar seguros:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("insurance.errorLoading", "Error al cargar seguros")
-      );
-    } finally {
-      setIsLoadingInsurances(false);
-    }
-  }
+  }, [myInsurances]);
 
   const handleSubmit = () => {
     console.log("Insurance data submitted:");
@@ -114,84 +74,23 @@ function Insurance({ onInsurancesChanged }: InsuranceProps = {}) {
       return;
     }
     
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.addInsurance({ 
-        idSeguro, 
-        idTipoSeguro: selectedInsuranceType 
-      });
-
-      if (response.success) {
-        // Construir el objeto Seguro a partir de la respuesta
-        const newInsurance: Seguro = {
-          id: response.data.seguro.id,
-          nombre: response.data.seguro.nombre,
-          descripcion: response.data.seguro.descripcion,
-          idTipoSeguro: response.data.tipoSeguro.id,
-          tipoSeguro: response.data.tipoSeguro,
-        };
-        
-        const updatedInsurances = [...myInsurances, newInsurance];
-        setMyInsurances(updatedInsurances);
-        
-        toast.success(
-          t("insurance.added", "Seguro agregado exitosamente") || response.message
-        );
-        
-        // Actualizar el store
-        setPatientInsurance({
-          ...patientInsurance,
-          insuranceProvider: updatedInsurances.map(i => i.id.toString()),
-        });
-        
-        // Resetear selección de tipo de seguro
-        setSelectedInsuranceType(null);
-        
-        // Notificar al componente padre que los seguros cambiaron
-        onInsurancesChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al agregar seguro:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("insurance.errorAdding", "Error al agregar seguro")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await addInsurance.mutateAsync({ 
+      idSeguro, 
+      idTipoSeguro: selectedInsuranceType 
+    });
+    
+    // Resetear selección de tipo de seguro
+    setSelectedInsuranceType(null);
+    
+    // Notificar al componente padre que los seguros cambiaron
+    onInsurancesChanged?.();
   }
 
   async function handleRemoveInsurance(id: number) {
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.removeInsurance(id);
-
-      if (response.success) {
-        setMyInsurances(myInsurances.filter(i => i.id !== id));
-        toast.success(
-          t("insurance.removed", "Seguro eliminado exitosamente") || response.message
-        );
-        
-        // Actualizar el store
-        setPatientInsurance({
-          ...patientInsurance,
-          insuranceProvider: myInsurances.filter(i => i.id !== id).map(i => i.id.toString()),
-        });
-        
-        // Notificar al componente padre que los seguros cambiaron
-        onInsurancesChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al eliminar seguro:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("insurance.errorRemoving", "Error al eliminar seguro")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await removeInsurance.mutateAsync(id);
+    
+    // Notificar al componente padre que los seguros cambiaron
+    onInsurancesChanged?.();
   }
 
   return (

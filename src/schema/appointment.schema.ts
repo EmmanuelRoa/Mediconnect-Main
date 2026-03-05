@@ -11,8 +11,19 @@ export const appointmentSchemaBase = z.object({
   insuranceProvider: z.string().min(1),
   serviceId: z.string(),
   doctorId: z.string(),
+  horarioId: z.number().optional(),
   // appointmentId es OPCIONAL - solo existe cuando editamos/reagendamos
   appointmentId: z.string().optional(),
+  
+  // Campos del backend (opcionales hasta el submit)
+  servicioId: z.number().optional(),
+  fecha: z.string().optional(),
+  hora: z.string().optional(),
+  modalidad: z.string().optional(),
+  numPacientes: z.number().optional(),
+  seguroId: z.number().optional(),
+  tipoSeguroId: z.number().optional(),
+  motivoConsulta: z.string().optional(),
 });
 
 export const cancelAppointmentSchemaBase = z.object({
@@ -48,8 +59,19 @@ export const appointmentSchema = (t: (key: string) => string) =>
       .min(1, { message: t("appointment.insuranceRequired") }),
     serviceId: z.string().min(1, { message: t("appointment.serviceRequired") }),
     doctorId: z.string().min(1, { message: t("appointment.doctorRequired") }),
+    horarioId: z.number().optional(),
     // editamos/reagendamos
     appointmentId: z.string().optional(),
+    
+    // Campos del backend (opcionales)
+    servicioId: z.number().optional(),
+    fecha: z.string().optional(),
+    hora: z.string().optional(),
+    modalidad: z.string().optional(),
+    numPacientes: z.number().optional(),
+    seguroId: z.number().optional(),
+    tipoSeguroId: z.number().optional(),
+    motivoConsulta: z.string().optional(),
   });
 
 export const cancelAppointmentSchema = (t: (key: string) => string) =>

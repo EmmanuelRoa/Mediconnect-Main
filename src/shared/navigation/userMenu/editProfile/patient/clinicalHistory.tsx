@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import MCButton from "@/shared/components/forms/MCButton";
 import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import MCSelect from "@/shared/components/forms/MCSelect";
@@ -8,121 +8,50 @@ import { X, BookHeart, Heart, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { patientClinicalHistorySchema } from "@/schema/profile.schema";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import { patientService } from "./services/patient.service";
-import type { CondicionMedica } from "./services/patient.types";
-import { toast } from "sonner";
-import { emitAllergiesChanged, emitConditionsChanged, emitClinicalHistoryChanged } from "@/lib/events/clinicalHistoryEvents";
+import { 
+  useAvailableAllergies, 
+  useAvailableConditions, 
+  useMyAllergies, 
+  useMyConditions,
+  useAddAllergy,
+  useRemoveAllergy,
+  useAddCondition,
+  useAddPersonalCondition,
+  useRemoveCondition,
+} from "./hooks";
 
 interface ClinicalHistoryProps {
   onClinicalHistoryChanged?: () => void;
 }
 
 function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
-  const { t, i18n } = useTranslation("patient");
+  const { t } = useTranslation("patient");
   const isMobile = useIsMobile();
 
-  // Estados para las listas de alergias y condiciones
-  const [availableAllergies, setAvailableAllergies] = useState<CondicionMedica[]>([]);
-  const [availableConditions, setAvailableConditions] = useState<CondicionMedica[]>([]);
-  const [myAllergies, setMyAllergies] = useState<CondicionMedica[]>([]);
-  const [myConditions, setMyConditions] = useState<CondicionMedica[]>([]);
+  // React Query hooks para datos
+  const { data: availableAllergies = [], isLoading: isLoadingAllergies } = useAvailableAllergies();
+  const { data: availableConditions = [], isLoading: isLoadingConditions } = useAvailableConditions();
+  const { data: myAllergies = [] } = useMyAllergies();
+  const { data: myConditions = [] } = useMyConditions();
 
-  // Estados de carga
-  const [isLoadingAllergies, setIsLoadingAllergies] = useState(true);
-  const [isLoadingConditions, setIsLoadingConditions] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Mutation hooks
+  const addAllergy = useAddAllergy();
+  const removeAllergy = useRemoveAllergy();
+  const addCondition = useAddCondition();
+  const addPersonalCondition = useAddPersonalCondition();
+  const removeCondition = useRemoveCondition();
 
+  // Estados locales solo para la UI de edición
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
   const [personalCondition, setPersonalCondition] = useState<string>("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  // Refs para evitar llamadas duplicadas (React Strict Mode)
-  const allergiesLoadedRef = useRef(false);
-  const conditionsLoadedRef = useRef(false);
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    if (!allergiesLoadedRef.current) {
-      allergiesLoadedRef.current = true;
-      loadAllergiesData();
-    }
-    if (!conditionsLoadedRef.current) {
-      conditionsLoadedRef.current = true;
-      loadConditionsData();
-    }
-  }, []);
-
-  // Recargar catálogos cuando cambie el idioma
-  useEffect(() => {
-    // Solo recargar si ya se cargaron inicialmente
-    if (allergiesLoadedRef.current) {
-      loadAllergiesData();
-    }
-    if (conditionsLoadedRef.current) {
-      loadConditionsData();
-    }
-  }, [i18n.language]);
-
-  useEffect(() => {
-    if (editingIndex !== null && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [editingIndex]);
-
-  async function loadAllergiesData() {
-    try {
-      setIsLoadingAllergies(true);
-      const [availableResponse, myResponse] = await Promise.all([
-        patientService.getAvailableAllergies(i18n.language),
-        patientService.getMyAllergies(i18n.language),
-      ]);
-
-      if (availableResponse.success) {
-        setAvailableAllergies(availableResponse.data);
-      }
-
-      if (myResponse.success) {
-        setMyAllergies(myResponse.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar alergias:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorLoadingAllergies", "Error al cargar alergias")
-      );
-    } finally {
-      setIsLoadingAllergies(false);
-    }
-  }
-
-  async function loadConditionsData() {
-    try {
-      setIsLoadingConditions(true);
-      const [availableResponse, myResponse] = await Promise.all([
-        patientService.getAvailableConditions(i18n.language),
-        patientService.getMyConditions(i18n.language),
-      ]);
-
-      if (availableResponse.success) {
-        setAvailableConditions(availableResponse.data);
-      }
-
-      if (myResponse.success) {
-        setMyConditions(myResponse.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar condiciones:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorLoadingConditions", "Error al cargar condiciones médicas")
-      );
-    } finally {
-      setIsLoadingConditions(false);
-    }
-  }
+  // Estado de carga global (cualquier mutación en progreso)
+  const isSubmitting = addAllergy.isPending || 
+                       removeAllergy.isPending || 
+                       addCondition.isPending || 
+                       addPersonalCondition.isPending || 
+                       removeCondition.isPending;
 
   function handleSubmit(data: any) {
     console.log("Form submitted:", data);
@@ -130,30 +59,8 @@ function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
 
   async function handleAddAllergy(value: string) {
     const condicionId = parseInt(value);
-    
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.addAllergy({ condicionId });
-
-      if (response.success) {
-        setMyAllergies(prev => [...prev, response.data]);
-        toast.success(
-          t("clinicalHistory.allergyAdded", "Alergia agregada exitosamente") || response.message
-        );
-        // Emitir evento para notificar a otros componentes
-        emitAllergiesChanged();
-        onClinicalHistoryChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al agregar alergia:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorAddingAllergy", "Error al agregar alergia")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await addAllergy.mutateAsync({ condicionId });
+    onClinicalHistoryChanged?.();
   }
 
   async function handleAddCondition(value: string) {
@@ -163,137 +70,46 @@ function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
     const selectedCondition = availableConditions.find(c => c.id === condicionId);
     const notasIniciales = selectedCondition?.descripcion || "";
     
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.addCondition({ 
-        condicionId, 
-        notas: notasIniciales 
-      });
+    await addCondition.mutateAsync({ 
+      condicionId, 
+      notas: notasIniciales 
+    });
 
-      if (response.success) {
-        setMyConditions(prev => {
-          const newConditions = [...prev, response.data];
-          // Activar edición automáticamente con la descripción inicial
-          setEditingIndex(newConditions.length - 1);
-          setEditingValue(notasIniciales);
-          return newConditions;
-        });
-        
-        toast.success(
-          t("clinicalHistory.conditionAdded", "Condición médica agregada exitosamente") || response.message
-        );
-        // Emitir evento para notificar a otros componentes
-        emitConditionsChanged();
-        onClinicalHistoryChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al agregar condición:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorAddingCondition", "Error al agregar condición médica")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Activar edición automáticamente con la descripción inicial
+    const currentConditions = myConditions || [];
+    setEditingIndex(currentConditions.length);
+    setEditingValue(notasIniciales);
+    
+    onClinicalHistoryChanged?.();
   }
 
   async function handleAddPersonalCondition() {
     const trimmedValue = personalCondition.trim();
     
     if (!trimmedValue) {
-      toast.error(
-        t("clinicalHistory.emptyPersonalCondition", "Por favor ingresa una condición médica")
-      );
       return;
     }
     
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.addPersonalCondition({ 
-        notas: trimmedValue 
-      });
-
-      if (response.success) {
-        setMyConditions(prev => [...prev, response.data]);
-        setPersonalCondition("");
-        
-        toast.success(
-          t("clinicalHistory.personalConditionAdded", "Condición médica personal agregada exitosamente") || response.message
-        );
-        // Emitir evento para notificar a otros componentes
-        emitConditionsChanged();
-        onClinicalHistoryChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al agregar condición personal:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorAddingPersonalCondition", "Error al agregar condición médica personal")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await addPersonalCondition.mutateAsync({ notas: trimmedValue });
+    setPersonalCondition("");
+    onClinicalHistoryChanged?.();
   }
 
   async function handleRemoveAllergy(condicionId: number) {
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.removeAllergy(condicionId);
-
-      if (response.success) {
-        setMyAllergies(prev => prev.filter(a => a.id !== condicionId));
-        toast.success(
-          t("clinicalHistory.allergyRemoved", "Alergia eliminada exitosamente") || response.message
-        );
-        // Emitir evento para notificar a otros componentes
-        emitAllergiesChanged();
-        onClinicalHistoryChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al eliminar alergia:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorRemovingAllergy", "Error al eliminar alergia")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await removeAllergy.mutateAsync(condicionId);
+    onClinicalHistoryChanged?.();
   }
 
   async function handleRemoveCondition(idx: number) {
     const condition = myConditions[idx];
+    await removeCondition.mutateAsync(condition.id);
     
-    try {
-      setIsSubmitting(true);
-      const response = await patientService.removeCondition(condition.id);
-
-      if (response.success) {
-        setMyConditions(prev => prev.filter((_, i) => i !== idx));
-        toast.success(
-          t("clinicalHistory.conditionRemoved", "Condición médica eliminada exitosamente") || response.message
-        );
-        
-        if (editingIndex === idx) {
-          setEditingIndex(null);
-          setEditingValue("");
-        }
-        // Emitir evento para notificar a otros componentes
-        emitConditionsChanged();
-        onClinicalHistoryChanged?.();
-      }
-    } catch (error) {
-      console.error("Error al eliminar condición:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("clinicalHistory.errorRemovingCondition", "Error al eliminar condición médica")
-      );
-    } finally {
-      setIsSubmitting(false);
+    if (editingIndex === idx) {
+      setEditingIndex(null);
+      setEditingValue("");
     }
+    
+    onClinicalHistoryChanged?.();
   }
 
   function handleEditCondition(idx: number) {
@@ -317,38 +133,14 @@ function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
         return;
       }
 
-      try {
-        setIsSubmitting(true);
-        
-        // Actualizar la condición con nuevas notas
-        const response = await patientService.addCondition({ 
-          condicionId: condition.id, 
-          notas: trimmedValue 
-        });
+      // Actualizar la condición con nuevas notas
+      await addCondition.mutateAsync({ 
+        condicionId: condition.id, 
+        notas: trimmedValue 
+      });
 
-        if (response.success) {
-          setMyConditions(prev => {
-            const updatedConditions = [...prev];
-            updatedConditions[editingIndex] = response.data;
-            return updatedConditions;
-          });
-          
-          toast.success(
-            t("clinicalHistory.notesUpdated", "Notas actualizadas exitosamente")
-          );
-        }
-      } catch (error) {
-        console.error("Error al actualizar notas:", error);
-        toast.error(
-          error instanceof Error 
-            ? error.message 
-            : t("clinicalHistory.errorUpdatingNotes", "Error al actualizar notas")
-        );
-      } finally {
-        setIsSubmitting(false);
-        setEditingIndex(null);
-        setEditingValue("");
-      }
+      setEditingIndex(null);
+      setEditingValue("");
     }
   }
 
@@ -445,11 +237,7 @@ function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
           className="mb-4"
           placeholder={t("clinicalHistory.selectAllergy")}
           options={availableAllergies
-            .filter((allergy) => !myAllergies.some(a => a.id === allergy.id))
-            .map((allergy) => ({
-              value: allergy.id.toString(),
-              label: allergy.nombre,
-            }))}
+            .filter((allergy) => !myAllergies.some(a => a.id === allergy.id))}
           onChange={(value) => {
             if (typeof value === "string") handleAddAllergy(value);
           }}
@@ -572,11 +360,7 @@ function ClinicalHistory({ onClinicalHistoryChanged }: ClinicalHistoryProps) {
           className="mb-4"
           placeholder={t("clinicalHistory.selectCondition")}
           options={availableConditions
-            .filter((condition) => !myConditions.some(c => c.id === condition.id))
-            .map((condition) => ({
-              value: condition.id.toString(),
-              label: condition.nombre,
-            }))}
+            .filter((condition) => !myConditions.some(c => c.id === condition.id))}
           onChange={(value) => {
             if (typeof value === "string") handleAddCondition(value);
           }}

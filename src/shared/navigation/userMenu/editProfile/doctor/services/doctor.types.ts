@@ -273,6 +273,7 @@ export interface Seguro {
   id: number;
   nombre: string;
   descripcion?: string;
+  urlImage?: string | null;
   idTipoSeguro?: number;
   tipoSeguro?: TipoSeguro | string;
 }
@@ -515,6 +516,20 @@ export interface GetServicesOfDoctor {
   centros: any[]; // Tipar según la estructura de centros que maneje tu backend
   ubicacionId: number | null;
   ubicacion: ServicioUbicacion[];
+}
+
+export interface GetSlotsAvailableForServiceResponse {
+  success: boolean;
+  servicioId: number;
+  fecha: string; // Fecha ISO
+  total: number;
+  data: {
+    horaInicio: string; // Formato "HH:mm"
+    horaFin: string;    // Formato "HH:mm"
+    horaInicioFormateada: string; // Formato "hh:mm A"
+    horarioId: number;
+    horarioNombre: string;
+  }[]
 }
 
 export interface GetServicesOfDoctorResponse {

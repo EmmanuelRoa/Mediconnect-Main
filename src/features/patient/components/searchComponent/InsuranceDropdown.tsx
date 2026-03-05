@@ -1,11 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { insurancePlans, type InsurancePlan } from "@/data/searchData";
-import type { Seguro } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
-import i18n from "@/i18n/config";
-import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useAvailableInsurances, usePopularInsurances } from "@/features/patient/hooks";
 
 interface InsuranceDropdownProps {
   searchTerm: string;
@@ -20,46 +17,9 @@ const InsuranceDropdown = ({
 }: InsuranceDropdownProps) => {
   const { t } = useTranslation("patient");
 
-  const [availableInsurances, setAvailableInsurances] = useState<Seguro[]>([]);
-  const [popularInsurances, setPopularInsurances] = useState<Seguro[]>([]);
-  const [isLoadingInsurances, setIsLoadingInsurances] = useState(true);
-  const [isLoadingPopularInsurances, setIsLoadingPopularInsurances] = useState(true);
-
-  // const { data: insurances, isLoading: isLoadingInsurances } = useInsurance}
-
-  // Cargar datos iniciales
-  useEffect(() => {
-    loadInsurancesData();
-  }, []);
-
-  async function loadInsurancesData() {
-    try {
-      setIsLoadingInsurances(true);
-      setIsLoadingPopularInsurances(true);
-      const [availableResponse, popularResponse] = await Promise.all([
-
-        doctorService.getAvailableInsurances(i18n.language),
-        doctorService.getPopularInsurances(i18n.language),
-      ]);
-
-      if (availableResponse.success) {
-        setAvailableInsurances(availableResponse.data);
-      }
-      if (popularResponse.success) {
-        setPopularInsurances(popularResponse.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar seguros:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : t("insurance.errorLoading", "Error al cargar seguros")
-      );
-    } finally {
-      setIsLoadingInsurances(false);
-      setIsLoadingPopularInsurances(false);
-    }
-  }
+  // React Query hooks para datos con caché
+  const { data: availableInsurances = [], isLoading: isLoadingInsurances } = useAvailableInsurances();
+  const { data: popularInsurances = [], isLoading: isLoadingPopularInsurances } = usePopularInsurances();
 
   const { popularPlans, allPlans } = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();

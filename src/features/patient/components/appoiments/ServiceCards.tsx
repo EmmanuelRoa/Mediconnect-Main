@@ -2,6 +2,8 @@ import MCButton from "@/shared/components/forms/MCButton";
 import { MapPin, Video } from "lucide-react";
 import { useTranslation } from "react-i18next"; // <-- Agrega esto
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+import type { ServiceDetail } from "@/shared/navigation/userMenu/editProfile/doctor/services";
+import { getAddressComplete } from "@/utils/addressParser";
 
 interface Service {
   id: string;
@@ -16,7 +18,7 @@ interface Service {
 }
 
 interface ServiceCardsProps {
-  services: Service[];
+  services: ServiceDetail[] | any[]; // Asegúrate de que ServiceDetails tenga los campos necesarios
   selectedTimeSlots: Record<string, string>;
   selectedModality: Record<string, "presencial" | "teleconsulta">;
   onTimeSlotSelect: (serviceId: string, time: string) => void;
@@ -60,21 +62,42 @@ function ServiceCards({
     onTimeSlotSelect(serviceId, time);
   };
 
+  const to12Hour = (time24: string) => {
+    if (!time24) return time24;
+    const [hoursStr, minutesStr] = time24.split(":");
+    const hours = parseInt(hoursStr, 10);
+    const minutes = minutesStr || "00";
+    const period = hours >= 12 ? "p.m." : "a.m.";
+    let hour12 = hours % 12;
+    if (hour12 === 0) hour12 = 12;
+    return `${hour12}:${minutes} ${period}`;
+  };
+
+  const toMinutes = (time24: string) => {
+    const [h = "0", m = "0"] = (time24 || "").split(":");
+    return parseInt(h, 10) * 60 + parseInt(m, 10);
+  };
+
+  const convertTimeFroimMinutesToHours = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours > 0 ? `${hours}h ` : ""}${remainingMinutes}m`;
+  }
+
   return (
     <div className="space-y-6">
       {services.map((service) => {
-        const timeSelected = selectedTimeSlots[service.id];
-        const modalitySelected = selectedModality[service.id];
-        const isMixta = service.modality.toLowerCase().includes("mixta");
-        const isPresencial = service.modality
-          .toLowerCase()
-          .includes("presencial");
-        const isVirtual = service.modality
-          .toLowerCase()
-          .includes("teleconsulta");
-
+        const timeSelected = selectedTimeSlots[service.id.toString()];
+        const modalitySelected = selectedModality[service.id.toString()];
+        const modalidadLower = (service.modalidad || "").toLowerCase();
+        const isMixta = modalidadLower.includes("mixta");
+        // Check for both Spanish "presencial" and English "present"
+        const isPresencial = modalidadLower.includes("presencial") || modalidadLower.includes("present");
+        // Also consider common virtual labels
+        const isVirtual = modalidadLower.includes("teleconsulta") || modalidadLower.includes("virtual") || modalidadLower.includes("telehealth");
+      
         // Verificar si este servicio está bloqueado por selección en otro servicio
-        const isBlocked = hasTimeSlotInOtherService(service.id);
+        const isBlocked = hasTimeSlotInOtherService(service.id.toString());
 
         return (
           <div
@@ -85,25 +108,25 @@ function ServiceCards({
           >
             <div className="flex justify-between items-start">
               <div className="w-full">
-                <h4 className="font-semibold text-primary">{service.name}</h4>
+                <h4 className="font-semibold text-primary">{service.nombre}</h4>
                 <div className="space-y-1 w-full ">
-                  <p className="text-sm  text-primary">{service.description}</p>{" "}
+                  <p className="text-sm  text-primary">{service.descripcion}</p>{" "}
                   <div className="flex  text-sm text-primary/65 gap-2 w-full ">
                     <span>
-                      {service.price} {t("serviceCards.perPatient")}
+                      {service.precio} {t("serviceCards.perPatient")}
                     </span>
                     <span>•</span>
-                    <span>{service.duration}</span>
+                    <span>{convertTimeFroimMinutesToHours(service.duracionMinutos)}</span>
                     <span>•</span>
-                    <span>{service.modality}</span>
+                    <span>{service.modalidad}</span>
                     <span>•</span>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="max-w-[290px] truncate inline-block align-middle cursor-pointer">
-                          {service.location}
+                          {getAddressComplete(service.ubicacion)}
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>{service.location}</TooltipContent>
+                      <TooltipContent>{getAddressComplete(service.ubicacion)}</TooltipContent>
                     </Tooltip>
                   </div>
                 </div>{" "}
@@ -112,28 +135,34 @@ function ServiceCards({
 
             {/* Time slots grid */}
             <div className="max-h-[80px] overflow-y-auto scrollbar-hide rounded bg-muted/40 px-1 w-full max-w-[700px]">
-              {service.timeSlots.length === 0 ? (
+              {(!service.timeSlots || service.timeSlots.length === 0) ? (
                 <div className="text-center text-xs text-muted-foreground py-4">
                   {t("serviceCards.noTimeSlots", "No hay horarios disponibles")}
                 </div>
               ) : (
                 <div className="grid grid-cols-6 gap-2">
-                  {service.timeSlots.map((time) => (
-                    <MCButton
-                      key={time}
-                      variant={timeSelected === time ? "primary" : "outline"}
-                      size="sm"
-                      className={`h-7 w-24 md:p-4 md:text-xs ${
-                        isBlocked && timeSelected !== time
-                          ? "cursor-not-allowed opacity-50"
-                          : ""
-                      }`}
-                      onClick={() => handleTimeSlotSelect(service.id, time)}
-                      disabled={isBlocked && timeSelected !== time}
-                    >
-                      {time}
-                    </MCButton>
-                  ))}
+                  {service.timeSlots
+                    .slice()
+                    .sort((a: string, b: string) => toMinutes(a) - toMinutes(b))
+                    .map((time24: string) => {
+                      const label = to12Hour(time24);
+                      return (
+                        <MCButton
+                          key={time24}
+                          variant={timeSelected === label ? "primary" : "outline"}
+                          size="sm"
+                          className={`h-7 w-24 md:p-4 md:text-xs ${
+                            isBlocked && timeSelected !== label
+                              ? "cursor-not-allowed opacity-50"
+                              : ""
+                          }`}
+                          onClick={() => handleTimeSlotSelect(service.id.toString(), label)}
+                          disabled={isBlocked && timeSelected !== label}
+                        >
+                          {label}
+                        </MCButton>
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -154,7 +183,7 @@ function ServiceCards({
                       }
                       size="sm"
                       className="rounded-full"
-                      onClick={() => onModalitySelect(service.id, "presencial")}
+                      onClick={() => onModalitySelect(service.id.toString(), "presencial")}
                     >
                       <MapPin className="w-4 h-4 mr-1" />
                       {t("serviceCards.inPerson")}
@@ -170,7 +199,7 @@ function ServiceCards({
                       size="sm"
                       className="rounded-full"
                       onClick={() =>
-                        onModalitySelect(service.id, "teleconsulta")
+                        onModalitySelect(service.id.toString(), "teleconsulta")
                       }
                     >
                       <Video className="w-4 h-4 mr-1" />

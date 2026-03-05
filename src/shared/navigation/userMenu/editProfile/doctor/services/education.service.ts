@@ -15,6 +15,10 @@ export const educationService = {
     const response = await apiClient.get('/formaciones-academicas', { params });
     return response.data;
   },
+  getFormacionesAcademicasByDoctorId: async (doctorId: number, params?: { target?: string; translate_fields?: string }) => {
+    const response = await apiClient.get(`/formaciones-academicas/doctor/${doctorId}`, { params });
+    return response.data;
+  },
   createFormacionAcademica: async (data: any) => {
     const response = await apiClient.post('/formaciones-academicas', data);
     return response.data;

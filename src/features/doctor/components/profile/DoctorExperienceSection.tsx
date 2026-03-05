@@ -82,7 +82,7 @@ const DoctorExperienceSection = ({ doctorId, isMyProfile = false, onOpenSheet }:
     try {
       setIsLoading(true);
       setError(null);
-      const response = await doctorService.getExperienciasLaborales({
+      const response = await doctorService.getExperienciasLaboralesByDoctorId(doctorId, {
         target: i18n.language,
         translate_fields: 'posicion,institucion,descripcion'
       });

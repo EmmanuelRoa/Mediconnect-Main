@@ -527,6 +527,7 @@ function ServicesPage() {
                     <ScheduleAppointmentDialog
                       idProvider={serviceData.doctor.usuarioId.toString()}
                       idService={serviceId || ""}
+                      serviceData={serviceData}
                     >
                       <MCButton className="w-full font-body text-sm sm:text-base py-5 sm:py-6">
                         {t("service.schedule", "Agendar")}

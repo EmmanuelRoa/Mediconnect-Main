@@ -26,7 +26,8 @@ import type {
   AddInsuranceRequest,
   AddInsuranceResponse,
   RemoveInsuranceResponse,
-  InsuranceError
+  InsuranceError,
+  CreateHealthDateRequest
 } from './patient.types';
 
 /**
@@ -717,4 +718,21 @@ export const patientService = {
       );
     }
   },
+
+  createAppointment: async (data: CreateHealthDateRequest): Promise<any> => {
+    try {
+      const response = await apiClient.post(
+        '/citas',
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Patient Service] Error al crear cita:', error);
+      
+      throw new Error(
+        error.message || 
+        'Error al crear cita. Intenta nuevamente.'
+      );
+    }
+  }
 };

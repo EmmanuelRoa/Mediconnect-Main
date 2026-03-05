@@ -130,11 +130,13 @@ export interface AddPersonalConditionResponse {
 
 export interface GetMyAllergiesResponse {
   success: boolean;
+  message?: string;
   data: CondicionMedica[];
 }
 
 export interface GetMyConditionsResponse {
   success: boolean;
+  message?: string;
   data: CondicionMedica[];
 }
 
@@ -235,3 +237,17 @@ export interface InsuranceError {
   error?: string;
   statusCode?: number;
 }
+
+export interface CreateHealthDateRequest {
+  servicioId: number;
+  horarioId: number;
+  fecha: string; // ISO Date string
+  hora: string; // HH:mm format
+  modalidad: string;
+  numPacientes: number;
+  seguroId?: number;
+  tipoSeguroId?: number;
+  motivoConsulta: string;
+}
+
+

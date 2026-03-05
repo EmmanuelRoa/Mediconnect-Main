@@ -4,12 +4,12 @@ import { MCModalBase } from "@/shared/components/MCModalBase";
 import { Calendar } from "@/shared/ui/calendar";
 import MCTextArea from "@/shared/components/forms/MCTextArea";
 import MCSelect from "@/shared/components/forms/MCSelect";
+import { useNavigate } from "react-router-dom";
 import {
   MorphingPopover,
   MorphingPopoverTrigger,
   MorphingPopoverContent,
 } from "@/shared/ui/morphing-popover";
-import { MorphingDialogClose } from "@/shared/ui/morphing-dialog";
 import { appointmentSchema } from "@/schema/appointment.schema";
 import { useTranslation } from "react-i18next";
 import { useAppointmentStore } from "@/stores/useAppointmentStore";
@@ -30,22 +30,14 @@ import MCFormWrapper from "@/shared/components/forms/MCFormWrapper";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import React from "react";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  duration: string;
-  modality: "mixta" | "presencial" | "teleconsulta";
-  modalityLabel: string;
-  location: string;
-  timeSlots: string[];
-  serviceType?: string;
-  specialty?: string;
-  rating?: number;
-  priceValue?: number;
-}
+import type { GetServicesOfDoctor, GetSlotsAvailableForServiceResponse, ServiceDetail, ServiceDetailDoctor } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
+import { getUserFullName } from "@/services/auth/auth.types";
+import { useMyInsurances } from "../../hooks";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import apiClient from "@/services/api/client";
+import { patientService } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.service";
+import { toast } from "sonner";
 
 interface AppointmentFilters {
   serviceTypes: string[];
@@ -55,103 +47,12 @@ interface AppointmentFilters {
   rating: number;
 }
 
-const getServices = (t: any): Service[] => [
-  {
-    id: "1",
-    name: t("services.consultation"),
-    description: t("services.evaluation"),
-    price: "RD$1500",
-    priceValue: 1500,
-    duration: `30 ${t("services.duration")}`,
-    modality: "presencial",
-    modalityLabel: t("services.presencial"),
-    location: t("services.location"),
-    serviceType: "consultation",
-    specialty: "cardiology",
-    rating: 4.8,
-    timeSlots: [
-      "10:00 a.m.",
-      "10:30 a.m.",
-      "11:00 a.m.",
-      "11:30 a.m.",
-      "12:00 p.m.",
-      "12:30 p.m.",
-      "1:00 p.m.",
-      "1:30 p.m.",
-      "2:00 p.m.",
-      "2:30 p.m.",
-      "3:00 p.m.",
-      "3:30 p.m.",
-      "4:00 p.m.",
-      "4:30 p.m.",
-    ],
-  },
-  {
-    id: "2",
-    name: t("services.treatment"),
-    description: t("services.laser"),
-    price: "RD$2500",
-    priceValue: 2500,
-    duration: `45 ${t("services.duration")}`,
-    modality: "mixta",
-    modalityLabel: t("services.mixed"),
-    location: t("services.location"),
-    serviceType: "treatment",
-    specialty: "dermatology",
-    rating: 4.5,
-    timeSlots: [
-      "10:00 a.m.",
-      "10:30 a.m.",
-      "11:00 a.m.",
-      "11:30 a.m.",
-      "12:00 p.m.",
-      "12:30 p.m.",
-      "1:00 p.m.",
-      "1:30 p.m.",
-      "2:00 p.m.",
-      "2:30 p.m.",
-      "3:00 p.m.",
-      "3:30 p.m.",
-      "4:00 p.m.",
-      "4:30 p.m.",
-    ],
-  },
-  {
-    id: "3",
-    name: t("services.therapy", "Terapia Psicológica"),
-    description: t("services.therapyDesc", "Sesión de terapia individual"),
-    price: "RD$1800",
-    priceValue: 1800,
-    duration: `50 ${t("services.duration")}`,
-    modality: "teleconsulta",
-    modalityLabel: t("services.virtual"),
-    location: t("services.online"),
-    serviceType: "therapy",
-    specialty: "psychology",
-    rating: 4.9,
-    timeSlots: [
-      "9:00 a.m.",
-      "10:00 a.m.",
-      "11:00 a.m.",
-      "2:00 p.m.",
-      "3:00 p.m.",
-      "4:00 p.m.",
-    ],
-  },
-];
-
-const getInsuranceOptions = (t: any) => [
-  { value: "universal", label: t("insurance.universal") },
-  { value: "humano", label: t("insurance.humano") },
-  { value: "mapfre", label: t("insurance.mapfre") },
-  { value: "particular", label: t("insurance.particular") },
-];
-
 interface ScheduleAppointmentDialogProps {
   idProvider: string;
   idAppointment?: string;
   idService?: string;
-  children: React.ReactNode;
+  children: React.ReactNode,
+  serviceData?: ServiceDetail;
 }
 
 const formatDateForStorage = (date: Date): string => {
@@ -169,9 +70,13 @@ const parseDateFromStorage = (dateString: string): Date => {
 function ScheduleAppointmentForm({
   isRescheduling,
   idService,
+  serviceData,
+  isSubmitting,
 }: {
   isRescheduling: boolean;
   idService?: string;
+  serviceData?: ServiceDetail;
+  isSubmitting: boolean;
 }) {
   const { t, i18n } = useTranslation("patient");
   const currentLocale = i18n.language === "es" ? es : enUS;
@@ -180,8 +85,214 @@ function ScheduleAppointmentForm({
   const formValues = watch();
   const initialValuesRef = useRef<scheduleAppointment | null>(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [services, setServices] = useState<GetServicesOfDoctor[]>([]);
+  const { data: availableInsurances = [], isLoading: isLoadingInsurances } = useMyInsurances();
+  
+  // Guardar mapeo de slots con sus horarioId
+  const [slotHorarioMap, setSlotHorarioMap] = useState<Record<string, Record<string, number>>>({});
+
+  // Estado para la verificación de compatibilidad del seguro
+  const [insuranceStatus, setInsuranceStatus] = useState<{
+    isChecking: boolean;
+    isCompatible: boolean | null;
+    message: string;
+  }>({
+    isChecking: false,
+    isCompatible: null,
+    message: "",
+  });
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  const getSlotsForService = async (serviceId: string): Promise<GetSlotsAvailableForServiceResponse> => {
+    const slotResponse = await doctorService.getSlotsAvailableForService(Number(serviceId), {
+      fecha: formValues.date ? formatDateForStorage(parseDateFromStorage(formValues.date)) : formatDateForStorage(new Date()),
+    });
+
+    return slotResponse;
+  };
+
+  // Función para verificar compatibilidad del seguro con el doctor
+  const verificarCompatibilidadSeguro = useCallback(async (seguroId: string) => {
+    if (!seguroId || !serviceData?.doctorId) {
+      setInsuranceStatus({
+        isChecking: false,
+        isCompatible: null,
+        message: "",
+      });
+      return;
+    }
+
+    // Buscar el seguro seleccionado en la lista de seguros disponibles
+    const seguroSeleccionado = availableInsurances.find(
+      (insurance) => insurance.id.toString() === seguroId
+    );
+
+    if (!seguroSeleccionado) {
+      setInsuranceStatus({
+        isChecking: false,
+        isCompatible: null,
+        message: "",
+      });
+      return;
+    }
+
+    setInsuranceStatus({
+      isChecking: true,
+      isCompatible: null,
+      message: t("insurance.verifying", "Verificando compatibilidad..."),
+    });
+
+    try {
+      const response = await apiClient.get(
+        `/seguros/verificar-compatibilidad/${seguroSeleccionado.id}/${seguroSeleccionado.idTipoSeguro}/doctor/${serviceData.doctorId}`,
+        {
+          params: {
+            target: i18n.language || "es",
+            source: i18n.language === "es" ? "en" : "es",
+            translate_fields: "mensaje",
+          },
+        }
+      );
+      console.log("Respuesta de compatibilidad del seguro:", response.data.data);
+      setInsuranceStatus({
+        isChecking: false,
+        isCompatible: response.data.data.compatible,
+        message: response.data.data.mensaje || (response.data.data.compatible 
+          ? t("insurance.compatible", "Este seguro es aceptado por el doctor")
+          : t("insurance.notCompatible", "Este seguro no es aceptado por el doctor")),
+      });
+    } catch (error: any) {
+      console.error("Error al verificar compatibilidad del seguro:", error);
+      setInsuranceStatus({
+        isChecking: false,
+        isCompatible: false,
+        message: t("insurance.verificationError", "Error al verificar compatibilidad"),
+      });
+    }
+  }, [serviceData?.doctorId, availableInsurances, t]);
+
+  // useEffect con debounce para verificar compatibilidad del seguro
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formValues.insuranceProvider) {
+        verificarCompatibilidadSeguro(formValues.insuranceProvider);
+      } else {
+        setInsuranceStatus({
+          isChecking: false,
+          isCompatible: null,
+          message: "",
+        });
+      }
+    }, 500); // Esperar 500ms después del último cambio
+
+    return () => clearTimeout(timeoutId);
+  }, [formValues.insuranceProvider, verificarCompatibilidadSeguro]);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        if (!serviceData?.doctorId) return;
+
+        setIsLoading(true);
+
+        const response = await doctorService.getServicesOfDoctor(
+          Number(serviceData.doctorId),
+          {
+            target: i18n.language || "es", // Asegura que se envíe el idioma actual
+            source: i18n.language === "es" ? "en" : "es",
+            translate_fields: "nombre,descripcion,modalidad", // Campos que deseas traducir
+          }
+        );
+
+        if (response && response.success && Array.isArray(response.data)) {
+            const slotMap: Record<string, Record<string, number>> = {};
+            const updated = await Promise.all(
+            response.data.map(async (s) => {
+              try {
+                const resp = await getSlotsForService(s.id.toString());
+                // Map backend response to array of formatted start times
+                const slots = resp && resp.data && Array.isArray(resp.data)
+                  ? resp.data.map((d: any) => d.horaInicio)
+                  : [];
+                
+                // Guardar mapeo de horaInicio -> horarioId para este servicio
+                if (resp && resp.data && Array.isArray(resp.data)) {
+                  slotMap[s.id.toString()] = {};
+                  resp.data.forEach((d: any) => {
+                    slotMap[s.id.toString()][d.horaInicio] = d.horarioId;
+                  });
+                }
+                
+                return { ...s, timeSlots: slots };
+              } catch (e) {
+                console.error("Error fetching slots for service", s.id, e);
+                return { ...s, timeSlots: [] };
+              }
+            }),
+          );
+          setSlotHorarioMap(slotMap);
+          setServices(updated);
+        } else {
+          setServices([]);
+        }
+      } catch (error) {
+        console.error("Error al cargar los servicios del doctor:", error);
+        setServices([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadServices();
+  }, [serviceData?.doctorId, i18n.language]);
+
+  // Fetch available slots for all services whenever the selected date changes
+  useEffect(() => {
+    const fetchSlotsForAllServices = async () => {
+      if (!services || services.length === 0) return;
+      try {
+        setIsLoading(true);
+        const slotMap: Record<string, Record<string, number>> = {};
+        const updated = await Promise.all(
+          services.map(async (s) => {
+            try {
+              const resp = await getSlotsForService(s.id.toString());
+              // Map backend response to array of formatted start times
+              const slots = resp && resp.data && Array.isArray(resp.data)
+                ? resp.data.map((d: any) => d.horaInicio)
+                : [];
+              
+              // Guardar mapeo de horaInicio -> horarioId para este servicio
+              if (resp && resp.data && Array.isArray(resp.data)) {
+                slotMap[s.id.toString()] = {};
+                resp.data.forEach((d: any) => {
+                  slotMap[s.id.toString()][d.horaInicio] = d.horarioId;
+                });
+              }
+              
+              return { ...s, timeSlots: slots };
+            } catch (e) {
+              console.error("Error fetching slots for service", s.id, e);
+              return { ...s, timeSlots: [] };
+            }
+          }),
+        );
+        setSlotHorarioMap(slotMap);
+        setServices(updated);
+      } catch (err) {
+        console.error("Error fetching slots for services:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSlotsForAllServices();
+    // Only re-run when the selected date changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formValues.date]);
 
   useEffect(() => {
     if (isRescheduling && !initialValuesRef.current) {
@@ -189,8 +300,6 @@ function ScheduleAppointmentForm({
     }
   }, [isRescheduling, formValues]);
 
-  const SERVICES = useMemo(() => getServices(t), [t]);
-  const INSURANCE_OPTIONS = useMemo(() => getInsuranceOptions(t), [t]);
 
   const [appointmentFilters, setAppointmentFilters] =
     useState<AppointmentFilters>({
@@ -204,6 +313,7 @@ function ScheduleAppointmentForm({
   const updateAppointmentFilters = (
     newFilters: Partial<AppointmentFilters>,
   ) => {
+    console.log("Updating filters with:", newFilters);
     setAppointmentFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
@@ -218,42 +328,36 @@ function ScheduleAppointmentForm({
   };
 
   const filteredServices = useMemo(() => {
-    return SERVICES.filter((service) => {
-      if (
-        appointmentFilters.serviceTypes.length > 0 &&
-        !appointmentFilters.serviceTypes.includes(service.serviceType || "")
-      ) {
-        return false;
-      }
+    
+    return services.filter((service) => {
       if (
         appointmentFilters.specialties.length > 0 &&
-        !appointmentFilters.specialties.includes(service.specialty || "")
+        !appointmentFilters.specialties.includes(service.especialidad.id.toString() || "")
       ) {
         return false;
       }
       if (
         appointmentFilters.modalities.length > 0 &&
-        !appointmentFilters.modalities.includes(service.modality)
+        !appointmentFilters.modalities.includes(service.modalidad || "")
       ) {
         return false;
       }
       if (
-        service.priceValue &&
-        (service.priceValue < appointmentFilters.priceRange[0] ||
-          service.priceValue > appointmentFilters.priceRange[1])
+        service.precio &&
+        (service.precio < appointmentFilters.priceRange[0] ||
+          service.precio > appointmentFilters.priceRange[1])
       ) {
         return false;
       }
       if (
         appointmentFilters.rating > 0 &&
-        service.rating &&
-        service.rating < appointmentFilters.rating
+        service.calificacionPromedio < appointmentFilters.rating
       ) {
         return false;
       }
       return true;
     });
-  }, [SERVICES, appointmentFilters]);
+  }, [services, appointmentFilters]);
 
   const getActiveFiltersCount = () => {
     let count = 0;
@@ -302,12 +406,13 @@ function ScheduleAppointmentForm({
     const hasModality = !!formValues.selectedModality;
     const hasRequiredFields =
       formValues.date && formValues.insuranceProvider && formValues.reason;
+    const isInsuranceCompatible = insuranceStatus.isCompatible === true && !insuranceStatus.isChecking;
 
     if (!isRescheduling) {
-      return !hasRequiredFields || !hasTimeSlot || !hasModality;
+      return !hasRequiredFields || !hasTimeSlot || !hasModality || !isInsuranceCompatible || isSubmitting;
     }
 
-    const hasAllFields = hasRequiredFields && hasTimeSlot && hasModality;
+    const hasAllFields = hasRequiredFields && hasTimeSlot && hasModality && isInsuranceCompatible;
     if (!initialValuesRef.current) return true;
 
     const hasChanges =
@@ -322,8 +427,8 @@ function ScheduleAppointmentForm({
         initialValuesRef.current.insuranceProvider ||
       formValues.serviceId !== initialValuesRef.current.serviceId;
 
-    return !hasAllFields || !hasChanges;
-  }, [formValues, isRescheduling]);
+    return !hasAllFields || !hasChanges || isSubmitting;
+  }, [formValues, isRescheduling, insuranceStatus, isSubmitting]);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -346,9 +451,19 @@ function ScheduleAppointmentForm({
       setValue("time", "");
       setValue("serviceId", "");
       setValue("selectedModality", "presencial");
+      setValue("horarioId", undefined);
     } else {
-      setValue("time", convertTimeToHour(time));
+      const time24 = convertTimeToHour(time);
+      setValue("time", time24);
       setValue("serviceId", serviceId);
+      
+      // Guardar el horarioId correspondiente al slot seleccionado
+      const horarioId = slotHorarioMap[serviceId]?.[time24];
+      console.log("Horario ID encontrado para servicio", serviceId, "y hora", time24, ":", horarioId);
+      if (horarioId) {
+        setValue("horarioId", horarioId);
+      }
+      
       if (!formValues.selectedModality || formValues.serviceId !== serviceId) {
         setValue("selectedModality", "presencial");
       }
@@ -366,23 +481,26 @@ function ScheduleAppointmentForm({
     setValue("numberOfSessions", newPatients);
   };
 
-  const DoctorHeader = () => (
+  const DoctorHeader = ({ doctor, especialidad }: { doctor?: ServiceDetailDoctor; especialidad?: string }) => {
+
+    return (
     <div className="flex items-center gap-4">
       <img
-        src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop"
+        src={doctor?.usuario.fotoPerfil || "/default-avatar.png"}
         className="w-20 h-20 rounded-full object-cover"
       />
       <div>
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-primary">
-            {t("doctors.profile")}
+            {getUserFullName(doctor) || t("doctors.profile")}
           </h3>
           <BadgeCheck className="w-5 h-5 text-background" fill="#8bb1ca" />
         </div>
-        <p className="text-primary">{t("doctors.specialty")}</p>
+        <p className="text-primary">{especialidad || t("doctors.specialty")}</p>
       </div>
     </div>
-  );
+    );
+  };
 
   const PatientCounter = () => (
     <div className="flex items-center justify-between text-primary">
@@ -396,8 +514,8 @@ function ScheduleAppointmentForm({
         <MCButton
           type="button"
           variant="outline"
-          size="sm"
-          className="h-8 w-8 rounded-full"
+          size="m"
+          className="h-9 w-9 rounded-full"
           onClick={() =>
             handlePatientsChange(Math.max(1, formValues.numberOfSessions - 1))
           }
@@ -407,8 +525,8 @@ function ScheduleAppointmentForm({
         <MCButton
           type="button"
           variant="outline"
-          size="sm"
-          className="h-8 w-8 rounded-full"
+          size="m"
+          className="h-9 w-9 rounded-full"
           onClick={() => handlePatientsChange(formValues.numberOfSessions + 1)}
           icon={<Plus className="h-4 w-4" />}
         />
@@ -447,17 +565,44 @@ function ScheduleAppointmentForm({
     </div>
   );
 
+
   return (
     <div className="px-6 pb-6 space-y-6">
-      <DoctorHeader />
+      <DoctorHeader doctor={serviceData?.doctor} especialidad={serviceData?.especialidad?.nombre} />
       <div className="space-y-2">
         <MCSelect
           name="insuranceProvider"
           label={t("insurance.title")}
-          options={INSURANCE_OPTIONS}
-          placeholder={t("insurance.select")}
+          options={availableInsurances.map((insurance) => ({
+            value: insurance.id.toString(),
+            label: `${insurance.nombre} ${insurance.tipoSeguro ? `- ${typeof insurance.tipoSeguro === "string" ? insurance.tipoSeguro : insurance.tipoSeguro.nombre}` : ""}`,
+          }))}
+          placeholder={isLoadingInsurances ? t("insurance.loading") : t("insurance.select")}
           required
         />
+        {/* Indicador de verificación de compatibilidad del seguro */}
+        {formValues.insuranceProvider && (
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            {insuranceStatus.isChecking && (
+              <>
+                <Loader2 className="size-4 animate-spin text-blue-500" />
+                <span className="text-blue-600">{insuranceStatus.message}</span>
+              </>
+            )}
+            {!insuranceStatus.isChecking && insuranceStatus.isCompatible === true && (
+              <>
+                <CheckCircle2 className="size-4 text-green-500" />
+                <span className="text-green-600">{insuranceStatus.message}</span>
+              </>
+            )}
+            {!insuranceStatus.isChecking && insuranceStatus.isCompatible === false && (
+              <>
+                <XCircle className="size-4 text-red-500" />
+                <span className="text-red-600">{insuranceStatus.message}</span>
+              </>
+            )}
+          </div>
+        )}
       </div>
       <div className="space-y-2">
         <MCTextArea
@@ -521,7 +666,11 @@ function ScheduleAppointmentForm({
         </MCFilterPopover>
       </div>
 
-      {filteredServices.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>{t("filters.loading", "Cargando servicios...")}</p>
+        </div>
+      ) : filteredServices.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <p>
             {t(
@@ -540,14 +689,25 @@ function ScheduleAppointmentForm({
         />
       )}
 
-      <MorphingDialogClose className="w-full">
-        <MCButton type="submit" className="w-full" disabled={isSubmitDisabled}>
-          {isRescheduling
-            ? t("appointments.reschedule")
-            : t("appointments.next")}
-          <ChevronRight className="ml-2 h-5 w-5" />
-        </MCButton>
-      </MorphingDialogClose>
+      <MCButton 
+        type="submit" 
+        className="w-full" 
+        disabled={isSubmitDisabled}
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            {t("appointments.submitting", "Procesando...")}
+          </>
+        ) : (
+          <>
+            {isRescheduling
+              ? t("appointments.reschedule")
+              : t("appointments.next")}
+            <ChevronRight className="ml-2 h-5 w-5" />
+          </>
+        )}
+      </MCButton>
     </div>
   );
 }
@@ -555,6 +715,7 @@ function ScheduleAppointmentForm({
 function ScheduleAppointmentDialog({
   idProvider,
   idAppointment,
+  serviceData,
   idService,
   children,
 }: ScheduleAppointmentDialogProps) {
@@ -564,8 +725,16 @@ function ScheduleAppointmentDialog({
   const resetAppointment = useAppointmentStore((s) => s.clearAppointments);
   const isRescheduling = !!idAppointment;
   const [shouldLoadData, setShouldLoadData] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const closeRef = useRef<{ close: () => void } | null>(null);
+  const navigate = useNavigate();
+  
+  // Obtener seguros del paciente en el componente padre
+  const { data: availableInsurances = [] } = useMyInsurances();
 
-  const handleTriggerClick = useCallback(() => setShouldLoadData(true), []);
+  const handleTriggerClick = useCallback(() => {
+    setShouldLoadData(true);
+  }, []);
 
   useEffect(() => {
     if (!shouldLoadData) return;
@@ -579,10 +748,18 @@ function ScheduleAppointmentDialog({
       return;
     }
     if (!appointment.doctorId) {
+      // NO propagar valores vacíos del store, solo establecer el doctorId
       addAppointment({
-        ...appointment,
+        date: formatDateForStorage(new Date()),
+        time: "",
+        selectedModality: "presencial",
+        numberOfSessions: 1,
+        reason: "",
+        insuranceProvider: "",
+        serviceId: "",
         doctorId: idProvider,
         appointmentId: undefined,
+        horarioId: undefined,
       });
       setShouldLoadData(false);
       return;
@@ -599,6 +776,7 @@ function ScheduleAppointmentDialog({
         insuranceProvider: "",
         serviceId: "",
         appointmentId: undefined,
+        horarioId: undefined,
       });
     }
     setShouldLoadData(false);
@@ -613,13 +791,41 @@ function ScheduleAppointmentDialog({
   ]);
 
   const onSubmit = (data: scheduleAppointment) => {
-    if (isRescheduling && data.appointmentId) {
-      addAppointment(data);
-      window.location.href = "/patient/schedule-appointment";
-    } else {
-      addAppointment(data);
-      window.location.href = "/patient/schedule-appointment";
-    }
+    const modalidadFormatted = data.selectedModality.charAt(0).toUpperCase() + data.selectedModality.slice(1);
+
+    const seguroSeleccionado = availableInsurances.find(
+      (insurance: any) => insurance.id.toString() === data.insuranceProvider
+    );
+
+    // Agregar los campos del backend al objeto de appointment
+    const completeAppointmentData = {
+      ...data,
+      servicioId: Number(data.serviceId),
+      fecha: data.date,
+      hora: data.time,
+      modalidad: modalidadFormatted,
+      numPacientes: data.numberOfSessions,
+      seguroId: Number(data.insuranceProvider),
+      tipoSeguroId: seguroSeleccionado?.idTipoSeguro || 0,
+      motivoConsulta: data.reason,
+    };
+
+    console.log("completeAppointmentData a guardar:", completeAppointmentData);
+
+    // Guardar todo en el appointment existente
+    addAppointment(completeAppointmentData);
+    
+    
+    // Cerrar el modal después de guardar
+    closeRef.current?.close();
+
+    // Esperar un momento para que el store persista y luego navegar
+    setTimeout(() => {
+      navigate("/patient/schedule-appointment", { replace: true });
+    }, 100);
+
+    // setIsSubmitting(true);
+    
   };
 
   const formDefaultValues = useMemo(() => {
@@ -628,8 +834,10 @@ function ScheduleAppointmentDialog({
         ...appointment,
         doctorId: idProvider,
         appointmentId: idAppointment,
+        horarioId: appointment.horarioId,
       };
     }
+    // Garantizar valores por defecto apropiados
     return {
       date: appointment.date || formatDateForStorage(new Date()),
       time: appointment.time || "",
@@ -640,6 +848,7 @@ function ScheduleAppointmentDialog({
       serviceId: appointment.serviceId || "",
       doctorId: appointment.doctorId || idProvider,
       appointmentId: undefined,
+      horarioId: appointment.horarioId || undefined,
     };
   }, [isRescheduling, appointment, idProvider, idAppointment]);
 
@@ -664,6 +873,7 @@ function ScheduleAppointmentDialog({
       trigger={triggerWithHandler}
       triggerClassName="w-full"
       size="xl"
+      closeRef={closeRef}
     >
       <MCFormWrapper
         key={
@@ -679,6 +889,8 @@ function ScheduleAppointmentDialog({
         <ScheduleAppointmentForm
           isRescheduling={isRescheduling}
           idService={idService}
+          serviceData={serviceData}
+          isSubmitting={isSubmitting}
         />
       </MCFormWrapper>
     </MCModalBase>

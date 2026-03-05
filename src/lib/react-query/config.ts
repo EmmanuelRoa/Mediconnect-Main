@@ -87,6 +87,30 @@ export const QUERY_KEYS = {
 
   UBICACIONES: ( nivel: string, params?: Record<string, any>) => 
     ['ubicaciones', nivel, params].filter(Boolean),
+
+  // Alergias (datos relativamente estáticos)
+  AVAILABLE_ALLERGIES: (language?: string) => 
+    ['allergies', 'available', language].filter(Boolean),
+  MY_ALLERGIES: (language?: string) => 
+    ['allergies', 'my', language].filter(Boolean),
+
+  // Condiciones médicas (datos relativamente estáticos)
+  AVAILABLE_CONDITIONS: (language?: string) => 
+    ['conditions', 'available', language].filter(Boolean),
+  MY_CONDITIONS: (language?: string) => 
+    ['conditions', 'my', language].filter(Boolean),
+
+  // Seguros (datos relativamente estáticos)
+  AVAILABLE_INSURANCES: (language?: string) => 
+    ['insurances', 'available', language].filter(Boolean),
+  POPULAR_INSURANCES: (language?: string) => 
+    ['insurances', 'popular', language].filter(Boolean),
+  MY_INSURANCES: (language?: string) => 
+    ['insurances', 'my', language].filter(Boolean),
+  ACCEPTED_INSURANCES: (language?: string) => 
+    ['insurances', 'accepted', language].filter(Boolean),
+  INSURANCE_TYPES: (language?: string) => 
+    ['insurances', 'types', language].filter(Boolean),
 } as const;
 
 export default queryClient;

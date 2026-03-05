@@ -103,7 +103,12 @@
     "added": "Insurance added successfully",
     "mapfre": "Mapfre Health",
     "particular": "Private",
-    "selectType": "Select insurance type"
+    "selectType": "Select insurance type",
+    "loading": "Loading insurances...",
+    "verifying": "Verifying compatibility...",
+    "compatible": "This insurance is accepted by the doctor",
+    "notCompatible": "This insurance is not accepted by the doctor",
+    "verificationError": "Error verifying compatibility"
   },
   "validation": {
     "fullNameRequired": "Full name is required",
@@ -155,7 +160,10 @@
     "viewAppointment": "View appointment",
     "joinTeleconsult": "Join teleconsult",
     "markCompleted": "Mark as completed",
-    "continueConsultation": "Continue consultation"
+    "continueConsultation": "Continue consultation",
+    "success": "Appointment scheduled successfully",
+    "error": "Error scheduling appointment. Please try again.",
+    "rescheduleSuccess": "Appointment rescheduled successfully"
   },
   "dashboard": {
     "searchTitle": "Search for doctors, specialties or nearby clinics"

@@ -16,6 +16,7 @@ import { onAcademicChanged } from "@/lib/events/academicFormation";
 interface Props {
   isMyProfile?: boolean;
   onOpenSheet?: () => void;
+  doctorId?: number;
 }
 
 // ✅ Subcomponente separado para que los hooks se llamen siempre en el nivel superior
@@ -68,20 +69,30 @@ const EducationItem = ({ formacion, formatPeriod }: EducationItemProps) => {
   );
 };
 
-const DoctorEducationSection = ({ isMyProfile = false, onOpenSheet }: Props) => {
+const DoctorEducationSection = ({ isMyProfile = false, onOpenSheet, doctorId }: Props) => {
   const { t, i18n } = useTranslation("doctor");
   const [formaciones, setFormaciones] = useState<FormacionAcademicaBackend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const profileDoctorId =  !isMyProfile && doctorId ? doctorId : 0; // Aseguramos que sea un número
+
   const fetchFormaciones = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await educationService.getFormacionesAcademicas({
-        target: i18n.language,
-        translate_fields: "nombre",
-      });
-      setFormaciones(response.data?.formaciones || []);
+      if (profileDoctorId) {
+        const response = await educationService.getFormacionesAcademicasByDoctorId(profileDoctorId, {
+          target: i18n.language,
+          translate_fields: "nombre",
+        });
+        setFormaciones(response.data?.formaciones || []);
+      } else {
+        const response = await educationService.getFormacionesAcademicas({
+          target: i18n.language,
+          translate_fields: "nombre",
+        });
+        setFormaciones(response.data?.formaciones || []);
+      }
     } catch (err) {
       console.error("Error al obtener formaciones académicas:", err);
       setError(

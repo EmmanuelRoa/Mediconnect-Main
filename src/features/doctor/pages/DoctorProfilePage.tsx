@@ -27,7 +27,7 @@ function DoctorProfilePage() {
   const isMyProfile = !doctorId || user?.id === Number(doctorId);
 
   // Determinar el ID del doctor a mostrar
-  const profileDoctorId = doctorId ? Number(doctorId) : user?.id;
+  const profileDoctorId = doctorId ? Number(doctorId) : Number(user?.id);
 
   // Fetch del perfil público cuando es otro doctor
   const { data: fetchedDoctorProfile, isLoading: isLoadingProfile } = useQuery({
@@ -133,10 +133,11 @@ function DoctorProfilePage() {
                   setSheetTab("insurance");
                   setOpenSheet(true);
                 }}
+                doctorId={profileDoctorId}
               />
               <DoctorServicesSection 
                 doctorId={profileDoctorId} 
-                isMyProfile={isMyProfile} 
+                isMyProfile={isMyProfile}
               />
               <DoctorCentersSection centers={centers} />
               {/* Educación y Experiencia - solo en mobile */}
@@ -147,10 +148,11 @@ function DoctorProfilePage() {
                     setSheetTab("education");
                     setOpenSheet(true);
                   }}
+                  doctorId={profileDoctorId}
                 />
                 {user?.id && (
                   <DoctorExperienceSection 
-                    doctorId={user.id}
+                    doctorId={profileDoctorId}
                     isMyProfile={isMyProfile}
                     onOpenSheet={() => {
                       setSheetTab("experience");
@@ -169,10 +171,11 @@ function DoctorProfilePage() {
                       setSheetTab("education");
                       setOpenSheet(true);
                   }}
+                  doctorId={profileDoctorId}
                 />
                 {user?.id && (
                   <DoctorExperienceSection 
-                    doctorId={user.id}
+                    doctorId={profileDoctorId}
                     isMyProfile={isMyProfile}
                     onOpenSheet={() => {
                       setSheetTab("experience");

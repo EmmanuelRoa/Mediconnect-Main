@@ -4,6 +4,7 @@ import type {
   CancelAppointment,
 } from "@/types/AppointmentTypes";
 import type { RescheduleAppointmentByDoctorFormData } from "@/schema/appointment.schema";
+
 export interface AppointmentSlice {
   isAppointmentInProgress?: boolean;
   appointment: scheduleAppointment & { selectedServiceId?: string };

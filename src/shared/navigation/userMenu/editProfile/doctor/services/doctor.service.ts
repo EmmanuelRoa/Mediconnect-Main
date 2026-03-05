@@ -44,6 +44,7 @@ import type {
   UpdateDoctorServiceRequest,
   GetServiceByIdResponse,
   Doctor,
+  GetSlotsAvailableForServiceResponse,
 } from './doctor.types';
 import type { get } from 'react-hook-form';
 
@@ -409,6 +410,43 @@ export const doctorService = {
     }
   },
 
+  getExperienciasLaboralesByDoctorId: async (
+    doctorId: number,
+    params?: GetExperienciasLaboralesParams
+  ): Promise<GetExperienciasLaboralesResponse> => {
+    try {
+      const response = await apiClient.get<GetExperienciasLaboralesResponse>(
+        `/experiencias-laborales/doctor/${doctorId}`,
+        { params }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener experiencias laborales:', error);
+      
+      const errorData = error.response?.data as DoctorServiceError;
+      
+      if (error.response?.status === 404) {
+        // Si no hay experiencias, devolver array vacío
+        return {
+          success: true,
+          message: 'No se encontraron experiencias laborales',
+          data: {
+            experiencias: [],
+            total: 0
+          }
+        };
+      }
+      
+      // Error genérico del servidor o del cliente API
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener las experiencias laborales. Intenta nuevamente.'
+      );
+    }
+  },
+
   /**
    * Crea una nueva experiencia laboral para el doctor autenticado
    * @param data - Datos de la experiencia laboral
@@ -676,6 +714,38 @@ export const doctorService = {
         errorData?.message || 
         error.message || 
         'Error al obtener tus seguros aceptados. Intenta nuevamente.'
+      );
+    }
+  },
+
+
+  getAcceptedInsurancesByDoctorId: async (doctorId: number, language?: string): Promise<GetAcceptedInsurancesResponse> => {
+    try {
+      // Construir query params
+      const params: Record<string, string> = {};
+
+      // Agregar traducción si se especifica un idioma diferente al español
+      if (language && language !== 'es') {
+        params.target = language;
+        params.source = 'es';
+        params.translate_fields = 'nombre,descripcion';
+      }
+
+      const response = await apiClient.get<GetAcceptedInsurancesResponse>(
+        `/seguros/doctor/${doctorId}/seguros-aceptados`,
+        { params }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener seguros aceptados por ID de doctor:', error);
+
+      const errorData = error.response?.data as InsuranceError;
+
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener seguros aceptados por ID de doctor. Intenta nuevamente.'
       );
     }
   },
@@ -985,7 +1055,26 @@ export const doctorService = {
     }
   },
 
-  getServicesByDistance: async (lat: number, lng: number, radiusKm: number, params: any | null = null): Promise<GetServicesOfDoctorResponse> => {
+
+  getSlotsAvailableForService: async (serviceId: number, params: any | null = null): Promise<GetSlotsAvailableForServiceResponse> => {
+    try {
+      const response = await apiClient.get<GetSlotsAvailableForServiceResponse>(
+        `/servicios/${serviceId}/slots-disponibles`,
+        { params }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener slots disponibles para el servicio:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener slots disponibles para el servicio. Intenta nuevamente.'
+      );
+    }
+  },
+
+  getServicesByDistance: async (lat: number | null, lng: number | null, radiusKm: number | 10 | null, params: any | null = null): Promise<GetServicesOfDoctorResponse> => {
     try {
       const response = await apiClient.get<GetServicesOfDoctorResponse>(
         `/servicios/cercanos`,

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo, useEffect } from "react";
 import DoctorSearchBar from "@/features/patient/components/DoctorSearchBar";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { DoctorCards } from "../components/DoctorCards";
@@ -27,6 +27,7 @@ import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import FiltersSearchProviders from "../components/filters/FiltersSearchProviders";
 import useTiposCentros from "@/features/onboarding/services/useTiposCentros";
 import { useEspecialidades } from "@/features/onboarding/services";
+import { doctorService, type GetServicesOfDoctor } from "@/shared/navigation/userMenu/editProfile/doctor/services";
 
 interface SearchProviderFilters {
   name: string;
@@ -452,8 +453,10 @@ const DesktopFilters = memo(
 DesktopFilters.displayName = "DesktopFilters";
 
 function Search() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const isMobile = useIsMobile();
+  const [locationPermission, setLocationPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [connectedClinics, setConnectedClinics] = useState<string[]>([]);
@@ -472,6 +475,66 @@ function Search() {
 
   const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
   const { data: especialidadesOptions = [], isLoading: isLoadingEspecialidades } = useEspecialidades();
+  const [services, setServices] = useState<GetServicesOfDoctor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  useEffect(() => {
+    const loadServices = async (position: { lat: number; lng: number } | null) => {
+      try {
+        setIsLoading(true);
+
+        const requestPayload: any = {
+          target: i18n.language || "es",
+          source: i18n.language === "es" ? "en" : "es",
+          translate_fields: "nombre,descripcion,modalidad",
+        };
+        const lat = position ? position.lat : null;
+        const lng = position ? position.lng : null;
+        const radiusKm = position ? 15 : null;
+
+        // si tenemos coordenadas, pásalas a la petición
+
+        const response = await doctorService.getServicesByDistance(lat, lng, radiusKm, requestPayload);
+
+        if (response && response.success && Array.isArray(response.data)) {
+          console.log("Servicios cargados:", response.data);
+          setServices(response.data);
+        } else {
+          setServices([]);
+        }
+      } catch (error) {
+        console.error("Error al cargar los servicios del doctor:", error);
+        setServices([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!('geolocation' in navigator)) {
+      setLocationPermission('denied');
+      console.warn("Geolocalización no soportada por el navegador.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const p = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setCoords(p);
+        setLocationPermission('granted');
+        loadServices(p);
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationPermission('denied');
+        } else {
+          setLocationPermission('denied');
+        }
+        loadServices(null);
+      },
+      { enableHighAccuracy: false, timeout: 5000 },
+    );
+  }, [i18n.language]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -662,13 +725,23 @@ function Search() {
               isMobile && !showMap ? "hidden" : "block"
             }`}
           >
-            <div className="h-full rounded-xl overflow-hidden">
-              <MapSearchProviders
-                providers={filteredProviders}
-                selectedProviders={selectedProviders}
-                onProviderSelect={handleProviderSelect}
-              />
-            </div>
+            <div className="h-full rounded-xl overflow-hidden relative">
+                <MapSearchProviders
+                  providers={filteredProviders}
+                  selectedProviders={selectedProviders}
+                  onProviderSelect={handleProviderSelect}
+                />
+                {locationPermission === 'denied' && (
+                  <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+                    <div className="pointer-events-auto bg-yellow-50 border border-yellow-400 text-yellow-900 px-4 py-2 rounded max-w-lg mx-4 text-center">
+                      {t(
+                        'search.locationWarning',
+                        'Debe permitir el acceso a la ubicación para listar los servicios por cercanía.',
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
           </motion.div>
         </div>
       </main>

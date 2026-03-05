@@ -104,7 +104,12 @@
     "profileCopied": "Enlace de perfil copiado al portapapeles",
     "logoutSuccess": "¡Sesión cerrada exitosamente!",
     "particular": "Particular",
-    "selectType": "Seleccionar tipo de seguro"
+    "selectType": "Seleccionar tipo de seguro",
+    "loading": "Cargando seguros...",
+    "verifying": "Verificando compatibilidad...",
+    "compatible": "Este seguro es aceptado por el doctor",
+    "notCompatible": "Este seguro no es aceptado por el doctor",
+    "verificationError": "Error al verificar compatibilidad"
   },
   "validation": {
     "fullNameRequired": "El nombre completo es requerido",
@@ -151,7 +156,10 @@
     "appointmentsCount_plural": "{{count}} citas",
     "emptyTitle": "No hay citas programadas",
     "emptyDescription": "No tienes citas para este día. Selecciona otra fecha o programa una nueva cita.",
-    "join": "Unirse"
+    "join": "Unirse",
+    "success": "Cita programada exitosamente",
+    "error": "Error al programar la cita. Por favor, intenta nuevamente.",
+    "rescheduleSuccess": "Cita reagendada exitosamente"
   },
   "dashboard": {
     "searchTitle": "Busca médicos, especialidades o clínicas cercanas"
