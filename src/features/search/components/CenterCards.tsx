@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 
-import ToogleConfirmConnection from "@/features/center/components/ToogleConfirmConnection";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 
 interface ClinicCardProps {
   clinic: Clinic;

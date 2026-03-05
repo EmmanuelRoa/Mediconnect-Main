@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { useTranslation } from "react-i18next";
-import { Search } from "lucide-react";
+
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import MCCentersCards from "@/shared/components/MCCentersCards";
 import MCFilterInput from "@/shared/components/filters/MCFilterInput";
@@ -26,6 +26,7 @@ interface Center {
   urlImage?: string;
   isConnected?: boolean;
   description?: string;
+  connectionStatus?: "connected" | "not_connected";
 }
 
 interface CenterFilters {
@@ -208,7 +209,10 @@ function DoctorCentersSection({ centers, onToggleConnection }: Props) {
                 reviewCount={center.reviewCount}
                 phone={center.phone}
                 urlImage={center.urlImage ?? ""}
-                isConnected={center.isConnected}
+                connectionStatus={
+                  center.connectionStatus ??
+                  (center.isConnected ? "connected" : "not_connected")
+                }
                 onToggleConnection={
                   onToggleConnection
                     ? () => onToggleConnection(center.id)

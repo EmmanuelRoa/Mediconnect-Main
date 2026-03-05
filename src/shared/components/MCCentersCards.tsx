@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
-import { Star, Phone, MapPin, Ellipsis, Building } from "lucide-react";
+import { Star, Phone } from "lucide-react";
 import MCButton from "./forms/MCButton";
-import { Popover, PopoverTrigger, PopoverContent } from "@/shared/ui/popover";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import { cn } from "@/lib/utils"; // Asegúrate de importar cn si no está
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/useAppStore";
+import { useState } from "react";
+
 interface MCCenterCardProps {
   urlImage: string;
   name: string;
@@ -15,7 +15,7 @@ interface MCCenterCardProps {
   rating: number;
   reviewCount?: number;
   phone?: string;
-  isConnected?: boolean;
+  connectionStatus?: "connected" | "not_connected" | "pending";
   onDetails?: () => void;
   onToggleConnection?: () => void;
 }
@@ -28,19 +28,35 @@ const MCCentersCards = ({
   rating,
   reviewCount,
   phone,
-  isConnected = false,
+  connectionStatus = "not_connected",
   onDetails,
   onToggleConnection,
 }: MCCenterCardProps) => {
-  const { t } = useTranslation("doctor"); // <-- Cambia "common" por "doctor"
+  const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const userRole = useAppStore((state) => state.user?.role);
 
-  // Nuevo estado local para el toggle
-  const [connected, setConnected] = useState(isConnected);
+  // Estado local para simular el cambio (opcional, puedes quitar si manejas por props)
+  const [localStatus, setLocalStatus] = useState(connectionStatus);
+
+  let connectBtnText = t("clinicCard.connect");
+  let connectBtnDisabled = false;
+  let connectVariant: "primary" | "outline" = "outline";
+
+  if (localStatus === "connected") {
+    connectBtnText = t("clinicCard.connected");
+    connectVariant = "primary";
+  } else if (localStatus === "pending") {
+    connectBtnText = t("clinicCard.pending");
+    connectBtnDisabled = true;
+  }
 
   const handleToggleConnection = () => {
-    setConnected((prev) => !prev);
+    if (localStatus === "not_connected") {
+      setLocalStatus("pending");
+    } else if (localStatus === "connected") {
+      setLocalStatus("not_connected");
+    }
     if (onToggleConnection) onToggleConnection();
   };
 
@@ -54,7 +70,6 @@ const MCCentersCards = ({
             isMobile ? "h-40" : "h-48"
           }`}
         />
-        {/* Popover eliminado */}
       </div>
 
       <CardContent
@@ -66,27 +81,18 @@ const MCCentersCards = ({
           {name}
         </h3>
         <p
-          className={`
-            text-muted-foreground mb-1 line-clamp-2
-            ${isMobile ? "text-xs min-h-[20px]" : "text-sm min-h-[24px]"}
-          `}
+          className={`text-muted-foreground mb-1 line-clamp-2 ${isMobile ? "text-xs min-h-[20px]" : "text-sm min-h-[24px]"}`}
         >
           {type}
         </p>
         <p
-          className={`
-            text-muted-foreground mb-3 line-clamp-2
-            ${isMobile ? "text-xs min-h-[32px]" : "text-sm min-h-[36px]"}
-          `}
+          className={`text-muted-foreground mb-3 line-clamp-2 ${isMobile ? "text-xs min-h-[32px]" : "text-sm min-h-[36px]"}`}
         >
           {description || "-"}
         </p>
 
         <div
-          className={`
-            flex w-full justify-between text-primary
-            ${isMobile ? "px-0 text-xs mb-3 flex-wrap gap-1" : "px-1 text-sm mb-4"}
-          `}
+          className={`flex w-full justify-between text-primary ${isMobile ? "px-0 text-xs mb-3 flex-wrap gap-1" : "px-1 text-sm mb-4"}`}
         >
           <div className="flex items-center gap-1">
             <Star
@@ -96,14 +102,10 @@ const MCCentersCards = ({
             />
             <span className="font-medium">{rating}</span>
             <span className="text-muted-foreground">
-              {reviewCount
-                ? `(${reviewCount} ${t("cards.center.reviews", "reviews")})`
-                : ""}
+              {reviewCount ? `(${reviewCount} ${t("clinicCard.reviews")})` : ""}
             </span>
           </div>
-
           {!isMobile && <span className="mx-2 text-muted-foreground">•</span>}
-
           {phone && (
             <div className="flex items-center gap-1">
               <Phone size={isMobile ? 14 : 16} className="text-secondary" />
@@ -116,21 +118,22 @@ const MCCentersCards = ({
           {userRole === "DOCTOR" ? (
             <>
               <MCButton
-                variant={connected ? "primary" : "outline"}
+                variant={connectVariant}
                 size={isMobile ? "xs" : "sm"}
                 className={cn(
                   "flex-1",
                   isMobile && "text-xs px-2",
-                  connected &&
+                  localStatus === "connected" &&
                     "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
-                  !connected &&
+                  localStatus === "not_connected" &&
                     "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
+                  localStatus === "pending" &&
+                    "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
                 )}
                 onClick={handleToggleConnection}
+                disabled={connectBtnDisabled}
               >
-                {connected
-                  ? t("cards.center.connected", "Connected")
-                  : t("cards.center.connect", "Connect")}
+                {connectBtnText}
               </MCButton>
               <MCButton
                 className="flex-1 rounded-full"
@@ -138,7 +141,7 @@ const MCCentersCards = ({
                 onClick={onDetails}
                 size={isMobile ? "xs" : "sm"}
               >
-                {t("cards.center.viewDetails", "View details")}
+                {t("clinicCard.viewProfile")}
               </MCButton>
             </>
           ) : (
@@ -148,7 +151,7 @@ const MCCentersCards = ({
               onClick={onDetails}
               size={isMobile ? "xs" : "sm"}
             >
-              {t("cards.center.viewDetails", "Ver detalles")}
+              {t("clinicCard.viewProfile")}
             </MCButton>
           )}
         </div>

@@ -54,7 +54,7 @@ function ToogleConfirmConnection({
       trigger={children}
       variant={isConnected ? "warning" : "decide"}
       title={title}
-      triggerClassName="flex-1 bg-red-500   w-full"
+      triggerClassName="flex-1   w-full"
       description={description}
       confirmText={confirmText}
       secondaryText="Cancelar"

@@ -15,7 +15,7 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useAppStore } from "@/stores/useAppStore";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
-import ToogleConfirmConnection from "@/features/center/components/ToogleConfirmConnection";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 import { useState } from "react";
 
 interface CompareDoctorCardsProps {

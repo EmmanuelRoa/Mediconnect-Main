@@ -18,7 +18,7 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import { Heart as HeartFilled, Heart as HeartOutlined } from "lucide-react";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
-import ToogleConfirmConnection from "@/features/center/components/ToogleConfirmConnection";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 
 interface DoctorCardsProps {
   doctor: Doctor;

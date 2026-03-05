@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Eye, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/router/routes";
-import ToogleConfirmConnection from "./ToogleConfirmConnection";
+import ToogleConfirmConnection from "../../request/components/ToogleConfirmConnection";
 
 interface StaffActionsProps {
   doctor: {
