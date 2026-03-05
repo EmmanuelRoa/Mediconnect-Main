@@ -239,7 +239,18 @@
     "schedule": "Agendar",
     "clearFilters": "Limpiar",
     "profile": "Perfil",
-    "history": "Historial"
+    "history": "Historial",
+    "doctors": {
+      "profile": "Perfil",
+      "schedule": "Agendar",
+      "history": "Historial",
+      "lastAppointment": "Última cita",
+      "experience": "{{count}} año de experiencia",
+      "experience_plural": "{{count}} años de experiencia",
+      "noExperience": "Experiencia no especificada",
+      "acceptedInsurances": "Seguros aceptados",
+      "noLanguages": "Idiomas no especificados"
+    }
   },
   "appointment": {
     "detailsTitle": "Detalles de la Cita",
@@ -395,5 +406,10 @@
       "languages": "Idiomas",
       "insuranceAccepted": "Seguros aceptados"
     }
+  },
+  "clinicCard": {
+    "connect": "Conectar",
+    "connected": "Conectado",
+    "pending": "Pendiente"
   }
 }

@@ -24,98 +24,151 @@ export function MCFilterPopover({
   const { t } = useTranslation("patient");
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant={`outline`}
-          className={`flex w-full items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
-            open
-              ? "opacity ring-2 ring-accent/70  border-secondary"
-              : "opacity-100"
-          }`}
-          aria-label="Abrir filtros"
-        >
-          <SlidersHorizontal className="w-4.5 h-4.5" />
-          {t("filters.popover.filters")}
-          {activeFiltersCount > 0 && (
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className={cn(
-          "p-4 sm:p-5 bg-bg-secondary shadow-lg z-50 border border-primary/20 rounded-xl sm:rounded-2xl",
-          compact
-            ? "w-[220px] min-w-[220px] max-w-[220px]"
-            : "w-[calc(100vw-2rem)] sm:w-auto min-w-0 sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] max-w-[calc(100vw-2rem)] sm:max-w-none",
-          "max-h-[calc(100vh-8rem)] overflow-y-auto",
-        )}
-        align={isMobile ? "center" : "end"}
-        side="bottom"
-        sideOffset={8}
-        avoidCollisions={false}
-      >
-        <div className="space-y-3 sm:space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-2 sm:pb-0 border-b sm:border-b-0 border-border/50">
-            <h4 className="font-semibold text-foreground text-base sm:text-lg">
-              {t("filters.popover.title")}
-            </h4>
+    <>
+      {isMobile ? (
+        <>
+          <Button
+            variant={`outline`}
+            onClick={() => setOpen(true)}
+            className={`flex w-full items-center text-primary px-4 py-3.5 text-base rounded-4xl border-primary/20 bg-bg-btn-secondary ${
+              open
+                ? "opacity ring-2 ring-accent/70 border-secondary"
+                : "opacity-100"
+            }`}
+            aria-label="Abrir filtros"
+          >
+            <SlidersHorizontal className="w-4.5 h-4.5" />
+            {t("filters.popover.filters")}
             {activeFiltersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label={t("filters.popover.clear")}
-                onClick={onClearFilters}
-                className={cn(
-                  "transition-all duration-200 ease-in-out",
-                  "hover:bg-primary/10 dark:hover:bg-primary/10",
-                  "active:scale-95 active:bg-primary/20",
-                  "focus:ring-2 focus:ring-primary/30",
-                  "rounded-full",
-                  "gap-1 sm:gap-1.5",
-                  "text-xs sm:text-sm",
-                  "px-2 sm:px-3 py-1.5 sm:py-2",
-                )}
-              >
-                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="inline sm:hidden">
-                  {t("filters.popover.clear")}
-                </span>
-                <span className="hidden sm:inline">
-                  {t("filters.popover.clear")}
-                </span>
-              </Button>
+              <span className="ml-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                {activeFiltersCount}
+              </span>
             )}
-          </div>
+          </Button>
 
-          {/* Filters Content */}
-          <div className="w-full overflow-y-auto max-h-[60vh] sm:max-h-none">
-            {children}
-          </div>
+          {open && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setOpen(false);
+                }
+              }}
+            >
+              <div
+                className="w-[calc(100vw-2rem)] max-h-[80vh] bg-bg-secondary rounded-xl p-4 overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/50">
+                    <h4 className="font-semibold text-foreground text-lg">
+                      {t("filters.popover.title")}
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setOpen(false)}
+                      className="rounded-full"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
 
-          {/* Mobile Action Buttons (Optional) */}
-          {isMobile && (
-            <div className="flex gap-2 pt-3 border-t border-border/50">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-full text-sm"
-                onClick={() => setOpen(false)}
-              >
-                {t("filters.popover.cancel")}
-              </Button>
-              <Button
-                className="flex-1 rounded-full text-sm"
-                onClick={() => setOpen(false)}
-              >
-                {t("filters.popover.apply")}
-              </Button>
+                  <div
+                    className="w-full overflow-y-auto max-h-[60vh]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {children}
+                  </div>
+
+                  <div className="flex gap-2 pt-3 border-t border-border/50">
+                    {activeFiltersCount > 0 && (
+                      <Button
+                        variant="outline"
+                        className="flex-1 rounded-full text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onClearFilters();
+                          setOpen(false);
+                        }}
+                      >
+                        {t("filters.popover.clear")}
+                      </Button>
+                    )}
+                    <Button
+                      className="flex-1 rounded-full text-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpen(false);
+                      }}
+                    >
+                      {t("filters.popover.apply")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-        </div>
-      </PopoverContent>
-    </Popover>
+        </>
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant={`outline`}
+              className={`flex w-full items-center text-primary px-4 py-3.5 text-base sm:px-8 sm:py-4 md:px-10 md:py-5 lg:px-5 lg:py-5 lg:text-md rounded-4xl border-primary/20 bg-bg-btn-secondary ${
+                open
+                  ? "opacity ring-2 ring-accent/70 border-secondary"
+                  : "opacity-100"
+              }`}
+              aria-label="Abrir filtros"
+            >
+              <SlidersHorizontal className="w-4.5 h-4.5" />
+              {t("filters.popover.filters")}
+              {activeFiltersCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className={cn(
+              "p-5 bg-bg-secondary shadow-lg z-50 border border-primary/20 rounded-2xl",
+              compact
+                ? "w-[220px] min-w-[220px] max-w-[220px]"
+                : "w-auto min-w-[400px] md:min-w-[500px] lg:min-w-[600px] max-w-none",
+              "max-h-[calc(100vh-8rem)] overflow-y-auto",
+            )}
+            align="end"
+            side="bottom"
+            sideOffset={8}
+            avoidCollisions={false}
+          >
+            {/* Desktop content remains the same */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-foreground text-lg">
+                  {t("filters.popover.title")}
+                </h4>
+                {activeFiltersCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={t("filters.popover.clear")}
+                    onClick={onClearFilters}
+                    className="transition-all duration-200 ease-in-out hover:bg-primary/10 active:scale-95 focus:ring-2 focus:ring-primary/30 rounded-full gap-1.5 text-sm px-3 py-2"
+                  >
+                    <X className="w-4 h-4" />
+                    {t("filters.popover.clear")}
+                  </Button>
+                )}
+              </div>
+
+              <div className="w-full">{children}</div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </>
   );
 }

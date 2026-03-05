@@ -1,5 +1,5 @@
 import MCImageUpload from "@/shared/components/MCAuthImageUpload";
-import centerDocImg from "@/assets/centerOnboarding/center.png";
+
 import { useAppStore } from "@/stores/useAppStore";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -14,11 +14,11 @@ export function HealthCertificateUpload({
 }: HealthCertificateUploadProps) {
   const { t } = useTranslation("auth");
   const centerOnboardingData = useAppStore(
-    (state) => state.centerOnboardingData
+    (state) => state.centerOnboardingData,
   );
 
   const setCenterOnboardingData = useAppStore(
-    (state) => state.setCenterOnboardingData
+    (state) => state.setCenterOnboardingData,
   );
 
   const handleFileUpload = (fileUrl: string, fileType: string) => {
@@ -46,7 +46,7 @@ export function HealthCertificateUpload({
     <MCImageUpload
       title={t("healthCertificateUpload.title")}
       description={t("healthCertificateUpload.description")}
-      imageSrc={centerDocImg}
+      imageSrc="https://res.cloudinary.com/dy2wtanhl/image/upload/v1771700323/center_vuiwza.png"
       modalId="health-certificate"
       cropTitle={t("healthCertificateUpload.cropTitle")}
       aspectRatio={1.6}

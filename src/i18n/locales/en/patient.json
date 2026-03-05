@@ -7,7 +7,7 @@
   },
   "profileForm": {
     "editProfile": "Edit Profile",
-    "editProfileDescription": "Modify your personal and medical information",
+    "editProfileDescription": "Update your personal and medical information",
     "generalInfo": "General Information",
     "clinicalHistory": "Clinical History",
     "insurance": "Medical Insurance",
@@ -23,16 +23,16 @@
     "confirmDeleteDescription": "This action cannot be undone. The profile photo will be permanently deleted.",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
-    "identityDocument": "ID Number",
+    "identityDocument": "Identity Document Number",
     "identityDocumentPlaceholder": "000-0000000-0",
-    "email": "Email",
+    "email": "Email Address",
     "emailPlaceholder": "email@example.com",
     "age": "Age",
-    "agePlaceholder": "Enter age",
+    "agePlaceholder": "Enter your age",
     "height": "Height (cm)",
-    "heightPlaceholder": "Enter height",
+    "heightPlaceholder": "Enter your height",
     "weight": "Weight (kg)",
-    "weightPlaceholder": "Enter weight",
+    "weightPlaceholder": "Enter your weight",
     "bloodType": "Blood Type",
     "bloodTypePlaceholder": "Select blood type",
     "saveChanges": "Save changes",
@@ -41,9 +41,9 @@
     "cropProfilePhoto": "Crop profile photo",
     "patientSince": "Patient since:",
     "menu": {
-      "history": "View full history",
+      "history": "View complete history",
       "settings": "Settings",
-      "privacy": "Privacy & Security",
+      "privacy": "Privacy and Security",
       "copyProfile": "Copy profile",
       "logout": "Log out"
     }
@@ -75,12 +75,12 @@
   },
   "validation": {
     "fullNameRequired": "Full name is required",
-    "identityDocumentRequired": "ID number is required",
-    "identityDocumentInvalid": "Invalid ID number format",
+    "identityDocumentRequired": "Identity document number is required",
+    "identityDocumentInvalid": "Invalid identity document format",
     "emailInvalid": "Invalid email address",
-    "ageInvalid": "Invalid input: a number was expected",
-    "heightInvalid": "Invalid input: a number was expected",
-    "weightInvalid": "Invalid input: a number was expected",
+    "ageInvalid": "Invalid input: expected a number",
+    "heightInvalid": "Invalid input: expected a number",
+    "weightInvalid": "Invalid input: expected a number",
     "bloodTypeInvalid": "Invalid option: expected A+, A-, B+, B-, AB+, AB-, O+ or O-"
   },
   "appointments": {
@@ -93,7 +93,7 @@
       "actions": "Actions",
       "noAppointments": "No appointments.",
       "virtual": "Virtual",
-      "inPerson": "In Person"
+      "inPerson": "In-Person"
     },
     "schedule": "Schedule Appointment",
     "reschedule": "Reschedule",
@@ -107,19 +107,14 @@
     "details": "View details",
     "viewDetails": "View details",
     "virtual": "Virtual",
-    "inPerson": "In Person",
+    "inPerson": "In-Person",
     "virtualPlatform": "Virtual consultation platform",
     "appointmentsForDate": "Appointments for {{date}}",
     "appointmentsCount": "{{count}} appointment",
     "appointmentsCount_plural": "{{count}} appointments",
-    "emptyTitle": "No appointments scheduled",
+    "emptyTitle": "No scheduled appointments",
     "emptyDescription": "You have no appointments for this day. Select another date or schedule a new appointment.",
-    "join": "Join",
-    "accept": "Accept",
-    "viewAppointment": "View appointment",
-    "joinTeleconsult": "Join teleconsult",
-    "markCompleted": "Mark as completed",
-    "continueConsultation": "Continue consultation"
+    "join": "Join"
   },
   "dashboard": {
     "searchTitle": "Search for doctors, specialties or nearby clinics"
@@ -130,16 +125,16 @@
       "languages": "Languages",
       "insurances": "Accepted insurances",
       "experience": "Years of experience",
-      "ranking": "Minimum ranking",
-      "onlyFavorites": "Only favorites",
-      "price": "Price Range"
+      "ranking": "Minimum rating",
+      "onlyFavorites": "Favorites only",
+      "price": "Price range"
     },
     "placeholders": {
       "specialty": "Select specialty",
       "languages": "Select languages",
       "insurances": "Select insurances",
       "yearsOfExperience": "Select years of experience",
-      "ranking": "Select ranking",
+      "ranking": "Select rating",
       "name": "Search by name"
     },
     "specialties": {
@@ -159,7 +154,7 @@
       "humano": "Humano Insurance",
       "mapfre": "MAPFRE ARS",
       "universal": "ARS Universal",
-      "crecer": "Seguros Crecer",
+      "crecer": "Crecer Insurance",
       "yunen": "ARS Yunen"
     },
     "experience": {
@@ -169,10 +164,10 @@
       "10": "10+ years"
     },
     "ranking": {
-      "4_5": "Greater than 4.5",
-      "4": "Greater than 4",
-      "3_5": "Greater than 3.5",
-      "3": "Greater than 3",
+      "4_5": "Above 4.5",
+      "4": "Above 4",
+      "3_5": "Above 3.5",
+      "3": "Above 3",
       "all": "All"
     },
     "popover": {
@@ -186,10 +181,10 @@
     "serviceTypes": {
       "consulta": "Consultation",
       "terapia": "Therapy",
-      "examen": "Exam"
+      "examen": "Examination"
     },
     "modalities": {
-      "presencial": "In Person",
+      "presencial": "In-Person",
       "online": "Online"
     },
     "history": {
@@ -223,7 +218,7 @@
   "searchBar": {
     "searchLabel": "Search",
     "searchPlaceholderMobile": "Doctor, specialty...",
-    "searchPlaceholderDesktop": "Doctor's name, health center or specialty",
+    "searchPlaceholderDesktop": "Doctor name, health center or specialty",
     "insuranceLabel": "Insurance",
     "insurancePlaceholderMobile": "Insurance plan...",
     "insurancePlaceholderDesktop": "Add insurance plan",
@@ -244,11 +239,27 @@
     "schedule": "Schedule",
     "clearFilters": "Clear",
     "profile": "Profile",
-    "history": "History"
+    "history": "History",
+    "doctors": {
+      "profile": "Profile",
+      "schedule": "Schedule",
+      "history": "History",
+      "lastAppointment": "Last appointment",
+      "experience": "{{count}} year of experience",
+      "experience_plural": "{{count}} years of experience",
+      "noExperience": "Experience not specified",
+      "acceptedInsurances": "Accepted insurances",
+      "noLanguages": "Languages not specified"
+    }
+  },
+  "clinicCard": {
+    "connect": "Connect",
+    "connected": "Connected",
+    "pending": "Pending"
   },
   "appointment": {
     "detailsTitle": "Appointment Details",
-    "detailsTab": "Appointment Details",
+    "detailsTab": "Appointment details",
     "historyTab": "History",
     "service": "Service",
     "specialty": "Specialty",
@@ -276,7 +287,7 @@
       "cancelled": "Cancelled"
     },
     "cancelTitle": "Cancel Appointment",
-    "cancellationReason": "Reason for cancellation",
+    "cancellationReason": "Cancellation reason",
     "cancellationReasonPlaceholder": "Describe the reason for cancellation...",
     "confirmCancellation": "Confirm",
     "cancelAction": "Cancel",
@@ -287,42 +298,42 @@
     "invalidDate": "The entered date is not valid.",
     "timeRequired": "Time is required.",
     "modalityRequired": "Modality is required.",
-    "sessionsMin": "You must schedule at least 1 session.",
-    "sessionsMax": "You cannot schedule more than 5 sessions.",
-    "reasonMin": "The reason must be at least 10 characters.",
-    "reasonMax": "The reason cannot exceed 100 characters.",
+    "sessionsMin": "Must schedule at least 1 session.",
+    "sessionsMax": "Cannot schedule more than 5 sessions.",
+    "reasonMin": "Reason must be at least 10 characters.",
+    "reasonMax": "Reason cannot exceed 100 characters.",
     "insuranceRequired": "Insurance is required.",
     "serviceRequired": "Service is required.",
     "doctorRequired": "Doctor is required.",
-    "cancellationReasonMin": "The cancellation reason must be at least 10 characters.",
-    "cancellationReasonMax": "The cancellation reason cannot exceed 200 characters.",
-    "medicalPrescription": "Medical Prescription",
+    "cancellationReasonMin": "Cancellation reason must be at least 10 characters.",
+    "cancellationReasonMax": "Cancellation reason cannot exceed 200 characters.",
+    "medicalPrescription": "Medical prescription",
     "errorTitle": "Prescription not found",
-    "prescriptionNotFound": "No medical prescription found for this appointment.",
+    "prescriptionNotFound": "Medical prescription not found for this appointment.",
     "diagnosis": "Diagnosis",
     "observations": "Observations",
-    "attachedDocuments": "Attached Documents",
+    "attachedDocuments": "Attached documents",
     "download": "Download",
     "noDocumentsTitle": "No attached documents",
-    "noDocuments": "There are no attached documents for this prescription."
+    "noDocuments": "No documents attached to this prescription."
   },
   "serviceCards": {
     "howWantAppointment": "How do you want your appointment?",
-    "inPerson": "In Person",
-    "virtual": "Telehealth",
+    "inPerson": "In-Person",
+    "virtual": "Telemedicine",
     "perPatient": "per patient"
   },
   "compareModal": {
     "title": "Compare providers"
   },
   "compare": {
-    "noDoctors": "No doctors selected to compare",
+    "noDoctors": "No doctors selected for comparison",
     "removeDoctor": "Remove doctor",
     "experience": "Years of Experience",
     "specialties": "Specialties",
     "languages": "Languages",
-    "services": "Services Offered",
-    "insurance": "Accepted Insurances",
+    "services": "Offered Services",
+    "insurance": "Accepted Insurance",
     "biography": "Biography",
     "scheduleAppointment": "Schedule Appointment",
     "connected": "Connected",
@@ -333,21 +344,26 @@
     "title": "My Appointments",
     "upcomingTitle": "Upcoming Appointments",
     "historyTitle": "Appointment History",
-    "searchPlaceholder": "Search by doctor name...",
+    "searchPlaceholder": "Search by doctor's name...",
     "noResults": "No results found",
     "noUpcoming": "No upcoming appointments",
     "noHistory": "No appointment history",
     "noResultsDescription": "You have {{count}} {{section}}, but none match the applied filters. Try adjusting your search criteria.",
     "noUpcomingDescription": "You currently have no scheduled appointments. Schedule a new appointment with our specialists to begin your medical care.",
-    "noHistoryDescription": "You haven't completed or cancelled any appointments yet. Once you have finalized appointments, they will appear here.",
+    "noHistoryDescription": "You haven't completed or cancelled any appointments yet. Once you finish appointments, they will appear here.",
     "noUpcomingRegistered": "You have no upcoming appointments registered. Schedule a new appointment to get started.",
     "noHistoryRegistered": "You have no appointment history. Completed or cancelled appointments will appear here.",
     "upcomingSection": "upcoming appointments",
-    "historySection": "appointments in history",
+    "historySection": "history appointments",
     "clearFilters": "Clear",
     "scheduleNew": "Schedule New Appointment",
     "pdfTitle": "My Appointments",
     "pdfSubtitle": "Complete list of medical appointments",
+    "accept": "Accept",
+    "viewAppointment": "View appointment",
+    "joinTeleconsult": "Join teleconsultation",
+    "markCompleted": "Mark as completed",
+    "continueConsultation": "Continue consultation",
     "pdfColumns": {
       "doctor": "Doctor",
       "specialty": "Specialty",
@@ -357,20 +373,6 @@
       "appointmentType": "Appointment Type",
       "location": "Location",
       "status": "Status"
-    }
-  },
-  "myDoctors": {
-    "title": "My Doctors",
-    "searchPlaceholder": "Search by name...",
-    "pdfTitle": "My Doctors",
-    "pdfSubtitle": "Complete list of favorite doctors",
-    "pdfColumns": {
-      "name": "Name",
-      "specialty": "Specialty",
-      "rating": "Rating",
-      "yearsOfExperience": "Years of experience",
-      "languages": "Languages",
-      "insuranceAccepted": "Accepted insurances"
     }
   },
   "services": {
@@ -395,5 +397,19 @@
     "successMessage": "The PDF document has been generated successfully",
     "error": "Error",
     "errorMessage": "Error generating PDF. Please try again."
+  },
+  "myDoctors": {
+    "title": "My Doctors",
+    "searchPlaceholder": "Search by name...",
+    "pdfTitle": "My Doctors",
+    "pdfSubtitle": "Complete list of favorite doctors",
+    "pdfColumns": {
+      "name": "Name",
+      "specialty": "Specialty",
+      "rating": "Rating",
+      "yearsOfExperience": "Years of experience",
+      "languages": "Languages",
+      "insuranceAccepted": "Accepted insurance"
+    }
   }
 }

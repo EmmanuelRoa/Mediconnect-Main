@@ -53,6 +53,7 @@ import CreateServicesPage from "@/features/doctor/pages/CreateServicesPage";
 import RequestPage from "@/features/request/pages/RequestPage";
 import AppointmentConsultation from "@/features/doctor/pages/AppointmentConsultation";
 import PatientDetailsPage from "@/features/doctor/pages/PatientDetailsPage";
+import StaffPage from "@/features/center/pages/StaffPage";
 function AppRouter() {
   const userRole = useAppStore((state) => state.user?.role);
   return (
@@ -231,6 +232,15 @@ function AppRouter() {
                 <ProtectedRoute doctor center>
                   {" "}
                   <VerifyInfo />{" "}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.CENTER.DOCTORS}
+              element={
+                <ProtectedRoute center>
+                  {" "}
+                  <StaffPage />{" "}
                 </ProtectedRoute>
               }
             />

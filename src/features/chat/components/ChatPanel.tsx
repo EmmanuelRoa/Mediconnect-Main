@@ -223,7 +223,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-background h-full">
+    <div className="flex-1 flex flex-col bg-background h-full max-h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 border-b border-primary/15 bg-accent/50 rounded-tr-2xl md:rounded-tr-4xl flex-shrink-0">
         {/* Botón de volver (solo mobile) */}
@@ -264,12 +264,17 @@ export function ChatPanel({
         </button>
       </div>
 
-      {/* Messages - Con overflow correcto */}
+      {/* Messages - Con overflow correcto y altura mínima */}
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-3 md:py-4 scrollbar-hide"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-3 md:py-4 scrollbar-hide min-h-0"
         ref={scrollRef}
+        style={{
+          maxHeight: isMobile
+            ? "calc(100vh - 200px)" // Reserva espacio para header e input en mobile
+            : "calc(100vh - 250px)",
+        }}
       >
-        <div className="space-y-2 md:space-y-3">
+        <div className="space-y-2 md:space-y-3 pb-4">
           {conversation.messages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -285,17 +290,21 @@ export function ChatPanel({
       </div>
 
       {/* File/Image Preview Section - ARRIBA del input */}
-      <FilePreviewSection
-        previewImage={previewImage}
-        filePreview={filePreview}
-        onClearImagePreview={handleClearImagePreview}
-        onClearFilePreview={handleClearFilePreview}
-        getFileIcon={getFileIcon}
-        formatFileSize={formatFileSize}
-      />
+      {(previewImage || filePreview) && (
+        <div className="flex-shrink-0">
+          <FilePreviewSection
+            previewImage={previewImage}
+            filePreview={filePreview}
+            onClearImagePreview={handleClearImagePreview}
+            onClearFilePreview={handleClearFilePreview}
+            getFileIcon={getFileIcon}
+            formatFileSize={formatFileSize}
+          />
+        </div>
+      )}
 
       {/* Input - Con flex-shrink-0 para que no se comprima */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 border-t border-primary/10">
         <ChatInput
           inputValue={inputValue}
           setInputValue={setInputValue}
