@@ -110,19 +110,7 @@ const ChatPage = () => {
           onBack={isMobile ? handleBackToList : undefined}
         />
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-background">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia />
-              <EmptyTitle>Selecciona un chat</EmptyTitle>
-              <EmptyDescription>
-                Elige una conversación en la barra lateral para comenzar a
-                chatear.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent />
-          </Empty>
-        </div>
+        <div className="flex-1 flex items-center justify-center bg-background"></div>
       )}
     </div>
   );

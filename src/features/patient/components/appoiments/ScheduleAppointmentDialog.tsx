@@ -36,8 +36,8 @@ import { useMyInsurances } from "../../hooks";
 import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import apiClient from "@/services/api/client";
-import { patientService } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.service";
-import { toast } from "sonner";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 
 interface AppointmentFilters {
   serviceTypes: string[];
@@ -51,8 +51,9 @@ interface ScheduleAppointmentDialogProps {
   idProvider: string;
   idAppointment?: string;
   idService?: string;
-  children: React.ReactNode,
+  children: React.ReactNode;
   serviceData?: ServiceDetail;
+  initialRescheduleData?: Partial<scheduleAppointment>;
 }
 
 const formatDateForStorage = (date: Date): string => {
@@ -69,7 +70,6 @@ const parseDateFromStorage = (dateString: string): Date => {
 
 function ScheduleAppointmentForm({
   isRescheduling,
-  idService,
   serviceData,
   isSubmitting,
 }: {
@@ -177,7 +177,7 @@ function ScheduleAppointmentForm({
   // useEffect con debounce para verificar compatibilidad del seguro
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (formValues.insuranceProvider) {
+      if (formValues.useInsurance && formValues.insuranceProvider) {
         verificarCompatibilidadSeguro(formValues.insuranceProvider);
       } else {
         setInsuranceStatus({
@@ -189,7 +189,7 @@ function ScheduleAppointmentForm({
     }, 500); // Esperar 500ms después del último cambio
 
     return () => clearTimeout(timeoutId);
-  }, [formValues.insuranceProvider, verificarCompatibilidadSeguro]);
+  }, [formValues.insuranceProvider, formValues.useInsurance, verificarCompatibilidadSeguro]);
 
   useEffect(() => {
     const loadServices = async () => {
@@ -405,8 +405,8 @@ function ScheduleAppointmentForm({
     const hasTimeSlot = !!formValues.time;
     const hasModality = !!formValues.selectedModality;
     const hasRequiredFields =
-      formValues.date && formValues.insuranceProvider && formValues.reason;
-    const isInsuranceCompatible = insuranceStatus.isCompatible === true && !insuranceStatus.isChecking;
+      formValues.date && formValues.reason && (formValues.useInsurance ? !!formValues.insuranceProvider : true);
+    const isInsuranceCompatible = !formValues.useInsurance || (insuranceStatus.isCompatible === true && !insuranceStatus.isChecking);
 
     if (!isRescheduling) {
       return !hasRequiredFields || !hasTimeSlot || !hasModality || !isInsuranceCompatible || isSubmitting;
@@ -425,6 +425,7 @@ function ScheduleAppointmentForm({
       formValues.reason !== initialValuesRef.current.reason ||
       formValues.insuranceProvider !==
         initialValuesRef.current.insuranceProvider ||
+      formValues.useInsurance !== initialValuesRef.current.useInsurance ||
       formValues.serviceId !== initialValuesRef.current.serviceId;
 
     return !hasAllFields || !hasChanges || isSubmitting;
@@ -570,6 +571,23 @@ function ScheduleAppointmentForm({
     <div className="px-6 pb-6 space-y-6">
       <DoctorHeader doctor={serviceData?.doctor} especialidad={serviceData?.especialidad?.nombre} />
       <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={formValues.useInsurance === true}
+            onCheckedChange={(v) => {
+              setValue("useInsurance", v ? true : false);
+              if (!v) {
+                setValue("insuranceProvider", "");
+                setInsuranceStatus({ isChecking: false, isCompatible: null, message: "" });
+              }
+            }}
+            id="use-insurance"
+          />
+          <Label htmlFor="use-insurance" className="text-primary flex items-center gap-2 cursor-pointer">
+            {t("appointments.withInsurance", "Con seguro")}
+          </Label>
+        </div>
+
         <MCSelect
           name="insuranceProvider"
           label={t("insurance.title")}
@@ -578,10 +596,11 @@ function ScheduleAppointmentForm({
             label: `${insurance.nombre} ${insurance.tipoSeguro ? `- ${typeof insurance.tipoSeguro === "string" ? insurance.tipoSeguro : insurance.tipoSeguro.nombre}` : ""}`,
           }))}
           placeholder={isLoadingInsurances ? t("insurance.loading") : t("insurance.select")}
-          required
+          required={formValues.useInsurance === true}
+          disabled={formValues.useInsurance === false}
         />
         {/* Indicador de verificación de compatibilidad del seguro */}
-        {formValues.insuranceProvider && (
+        {formValues.useInsurance && formValues.insuranceProvider && (
           <div className="mt-2 flex items-center gap-2 text-sm">
             {insuranceStatus.isChecking && (
               <>
@@ -646,7 +665,7 @@ function ScheduleAppointmentForm({
                   onSelect={handleDateSelect}
                   disabled={{ before: new Date() }}
                   initialFocus
-                  className="p-3 pointer-events-auto"
+                  className="p-3"
                 />
               </MorphingPopoverContent>
             </MorphingPopover>
@@ -716,16 +735,16 @@ function ScheduleAppointmentDialog({
   idProvider,
   idAppointment,
   serviceData,
-  idService,
+  initialRescheduleData,
   children,
 }: ScheduleAppointmentDialogProps) {
   const { t } = useTranslation("patient");
   const addAppointment = useAppointmentStore((s) => s.addAppointment);
+  const setIsRescheduling = useAppointmentStore((s) => s.setIsRescheduling);
   const appointment = useAppointmentStore((s) => s.appointment);
   const resetAppointment = useAppointmentStore((s) => s.clearAppointments);
   const isRescheduling = !!idAppointment;
   const [shouldLoadData, setShouldLoadData] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const closeRef = useRef<{ close: () => void } | null>(null);
   const navigate = useNavigate();
   
@@ -739,16 +758,29 @@ function ScheduleAppointmentDialog({
   useEffect(() => {
     if (!shouldLoadData) return;
     if (isRescheduling && idAppointment) {
+      const isSameAppointment = appointment.appointmentId === idAppointment;
+      const baseData = isSameAppointment ? appointment : (initialRescheduleData || {});
+
+      setIsRescheduling(true);
       addAppointment({
-        ...appointment,
+        date: baseData.date || formatDateForStorage(new Date()),
+        time: baseData.time || "",
+        selectedModality: baseData.selectedModality || "presencial",
+        numberOfSessions: baseData.numberOfSessions || 1,
+        reason: baseData.reason || "",
+        useInsurance: baseData.useInsurance ?? true,
+        insuranceProvider: baseData.insuranceProvider || "",
+        serviceId: baseData.serviceId || "",
         doctorId: idProvider,
         appointmentId: idAppointment,
+        horarioId: isSameAppointment ? appointment.horarioId : undefined,
       });
       setShouldLoadData(false);
       return;
     }
     if (!appointment.doctorId) {
       // NO propagar valores vacíos del store, solo establecer el doctorId
+      setIsRescheduling(false);
       addAppointment({
         date: formatDateForStorage(new Date()),
         time: "",
@@ -756,6 +788,7 @@ function ScheduleAppointmentDialog({
         numberOfSessions: 1,
         reason: "",
         insuranceProvider: "",
+        useInsurance: true,
         serviceId: "",
         doctorId: idProvider,
         appointmentId: undefined,
@@ -774,6 +807,7 @@ function ScheduleAppointmentDialog({
         numberOfSessions: 1,
         reason: "",
         insuranceProvider: "",
+        useInsurance: true,
         serviceId: "",
         appointmentId: undefined,
         horarioId: undefined,
@@ -798,24 +832,32 @@ function ScheduleAppointmentDialog({
     );
 
     // Agregar los campos del backend al objeto de appointment
-    const completeAppointmentData = {
+    const completeAppointmentData: any = {
       ...data,
       servicioId: Number(data.serviceId),
       fecha: data.date,
       hora: data.time,
       modalidad: modalidadFormatted,
       numPacientes: data.numberOfSessions,
-      seguroId: Number(data.insuranceProvider),
-      tipoSeguroId: seguroSeleccionado?.idTipoSeguro || 0,
       motivoConsulta: data.reason,
+      useInsurance: data.useInsurance,
+      // Garantizar que el appointmentId esté siempre presente al reagendar
+      ...(isRescheduling && idAppointment ? { appointmentId: idAppointment } : {}),
     };
+
+    // Sólo agregar campos de seguro si el paciente quiere usar seguro
+    if (data.useInsurance && data.insuranceProvider) {
+      completeAppointmentData.seguroId = Number(data.insuranceProvider);
+      completeAppointmentData.tipoSeguroId = seguroSeleccionado?.idTipoSeguro || 0;
+    }
 
     console.log("completeAppointmentData a guardar:", completeAppointmentData);
 
     // Guardar todo en el appointment existente
     addAppointment(completeAppointmentData);
-    
-    
+    if (isRescheduling) {
+      setIsRescheduling(true);
+    }
     // Cerrar el modal después de guardar
     closeRef.current?.close();
 
@@ -830,11 +872,20 @@ function ScheduleAppointmentDialog({
 
   const formDefaultValues = useMemo(() => {
     if (isRescheduling && idAppointment) {
+      const isSameAppointment = appointment.appointmentId === idAppointment;
+      const baseData = isSameAppointment ? appointment : (initialRescheduleData || {});
       return {
-        ...appointment,
+        date: baseData.date || formatDateForStorage(new Date()),
+        time: baseData.time || "",
+        selectedModality: baseData.selectedModality || "presencial",
+        numberOfSessions: baseData.numberOfSessions || 1,
+        reason: baseData.reason || "",
+        useInsurance: baseData.useInsurance ?? true,
+        insuranceProvider: baseData.insuranceProvider || "",
+        serviceId: baseData.serviceId || "",
         doctorId: idProvider,
         appointmentId: idAppointment,
-        horarioId: appointment.horarioId,
+        horarioId: isSameAppointment ? appointment.horarioId : undefined,
       };
     }
     // Garantizar valores por defecto apropiados
@@ -844,6 +895,7 @@ function ScheduleAppointmentDialog({
       selectedModality: appointment.selectedModality || "presencial",
       numberOfSessions: appointment.numberOfSessions || 1,
       reason: appointment.reason || "",
+      useInsurance: appointment.useInsurance !== undefined ? appointment.useInsurance : true,
       insuranceProvider: appointment.insuranceProvider || "",
       serviceId: appointment.serviceId || "",
       doctorId: appointment.doctorId || idProvider,
@@ -888,9 +940,8 @@ function ScheduleAppointmentDialog({
       >
         <ScheduleAppointmentForm
           isRescheduling={isRescheduling}
-          idService={idService}
           serviceData={serviceData}
-          isSubmitting={isSubmitting}
+          isSubmitting={false}
         />
       </MCFormWrapper>
     </MCModalBase>

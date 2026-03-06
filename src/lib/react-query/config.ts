@@ -47,6 +47,10 @@ export const QUERY_KEYS = {
   APPOINTMENT_BY_ID: (id: string | number) => ['appointments', id],
   MY_APPOINTMENTS: ['appointments', 'my'],
   
+  // Citas (Patient appointments from backend)
+  CITAS: (filters?: Record<string, any>) => ['citas', filters].filter(Boolean),
+  CITA_BY_ID: (id: string | number) => ['citas', id],
+  
   // Doctors
   DOCTORS: ['doctors'],
   DOCTOR_BY_ID: (id: string | number) => ['doctors', id],

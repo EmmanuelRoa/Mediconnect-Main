@@ -25,7 +25,6 @@ function ServiceReviewStep({ isEditMode = false, serviceId }: { isEditMode?: boo
   const clearCreateServiceData = useCreateServicesStore((s) => s.clearComercialScheduleData); // ✅ Opcional: limpiar datos después de crear
   const locationData = useCreateServicesStore((s) => s.locationData);
 
-
   const handleSubmit = async () => {
     
     setIsSubmitting(true);

@@ -14,7 +14,7 @@ export interface BaseProvider {
   coordinates: {
     lat: number;
     lng: number;
-  };
+  } | { lat: number; lng: number }[];
 }
 
 export interface Doctor extends BaseProvider {
@@ -29,16 +29,17 @@ export interface Doctor extends BaseProvider {
     date: string;
     dayName: string;
     slots: number;
+    month?: string;
   }[];
-  isConnected?: boolean;
-  isFavorite?: boolean; // <-- Agrega esta línea
+  connectionStatus?: "connected" | "not_connected" | "pending"; // <-- Cambia aquí
+  isFavorite?: boolean;
 }
 
 export interface Clinic extends BaseProvider {
   type: "clinic";
   specialties: string[];
   modality: ("Presencial" | "Virtual")[];
-  isConnected?: boolean;
+  connectionStatus?: "connected" | "not_connected" | "pending"; // <-- Cambia aquí
 }
 
 export type Provider = Doctor | Clinic;
@@ -86,8 +87,8 @@ En su consulta, la Dra. Criparni prioriza la comunicación clara y la toma de de
       { date: "Nov 2", dayName: "Dom", slots: 13 },
       { date: "Nov 3", dayName: "Lun", slots: 11 },
     ],
-    isConnected: true,
-    isFavorite: false, // <-- Agrega esto
+    connectionStatus: "connected", // <-- Cambia aquí
+    isFavorite: false,
   },
   {
     id: "d2",
@@ -124,8 +125,8 @@ El Dr. Aleredo cree firmemente en la importancia de la escucha activa y la empat
       { date: "Nov 2", dayName: "Dom", slots: 13 },
       { date: "Nov 3", dayName: "Lun", slots: 11 },
     ],
-    isConnected: true,
-    isFavorite: true, // <-- Agrega esto
+    connectionStatus: "pending", // <-- Ejemplo de pendiente
+    isFavorite: true,
   },
   {
     id: "d3",
@@ -158,8 +159,8 @@ El Dr. Ramírez Abreu está comprometido con la educación continua y la actuali
       { date: "Nov 2", dayName: "Dom", slots: 13 },
       { date: "Nov 3", dayName: "Lun", slots: 11 },
     ],
-    isConnected: false,
-    isFavorite: false, // <-- Agrega esto
+    connectionStatus: "not_connected", // <-- Ejemplo de no conectado
+    isFavorite: false,
   },
   {
     id: "d4",
@@ -193,8 +194,8 @@ El Dr. Saviñon Fernández también colabora en campañas de prevención y educa
       { date: "Nov 2", dayName: "Dom", slots: 13 },
       { date: "Nov 3", dayName: "Lun", slots: 11 },
     ],
-    isConnected: false,
-    isFavorite: true, // <-- Agrega esto
+    connectionStatus: "not_connected",
+    isFavorite: true,
   },
 ];
 
@@ -213,7 +214,7 @@ export const clinics: Clinic[] = [
     image:
       "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200&h=200&fit=crop",
     coordinates: { lat: 18.4605, lng: -69.9245 },
-    isConnected: false,
+    connectionStatus: "not_connected",
   },
   {
     id: "c2",
@@ -229,7 +230,7 @@ export const clinics: Clinic[] = [
     image:
       "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=200&h=200&fit=crop",
     coordinates: { lat: 18.4705, lng: -69.8995 },
-    isConnected: true,
+    connectionStatus: "connected",
   },
   {
     id: "c3",
@@ -245,7 +246,7 @@ export const clinics: Clinic[] = [
     image:
       "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=200&h=200&fit=crop",
     coordinates: { lat: 18.4805, lng: -69.9345 },
-    isConnected: false,
+    connectionStatus: "pending",
   },
 ];
 

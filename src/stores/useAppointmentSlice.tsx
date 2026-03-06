@@ -7,6 +7,8 @@ import type { RescheduleAppointmentByDoctorFormData } from "@/schema/appointment
 
 export interface AppointmentSlice {
   isAppointmentInProgress?: boolean;
+  isRescheduling: boolean;
+  setIsRescheduling: (value: boolean) => void;
   appointment: scheduleAppointment & { selectedServiceId?: string };
 
   cancelAppointment?: CancelAppointment;
@@ -50,6 +52,10 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
   setRescheduleAppointmentByDoctor: (data) =>
     set({ rescheduleAppointmentByDoctor: data }),
 
+  isRescheduling: false,
+
+  setIsRescheduling: (value) => set({ isRescheduling: value }),
+
   addAppointment: (data) => set({ appointment: data }),
 
   cancelAppointment: {
@@ -65,6 +71,7 @@ export const createAppointmentSlice: StateCreator<AppointmentSlice> = (
 
   clearAppointments: () =>
     set({
+      isRescheduling: false,
       appointment: {
         date: "",
         time: "",

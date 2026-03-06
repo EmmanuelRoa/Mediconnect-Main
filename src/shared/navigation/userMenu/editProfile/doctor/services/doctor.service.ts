@@ -37,6 +37,7 @@ import type {
   CreateDoctorServiceResponse,
   CreateDoctorServiceRequest,
   GetServicesOfDoctorResponse,
+  GetDoctoresByDistanceResponse,
   UpdateStatusDoctorServiceResponse,
   DeleteDoctorServiceResponse,
   AddImageToServiceResponse,
@@ -46,8 +47,6 @@ import type {
   Doctor,
   GetSlotsAvailableForServiceResponse,
 } from './doctor.types';
-import type { get } from 'react-hook-form';
-
 
 /**
  * Servicio para gestionar el perfil del doctor autenticado
@@ -944,6 +943,22 @@ export const doctorService = {
     }
   },
 
+
+  addDoctorToFavorites: async (doctorId: number): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await apiClient.post(`/favoritos/${doctorId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al agregar doctor a favoritos:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      throw new Error(
+        errorData?.message ||
+        error.message ||
+        'Error al agregar doctor a favoritos. Intenta nuevamente.'
+      );
+    }
+  },
+
   
   createService: async (data: CreateDoctorServiceRequest): Promise<CreateDoctorServiceResponse> => {
     try {
@@ -1074,10 +1089,10 @@ export const doctorService = {
     }
   },
 
-  getServicesByDistance: async (lat: number | null, lng: number | null, radiusKm: number | 10 | null, params: any | null = null): Promise<GetServicesOfDoctorResponse> => {
+  getDoctoresByDistance: async (lat: number | null, lng: number | null, radiusKm: number | 10 | null, params: any | null = null): Promise<GetDoctoresByDistanceResponse> => {
     try {
-      const response = await apiClient.get<GetServicesOfDoctorResponse>(
-        `/servicios/cercanos`,
+      const response = await apiClient.get<GetDoctoresByDistanceResponse>(
+        `/doctores/cercanos`,
         { params: { lat, lng, radio: radiusKm, ...params } }
       );
       return response.data;
@@ -1088,6 +1103,29 @@ export const doctorService = {
         errorData?.message || 
         error.message || 
         'Error al obtener servicios por distancia. Intenta nuevamente.'
+      );
+    }
+  },
+
+  getDoctorSlotsAvailableInRange: async (doctorId: number, startDate: string, days: Number, params: any | null = null): Promise<any> => {
+    try {
+      const response = await apiClient.get<any>(
+        `/servicios/doctor/${doctorId}/disponibilidad`,
+        { params: { 
+            fechaInicio: startDate,
+            dias: days,
+            ...params 
+          } 
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener slots disponibles del doctor en rango de fechas:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      throw new Error(
+        errorData?.message || 
+        error.message ||
+        'Error al obtener slots disponibles del doctor en rango de fechas. Intenta nuevamente.'
       );
     }
   },

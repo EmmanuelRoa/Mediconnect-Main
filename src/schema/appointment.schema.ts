@@ -8,7 +8,9 @@ export const appointmentSchemaBase = z.object({
   selectedModality: z.enum(["presencial", "teleconsulta"]), // ← CORREGIDO: sin "Mixta"
   numberOfSessions: number().min(1).max(5).default(1),
   reason: z.string().min(10).max(100),
-  insuranceProvider: z.string().min(1),
+  // Soportamos citas con o sin seguro
+  useInsurance: z.boolean().optional(),
+  insuranceProvider: z.string().optional(),
   serviceId: z.string(),
   doctorId: z.string(),
   horarioId: z.number().optional(),
@@ -54,9 +56,8 @@ export const appointmentSchema = (t: (key: string) => string) =>
       .string()
       .min(10, { message: t("appointment.reasonMin") })
       .max(100, { message: t("appointment.reasonMax") }),
-    insuranceProvider: z
-      .string()
-      .min(1, { message: t("appointment.insuranceRequired") }),
+    useInsurance: z.boolean(),
+    insuranceProvider: z.string().optional(),
     serviceId: z.string().min(1, { message: t("appointment.serviceRequired") }),
     doctorId: z.string().min(1, { message: t("appointment.doctorRequired") }),
     horarioId: z.number().optional(),
@@ -72,6 +73,14 @@ export const appointmentSchema = (t: (key: string) => string) =>
     seguroId: z.number().optional(),
     tipoSeguroId: z.number().optional(),
     motivoConsulta: z.string().optional(),
+  }).refine((data) => {
+    if (data.useInsurance) {
+      return typeof data.insuranceProvider === "string" && data.insuranceProvider.length > 0;
+    }
+    return true;
+  }, {
+    message: t("appointment.insuranceRequired"),
+    path: ["insuranceProvider"],
   });
 
 export const cancelAppointmentSchema = (t: (key: string) => string) =>

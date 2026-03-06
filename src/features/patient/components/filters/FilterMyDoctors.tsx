@@ -1,4 +1,3 @@
-import React from "react";
 import { Heart, Star } from "lucide-react";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { Label } from "@/shared/ui/label";
@@ -79,7 +78,7 @@ function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
       label: (
         <span className="flex items-center gap-1">
           {t("filters.ranking.4_5", "4.5+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },
@@ -88,7 +87,7 @@ function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
       label: (
         <span className="flex items-center gap-1">
           {t("filters.ranking.4", "4.0+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },
@@ -97,7 +96,7 @@ function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
       label: (
         <span className="flex items-center gap-1">
           {t("filters.ranking.3_5", "3.5+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },
@@ -106,7 +105,7 @@ function FilterMyDoctors({ filters, onFiltersChange }: FilterMyDoctorsProps) {
       label: (
         <span className="flex items-center gap-1">
           {t("filters.ranking.3", "3.0+")}
-          <Star className="w-4 h-4 text-yellow-400" />
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
         </span>
       ),
     },

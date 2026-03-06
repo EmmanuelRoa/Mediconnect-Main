@@ -4,7 +4,6 @@ import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import { DoctorCards } from "../components/DoctorCards";
 import { CenterCards } from "../components/CenterCards";
 import {
-  allProviders,
   type Provider,
   type Doctor,
   type Clinic,
@@ -27,7 +26,7 @@ import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import FiltersSearchProviders from "../components/filters/FiltersSearchProviders";
 import useTiposCentros from "@/features/onboarding/services/useTiposCentros";
 import { useEspecialidades } from "@/features/onboarding/services";
-import { doctorService, type GetServicesOfDoctor } from "@/shared/navigation/userMenu/editProfile/doctor/services";
+import { useSearchDoctors } from "../hooks/useSearchDoctors";
 
 interface SearchProviderFilters {
   name: string;
@@ -49,123 +48,6 @@ const IDIOMAS_OPTIONS = [
   { value: "Inglés", label: "Inglés" },
   { value: "Francés", label: "Francés" },
 ];
-
-
-
-const filterProvider = (
-  provider: Provider,
-  searchFilters: SearchProviderFilters,
-): boolean => {
-  if (
-    searchFilters.name &&
-    !provider.name.toLowerCase().includes(searchFilters.name.toLowerCase())
-  ) {
-    return false;
-  }
-  if (
-    searchFilters.providerType?.length > 0 &&
-    !searchFilters.providerType.includes("all") &&
-    !searchFilters.providerType.includes(provider.type)
-  ) {
-    return false;
-  }
-  if (
-    searchFilters.specialty?.length > 0 &&
-    !searchFilters.specialty.includes("all") &&
-    provider.type === "doctor"
-  ) {
-    const doctor = provider as Doctor;
-    if (
-      !doctor.specialty ||
-      !searchFilters.specialty.includes(doctor.specialty)
-    ) {
-      return false;
-    }
-  }
-  if (
-    searchFilters.modality?.length > 0 &&
-    !searchFilters.modality.includes("all")
-  ) {
-    const providerModality = (provider as any).modality;
-    if (
-      !providerModality ||
-      !searchFilters.modality.includes(providerModality)
-    ) {
-      return false;
-    }
-  }
-  if (
-    searchFilters.gender?.length > 0 &&
-    !searchFilters.gender.includes("all") &&
-    provider.type === "doctor"
-  ) {
-    const doctorGender = (provider as any).gender;
-    if (!doctorGender || !searchFilters.gender.includes(doctorGender)) {
-      return false;
-    }
-  }
-  if (
-    searchFilters.languages?.length > 0 &&
-    !searchFilters.languages.includes("all")
-  ) {
-    const providerLanguages = (provider as any).languages || [];
-    const hasMatchingLanguage = searchFilters.languages.some((lang: string) =>
-      providerLanguages.includes(lang),
-    );
-    if (!hasMatchingLanguage) {
-      return false;
-    }
-  }
-  if (
-    searchFilters.scheduledAppointments?.length > 0 &&
-    !searchFilters.scheduledAppointments.includes("all")
-  ) {
-    const providerSchedule = (provider as any).schedule || [];
-    const hasMatchingSchedule = searchFilters.scheduledAppointments.some(
-      (schedule: string) => providerSchedule.includes(schedule),
-    );
-    if (!hasMatchingSchedule) {
-      return false;
-    }
-  }
-  if (searchFilters.rating !== null && searchFilters.rating !== undefined) {
-    const ratingArray = Array.isArray(searchFilters.rating)
-      ? searchFilters.rating
-      : [String(searchFilters.rating)];
-    if (!ratingArray.includes("all") && ratingArray.length > 0) {
-      const minRating = Math.min(
-        ...ratingArray
-          .map((r: any) => Number(r))
-          .filter((r: number) => !isNaN(r)),
-      );
-      if (!provider.rating || provider.rating < minRating) {
-        return false;
-      }
-    }
-  }
-  if (searchFilters.yearsOfExperience !== null && provider.type === "doctor") {
-    const doctorExperience = (provider as any).yearsOfExperience;
-    if (
-      !doctorExperience ||
-      doctorExperience < searchFilters.yearsOfExperience
-    ) {
-      return false;
-    }
-  }
-  if (
-    searchFilters.insuranceAccepted?.length > 0 &&
-    !searchFilters.insuranceAccepted.includes("all")
-  ) {
-    const providerInsurance = (provider as any).insuranceAccepted || [];
-    const hasMatchingInsurance = searchFilters.insuranceAccepted.some(
-      (insurance: string) => providerInsurance.includes(insurance),
-    );
-    if (!hasMatchingInsurance) {
-      return false;
-    }
-  }
-  return true;
-};
 
 const EmptyState = memo(() => {
   const { t } = useTranslation("common");
@@ -191,18 +73,17 @@ const ProviderCard = memo(
   ({
     provider,
     isSelected,
-    isConnected,
     onSelect,
     onConnect,
     onViewProfile,
   }: {
     provider: Provider;
     isSelected: boolean;
-    isConnected: boolean;
     onSelect: (id: string) => void;
-    onConnect: (id: string) => void;
+    onConnect?: (id: string) => void;
     onViewProfile: (id: string) => void;
   }) => {
+    console.log("Rendering ProviderCard for:", provider);
     if (provider.type === "doctor") {
       return (
         <DoctorCards
@@ -210,14 +91,18 @@ const ProviderCard = memo(
           isSelected={isSelected}
           onSelect={onSelect}
           onViewProfile={onViewProfile}
+          connectionStatus={
+            (provider as Doctor).connectionStatus ?? "not_connected"
+          }
+          onConnect={onConnect || (() => {})}
         />
       );
     } else {
       return (
         <CenterCards
           clinic={provider as Clinic}
-          isConnected={isConnected}
-          onConnect={onConnect}
+          isConnected={(provider as Clinic).connectionStatus ?? "not_connected"}
+          onConnect={onConnect || (() => {})}
           onViewProfile={onViewProfile}
         />
       );
@@ -459,7 +344,6 @@ function Search() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
-  const [connectedClinics, setConnectedClinics] = useState<string[]>([]);
   const [searchFilters, setSearchFilters] = useState<SearchProviderFilters>({
     name: "",
     insuranceAccepted: ["all"],
@@ -475,42 +359,23 @@ function Search() {
 
   const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
   const { data: especialidadesOptions = [], isLoading: isLoadingEspecialidades } = useEspecialidades();
-  const [services, setServices] = useState<GetServicesOfDoctor[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Use the search doctors hook with real API integration
+  const {
+    filteredProviders,
+    isLoading: isLoadingDoctors,
+  } = useSearchDoctors({
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+    radiusKm: 15,
+    filters: searchFilters,
+    language: i18n.language || "es",
+    enabled: true, // Always enabled, will return empty if no coords
+    especialidadesOptions,
+  });
 
-
+  // Handle geolocation
   useEffect(() => {
-    const loadServices = async (position: { lat: number; lng: number } | null) => {
-      try {
-        setIsLoading(true);
-
-        const requestPayload: any = {
-          target: i18n.language || "es",
-          source: i18n.language === "es" ? "en" : "es",
-          translate_fields: "nombre,descripcion,modalidad",
-        };
-        const lat = position ? position.lat : null;
-        const lng = position ? position.lng : null;
-        const radiusKm = position ? 15 : null;
-
-        // si tenemos coordenadas, pásalas a la petición
-
-        const response = await doctorService.getServicesByDistance(lat, lng, radiusKm, requestPayload);
-
-        if (response && response.success && Array.isArray(response.data)) {
-          console.log("Servicios cargados:", response.data);
-          setServices(response.data);
-        } else {
-          setServices([]);
-        }
-      } catch (error) {
-        console.error("Error al cargar los servicios del doctor:", error);
-        setServices([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (!('geolocation' in navigator)) {
       setLocationPermission('denied');
       console.warn("Geolocalización no soportada por el navegador.");
@@ -522,7 +387,6 @@ function Search() {
         const p = { lat: position.coords.latitude, lng: position.coords.longitude };
         setCoords(p);
         setLocationPermission('granted');
-        loadServices(p);
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
@@ -530,15 +394,15 @@ function Search() {
         } else {
           setLocationPermission('denied');
         }
-        loadServices(null);
+        console.warn("Error obteniendo ubicación:", error);
       },
       { enableHighAccuracy: false, timeout: 5000 },
     );
-  }, [i18n.language]);
+  }, []); // Run only once on mount
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    Object.entries(searchFilters).forEach(([key, value]) => {
+    Object.entries(searchFilters).forEach(([_key, value]) => {
       if (Array.isArray(value) && value.length > 0 && !value.includes("all"))
         count++;
       else if (typeof value === "string" && value.trim() !== "") count++;
@@ -569,12 +433,6 @@ function Search() {
     [],
   );
 
-  const filteredProviders = useMemo(() => {
-    return allProviders.filter((provider) =>
-      filterProvider(provider, searchFilters),
-    );
-  }, [searchFilters]);
-
   const handleProviderSelect = useCallback((id: string) => {
     setSelectedProviders((prev) =>
       prev.includes(id)
@@ -582,12 +440,6 @@ function Search() {
         : prev.length < 5
           ? [...prev, id]
           : prev,
-    );
-  }, []);
-
-  const handleClinicConnect = useCallback((id: string) => {
-    setConnectedClinics((prev) =>
-      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
     );
   }, []);
 
@@ -623,10 +475,10 @@ function Search() {
 
   const selectedProvidersData = useMemo(
     () =>
-      allProviders.filter((provider) =>
+      filteredProviders.filter((provider) =>
         selectedProviders.includes(provider.id),
       ),
-    [selectedProviders],
+    [selectedProviders, filteredProviders],
   );
   
   return (
@@ -702,7 +554,14 @@ function Search() {
               </h2>
             </div>
             <div className="space-y-3 sm:space-y-4">
-              {filteredProviders.length === 0 ? (
+              {isLoadingDoctors ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    {t("search.loading", "Buscando doctores...")}
+                  </p>
+                </div>
+              ) : filteredProviders.length === 0 ? (
                 <EmptyState />
               ) : (
                 filteredProviders.map((provider) => (
@@ -710,9 +569,7 @@ function Search() {
                     key={provider.id}
                     provider={provider}
                     isSelected={selectedProviders.includes(provider.id)}
-                    isConnected={connectedClinics.includes(provider.id)}
                     onSelect={handleProviderSelect}
-                    onConnect={handleClinicConnect}
                     onViewProfile={handleViewProfile}
                   />
                 ))

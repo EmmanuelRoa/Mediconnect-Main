@@ -159,6 +159,15 @@ function FiltersServices({
       ),
     },
     {
+      value: "3",
+      label: (
+        <span className="flex items-center gap-1">
+          {t("filters.rating.3", "3.0+")}
+          <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+        </span>
+      ),
+    },
+    {
       value: "0",
       label: (
         <span className="flex items-center gap-1">

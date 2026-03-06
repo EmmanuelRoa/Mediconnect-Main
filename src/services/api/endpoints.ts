@@ -38,6 +38,14 @@ export const API_ENDPOINTS = {
     RESCHEDULE: (id: string | number) => `/appointments/${id}/reschedule`,
   },
   
+  // --- CITAS DEL PACIENTE ---
+  CITAS: {
+    LIST: '/citas',
+    BY_ID: (id: string | number) => `/citas/${id}`,
+    CANCEL: (id: string | number) => `/citas/${id}/cancelar`,
+    TO_DOCTORS: '/citas/doctor',
+  },
+  
   // --- PERFILES ---
   PROFILES: {
     ME: '/profiles/me',

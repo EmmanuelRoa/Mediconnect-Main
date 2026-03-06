@@ -538,6 +538,130 @@ export interface GetServicesOfDoctorResponse {
   data: GetServicesOfDoctor[];
 }
 
+// --- TIPOS PARA BÚSQUEDA DE DOCTORES POR DISTANCIA ---
+
+/**
+ * Servicio simplificado dentro de un doctor (usado en búsqueda por distancia)
+ */
+export interface DoctorNearbyService {
+  id: number;
+  nombre: string;
+  precio: number;
+  duracionMinutos: number;
+  modalidad: string; // "Present", "Virtual", "Mixed"
+  servicios_ubicaciones: any[];
+}
+
+/**
+ * Especialidad del doctor
+ */
+export interface DoctorNearbyEspecialidad {
+  id_doctor: number;
+  id_especialidad: number;
+  es_principal: boolean;
+  estado: string;
+  creado_en: string;
+  actualizado_en: string | null;
+  especialidades: {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    estado: string;
+    creadoEn: string;
+  };
+}
+
+/**
+ * Ubicación del doctor
+ */
+export interface DoctorNearbyUbicacion {
+  id: number;
+  barrioId: number;
+  direccion: string;
+  codigoPostal: string | null;
+  estado: string;
+  creadoEn: string;
+  id_doctor: number;
+  nombre: string;
+}
+
+/**
+ * Seguro aceptado por el doctor
+ */
+export interface DoctorNearbySeguro {
+  doctorId: number;
+  seguroId: number;
+  tipoSeguroId: number;
+  estado: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  seguro: {
+    id: number;
+    nombre: string;
+    urlImage: string | null;
+  };
+  tipoSeguro: {
+    id: number;
+    nombre: string;
+  };
+}
+
+/**
+ * Doctor con información completa (usado en búsqueda por distancia)
+ */
+export interface DoctorNearby {
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  tipoDocIdentificacion: string;
+  cantidadResenas: number;
+  numeroDocumentoIdentificacion: string;
+  fechaNacimiento: string;
+  genero: string;
+  nacionalidad: string;
+  exequatur: string;
+  biografia: string;
+  anosExperiencia: number;
+  estadoVerificacion: string;
+  calificacionPromedio: number;
+  estado: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  duracionCitaPromedio: number;
+  esFavorito: boolean;
+  tarifas: number | null;
+  usuario: {
+    email: string;
+    telefono: string;
+    fotoPerfil: string;
+  };
+  especialidades: DoctorNearbyEspecialidad[];
+  ubicaciones: DoctorNearbyUbicacion[];
+  servicios: DoctorNearbyService[];
+  segurosAceptados: DoctorNearbySeguro[];
+  distanciaMetros: number;
+  idiomas: {
+    id: number;
+    nombre: string;
+  }[];
+}
+
+/**
+ * Respuesta del endpoint GET /doctores/cercanos
+ * Obtiene doctores dentro de un radio de distancia
+ */
+export interface GetDoctoresByDistanceResponse {
+  success: boolean;
+  total: number;
+  data: DoctorNearby[];
+  _translation?: {
+    source: string;
+    target: string;
+    fields: string[];
+    timestamp: string;
+  };
+}
+
 export interface UpdateStatusDoctorServiceRequest {
   estado: string; // "Activo" | "Inactivo"
 }

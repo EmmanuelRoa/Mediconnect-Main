@@ -15,6 +15,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
 import { useNavigate } from "react-router-dom";
 import HistoryDialog from "@/features/patient/components/doctors/HistoryDialog";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 export type DoctorCardVariant = "s" | "m" | "default";
 
 interface Doctor {
@@ -31,6 +32,8 @@ interface Doctor {
   variant?: DoctorCardVariant;
   lastAppointment?: string;
   onToggleFavorite?: () => void;
+  connectionStatus?: "connected" | "not_connected" | "pending"; // <-- Agrega esto si no está
+  onConnect?: (id: string | number) => void; // <-- Agrega esto si quieres manejar la conexión
 }
 
 const VARIANT_STYLES = {
@@ -73,6 +76,8 @@ function MCDoctorsCards({
   variant = "default",
   lastAppointment,
   onToggleFavorite,
+  connectionStatus = "not_connected", // <-- default
+  onConnect,
 }: Doctor) {
   const styles = VARIANT_STYLES[variant];
   const isMobile = useIsMobile();
@@ -85,6 +90,21 @@ function MCDoctorsCards({
     if (id) {
       navigate(`/doctor/profile/${id}`);
     }
+  };
+
+  // --- NUEVO: Lógica de botón de conexión ---
+  let connectBtnText = t("clinicCard.connect");
+  let connectBtnDisabled = false;
+  let connectVariant: "primary" | "outline" = "outline";
+  if (connectionStatus === "connected") {
+    connectBtnText = t("clinicCard.connected");
+    connectVariant = "primary";
+  } else if (connectionStatus === "pending") {
+    connectBtnText = t("clinicCard.pending");
+    connectBtnDisabled = true;
+  }
+  const handleConfirmConnect = () => {
+    if (onConnect && id) onConnect(id);
   };
 
   return (
@@ -235,30 +255,79 @@ function MCDoctorsCards({
         </div>
       </CardContent>
 
-      <div className=" flex justify-between  gap-3">
-        <ScheduleAppointmentDialog idProvider={id?.toString() ?? ""}>
-          <MCButton size={styles.buttonSize} className=" w-full">
-            {t("doctors.schedule")}
-          </MCButton>
-        </ScheduleAppointmentDialog>
-
-        <MCButton
-          size={styles.buttonSize}
-          variant="secondary"
-          className=" w-full"
-          onClick={handleProfileClick}
-        >
-          {t("doctors.profile")}
-        </MCButton>
-        <HistoryDialog doctorId={id?.toString() ?? ""}>
+      <div className="flex justify-between gap-3">
+        {userRole === "CENTER" && (
+          <>
+            <ToogleConfirmConnection
+              status={connectionStatus}
+              id={typeof id === "string" ? parseInt(id) : (id ?? 0)}
+              onConfirm={handleConfirmConnect}
+            >
+              <MCButton
+                size={styles.buttonSize}
+                variant={connectVariant}
+                className={[
+                  "flex-1 w-full",
+                  connectionStatus === "connected" &&
+                    "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
+                  connectionStatus === "not_connected" &&
+                    "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
+                  connectionStatus === "pending" &&
+                    "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                disabled={connectBtnDisabled}
+              >
+                {connectBtnText}
+              </MCButton>
+            </ToogleConfirmConnection>
+            <MCButton
+              size={styles.buttonSize}
+              variant="secondary"
+              className="w-full flex-1"
+              onClick={handleProfileClick}
+            >
+              {t("doctors.profile")}
+            </MCButton>
+          </>
+        )}
+        {userRole === "DOCTOR" && (
           <MCButton
             size={styles.buttonSize}
-            className="w-full"
             variant="secondary"
+            className="w-full"
+            onClick={handleProfileClick}
           >
-            {t("doctors.history")}
-          </MCButton>{" "}
-        </HistoryDialog>
+            {t("doctors.profile")}
+          </MCButton>
+        )}
+        {userRole === "PATIENT" && (
+          <>
+            <ScheduleAppointmentDialog idProvider={id?.toString() ?? ""}>
+              <MCButton size={styles.buttonSize} className="w-full">
+                {t("doctors.schedule")}
+              </MCButton>
+            </ScheduleAppointmentDialog>
+            <MCButton
+              size={styles.buttonSize}
+              variant="secondary"
+              className="w-full"
+              onClick={handleProfileClick}
+            >
+              {t("doctors.profile")}
+            </MCButton>
+            <HistoryDialog doctorId={id?.toString() ?? ""}>
+              <MCButton
+                size={styles.buttonSize}
+                className="w-full"
+                variant="secondary"
+              >
+                {t("doctors.history")}
+              </MCButton>
+            </HistoryDialog>
+          </>
+        )}
       </div>
     </Card>
   );

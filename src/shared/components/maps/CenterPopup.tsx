@@ -8,6 +8,8 @@ import MCButton from "../forms/MCButton";
 import { fadeInUp } from "@/lib/animations/commonAnimations";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 
 type CenterPopupProps = {
   provider: Clinic;
@@ -24,11 +26,33 @@ const CenterPopup: React.FC<CenterPopupProps> = ({
 }) => {
   const userRole = useAppStore((state) => state.user?.role);
   const isMobile = useIsMobile();
+  const { t } = useTranslation("common");
+
+  // Usar connectionStatus real si existe, si no, fallback a isConnected
+  const connectionStatus =
+    provider.connectionStatus ??
+    (isConnected === true ? "connected" : "not_connected");
+
+  let connectBtnText = t("clinicCard.connect");
+  let connectBtnDisabled = false;
+  let connectVariant: "primary" | "outline" = "outline";
+
+  if (connectionStatus === "connected") {
+    connectBtnText = t("clinicCard.connected");
+    connectVariant = "primary";
+  } else if (connectionStatus === "pending") {
+    connectBtnText = t("clinicCard.pending");
+    connectBtnDisabled = true;
+  }
 
   const handleProfileClick = () => {
     if (provider.id && navigateFn) {
       navigateFn(`/center/profile/${provider.id}`);
     }
+  };
+
+  const handleConfirmConnect = () => {
+    onConnect?.(provider.id);
   };
 
   const cardSize = isMobile ? "w-[260px] rounded-2xl" : "w-[480px] rounded-3xl";
@@ -124,23 +148,40 @@ const CenterPopup: React.FC<CenterPopupProps> = ({
           {/* Botones */}
           <div className={`flex gap-2 mt-3 ${isMobile && "flex-col"}`}>
             {userRole === "DOCTOR" && (
-              <MCButton
-                size="xs"
-                variant={isConnected ? "primary" : "outline"}
-                className="flex-1"
-                onClick={() => onConnect?.(provider.id)}
+              <ToogleConfirmConnection
+                status={connectionStatus}
+                id={parseInt(provider.id)}
+                onConfirm={handleConfirmConnect}
               >
-                {isConnected ? "Connected" : "Connect"}
-              </MCButton>
+                <MCButton
+                  size="xs"
+                  variant={connectVariant}
+                  className={[
+                    "flex-1 w-full",
+                    isMobile && "text-xs px-2",
+                    connectionStatus === "connected" &&
+                      "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
+                    connectionStatus === "not_connected" &&
+                      "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
+                    connectionStatus === "pending" &&
+                      "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  disabled={connectBtnDisabled}
+                >
+                  {connectBtnText}
+                </MCButton>
+              </ToogleConfirmConnection>
             )}
 
             <MCButton
               size="xs"
               variant="outline"
-              className="flex-1"
+              className="flex-1 w-full"
               onClick={handleProfileClick}
             >
-              View Profile
+              {t("clinicCard.viewProfile")}
             </MCButton>
           </div>
         </CardContent>

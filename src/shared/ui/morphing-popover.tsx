@@ -123,6 +123,12 @@ function MorphingPopoverTrigger({
     );
   }
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    context.open();
+  };
+
   if (asChild && isValidElement(children)) {
     const MotionComponent = motion.create(
       children.type as React.ForwardRefExoticComponent<any>,
@@ -132,7 +138,7 @@ function MorphingPopoverTrigger({
     return (
       <MotionComponent
         {...childProps}
-        onClick={context.open}
+        onClick={handleTriggerClick}
         layoutId={`popover-trigger-${context.uniqueId}`}
         className={childProps.className}
         key={context.uniqueId}
@@ -146,7 +152,7 @@ function MorphingPopoverTrigger({
     <motion.div
       key={context.uniqueId}
       layoutId={`popover-trigger-${context.uniqueId}`}
-      onClick={context.open}
+      onClick={handleTriggerClick}
     >
       <motion.button
         {...props}
@@ -192,6 +198,10 @@ function MorphingPopoverContent({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [context.isOpen, context.close]);
 
+  const handleContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <AnimatePresence>
       {context.isOpen && (
@@ -204,6 +214,7 @@ function MorphingPopoverContent({
             id={`popover-content-${context.uniqueId}`}
             role="dialog"
             aria-modal="true"
+            onClick={handleContentClick}
             className={cn(
               "absolute overflow-hidden rounded-md border border-zinc-950/10 bg-white p-2 text-zinc-950 shadow-md dark:border-zinc-50/10 dark:bg-zinc-700 dark:text-zinc-50",
               className,

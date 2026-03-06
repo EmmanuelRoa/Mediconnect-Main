@@ -22,7 +22,7 @@ export default function AppointmentActions({
 }: AppointmentActionsProps) {
   const { t } = useTranslation("patient");
   const navigate = useNavigate();
-  const userRole = useAppStore((state) => state.user?.role);
+  const userRole = useAppStore((state) => state.user?.rol);
 
   const isUpcoming = ["scheduled", "pending", "in_progress"].includes(
     appointment.status,

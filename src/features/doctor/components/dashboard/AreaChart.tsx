@@ -23,7 +23,6 @@ interface ChartDataItem {
   ingresos: number;
 }
 
-// Props del componente
 interface AreaChartProps {
   data?: ChartDataItem[];
   showFooter?: boolean;

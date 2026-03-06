@@ -18,7 +18,6 @@ function ProfileVisibilityPage() {
     (state) => state.setProfileVisibilityData,
   );
   const navigate = useNavigate();
-  const userRole = useAppStore((state) => state.user?.role);
 
   const handleSubmitSuccess = (data: {
     visibility: "PUBLIC" | "PRIVATE" | "RELATIONSHIPS_ONLY";

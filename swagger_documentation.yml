@@ -72,9 +72,10 @@ tags:
     description: Endpoints para gestionar servicios médicos ofrecidos por doctores (CRUD, imágenes, desactivación)
   - name: Reseñas
     description: Sistema de calificaciones y comentarios que los pacientes dejan sobre los servicios médicos
+  - name: Favoritos
+    description: Permite a los pacientes marcar y gestionar sus doctores favoritos
   - name: Media
     description: Gestión de archivos multimedia (imágenes, audios, videos, documentos, ZIP) para el chat y otros módulos
-
 
 # --- RUTAS (ENDPOINTS) ---
 paths:
@@ -13696,7 +13697,23 @@ paths:
       summary: Obtener mensajes de una conversación
       tags:
         - Mensajes
-      description: Lista mensajes con paginación y filtros
+      description: |-
+        Lista los mensajes de una conversación con paginación basada en número de página.
+
+        **Orden:** Los mensajes se devuelven de **más reciente a más antiguo** (ID descendente).
+        La página 1 siempre contiene los mensajes más recientes.
+
+        **Paginación por página:**
+        ```
+        GET /conversaciones/1/mensajes?pagina=1&limite=20   → mensajes más recientes
+        GET /conversaciones/1/mensajes?pagina=2&limite=20   → mensajes anteriores
+        ```
+
+        **Paginación por cursor (`antesDeId`):**
+        Para scroll infinito hacia atrás, usa `antesDeId` con el ID del mensaje más antiguo cargado.
+        ```
+        GET /conversaciones/1/mensajes?antesDeId=45&limite=20
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -13705,32 +13722,122 @@ paths:
           required: true
           schema:
             type: integer
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: "Número de página (1-indexed). Página 1 = mensajes más recientes"
+          example: 1
         - name: limite
           in: query
+          required: false
           schema:
             type: integer
             default: 50
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            default: 0
+            minimum: 1
+            maximum: 100
+          description: Mensajes por página
+          example: 20
         - name: antesDeId
           in: query
+          required: false
           schema:
             type: integer
+          description: "Cursor: retorna mensajes con ID menor al indicado (para scroll infinito)"
+          example: 45
         - name: tipo
           in: query
+          required: false
           schema:
             type: string
-            enum: [Texto, Imagen, Video, Audio, Archivo]
+            enum: [texto, imagen, video, audio, archivo]
         - name: busqueda
           in: query
+          required: false
           schema:
             type: string
+          description: Filtrar mensajes que contengan este texto
       responses:
         '200':
           description: Mensajes obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  mensaje:
+                    type: string
+                    example: "Mensajes obtenidos exitosamente"
+                  paginacion:
+                    type: object
+                    properties:
+                      pagina:
+                        type: integer
+                        example: 1
+                      limite:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        description: Total de mensajes en la conversación
+                        example: 87
+                      hayMas:
+                        type: boolean
+                        description: Si hay más páginas disponibles
+                        example: true
+                  data:
+                    type: array
+                    description: Mensajes ordenados de más reciente a más antiguo
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 87
+                        conversacionId:
+                          type: integer
+                          example: 1
+                        remitenteId:
+                          type: integer
+                          example: 5
+                        contenido:
+                          type: string
+                          example: "Hola, ¿cómo estás?"
+                        tipo:
+                          type: string
+                          example: "texto"
+                        estado:
+                          type: string
+                          example: "Enviado"
+                        enviadoEn:
+                          type: string
+                          format: date-time
+                        esPropio:
+                          type: boolean
+                          description: Si el mensaje fue enviado por el usuario autenticado
+                          example: true
+                        remitente:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            nombre:
+                              type: string
+                            apellido:
+                              type: string
+                            fotoPerfil:
+                              type: string
+                              nullable: true
+        '403':
+          description: No tienes acceso a esta conversación
+        '401':
+          description: No autenticado
 
     post:
       summary: Enviar un nuevo mensaje
@@ -13880,11 +13987,6 @@ paths:
       responses:
         '200':
           description: Mensaje eliminado exitosamente
-
-
-  # ==========================================
-  # SEGUROS MÉDICOS
-  # ==========================================
 
   /seguros:
     post:
@@ -14078,6 +14180,96 @@ paths:
         '200':
           description: Seguros disponibles obtenidos exitosamente
 
+  /seguros/mas-utilizados:
+    get:
+      tags:
+        - Seguros
+      summary: Seguros más utilizados por pacientes
+      description: |-
+        Devuelve el ranking de los seguros médicos más utilizados por pacientes activos,
+        ordenados de mayor a menor número de pacientes. Útil para que doctores y administradores
+        conozcan cuáles son los seguros con mayor demanda.
+
+        **Acceso:** Cualquier usuario autenticado (Paciente, Doctor, Administrador)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limite
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          description: "Número máximo de seguros a retornar (default: 10, max: 50)"
+          example: 10
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: "Idioma destino para traducción automática (activa la traducción)"
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen para traducción automática
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "nombre"
+          description: "Campos a traducir separados por comas. Campo disponible: `nombre`"
+      responses:
+        '200':
+          description: Ranking obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  mensaje:
+                    type: string
+                    example: "Seguros más utilizados obtenidos exitosamente"
+                  total:
+                    type: integer
+                    example: 5
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 3
+                        nombre:
+                          type: string
+                          example: "ARS Humano"
+                        urlImage:
+                          type: string
+                          nullable: true
+                          example: "https://example.com/logo.png"
+                        estado:
+                          type: string
+                          example: "Activo"
+                        totalPacientes:
+                          type: integer
+                          description: Número de pacientes activos con este seguro
+                          example: 42
+        '400':
+          description: Parámetro 'limite' inválido
+        '401':
+          description: No autenticado
+
   /seguros/mis-seguros:
     post:
       tags:
@@ -14260,6 +14452,116 @@ paths:
                               example: "Plan Gold"
         '400':
           description: ID de doctor inválido
+        '401':
+          description: No autenticado
+
+  /seguros/verificar-compatibilidad/{seguroId}/{tipoSeguroId}/doctor/{doctorId}:
+    get:
+      tags:
+        - Seguros
+      summary: Verificar compatibilidad de seguro con un doctor
+      description: |
+        Verifica si un seguro específico (por `seguroId` + `tipoSeguroId`) es compatible entre el doctor y el **paciente autenticado**.
+
+        Comprueba simultáneamente:
+        - ✅ **doctorAcepta**: el doctor tiene activo ese seguro + plan
+        - ✅ **pacienteTiene**: el paciente autenticado tiene activo ese seguro + plan
+        - ✅ **compatible**: ambas condiciones son verdaderas
+
+        Para obtener los IDs disponibles:
+        - `GET /api/seguros/disponibles` → lista de `seguroId`
+        - `GET /api/tipos-seguros/disponibles` → lista de `tipoSeguroId`
+
+        **Acceso:** Paciente autenticado (se identifica por JWT).
+
+        **Traducción Automática:**
+        El campo `mensaje` puede traducirse usando `target` y `translate_fields=mensaje`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: seguroId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del seguro médico (ej: ARS Humano)
+          example: 2
+        - name: tipoSeguroId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del tipo/plan de seguro (ej: Plan Familiar)
+          example: 1
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: usuarioId del doctor a verificar
+          example: 6
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Idioma destino para traducción automática (ej: 'en', 'fr')"
+          example: "en"
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          description: Idioma origen para traducción automática
+          example: "es"
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Campos a traducir separados por comas. Campo disponible: `mensaje`"
+          example: "mensaje"
+      responses:
+        '200':
+          description: Resultado de la verificación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Compatible: el doctor acepta y el paciente tiene el seguro "ARS Humano" (plan: Plan Familiar).'
+                  data:
+                    type: object
+                    properties:
+                      seguroNombre:
+                        type: string
+                        example: "ARS Humano"
+                      tipoSeguroNombre:
+                        type: string
+                        example: "Plan Familiar"
+                      doctorAcepta:
+                        type: boolean
+                        description: El doctor tiene activo ese seguro + plan
+                        example: true
+                      pacienteTiene:
+                        type: boolean
+                        description: El paciente autenticado tiene activo ese seguro + plan
+                        example: true
+                      compatible:
+                        type: boolean
+                        description: true solo si doctorAcepta y pacienteTiene son ambos true
+                        example: true
+                      mensaje:
+                        type: string
+                        example: 'Compatible: el doctor acepta y el paciente tiene el seguro "ARS Humano" (plan: Plan Familiar).'
+        '400':
+          description: ID de seguro, tipoSeguro o doctor inválido — o el seguro / tipo de seguro no existe
         '401':
           description: No autenticado
 
@@ -14757,6 +15059,12 @@ paths:
                               type: integer
                               description: Distancia en metros desde el punto de referencia
                               example: 1250
+                            doctorEsFavorito:
+                              type: boolean
+                              description: |
+                                Indica si el doctor que ofrece este servicio está marcado como favorito
+                                por el paciente autenticado. Siempre `false` para usuarios no-Paciente.
+                              example: true
         '400':
           description: |
             Parámetros inválidos. Posibles causas:
@@ -14956,6 +15264,236 @@ paths:
           description: No autenticado
         '404':
           description: Servicio no encontrado
+
+  /servicios/{id}/slots-disponibles:
+    get:
+      summary: Slots disponibles de un servicio (solo los libres)
+      tags:
+        - Servicios
+        - Citas
+      description: |
+        Devuelve **únicamente los horarios disponibles** de un servicio para una fecha dada,
+        listos para mostrar como botones/pills en la UI (ej: `10:00 a.m.`, `10:30 a.m.`, …).
+
+        A diferencia de `GET /servicios/{id}/slots` que devuelve todos los slots con
+        `disponible: true/false`, este endpoint solo retorna los que están libres.
+
+        - Divide el rango `horaInicio–horaFin` del horario en franjas de `duracionMinutos`.
+        - Excluye slots con conflicto de citas o periodo de inactividad del doctor.
+        - Incluye la hora formateada en 12h para uso directo en el frontend.
+
+        **Traducción Automática:** Agrega `?target=en&translate_fields=horarioNombre` para traducir nombres del horario.
+
+        **Acceso:** Paciente, Doctor, Administrador
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del servicio
+          schema:
+            type: integer
+          example: 1
+        - name: fecha
+          in: query
+          required: true
+          description: Fecha en formato YYYY-MM-DD
+          schema:
+            type: string
+          example: "2026-03-10"
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: Idioma destino para traducción automática
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "horarioNombre"
+          description: Campos a traducir separados por coma
+      responses:
+        '200':
+          description: Lista de slots disponibles obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  servicioId:
+                    type: integer
+                    example: 1
+                  fecha:
+                    type: string
+                    example: "2026-03-10"
+                  total:
+                    type: integer
+                    description: Cantidad de slots disponibles
+                    example: 12
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        horaInicio:
+                          type: string
+                          description: Hora de inicio en formato HH:MM UTC (24h)
+                          example: "10:00"
+                        horaFin:
+                          type: string
+                          description: Hora de fin en formato HH:MM UTC (24h)
+                          example: "10:30"
+                        horaInicioFormateada:
+                          type: string
+                          description: Hora de inicio en formato 12h para la UI
+                          example: "10:00 a.m."
+                        horarioId:
+                          type: integer
+                          example: 2
+                        horarioNombre:
+                          type: string
+                          nullable: true
+                          example: "Turno Mañana"
+        '400':
+          description: ID inválido o fecha faltante/incorrecta
+        '401':
+          description: No autenticado
+        '404':
+          description: Servicio no encontrado o inactivo
+
+  /servicios/doctor/{doctorId}/disponibilidad:
+    get:
+      summary: Disponibilidad del doctor por días
+      tags:
+        - Servicios
+        - Citas
+      description: |
+        Retorna un **resumen de disponibilidad día a día** para todos los servicios activos
+        de un doctor. Por cada día informa si hay al menos un slot libre y cuántos slots
+        libres hay en total (sumando todos sus servicios y horarios).
+
+        Ideal para mostrar un selector tipo calendario como:
+        ```
+        Mar Oct 28  |  Mié Oct 29  |  Jue Oct 30  |  ...
+        Sin citas   |  Sin citas   |  2 disponibles
+        ```
+
+        - Tiene en cuenta citas ya programadas y periodos de inactividad del doctor.
+        - Una sola query de citas y una de inactividad para todo el rango (sin N+1).
+
+        **Acceso:** Paciente, Doctor, Administrador
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          description: ID del doctor (usuarioId)
+          schema:
+            type: integer
+          example: 12
+        - name: dias
+          in: query
+          required: false
+          description: Cuántos días mostrar desde `fechaInicio` (1–30, default 7)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 30
+            default: 7
+          example: 5
+        - name: fechaInicio
+          in: query
+          required: false
+          description: Día de inicio en formato YYYY-MM-DD (default hoy UTC)
+          schema:
+            type: string
+          example: "2026-03-04"
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: Idioma destino para traducción automática
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "diaSemana,mes"
+          description: Campos a traducir separados por coma
+      responses:
+        '200':
+          description: Resumen de disponibilidad por día obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  doctorId:
+                    type: integer
+                    example: 12
+                  dias:
+                    type: integer
+                    example: 7
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fecha:
+                          type: string
+                          description: Fecha en formato YYYY-MM-DD
+                          example: "2026-03-04"
+                        diaSemana:
+                          type: string
+                          description: Abreviatura del día en español
+                          example: "Mar"
+                        mes:
+                          type: string
+                          description: Abreviatura del mes en español
+                          example: "Mar"
+                        hayDisponibilidad:
+                          type: boolean
+                          description: true si hay al menos un slot libre ese día
+                          example: true
+                        totalSlotsLibres:
+                          type: integer
+                          description: Slots libres sumando todos los servicios del doctor
+                          example: 4
+        '400':
+          description: Parámetros inválidos (doctorId, dias o fechaInicio incorrectos)
+        '401':
+          description: No autenticado
+        '404':
+          description: Doctor no encontrado
 
   /servicios/{id}:
     get:
@@ -16500,6 +17038,177 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ================================================================
+  # FAVORITOS
+  # ================================================================
+
+  /favoritos:
+    get:
+      summary: Listar mis doctores favoritos
+      tags:
+        - Favoritos
+      description: |
+        Devuelve la lista de doctores que el paciente autenticado ha marcado como favoritos,
+        incluyendo datos básicos del doctor (nombre, foto, especialidades, calificación).
+
+        **Traducción Automática:** Agrega `?target=en&translate_fields=especialidades` para traducir campos.
+
+        **Acceso:** Solo Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: target
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "en"
+          description: Idioma destino para traducción automática
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "es"
+          example: "es"
+          description: Idioma origen para traducción automática
+        - name: translate_fields
+          in: query
+          required: false
+          schema:
+            type: string
+          example: "especialidades"
+          description: Campos a traducir separados por coma
+      responses:
+        '200':
+          description: Lista de doctores favoritos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  total:
+                    type: integer
+                    example: 2
+                    description: Cantidad de favoritos activos
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DoctorFavorito'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado (solo Paciente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /favoritos/{doctorId}:
+    post:
+      summary: Agregar doctor a favoritos
+      tags:
+        - Favoritos
+      description: |
+        El paciente autenticado marca un doctor como favorito.
+
+        - Si ya está en favoritos devuelve `409 Conflict`.
+        - Si el doctor estaba en favoritos pero fue eliminado previamente, lo reactiva.
+
+        **Acceso:** Solo Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del doctor a favoritar (usuarioId del doctor)
+          example: 12
+      responses:
+        '201':
+          description: Doctor agregado a favoritos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  mensaje:
+                    type: string
+                    example: Doctor agregado a favoritos exitosamente
+                  data:
+                    $ref: '#/components/schemas/DoctorFavorito'
+        '400':
+          description: doctorId inválido
+        '401':
+          description: No autenticado
+        '403':
+          description: Acceso denegado (solo Paciente)
+        '404':
+          description: Doctor no encontrado
+        '409':
+          description: El doctor ya está en la lista de favoritos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Eliminar doctor de favoritos
+      tags:
+        - Favoritos
+      description: |
+        El paciente autenticado elimina un doctor de su lista de favoritos (soft-delete).
+
+        **Acceso:** Solo Paciente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del doctor a eliminar de favoritos
+          example: 12
+      responses:
+        '200':
+          description: Doctor eliminado de favoritos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  mensaje:
+                    type: string
+                    example: Doctor eliminado de favoritos exitosamente
+        '400':
+          description: doctorId inválido
+        '401':
+          description: No autenticado
+        '403':
+          description: Acceso denegado (solo Paciente)
+        '404':
+          description: El doctor no está en la lista de favoritos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # ─── Media ───────────────────────────────────────────────────────────────
@@ -16550,6 +17259,61 @@ components:
         esDocumento:
           type: boolean
           example: false
+
+    # ─── Favoritos ───────────────────────────────────────────────────────────
+    DoctorFavorito:
+      type: object
+      description: Entrada de doctor favorito de un paciente, incluyendo datos básicos del doctor.
+      properties:
+        pacienteId:
+          type: integer
+          example: 5
+        doctorId:
+          type: integer
+          example: 12
+        agregadoEn:
+          type: string
+          format: date-time
+          example: "2026-03-04T13:00:00Z"
+        estado:
+          type: string
+          enum: [Activo, Inactivo]
+          example: Activo
+        doctor:
+          type: object
+          nullable: true
+          properties:
+            usuarioId:
+              type: integer
+              example: 12
+            nombre:
+              type: string
+              example: "Juan"
+            apellido:
+              type: string
+              example: "García"
+            fotoPerfil:
+              type: string
+              nullable: true
+              example: "https://cdn.example.com/fotos/doctor.jpg"
+            calificacionPromedio:
+              type: number
+              nullable: true
+              example: 4.8
+            especialidades:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  nombre:
+                    type: string
+                    example: "Cardiología"
+                  esPrincipal:
+                    type: boolean
+                    example: true
 
     # ─── Reseñas ─────────────────────────────────────────────────────────────
     Resena:

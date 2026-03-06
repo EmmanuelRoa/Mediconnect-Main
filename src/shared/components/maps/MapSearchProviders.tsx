@@ -194,34 +194,41 @@ export default function MapSearchProviders({
     providers.forEach((provider) => {
       const isSelected = selectedProviders.includes(provider.id);
 
-      const popupNode = document.createElement("div");
-      const root = createRoot(popupNode);
-      root.render(
-        <PopupContent
-          provider={provider}
-          isSelected={isSelected}
-          onSelect={(id) => onProviderSelect?.(id)}
-          navigateFn={navigate}
-        />,
-      );
+      // Normalizar coordenadas: puede ser un objeto {lat, lng} o un arreglo [{lat, lng}, ...]
+      const coordinates = Array.isArray(provider.coordinates)
+        ? provider.coordinates
+        : [provider.coordinates];
 
-      const popup = new mapboxgl.Popup({
-        offset: 20,
-        closeButton: false,
-        closeOnClick: true,
-        maxWidth: "none",
-        className: "mapbox-popup-high-z",
-      }).setDOMContent(popupNode);
+      coordinates.forEach((coord) => {
+        const popupNode = document.createElement("div");
+        const root = createRoot(popupNode);
+        root.render(
+          <PopupContent
+            provider={provider}
+            isSelected={isSelected}
+            onSelect={(id) => onProviderSelect?.(id)}
+            navigateFn={navigate}
+          />,
+        );
 
-      const marker = new mapboxgl.Marker({
-        color: provider.type === "doctor" ? "#A8C3A0" : "#8BB1CA",
-        scale: isSelected ? 1.2 : 1,
-      })
-        .setLngLat([provider.coordinates.lng, provider.coordinates.lat])
-        .setPopup(popup)
-        .addTo(mapRef.current!);
+        const popup = new mapboxgl.Popup({
+          offset: 20,
+          closeButton: false,
+          closeOnClick: true,
+          maxWidth: "none",
+          className: "mapbox-popup-high-z",
+        }).setDOMContent(popupNode);
 
-      markersRef.current.push(marker);
+        const marker = new mapboxgl.Marker({
+          color: provider.type === "doctor" ? "#A8C3A0" : "#8BB1CA",
+          scale: isSelected ? 1.2 : 1,
+        })
+          .setLngLat([coord.lng, coord.lat])
+          .setPopup(popup)
+          .addTo(mapRef.current!);
+
+        markersRef.current.push(marker);
+      });
     });
 
     return () => {
@@ -245,7 +252,14 @@ export default function MapSearchProviders({
 
     const bounds = new mapboxgl.LngLatBounds();
     providers.forEach((provider) => {
-      bounds.extend([provider.coordinates.lng, provider.coordinates.lat]);
+      // Normalizar coordenadas para fitBounds también
+      const coordinates = Array.isArray(provider.coordinates)
+        ? provider.coordinates
+        : [provider.coordinates];
+
+      coordinates.forEach((coord) => {
+        bounds.extend([coord.lng, coord.lat]);
+      });
     });
 
     mapRef.current.fitBounds(bounds, {

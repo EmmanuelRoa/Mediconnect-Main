@@ -12,18 +12,24 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/useAppStore";
 import MCButton from "@/shared/components/forms/MCButton";
 import React, { useState } from "react";
+import { MCDialogBase } from "@/shared/components/MCDialogBase";
+import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import { Heart as HeartFilled, Heart as HeartOutlined } from "lucide-react";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 
 interface DoctorCardsProps {
   doctor: Doctor;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onViewProfile: (id: string) => void;
+  connectionStatus?: "connected" | "not_connected" | "pending";
+  onConnect?: (id: string) => void;
 }
 
 export const DoctorCards = ({
@@ -31,25 +37,84 @@ export const DoctorCards = ({
   isSelected,
   onSelect,
   onViewProfile,
+  connectionStatus = "not_connected",
+  onConnect,
 }: DoctorCardsProps) => {
-  const userRole = useAppStore((state) => state.user?.role);
-  const [isConnected, setIsConnected] = useState(doctor.isConnected ?? false);
-  const [isFavorite, setIsFavorite] = useState(doctor.isFavorite ?? false); // <-- Nuevo estado
+  const userRole = useAppStore((state) => state.user?.rol);
+  const [isFavorite, setIsFavorite] = useState(doctor.isFavorite ?? false);
+  const [favoriteDialogOpen, setFavoriteDialogOpen] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t } = useTranslation("common");
-
-  const handleConnectToggle = () => {
-    setIsConnected((prev) => !prev);
-  };
+  const setToast = useGlobalUIStore((state) => state.setToast);
 
   const handleFavoriteToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite((prev) => !prev);
+    // Open confirm dialog instead of toggling immediately
+    setFavoriteDialogOpen(true);
   };
 
+  const confirmAddFavorite = async () => {
+    setFavoriteLoading(true);
+    try {
+      await doctorService.addDoctorToFavorites(parseInt(doctor.id, 10));
+      setIsFavorite(true);
+      setToast?.({
+        type: "success",
+        message: t("doctorCard.favoriteAdded") || "Doctor agregado a favoritos",
+        open: true,
+      });
+      setFavoriteDialogOpen(false);
+    } catch (err: any) {
+      console.error("Failed to add favorite", err);
+      setToast?.({
+        type: "error",
+        message:
+          err?.message || t("doctorCard.favoriteAddError") || "No se pudo agregar a favoritos",
+        open: true,
+      });
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
+  const handleConfirmConnect = () => {
+    onConnect?.(doctor.id);
+  };
+
+  // Texto y estado del botón de conexión
+  let connectBtnText = t("clinicCard.connect");
+  let connectBtnDisabled = false;
+  let connectVariant: "primary" | "outline" = "outline";
+
+  if (connectionStatus === "connected") {
+    connectBtnText = t("clinicCard.connected");
+    connectVariant = "primary";
+  } else if (connectionStatus === "pending") {
+    connectBtnText = t("clinicCard.pending");
+    connectBtnDisabled = true;
+  }
+
+  console.log("Rendering DoctorCards for:", doctor);
   return (
-    <div
+    <>  
+      <MCDialogBase
+        open={favoriteDialogOpen}
+        onOpenChange={(o) => setFavoriteDialogOpen(o)}
+        title={t("doctorCard.confirmFavoriteTitle") || "Agregar a favoritos"}
+        description={
+          t("doctorCard.confirmFavoriteDescription", { name: doctor.name }) ||
+          `¿Deseas agregar a ${doctor.name} a tus favoritos?`
+        }
+        confirmText={t("common.confirm") || "Confirmar"}
+        secondaryText={t("common.cancel") || "Cancelar"}
+        onConfirm={confirmAddFavorite}
+        onSecondary={() => setFavoriteDialogOpen(false)}
+        variant="confirm"
+        loading={favoriteLoading}
+      > </MCDialogBase>
+      <div
       className={cn(
         "bg-background p-3 sm:p-4 border-b transition-all duration-200",
         isSelected
@@ -96,7 +161,7 @@ export const DoctorCards = ({
                 WebkitBackdropFilter:
                   "blur(16px) saturate(180%) contrast(120%)",
               }}
-              onClick={handleFavoriteToggle} // <-- Toggle favorito
+              onClick={handleFavoriteToggle}
             >
               {isFavorite ? (
                 <HeartFilled size={20} fill="red" className="text-red-500" />
@@ -400,11 +465,11 @@ export const DoctorCards = ({
                             )}
                           >
                             {isMobile
-                              ? slot.dayName.substring(0, 3)
-                              : slot.dayName}
+                              ? `${slot.dayName.substring(0, 3)}`
+                              : `${slot.dayName}`}
                           </span>
                           <span className="text-muted-foreground text-[9px] sm:text-[10px]">
-                            {slot.date}
+                            {slot.month} {slot.date}
                           </span>
                           <span
                             className={cn(
@@ -442,7 +507,7 @@ export const DoctorCards = ({
                             : slot.dayName}
                         </span>
                         <span className="text-muted-foreground text-[9px] sm:text-[10px]">
-                          {slot.date}
+                          {slot.month} {slot.date}
                         </span>
                         <span
                           className={cn(
@@ -511,27 +576,33 @@ export const DoctorCards = ({
           >
             {userRole === "CENTER" ? (
               <>
-                <MCButton
-                  variant={isConnected ? "primary" : "outline"}
-                  size={isMobile ? "xs" : "sm"}
-                  className={cn(
-                    "flex-1",
-                    isMobile && "text-xs px-2",
-                    isConnected &&
-                      "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
-                    !isConnected &&
-                      "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
-                  )}
-                  onClick={handleConnectToggle}
+                <ToogleConfirmConnection
+                  status={connectionStatus}
+                  id={parseInt(doctor.id)}
+                  onConfirm={handleConfirmConnect}
                 >
-                  {isConnected
-                    ? t("clinicCard.connected")
-                    : t("clinicCard.connect")}
-                </MCButton>
+                  <MCButton
+                    variant={connectVariant}
+                    size={isMobile ? "xs" : "sm"}
+                    className={cn(
+                      "flex-1 w-full",
+                      isMobile && "text-xs px-2",
+                      connectionStatus === "connected" &&
+                        "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
+                      connectionStatus === "not_connected" &&
+                        "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
+                      connectionStatus === "pending" &&
+                        "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
+                    )}
+                    disabled={connectBtnDisabled}
+                  >
+                    {connectBtnText}
+                  </MCButton>
+                </ToogleConfirmConnection>
                 <MCButton
                   variant="outline"
                   size={isMobile ? "xs" : "sm"}
-                  className={cn("flex-1", isMobile && "text-xs px-2")}
+                  className={cn("flex-1 w-full", isMobile && "text-xs px-2")}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
                   {t("clinicCard.viewProfile")}
@@ -542,7 +613,7 @@ export const DoctorCards = ({
                 <MCButton
                   variant="outline"
                   size={isMobile ? "xs" : "sm"}
-                  className={cn("flex-1", isMobile && "text-xs px-2")}
+                  className={cn("flex-1 w-full", isMobile && "text-xs px-2")}
                   onClick={() => navigate(`/doctor/profile/${doctor.id}`)}
                 >
                   {t("clinicCard.viewProfile")}
@@ -553,5 +624,6 @@ export const DoctorCards = ({
         </div>
       </div>
     </div>
+    </>
   );
 };

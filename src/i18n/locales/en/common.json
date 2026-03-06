@@ -34,6 +34,7 @@
   "clinicCard": {
     "connect": "Connect",
     "connected": "Connected",
+    "pending": "Request pending",
     "viewProfile": "View profile",
     "insurances": "Insurances:",
     "acceptedInsurances": "Accepted insurances:",
@@ -46,8 +47,14 @@
     "availableAvailability": "Available slots:",
     "noSlots": "No",
     "appointments": "Appointments",
-    "more": "More"
+    "more": "More",
+    "pending": "Request pending",
+    "favoriteAdded": "Doctor added to favorites",
+    "favoriteAddError": "Could not add to favorites",
+    "confirmFavoriteTitle": "Add to favorites",
+    "confirmFavoriteDescription": "Do you want to add {{name}} to your favorites doctors?"
   },
+  "confirm": "Confirm",
   "search": {
     "providerType": "Provider type",
     "specialty": "Specialty",
@@ -637,5 +644,16 @@
     "chatListItem": {
       "noMessages": "No messages yet"
     }
+  },
+  "doctors": {
+    "profile": "View profile",
+    "schedule": "Schedule appointment",
+    "history": "History",
+    "lastAppointment": "Last appointment",
+    "experience": "{{years}} year of experience",
+    "experience_plural": "{{years}} years of experience",
+    "noExperience": "Experience not specified",
+    "acceptedInsurances": "Accepted insurances",
+    "noLanguages": "Languages not specified"
   }
 }

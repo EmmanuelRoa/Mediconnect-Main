@@ -21,6 +21,8 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set, get) => ({
 
   //DOCTOR
   //PATIENT
+  //DOCTOR
+
   //CENTER
 
   login: (accessToken, refreshToken, user) =>

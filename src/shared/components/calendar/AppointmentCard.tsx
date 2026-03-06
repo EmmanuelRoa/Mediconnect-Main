@@ -5,6 +5,12 @@ import { Video, MapPin } from "lucide-react";
 import MCButton from "../forms/MCButton";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
+import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import type { ServiceDetail } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
+import { format } from "date-fns";
+import { useAppStore } from "@/stores/useAppStore";
+import ViewDetailsAppointmentDialog from "@/features/patient/components/appoiments/ViewDetailsAppointmentDialog";
+import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
 
 export type AppointmentStatus =
   | "scheduled"
@@ -15,29 +21,41 @@ export type AppointmentStatus =
 
 export interface Appointment {
   id: string;
+  doctorId?: string;
+  serviceData?: Partial<ServiceDetail>;
   clientName: string;
   date: Date;
   clientImage?: string;
   service: string;
   startTime: string;
-  endTime: string;
+  endTime?: string;
   isVirtual: boolean;
   status: AppointmentStatus;
+  // Fields used to pre-fill the reschedule form
+  serviceId?: string;
+  time24h?: string;
+  reason?: string;
+  numberOfSessions?: number;
+  insuranceProviderId?: string;
+  useInsurance?: boolean;
 }
 
 interface AppointmentCardProps {
   appointment: Appointment;
   index: number;
+  onCancel?: (appointmentId: string) => void;
 }
 
-export function AppointmentCard({ appointment, index }: AppointmentCardProps) {
+export function AppointmentCard({ appointment, index, onCancel }: AppointmentCardProps) {
   const isMobile = useIsMobile();
   const { t } = useTranslation("patient");
-
+  
   const initials = appointment.clientName
     .split(" ")
     .map((n) => n[0])
     .join("");
+
+  console.log("appointment in [appointmentCard]: ", appointment);
 
   // Botones según estado y tipo
   const renderButtons = () => {
@@ -46,17 +64,36 @@ export function AppointmentCard({ appointment, index }: AppointmentCardProps) {
     if (status === "scheduled" || status === "pending") {
       return (
         <div className="flex flex-col sm:flex-row w-full sm:w-fit gap-2">
-          <MCButton
-            variant="outline"
-            size="s"
-            className="rounded-full w-full sm:w-auto"
+          <ScheduleAppointmentDialog
+            idProvider={appointment.doctorId || ""}
+            idAppointment={appointment.id}
+            serviceData={appointment.serviceData as ServiceDetail | undefined}
+            initialRescheduleData={{
+              date: format(appointment.date, "yyyy-MM-dd"),
+              time: appointment.time24h || "",
+              selectedModality: appointment.isVirtual ? "teleconsulta" : "presencial",
+              serviceId: appointment.serviceId || "",
+              reason: appointment.reason || "",
+              numberOfSessions: appointment.numberOfSessions || 1,
+              useInsurance: appointment.useInsurance ?? false,
+              insuranceProvider: appointment.insuranceProviderId || "",
+              doctorId: appointment.doctorId || "",
+              appointmentId: appointment.id,
+            }}
           >
-            {t("appointments.reschedule")}
-          </MCButton>
+            <MCButton
+              variant="outline"
+              size="s"
+              className="rounded-full w-full sm:w-auto"
+            >
+              {t("appointments.reschedule")}
+            </MCButton>
+          </ScheduleAppointmentDialog>
           <MCButton
             variant="outlineDelete"
             size="s"
             className="rounded-full w-full sm:w-auto"
+            onClick={() => onCancel?.(appointment.id)}
           >
             {t("appointments.cancel")}
           </MCButton>
@@ -94,9 +131,14 @@ export function AppointmentCard({ appointment, index }: AppointmentCardProps) {
     // completed o cancelled
     return (
       <div className="w-full">
-        <MCButton variant="outline" size="s" className="rounded-full w-full">
-          {t("appointments.viewDetails")}
-        </MCButton>
+        <ViewDetailsAppointmentDialog
+          appointmentId={appointment.id}
+        >
+         <MCButton variant="outline" size="s" className="rounded-full w-full">
+            {t("appointments.viewDetails")}
+          </MCButton>
+        </ViewDetailsAppointmentDialog>
+        
       </div>
     );
   };
@@ -131,15 +173,18 @@ export function AppointmentCard({ appointment, index }: AppointmentCardProps) {
 
         {/* Información */}
         <div className="flex flex-col min-w-0 flex-1">
-          <h4 className="font-display text-base sm:text-lg font-semibold text-foreground truncate">
-            {appointment.clientName}
-          </h4>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="font-display text-base sm:text-lg font-semibold text-foreground truncate">
+              {appointment.clientName}
+            </h4>
+            <MCAppointmentsStatus status={appointment.status} variant="default" />
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground truncate">
             {appointment.service}
           </p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-muted-foreground">
             <span className="whitespace-nowrap">
-              {appointment.startTime} - {appointment.endTime}
+              {appointment.startTime} - {appointment.endTime ? appointment.endTime : t("appointments.ongoing")}
             </span>
             <span className="hidden sm:inline text-muted-foreground/50">•</span>
             <span className="flex items-center gap-1 whitespace-nowrap">

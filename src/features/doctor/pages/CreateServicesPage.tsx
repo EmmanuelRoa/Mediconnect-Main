@@ -215,7 +215,7 @@ function CreateServicesPage() {
         case 3:
           return <ServiceImagesStep isEditMode={isEditMode} serviceId={serviceId ? Number(serviceId) : undefined} />;
         case 4:
-          return <ServiceReviewStep isEditMode serviceId={serviceId ? Number(serviceId) : undefined} />;
+          return <ServiceReviewStep isEditMode={isEditMode} serviceId={serviceId ? Number(serviceId) : undefined} />;
         default:
           return <ServiceBasicInfoStep />;
       }
@@ -230,7 +230,7 @@ function CreateServicesPage() {
         case 3:
           return <ServiceImagesStep isEditMode={isEditMode} serviceId={serviceId ? Number(serviceId) : undefined} />;
         case 4:
-          return <ServiceReviewStep isEditMode serviceId={serviceId ? Number(serviceId) : undefined} />;
+          return <ServiceReviewStep isEditMode={isEditMode} serviceId={serviceId ? Number(serviceId) : undefined} />;
         default:
           return <ServiceBasicInfoStep />;
       }

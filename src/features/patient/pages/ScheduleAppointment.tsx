@@ -28,6 +28,8 @@ import type { ServiceDetail } from "@/shared/navigation/userMenu/editProfile/doc
 import { Skeleton } from "@/shared/ui/skeleton";
 import i18n from "@/i18n/config";
 import { useMyInsurances } from "../hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/lib/react-query/config";
 
 // Skeleton para la página de resumen de cita
 const ScheduleAppointmentSkeleton = ({ isMobile }: { isMobile: boolean }) => {
@@ -69,9 +71,11 @@ function ScheduleAppointment() {
   const { t } = useTranslation("patient");
   const user = useAppStore((state) => state.user);
   const appointmentDetails = useAppointmentStore((state) => state.appointment);
+  const isRescheduling = useAppointmentStore((state) => state.isRescheduling);
 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
   const isPatient = user?.rol === "PATIENT";
   
@@ -157,9 +161,11 @@ function ScheduleAppointment() {
   const selectedInsurance = availableInsurances.find(
     (insurance) => insurance.id.toString() === appointmentDetails.insuranceProvider
   );
-  const insuranceName = selectedInsurance
-    ? `${selectedInsurance.nombre}${selectedInsurance.tipoSeguro ? ` - ${typeof selectedInsurance.tipoSeguro === "string" ? selectedInsurance.tipoSeguro : selectedInsurance.tipoSeguro.nombre}` : ""}`
-    : appointmentDetails.insuranceProvider;
+  const insuranceName = appointmentDetails.useInsurance === false
+    ? t("appointments.noInsurance", "Sin seguro")
+    : (selectedInsurance
+      ? `${selectedInsurance.nombre}${selectedInsurance.tipoSeguro ? ` - ${typeof selectedInsurance.tipoSeguro === "string" ? selectedInsurance.tipoSeguro : selectedInsurance.tipoSeguro.nombre}` : ""}`
+      : appointmentDetails.insuranceProvider);
 
   const handleConfirm = async () => {
     if (isSubmitting) return;
@@ -171,27 +177,51 @@ function ScheduleAppointment() {
 
       const modalidadFormatted = (appointmentDetails.selectedModality || "presencial").charAt(0).toUpperCase() + (appointmentDetails.selectedModality || "presencial").slice(1);
 
-      const appointmentData = {
+      const appointmentData: any = {
         servicioId: Number(appointmentDetails.serviceId),
         horarioId: appointmentDetails.horarioId || 0,
         fecha: appointmentDetails.date,
         hora: appointmentDetails.time,
         modalidad: modalidadFormatted,
         numPacientes: appointmentDetails.numberOfSessions,
-        seguroId: Number(appointmentDetails.insuranceProvider || 0),
-        tipoSeguroId: seguroSeleccionado?.idTipoSeguro || 0,
         motivoConsulta: appointmentDetails.reason,
       };
 
-      const response = await patientService.createAppointment(appointmentData as any);
+      // Sólo agregar datos de seguro si el usuario indicó que usará seguro
+      if (appointmentDetails.useInsurance !== false && appointmentDetails.insuranceProvider) {
+        appointmentData.seguroId = Number(appointmentDetails.insuranceProvider || 0);
+        appointmentData.tipoSeguroId = seguroSeleccionado?.idTipoSeguro || 0;
+      }
+
+      let response;
+      console.log("Submitting appointment data:", appointmentData, "isRescheduling:", isRescheduling, "appointmentId:", appointmentDetails.appointmentId);
+      if (isRescheduling && appointmentDetails.appointmentId) {
+        response = await patientService.updateAppointment(Number(appointmentDetails.appointmentId), {
+          servicioId: Number(appointmentDetails.serviceId),
+          horarioId: appointmentDetails.horarioId || 0,
+          fecha: appointmentDetails.date,
+          hora: appointmentDetails.time,
+          modalidad: modalidadFormatted,
+          numPacientes: appointmentDetails.numberOfSessions,
+          motivoConsulta: appointmentDetails.reason,
+          seguroId: appointmentData.seguroId || null,
+          tipoSeguroId: appointmentData.tipoSeguroId || null,
+        });
+      } else {
+        response = await patientService.createAppointment(appointmentData as any);
+      }
 
       if (response && (response.success || response.id)) {
         toast.success(
-          appointmentDetails.appointmentId
+          isRescheduling
             ? t("appointments.rescheduleSuccess", "Cita reagendada exitosamente")
             : t("appointments.success", "Cita programada exitosamente")
         );
-        navigate("/patient/schedule-appointment", { replace: true });
+        
+        // Invalidar el cache de citas para recargar el calendario
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CITAS() });
+        
+        // navigate("/patient/schedule-appointment", { replace: true });
       } else {
         throw new Error(response?.message || "Error al crear la cita");
       }
@@ -239,6 +269,19 @@ function ScheduleAppointment() {
                 <ScheduleAppointmentDialog
                   idProvider={appointmentDetails.doctorId}
                   serviceData={serviceData || undefined}
+                  idAppointment={appointmentDetails?.appointmentId}
+                  initialRescheduleData={{
+                    date: appointmentDetails.date,
+                    time: appointmentDetails.time || "",
+                    selectedModality: appointmentDetails.selectedModality ? "teleconsulta" : "presencial",
+                    serviceId: appointmentDetails.serviceId || "",
+                    reason: appointmentDetails.reason || "",
+                    numberOfSessions: appointmentDetails.numberOfSessions || 1,
+                    useInsurance: appointmentDetails.useInsurance ?? false,
+                    insuranceProvider: appointmentDetails.insuranceProvider || "",
+                    doctorId: appointmentDetails.doctorId || "",
+                    appointmentId: appointmentDetails.appointmentId || "",
+                  }}
                 >
                   <MCButton size="sm" variant="outline">
                     {t("appointments.reschedule", "Edit Appointment")}
@@ -469,7 +512,7 @@ function ScheduleAppointment() {
               <span
                 className={`${isMobile ? "text-xl" : "text-2xl"} font-semibold text-primary`}
               >
-                RD$ {serviceData?.precio ? serviceData.precio.toLocaleString() : "2,500.00"}
+                RD$ {serviceData?.precio ? (serviceData.precio * appointmentDetails.numberOfSessions).toLocaleString() : "2,500.00"}
               </span>
             </div>
             <MCButton

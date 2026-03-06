@@ -156,10 +156,22 @@
     "appointmentsCount_plural": "{{count}} citas",
     "emptyTitle": "No hay citas programadas",
     "emptyDescription": "No tienes citas para este día. Selecciona otra fecha o programa una nueva cita.",
+    "loading": "Cargando citas...",
+    "errorTitle": "Error al cargar citas",
+    "errorDescription": "No se pudieron cargar tus citas. Por favor, verifica tu conexión e intenta nuevamente.",
+    "cancelConfirmTitle": "¿Cancelar cita?",
+    "cancelConfirmDescription": "Por favor, indica el motivo de la cancelación de la cita.",
+    "confirmCancel": "Sí, cancelar",
+    "back": "Volver",
+    "cancelReasonLabel": "Motivo de cancelación",
+    "cancelReasonPlaceholder": "Describe el motivo de la cancelación...",
+    "cancelError": "Error al cancelar la cita. Por favor, intenta nuevamente.",
     "join": "Unirse",
     "success": "Cita programada exitosamente",
     "error": "Error al programar la cita. Por favor, intenta nuevamente.",
-    "rescheduleSuccess": "Cita reagendada exitosamente"
+    "rescheduleSuccess": "Cita reagendada exitosamente",
+    "noInsurance": "Sin seguro",
+    "ongoing": "En progreso"
   },
   "dashboard": {
     "searchTitle": "Busca médicos, especialidades o clínicas cercanas"
@@ -284,7 +296,18 @@
     "schedule": "Agendar",
     "clearFilters": "Limpiar",
     "profile": "Perfil",
-    "history": "Historial"
+    "history": "Historial",
+    "doctors": {
+      "profile": "Perfil",
+      "schedule": "Agendar",
+      "history": "Historial",
+      "lastAppointment": "Última cita",
+      "experience": "{{count}} año de experiencia",
+      "experience_plural": "{{count}} años de experiencia",
+      "noExperience": "Experiencia no especificada",
+      "acceptedInsurances": "Seguros aceptados",
+      "noLanguages": "Idiomas no especificados"
+    }
   },
   "appointment": {
     "detailsTitle": "Detalles de la Cita",
@@ -440,5 +463,10 @@
       "languages": "Idiomas",
       "insuranceAccepted": "Seguros aceptados"
     }
+  },
+  "clinicCard": {
+    "connect": "Conectar",
+    "connected": "Conectado",
+    "pending": "Pendiente"
   }
 }

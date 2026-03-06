@@ -1,157 +1,20 @@
 import { useState, useMemo } from "react";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, startOfMonth, endOfMonth } from "date-fns";
 import { enUS, es } from "date-fns/locale";
 import { Calendar } from "@/shared/ui/calendar";
 import { AppointmentCard } from "./AppointmentCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Loader2, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import type { Appointment, AppointmentStatus } from "./AppointmentCard";
 import { fadeInUp, fadeInUpDelayed } from "@/lib/animations/commonAnimations";
 import { useTranslation } from "react-i18next";
-
-const appointmentsData: Appointment[] = [
-  {
-    id: "1",
-    date: new Date(2026, 0, 20),
-    clientName: "Juan Pérez",
-    service: "Consulta interna",
-    startTime: "9:00 AM",
-    endTime: "10:00 AM",
-    isVirtual: true,
-    status: "scheduled" as AppointmentStatus,
-  },
-  {
-    id: "2",
-    date: new Date(2026, 0, 20),
-    clientName: "Ana García",
-    clientImage:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    service: "Fisioterapia",
-    startTime: "10:00 AM",
-    endTime: "11:00 AM",
-    isVirtual: false,
-    status: "pending" as AppointmentStatus,
-  },
-  {
-    id: "3",
-    date: new Date(2026, 0, 22),
-    clientName: "María López",
-    clientImage:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    service: "Terapia ocupacional",
-    startTime: "2:00 PM",
-    endTime: "3:00 PM",
-    isVirtual: true,
-    status: "in_progress" as AppointmentStatus,
-  },
-  {
-    id: "4",
-    date: new Date(2026, 0, 25),
-    clientName: "Carlos Mendez",
-    clientImage:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    service: "Consulta general",
-    startTime: "11:00 AM",
-    endTime: "12:00 PM",
-    isVirtual: false,
-    status: "completed" as AppointmentStatus,
-  },
-  {
-    id: "5",
-    date: new Date(2026, 0, 22),
-    clientName: "María López",
-    clientImage:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    service: "Terapia ocupacional",
-    startTime: "2:00 PM",
-    endTime: "3:00 PM",
-    isVirtual: true,
-    status: "cancelled" as AppointmentStatus,
-  },
-  {
-    id: "6",
-    date: new Date(2026, 0, 25),
-    clientName: "Carlos Mendez",
-    clientImage:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    service: "Consulta general",
-    startTime: "11:00 AM",
-    endTime: "12:00 PM",
-    isVirtual: false,
-    status: "scheduled" as AppointmentStatus,
-  },
-  {
-    id: "7",
-    date: new Date(2026, 0, 20),
-    clientName: "Juan Pérez",
-    service: "Consulta interna",
-    startTime: "9:00 AM",
-    endTime: "10:00 AM",
-    isVirtual: true,
-    status: "scheduled" as AppointmentStatus,
-  },
-  {
-    id: "8",
-    date: new Date(2026, 0, 20),
-    clientName: "Ana García",
-    clientImage:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    service: "Fisioterapia",
-    startTime: "10:00 AM",
-    endTime: "11:00 AM",
-    isVirtual: false,
-    status: "pending" as AppointmentStatus,
-  },
-  {
-    id: "9",
-    date: new Date(2026, 0, 22),
-    clientName: "María López",
-    clientImage:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    service: "Terapia ocupacional",
-    startTime: "2:00 PM",
-    endTime: "3:00 PM",
-    isVirtual: true,
-    status: "in_progress" as AppointmentStatus,
-  },
-  {
-    id: "10",
-    date: new Date(2026, 0, 25),
-    clientName: "Carlos Mendez",
-    clientImage:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    service: "Consulta general",
-    startTime: "11:00 AM",
-    endTime: "12:00 PM",
-    isVirtual: false,
-    status: "completed" as AppointmentStatus,
-  },
-  {
-    id: "11",
-    date: new Date(2026, 0, 22),
-    clientName: "María López",
-    clientImage:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    service: "Terapia ocupacional",
-    startTime: "2:00 PM",
-    endTime: "3:00 PM",
-    isVirtual: true,
-    status: "cancelled" as AppointmentStatus,
-  },
-  {
-    id: "6",
-    date: new Date(2026, 0, 25),
-    clientName: "Carlos Mendez",
-    clientImage:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    service: "Consulta general",
-    startTime: "11:00 AM",
-    endTime: "12:00 PM",
-    isVirtual: false,
-    status: "scheduled" as AppointmentStatus,
-  },
-];
+import { useAppointments } from "@/lib/hooks/useAppointments";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { cancelCita } from '@/services/api/appointments.service';
+import { QUERY_KEYS } from '@/lib/react-query/config';
+import { MCDialogBase } from '@/shared/components/MCDialogBase';
+import { mapCitasToAppointments } from "@/utils/appointmentMapper";
+import { useAppStore } from "@/stores/useAppStore";
 
 type Orientation = "vertical" | "horizontal";
 
@@ -166,9 +29,55 @@ export function AppointmentsCalendar({
   const isMobile = useIsMobile();
   const { t, i18n } = useTranslation("patient");
 
+  const userRole = useAppStore((state) => state.user?.rol);
+
+  // Obtener el rango de fechas del mes actual para la consulta
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+
+  // Hook para obtener las citas desde la API
+  const { data: citasResponse, isLoading, error } = useAppointments({
+    fechaDesde: monthStart.toISOString(),
+    fechaHasta: monthEnd.toISOString(),
+    limite: 100, // Obtener todas las citas del mes
+  }, userRole);
+
+  // Mapear las citas de la API al formato del componente
+  const appointmentsData = useMemo(() => {
+    if (!citasResponse?.data || !userRole) return [];
+
+    // `citasResponse.data` puede ser un arreglo o un objeto (CitaDetalle[] | CitaDetalle)
+    const raw = citasResponse.data as any;
+    const citasArray = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+    return mapCitasToAppointments(citasArray, userRole);
+  }, [citasResponse, userRole]);
+
   const appointmentsForDate = appointmentsData.filter((apt) =>
     isSameDay(apt.date, selectedDate),
   );
+
+  // Cancel dialog state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const queryClient = useQueryClient();
+
+  const cancelMutation = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      return await cancelCita(id, reason);
+    },
+    onSuccess: async () => {
+      // Invalidate citas cache to refresh list
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CITAS() });
+      setCancelDialogOpen(false);
+      setSelectedAppointmentId(null);
+      setCancelReason("");
+    },
+    onError: (err) => {
+      console.error('Error cancelling appointment', err);
+    }
+  });
 
   // Calculate appointment counts per date
   const appointmentCounts = useMemo(() => {
@@ -178,7 +87,7 @@ export function AppointmentsCalendar({
       counts.set(dateKey, (counts.get(dateKey) || 0) + 1);
     });
     return counts;
-  }, []);
+  }, [appointmentsData]);
 
   // Get dates that have appointments for highlighting
   const appointmentDates = appointmentsData.map((apt) => apt.date);
@@ -199,6 +108,37 @@ export function AppointmentsCalendar({
 
   // Decide layout según orientación o mobile
   const isVertical = orientation === "vertical" || isMobile;
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">{t("appointments.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground">
+            {t("appointments.errorTitle")}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            {t("appointments.errorDescription")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isVertical) {
     return (
@@ -233,6 +173,37 @@ export function AppointmentsCalendar({
             />
           </div>
         </motion.div>
+
+        {/* Cancel confirmation dialog */}
+        <MCDialogBase
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          title={t('appointments.cancelConfirmTitle')}
+          description={t('appointments.cancelConfirmDescription')}
+          confirmText={t('appointments.confirmCancel')}
+          secondaryText={t('appointments.back')}
+          variant="decide"
+          onConfirm={() => {
+            if (!selectedAppointmentId) return;
+            cancelMutation.mutate({ id: selectedAppointmentId, reason: cancelReason });
+          }}
+          loading={cancelMutation.isPending}
+          disableClose={cancelMutation.isPending}
+        >
+          <div className="flex flex-col gap-3">
+            <label className="text-sm text-muted-foreground">{t('appointments.cancelReasonLabel')}</label>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              disabled={cancelMutation.isPending}
+              className="w-full min-h-[120px] p-2 border rounded-md bg-bg-primary"
+              placeholder={t('appointments.cancelReasonPlaceholder')}
+            />
+            {cancelMutation.isError && (
+              <p className="text-sm text-destructive">{t('appointments.cancelError')}</p>
+            )}
+          </div>
+        </MCDialogBase>
 
         {/* Divider más compacto */}
         <div className="w-full h-px bg-primary/10 my-2 flex-shrink-0" />
@@ -280,6 +251,10 @@ export function AppointmentsCalendar({
                       key={appointment.id}
                       appointment={appointment}
                       index={index}
+                      onCancel={(id) => {
+                        setSelectedAppointmentId(id);
+                        setCancelDialogOpen(true);
+                      }}
                     />
                   ))}
                 </motion.div>
@@ -380,6 +355,10 @@ export function AppointmentsCalendar({
                     key={appointment.id}
                     appointment={appointment}
                     index={index}
+                    onCancel={(id) => {
+                      setSelectedAppointmentId(id);
+                      setCancelDialogOpen(true);
+                    }}
                   />
                 ))}
               </motion.div>
@@ -404,6 +383,37 @@ export function AppointmentsCalendar({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Cancel confirmation dialog (shared for horizontal layout too) */}
+        <MCDialogBase
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          title={t('appointments.cancelConfirmTitle')}
+          description={t('appointments.cancelConfirmDescription')}
+          confirmText={t('appointments.confirmCancel')}
+          secondaryText={t('appointments.back')}
+          variant="decide"
+          onConfirm={() => {
+            if (!selectedAppointmentId) return;
+            cancelMutation.mutate({ id: selectedAppointmentId, reason: cancelReason });
+          }}
+          loading={cancelMutation.isPending}
+          disableClose={cancelMutation.isPending}
+        >
+          <div className="flex flex-col gap-3">
+            <label className="text-sm text-muted-foreground">{t('appointments.cancelReasonLabel')}</label>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              disabled={cancelMutation.isPending}
+              className="w-full min-h-[120px] p-2 border rounded-md bg-bg-primary"
+              placeholder={t('appointments.cancelReasonPlaceholder')}
+            />
+            {cancelMutation.isError && (
+              <p className="text-sm text-destructive">{t('appointments.cancelError')}</p>
+            )}
+          </div>
+        </MCDialogBase>
       </motion.div>
     </div>
   );

@@ -734,5 +734,44 @@ export const patientService = {
         'Error al crear cita. Intenta nuevamente.'
       );
     }
+  },
+
+  rescheduleAppointment: async (
+    appointmentId: number,
+    data: { horarioId: number; fecha: string; hora: string }
+  ): Promise<any> => {
+    try {
+      console.log('Reprogramando cita con datos:', { appointmentId, ...data });
+      // const response = await apiClient.patch(
+      //   `/citas/${appointmentId}/reprogramar`,
+      //   data
+      // );
+      // return response.data;
+      return data;
+    } catch (error: any) {
+      console.error('❌ [Patient Service] Error al reprogramar cita:', error);
+      throw new Error(
+        error?.response?.data?.message ||
+        error.message ||
+        'Error al reprogramar cita. Intenta nuevamente.'
+      );
+    }
+  },
+
+  updateAppointment: async ( appointmentId: number, data: CreateHealthDateRequest): Promise<any> => {
+    try {
+      const response = await apiClient.patch(
+        `/citas/${appointmentId}`,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ [Patient Service] Error al actualizar cita:', error);
+      throw new Error(
+        error?.response?.data?.message ||
+        error.message ||
+        'Error al actualizar cita. Intenta nuevamente.'
+      );
+    }
   }
 };

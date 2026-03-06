@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import { useTranslation } from "react-i18next";
 import MapScheduleLocation from "@/shared/components/maps/MapScheduleLocation";
@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 import { mockAppointments } from "@/data/appointments";
 import { type Appointment } from "@/data/appointments";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
-import { FolderClock } from "lucide-react";
+import { FolderClock, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import FilterHistoryAppointments from "../filters/FilterHistoryAppointments";
 import MedicalPrescriptionDialog from "./MedicalPrescriptionDialog";
@@ -19,6 +19,8 @@ import {
   EmptyMedia,
 } from "@/shared/ui/empty";
 import { useAppStore } from "@/stores/useAppStore";
+import { getCitaById } from "@/services/api/appointments.service";
+import type { CitaDetalle } from "@/types/AppointmentTypes";
 // Add the HistoryFilters interface
 interface HistoryFilters {
   services: string[];
@@ -130,9 +132,11 @@ function PacientDetailsTabContent() {
   );
 }
 
-function DetailsTabContent({ appointment }: { appointment: Appointment }) {
+function DetailsTabContent({ appointment }: { appointment: CitaDetalle}) {
   const { t } = useTranslation("patient");
   const isMobile = useIsMobile();
+
+  console.log("appointment in details tab content: ", appointment);
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -142,7 +146,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.service")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.Service}
+            {appointment.servicio.nombre}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -150,7 +154,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.specialty")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.doctorSpecialty}
+            {appointment.servicio.especialidad.nombre}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -158,7 +162,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.date")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.date}
+            {appointment.fechaInicio.split("T")[0]}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -166,7 +170,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.schedule")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.time}
+            {appointment.horaInicio} - {appointment.horaFin}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -174,7 +178,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.price")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            ${appointment.price}
+            ${appointment.totalAPagar}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -182,7 +186,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.numberOfPatients")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.numberOfPatients}
+            {appointment.numPacientes}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -190,7 +194,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.modality")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.appointmentType}
+            {appointment.modalidad}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -198,7 +202,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.insure")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            pon los seguros aqui
+            {appointment.seguro ? appointment.seguro.nombre : t("appointment.noInsurance")}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -206,7 +210,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
             {t("appointment.doctor")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            {appointment.doctorName}
+            {appointment.doctor ? `${appointment.doctor.nombre} ${appointment.doctor.apellido}` : t("appointment.noDoctorAssigned")}
           </p>
         </div>
       </div>
@@ -215,7 +219,7 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
           {t("appointment.description")}
         </h3>
         <p className="text-lg text-primary font-medium break-words max-w-xs">
-          {appointment.description}
+          {appointment.servicio.descripcion || t("appointment.noDescription")}
         </p>
       </div>
       {!isMobile && (
@@ -223,14 +227,14 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.location")}
           </h3>
-          <div className="w-full rounded-lg overflow-hidden">
+          {/* <div className="w-full rounded-lg overflow-hidden">
             <MapScheduleLocation
               initialLocation={{
-                lat: appointment.location.latitude,
-                lng: appointment.location.longitude,
+                lat: appointment.servicio.latitude,
+                lng: appointment.servicio.longitude,
               }}
             />
-          </div>
+          </div> */}
         </div>
       )}
       {isMobile && (
@@ -238,14 +242,14 @@ function DetailsTabContent({ appointment }: { appointment: Appointment }) {
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.location")}
           </h3>
-          <div className="w-full rounded-lg overflow-hidden">
+          {/* <div className="w-full rounded-lg overflow-hidden">
             <MapScheduleLocation
               initialLocation={{
-                lat: appointment.location.latitude,
-                lng: appointment.location.longitude,
+                lat: appointment.servicio.latitude,
+                lng: appointment.servicio.longitude,
               }}
             />
-          </div>
+          </div> */}
         </div>
       )}
     </div>
@@ -473,7 +477,9 @@ function ViewDetailsAppointmentDialog({
   status = "pending",
 }: ViewDetailsAppointmentDialogProps) {
   const { t } = useTranslation("patient");
-  const userRole = useAppStore((state) => state.user?.role);
+  const userRole = useAppStore((state) => state.user?.rol);
+  const [loading, setLoading] = useState(false);
+  const [appointment, setAppointment] = useState<CitaDetalle | null>(null);
 
   const appointmentStatus = mockAppointments.find(
     (appt) => appt.id === appointmentId,
@@ -502,6 +508,34 @@ function ViewDetailsAppointmentDialog({
       color: "bg-[#C62828]/12 text-[#C62828]",
     },
   });
+
+  useEffect(() => {
+    const getAppointmentData = async () => {
+      if(!appointmentId || appointmentId === "") return;
+
+      setLoading(true);
+      try{
+        const response = await getCitaById(appointmentId);
+        console.log("Appointment details response: ", response);
+
+        const payload = response?.data;
+        if (!payload) {
+          setAppointment(null);
+        } else if (Array.isArray(payload)) {
+          setAppointment(payload[0] ?? null);
+        } else {
+          setAppointment(payload);
+        }
+      } catch(error){
+        console.error("Error fetching appointment details: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getAppointmentData();
+  }, [appointmentId]);
+
 
   const statusKey: StatusKey = (appointmentStatus || status) as StatusKey;
   const statusInfo = getStatusMap()[statusKey] || {
@@ -542,13 +576,20 @@ function ViewDetailsAppointmentDialog({
           {appointmentDetails ? (
             appointmentDetails
           ) : (
-            <div className="mt-4 text-muted-foreground flex flex-col items-start">
-              <DetailsTabContent
-                appointment={
-                  mockAppointments.find((Q) => Q.id === appointmentId)!
-                }
-              />
-            </div>
+            loading ? (
+              <div className="w-full h-full flex items-center justify-center p-6">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">{t("appointments.loading")}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 text-muted-foreground flex flex-col items-start">
+                <DetailsTabContent
+                  appointment={ appointment as CitaDetalle}
+                />
+              </div>
+            )
           )}
         </TabsContent>
         <TabsContent value="history">
