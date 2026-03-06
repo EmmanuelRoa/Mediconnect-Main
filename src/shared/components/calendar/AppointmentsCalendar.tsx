@@ -255,6 +255,7 @@ export function AppointmentsCalendar({
                         setSelectedAppointmentId(id);
                         setCancelDialogOpen(true);
                       }}
+                      isVertical={isVertical}
                     />
                   ))}
                 </motion.div>
@@ -359,6 +360,7 @@ export function AppointmentsCalendar({
                       setSelectedAppointmentId(id);
                       setCancelDialogOpen(true);
                     }}
+                    isVertical={isVertical}
                   />
                 ))}
               </motion.div>
