@@ -54,6 +54,7 @@ import RequestPage from "@/features/request/pages/RequestPage";
 import AppointmentConsultation from "@/features/doctor/pages/AppointmentConsultation";
 import PatientDetailsPage from "@/features/doctor/pages/PatientDetailsPage";
 import StaffPage from "@/features/center/pages/StaffPage";
+import CenterProfilePage from "@/features/center/pages/CenterProfilePage";
 function AppRouter() {
   const userRole = useAppStore((state) => state.user?.role);
   return (
@@ -221,6 +222,14 @@ function AppRouter() {
             <Route
               path={ROUTES.DOCTOR.DOCTOR_PROFILE_PRIVATE}
               element={<DoctorProfilePage />}
+            />
+            <Route
+              path={ROUTES.CENTER.CENTER_PROFILE_PUBLIC}
+              element={<CenterProfilePage />}
+            />
+            <Route
+              path={ROUTES.CENTER.CENTER_PROFILE_PRIVATE}
+              element={<CenterProfilePage />}
             />
             <Route
               path={ROUTES.DOCTOR.APPOINTMENTS}
