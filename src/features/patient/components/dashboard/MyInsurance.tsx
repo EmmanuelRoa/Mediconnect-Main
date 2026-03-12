@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/lib/animations/commonAnimations";
 import MCButton from "@/shared/components/forms/MCButton";
@@ -8,33 +8,6 @@ import { useTranslation } from "react-i18next";
 import { patientService } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.service";
 import type { Seguro } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.types";
 import { onInsuranceChanged, emitInsuranceChanged } from "@/lib/events/insuranceEvents";
-
-const insurances = [
-  {
-    name: "Humano Seguros",
-    logo: "https://s3.amazonaws.com/evaluar-test-media-bucket/COMPANY/image/67/COMPANY_7a476ee4-4673-4bb2-a29a-12c32e08a867_775c0b8b-1322-4cdc-8e6d-25878175795d.jpeg",
-  },
-  {
-    name: "ARS Universal",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrDTX2UWf9hhw5q1UWmhInqqpz6kQKtf0l2Q&s",
-  },
-  {
-    name: "ARS Yunen",
-    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
-  },
-  {
-    name: "ARS Yunen",
-    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
-  },
-  {
-    name: "ARS Yunen",
-    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
-  },
-  {
-    name: "ARS Yunen",
-    logo: "https://megacentro.com.do/content/uploads/2022/08/Logo-Yunen-512x512-1.png",
-  },
-];
 
 function MyInsurance() {
   const [openSheet, setOpenSheet] = useState(false);

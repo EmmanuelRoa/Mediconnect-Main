@@ -409,13 +409,17 @@
       "yearsOfExperience": "Years of experience",
       "languages": "Languages",
       "insuranceAccepted": "Accepted insurances"
+    },
+    "empty": {
+      "noResults": "No doctors found",
+      "noResultsDescription":"No consultations found with the applied filters. Try adjusting the filters to see more results.",
+      "clearFilters": "Clear Filters"
     }
   },
   "appointment": {
     "detailsTitle": "Appointment Details",
     "detailsTab": "Appointment details",
     "historyTab": "History",
-    "insure": "Insurance",
     "service": "Service",
     "specialty": "Specialty",
     "date": "Date",

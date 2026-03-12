@@ -8,6 +8,8 @@ interface ToogleConfirmConnectionProps {
   id: number;
   onConfirm?: () => void;
   onCancel?: () => void;
+  isOpen?: boolean; // Control externo del estado del diálogo
+  onClose?: () => void; // Callback cuando se cierra el diálogo
 }
 
 function ToogleConfirmConnection({
@@ -16,6 +18,8 @@ function ToogleConfirmConnection({
   id,
   onConfirm,
   onCancel,
+  isOpen,
+  onClose,
 }: ToogleConfirmConnectionProps) {
   const isConnected = status === "connected";
   const isPending = status === "pending";
@@ -65,6 +69,8 @@ function ToogleConfirmConnection({
       onConfirm={onConfirm}
       onSecondary={onCancel}
       size="sm"
+      isOpen={isOpen}
+      onClose={onClose}
     >
       <></>
     </MCModalBase>

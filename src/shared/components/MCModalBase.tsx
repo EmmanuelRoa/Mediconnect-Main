@@ -35,8 +35,8 @@ interface MCModalBaseProps {
   variant?: "warning" | "confirm" | "decide" | "info";
   onConfirm?: () => void;
   onSecondary?: () => void;
-  confirmText?: string;
-  secondaryText?: string;
+  confirmText?: React.ReactNode | string;
+  secondaryText?: React.ReactNode | string;
   typeclose?: "Arrow" | "X";
   zIndex?: number;
   closeRef?: React.RefObject<{ close: () => void } | null>;

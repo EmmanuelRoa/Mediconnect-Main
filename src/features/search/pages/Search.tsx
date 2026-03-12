@@ -32,13 +32,14 @@ interface SearchProviderFilters {
   name: string;
   insuranceAccepted: string[];
   providerType: string[];
-  modality: string[];
+  modality: string;
   specialty: string[];
-  gender: string[];
+  gender: string;
   yearsOfExperience: number | null;
-  languages: string[];
-  scheduledAppointments: string[];
+  languages: string;
+  scheduledAppointments: string;
   rating: number | null;
+  radio: number | null;
 }
 
 
@@ -76,7 +77,7 @@ const ProviderCard = memo(
     onConnect?: (id: string) => void;
     onViewProfile: (id: string) => void;
   }) => {
-    console.log("Rendering ProviderCard for:", provider);
+
     if (provider.type === "doctor") {
       return (
         <DoctorCards
@@ -212,6 +213,16 @@ const DesktopFilters = memo(
       { value: "10", label: t("search.options.years.10") },
     ];
 
+    const RADIO_OPTIONS = [
+      { value: "all", label: t("search.options.all", "Todos") },
+      { value: "5", label: t("search.options.radio.1") },
+      { value: "10", label: t("search.options.radio.2") },
+      { value: "20", label: t("search.options.radio.3") },
+      { value: "30", label: t("search.options.radio.4") },
+      { value: "40", label: t("search.options.radio.5") },
+      { value: "50", label: t("search.options.radio.6") },
+    ];
+
     return (
       <div className="flex gap-2 w-full justify-end max-w-6xl">
         <MCFilterSelect
@@ -248,54 +259,49 @@ const DesktopFilters = memo(
           name="modality"
           placeholder={t("search.modality", "Modalidad")}
           options={MODALIDAD_OPTIONS}
-          multiple
+          multiple={false}
           noBadges
           value={searchFilters.modality}
-          onChange={(values) =>
-            onFilterChange(
-              "modality",
-              Array.isArray(values) ? values : [values],
-            )
-          }
+          onChange={(values) => {
+            const val = Array.isArray(values) ? values[0] : values;
+            onFilterChange("modality", [val]);
+          }}
         />
         <MCFilterSelect
           name="gender"
           placeholder={t("search.gender", "Género")}
           options={GENERO_OPTIONS}
-          multiple
+          multiple={false}
           noBadges
           value={searchFilters.gender}
-          onChange={(values) =>
-            onFilterChange("gender", Array.isArray(values) ? values : [values])
-          }
+          onChange={(values) => {
+            const val = Array.isArray(values) ? values[0] : values;
+            onFilterChange("gender", [val]);
+          }}
         />
         <MCFilterSelect
           name="languages"
           placeholder={t("search.languages", "Idiomas")}
           options={IDIOMAS_OPTIONS}
-          multiple
+          multiple={false}
           noBadges
           value={searchFilters.languages}
-          onChange={(values) =>
-            onFilterChange(
-              "languages",
-              Array.isArray(values) ? values : [values],
-            )
-          }
+          onChange={(values) => {
+            const val = Array.isArray(values) ? values[0] : values;
+            onFilterChange("languages", [val]);
+          }}
         />
         <MCFilterSelect
           name="scheduledAppointments"
           placeholder={t("search.schedule", "Horario")}
           options={HORARIO_OPTIONS}
-          multiple
+          multiple={false}
           noBadges
           value={searchFilters.scheduledAppointments}
-          onChange={(values) =>
-            onFilterChange(
-              "scheduledAppointments",
-              Array.isArray(values) ? values : [values],
-            )
-          }
+          onChange={(values) => {
+            const val = Array.isArray(values) ? values[0] : values;
+            onFilterChange("scheduledAppointments", [val]);
+          }}
         />
         <MCFilterSelect
           name="rating"
@@ -320,15 +326,29 @@ const DesktopFilters = memo(
           noBadges
           value={
             searchFilters.yearsOfExperience !== null
-              ? [String(searchFilters.yearsOfExperience)]
-              : ["all"]
+              ? String(searchFilters.yearsOfExperience)
+              : "all"
           }
           onChange={(values) => {
-            const val =
-              Array.isArray(values) && values[0] !== "all"
-                ? Number(values[0])
-                : null;
-            onYearsChange(val);
+            const val = Array.isArray(values) ? values[0] : values;
+            const parsed = val === "all" ? null : Number(val);
+            onYearsChange(parsed);
+          }}
+        />
+        <MCFilterSelect
+          name="radio"
+          placeholder={t("search.radio")}
+          options={RADIO_OPTIONS}
+          multiple={false}
+          noBadges
+          value={
+            searchFilters.radio !== null
+              ? String(searchFilters.radio)
+              : ""
+          }
+          onChange={(values) => {
+            const val = Array.isArray(values) ? values[0] : values;
+            onFilterChange("radio", [val]);
           }}
         />
       </div>
@@ -348,13 +368,14 @@ function Search() {
     name: "",
     insuranceAccepted: ["all"],
     providerType: ["all"],
-    modality: ["all"],
+    modality: "",
     specialty: ["all"],
-    gender: ["all"],
+    gender: "",
     yearsOfExperience: null,
-    languages: ["all"],
-    scheduledAppointments: ["all"],
+    languages: "",
+    scheduledAppointments: "",
     rating: null,
+    radio: null
   });
 
   const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
@@ -367,11 +388,13 @@ function Search() {
   } = useSearchDoctors({
     lat: coords?.lat ?? null,
     lng: coords?.lng ?? null,
-    radiusKm: 15,
+    // Use the radio filter as radius when present, otherwise default to 15km on mount
+    radiusKm: searchFilters.radio ?? 15,
     filters: searchFilters,
     language: i18n.language || "es",
     enabled: true, // Always enabled, will return empty if no coords
     especialidadesOptions,
+    tiposCentroOptions
   });
 
   // Handle geolocation
@@ -405,7 +428,7 @@ function Search() {
     Object.entries(searchFilters).forEach(([_key, value]) => {
       if (Array.isArray(value) && value.length > 0 && !value.includes("all"))
         count++;
-      else if (typeof value === "string" && value.trim() !== "") count++;
+      else if (typeof value === "string" && value.trim() !== "" && value !== "all") count++;
       else if (typeof value === "number" && value !== null) count++;
     });
     return count;
@@ -416,13 +439,14 @@ function Search() {
       name: "",
       insuranceAccepted: ["all"],
       providerType: ["all"],
-      modality: ["all"],
+      modality: "",
       specialty: ["all"],
-      gender: ["all"],
+      gender: "",
       yearsOfExperience: null,
-      languages: ["all"],
-      scheduledAppointments: ["all"],
+      languages: "",
+      scheduledAppointments: "",
       rating: null,
+      radio: null
     });
   }, []);
 
@@ -453,8 +477,24 @@ function Search() {
 
   const handleFilterChange = useCallback(
     (filterKey: string, values: string[]) => {
+      // Para filtros de selección única, extraer el primer valor
+      const singleSelectFilters = ["modality", "gender", "languages", "scheduledAppointments", "radio"];
+      const rawValue = singleSelectFilters.includes(filterKey) ? values[0] : values;
+
+      // Convertir radio a number | null (si se selecciona 'all' o valor inválido, guardar null)
+      if (filterKey === "radio") {
+        const v = String(rawValue || "");
+        if (!v || v === "all") {
+          updateSearchFilters({ radio: null });
+        } else {
+          const parsed = Number(v);
+          updateSearchFilters({ radio: Number.isFinite(parsed) && parsed > 0 ? parsed : null });
+        }
+        return;
+      }
+
       updateSearchFilters({
-        [filterKey]: values,
+        [filterKey]: rawValue,
       });
     },
     [updateSearchFilters],
@@ -518,8 +558,13 @@ function Search() {
                   onClearFilters={handleClearFilters}
                 >
                   <FiltersSearchProviders
-                    searchProviderFilters={searchFilters}
-                    setSearchProviderFilters={updateSearchFilters}
+                    searchFilters={searchFilters}
+                    onFilterChange={handleFilterChange}
+                    onYearsChange={handleYearsChange}
+                    isLoadingCentro={isLoadingCentro}
+                    tiposCentroOptions={tiposCentroOptions}
+                    isLoadingEspecialidades={isLoadingEspecialidades}
+                    especialidadesOptions={especialidadesOptions}
                   />
                 </MCFilterPopover>
                 <MCButton

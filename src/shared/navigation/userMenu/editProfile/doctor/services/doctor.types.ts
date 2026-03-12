@@ -655,7 +655,8 @@ export interface DoctorNearby {
 export interface GetDoctoresByDistanceResponse {
   success: boolean;
   total: number;
-  data: DoctorNearby[];
+  doctores: DoctorNearby[];
+  centros: any[]; // Tipar según la estructura de centros que maneje tu backend
   _translation?: {
     source: string;
     target: string;

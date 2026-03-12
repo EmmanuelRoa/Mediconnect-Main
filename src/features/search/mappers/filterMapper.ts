@@ -11,13 +11,14 @@ export interface SearchProviderFilters {
   name: string;
   insuranceAccepted: string[];
   providerType: string[];
-  modality: string[];
+  modality: string;
   specialty: string[];
-  gender: string[];
+  gender: string;
   yearsOfExperience: number | null;
-  languages: string[];
-  scheduledAppointments: string[];
+  languages: string;
+  scheduledAppointments: string;
   rating: number | null;
+  radio: number | null;
 }
 
 export interface APISearchParams {
@@ -29,6 +30,10 @@ export interface APISearchParams {
   genero?: string;
   idioma?: string;
   estado?: string;
+  tipoCentroId?: number;
+  tipoCentroIds?: number[];
+  turno?: string;
+  radio?: number;
   // Translation params
   target?: string;
   source?: string;
@@ -44,12 +49,14 @@ export interface APISearchParams {
  * @param filters - UI filter state
  * @param language - Current language for translations (e.g., 'es', 'en')
  * @param especialidadesOptions - Specialty options with IDs for mapping
+ * @param providerOptions - Provider type options with IDs for mapping
  * @returns API query parameters object
  */
 export const mapFiltersToAPIParams = (
   filters: SearchProviderFilters,
   language: string = "es",
-  especialidadesOptions: Array<{ value: string; label: string }> = []
+  especialidadesOptions: Array<{ value: string; label: string }> = [],
+  providerOptions: Array<{ value: string; label: string }> = []
 ): APISearchParams => {
   const params: APISearchParams = {
     estado: "Activo", // Only active services
@@ -61,6 +68,28 @@ export const mapFiltersToAPIParams = (
   params.translate_fields = "nombre,descripcion,modalidad";
 
   console.log("Mapping filters to API params:", filters);
+
+  //Map provider type filter
+  if (
+    filters.providerType &&
+    filters.providerType.length > 0 &&
+    !filters.providerType.includes("all")
+  ) {
+    const providerTypeIds = filters.providerType
+      .map((type) => {
+        const option = providerOptions.find((opt) => opt.label === type || opt.value === type);
+        return option ? parseInt(option.value) : null;
+      })
+      .filter((id): id is number => id !== null);
+    if (providerTypeIds.length > 0) {
+      // Assuming multiple provider types is supported by the API
+      if (providerTypeIds.length === 1) {
+        params.tipoCentroId = providerTypeIds[0];
+      } else {
+        params.tipoCentroIds = providerTypeIds;
+      }
+    }
+  }
 
   // Map specialty filter
   if (
@@ -88,24 +117,43 @@ export const mapFiltersToAPIParams = (
 
   // Map modality filter
   if (
-    filters.modality?.length > 0 &&
-    !filters.modality.includes("all")
+    filters.modality &&
+    filters.modality !== "all"
   ) {
-    // If multiple modalities selected, prefer "Mixta"
-    if (filters.modality.length > 1) {
-      params.modalidad = "Mixta";
-    } else {
-      const modalityMap: Record<string, string> = {
-        presencial: "Presencial",
-        Presencial: "Presencial",
-        teleconsulta: "Teleconsulta",
-        Virtual: "Teleconsulta",
-        virtual: "Teleconsulta",
-        Mixta: "Mixta",
-        hibrido: "Mixta",
-      };
-      params.modalidad = modalityMap[filters.modality[0]] || filters.modality[0];
-    }
+    const modalityMap: Record<string, string> = {
+      presencial: "Presencial",
+      Presencial: "Presencial",
+      teleconsulta: "Teleconsulta",
+      Virtual: "Teleconsulta",
+      virtual: "Teleconsulta",
+      Mixta: "Mixta",
+      hibrido: "Mixta",
+    };
+    params.modalidad = modalityMap[filters.modality] || filters.modality;
+  }
+
+  // Map gender filter
+  if (
+    filters.gender &&
+    filters.gender !== "all"
+  ) {
+    params.genero = filters.gender;
+  }
+
+  //map languages filter  
+  if (
+    filters.languages &&
+    filters.languages !== "all"
+  ) {
+    params.idioma = filters.languages.toLowerCase();
+  }
+
+  // Map scheduled appointments filter to turno
+  if (
+    filters.scheduledAppointments &&
+    filters.scheduledAppointments !== "all"
+  ) {
+    params.turno = filters.scheduledAppointments.toLowerCase();
   }
 
   // Map rating filter
@@ -122,7 +170,6 @@ export const mapFiltersToAPIParams = (
       params.calificacionMin = ratingValue;
     }
   }
-
   
   // Map years of experience filter
   if (
@@ -133,22 +180,18 @@ export const mapFiltersToAPIParams = (
     params.anosExperienciaMinima = filters.yearsOfExperience;
   }
 
-  // Map gender filter
-  if (
-    filters.gender?.length > 0 &&
-    !filters.gender.includes("all")
-  ) {
-    // For now, only support single gender selection
-    // API might need to be enhanced to support multiple genders
-    params.genero = filters.gender[0];
+  // Map radio filter
+  // Map radio filter: only include when it's a positive finite number.
+  // If the UI sends "all" (mapped to null) or any invalid value, omit the param
+  // so the backend performs a general search.
+  if (typeof filters.radio === "number" && Number.isFinite(filters.radio) && filters.radio > 0) {
+    params.radio = filters.radio;
   }
 
-  // Note: The following filters are not supported by the API yet
-  // They will be applied client-side in the hook:
-  // - insuranceAccepted
-  // - languages
-  // - scheduledAppointments
-  // - name (text search)
+
+  // Note: The following filters are applied client-side only:
+  // - insuranceAccepted (not available in API)
+  // - name (text search, not available in API)
   console.warn("filters mapped:", params);
 
   return params;
@@ -160,10 +203,10 @@ export const mapFiltersToAPIParams = (
  */
 export const hasClientSideFilters = (filters: SearchProviderFilters): boolean => {
   return (
-    (filters.name && filters.name.length > 0) ||
-    (filters.insuranceAccepted?.length > 0 && !filters.insuranceAccepted.includes("all")) ||
-    (filters.languages?.length > 0 && !filters.languages.includes("all")) ||
-    (filters.scheduledAppointments?.length > 0 && !filters.scheduledAppointments.includes("all"))
+    (!!filters.name && filters.name.length > 0) ||
+    (!!filters.insuranceAccepted && filters.insuranceAccepted.length > 0 && !filters.insuranceAccepted.includes("all")) ||
+    (!!filters.languages && filters.languages !== "all") ||
+    (!!filters.scheduledAppointments && filters.scheduledAppointments !== "all")
   );
 };
 
@@ -184,10 +227,14 @@ export const createFilterCacheKey = (
     lng,
     radiusKm,
     language,
+    filters.providerType,
     filters.specialty,
     filters.modality,
     filters.rating,
     filters.yearsOfExperience,
     filters.gender,
+    filters.languages,
+    filters.scheduledAppointments,
+    filters.radio,
   ];
 };

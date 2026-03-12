@@ -8,7 +8,9 @@ import type {
   CitasListResponse, 
   CitasFilters, 
   CalendarioResponse, 
-  CalendarioParams 
+  CalendarioParams,
+  MyDoctorsResponse,
+  MyDoctorsFilters 
 } from '@/types/AppointmentTypes';
 
 /**
@@ -144,5 +146,32 @@ export const getCalendarioCitas = async (params?: CalendarioParams): Promise<Cal
     : API_ENDPOINTS.CITAS.CALENDARIO;
 
   const { data } = await apiClient.get<CalendarioResponse>(url);
+  return data;
+};
+
+/**
+ * Obtiene la lista de doctores con los que el paciente ha tenido citas
+ * @param filters - Filtros opcionales para traducción
+ * @returns Promise con la lista de doctores
+ */
+export const getMisDoctores = async (filters?: MyDoctorsFilters): Promise<MyDoctorsResponse> => {
+  const params = new URLSearchParams();
+
+  if (filters?.target) {
+    params.append('target', filters.target);
+  }
+  if (filters?.source) {
+    params.append('source', filters.source);
+  }
+  if (filters?.translate_fields) {
+    params.append('translate_fields', filters.translate_fields);
+  }
+
+  const queryString = params.toString();
+  const url = queryString 
+    ? `${API_ENDPOINTS.CITAS.MIS_DOCTORES}?${queryString}`
+    : API_ENDPOINTS.CITAS.MIS_DOCTORES;
+
+  const { data } = await apiClient.get<MyDoctorsResponse>(url);
   return data;
 };

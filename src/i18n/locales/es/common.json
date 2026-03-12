@@ -40,7 +40,9 @@
     "acceptedInsurances": "Seguros aceptados:",
     "andOtherLanguages": "y otros {{count}} idiomas...",
     "andMore": "y {{count}} más...",
-    "reviews": "reseñas"
+    "reviews": "reseñas",
+    "scheduleAppointment": "Agendar cita",
+    "contact": "Contactar"
   },
   "doctorCard": {
     "availability": "Disponibilidad:",
@@ -53,6 +55,8 @@
     "favoriteAddError": "No se pudo agregar a favoritos",
     "confirmFavoriteTitle": "Agregar a favoritos",
     "confirmFavoriteDescription": "¿Deseas agregar a {{name}} a tus doctores favoritos?",
+    "confirmRemoveFavoriteTitle": "Eliminar de favoritos",
+    "confirmRemoveFavoriteDescription": "¿Deseas eliminar a {{name}} de tus doctores favoritos?",
     "favoriteRemoved": "Doctor eliminado de favoritos",
     "favoriteRemoveError": "No se pudo eliminar de favoritos"
   },
@@ -100,12 +104,21 @@
         "5": "5 años o más",
         "10": "10 años o más"
       },
+      "radio": {
+        "1": "5 km",
+        "2": "10 km",
+        "3": "20 km",
+        "4": "30 km",
+        "5": "40 km",
+        "6": "50 km"
+      },
       "languages": {
         "spanish": "Español",
         "english": "Inglés",
         "french": "Francés"
       }
     },
+    "radio": "Cercanía",
     "selectedProviders": "{{count}} de {{max}} proveedores seleccionados para comparar",
     "compare": "Comparar",
     "providersFound": "{{count}} proveedores encontrados",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import MCSheetProfile from "@/shared/navigation/userMenu/editProfile/MCSheetProfile";
 import { useAppStore } from "@/stores/useAppStore";
@@ -26,6 +26,7 @@ import { patientService } from "@/shared/navigation/userMenu/editProfile/patient
 import type { Seguro, CondicionMedica } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.types";
 import { onInsuranceChanged, emitInsuranceChanged } from "@/lib/events/insuranceEvents";
 import { onAllergiesChanged, onConditionsChanged, emitClinicalHistoryChanged } from "@/lib/events/clinicalHistoryEvents";
+import { useMyDoctors } from "@/lib/hooks/useMyDoctors";
 
 
 // Interfaz para los filtros de doctores
@@ -38,48 +39,20 @@ interface DoctorFilters {
   isFavorite: boolean | null;
 }
 
-const doctorsList = [
-  {
-    name: "Cristiano Ronaldo",
-    specialty: "cardiology",
-    rating: 4.8,
-    yearsOfExperience: 15,
-    languages: ["es", "en", "fr"],
-    insuranceAccepted: ["senasa", "universal", "humano"],
-    isFavorite: false,
-    urlImage: "",
-  },
-  {
-    name: "María López",
-    specialty: "Dermatóloga",
-    rating: 4.9,
-    yearsOfExperience: 10,
-    languages: ["es", "en"],
-    insuranceAccepted: ["palic", "humano"],
-    isFavorite: true,
-    urlImage: "",
-  },
-  {
-    name: "Carlos Méndez",
-    specialty: "Pediatra",
-    rating: 4.7,
-    yearsOfExperience: 8,
-    languages: ["es"],
-    insuranceAccepted: ["universal"],
-    isFavorite: true,
-    urlImage: "",
-  },
-  {
-    name: "Sofía Ramírez",
-    specialty: "Endocrinóloga",
-    rating: 4.6,
-    yearsOfExperience: 12,
-    languages: ["es", "fr"],
-    insuranceAccepted: ["senasa", "mapfre", "yunen"],
-    isFavorite: true,
-    urlImage: "",
-  },
-];
+// Interfaz para los doctores
+interface Doctor {
+  id: number;
+  name: string;
+  specialty: string;
+  rating: number;
+  yearsOfExperience?: number;
+  languages?: string[];
+  insuranceAccepted?: string[];
+  insuranceAcceptedIds?: number[];
+  isFavorite?: boolean;
+  urlImage?: string;
+  lastAppointment?: string;
+}
 
 function PatientProfilePage() {
   const [openSheet, setOpenSheet] = useState(false);
@@ -109,8 +82,43 @@ function PatientProfilePage() {
   const user = useAppStore((state) => state.user);
   const isMobile = useIsMobile();
   
-  // Funciones de carga de datos sin useCallback (no son necesarios como dependencias)
-  const loadInsurances = async () => {
+  // Fetch doctors from API
+  const { data: doctorsData, isLoading: isLoadingDoctors } = useMyDoctors({
+    target: i18n.language,
+    source: 'es',
+    translate_fields: 'especialidadPrincipal.nombre',
+  });
+  
+  // Transform API data to the format expected by MCDoctorCard
+  const transformedDoctors = useMemo(() => {
+    if (!doctorsData?.data) return [];
+    
+    return doctorsData.data.map((doctor) => ({
+      id: Number(doctor.id),
+      name: `${doctor.nombre} ${doctor.apellido}`,
+      specialty: doctor.especialidadPrincipal?.nombre || t("myDoctors.noSpecialty", "Sin especialidad"),
+      rating: doctor.calificacionPromedio || 0,
+      yearsOfExperience: doctor.anosExperiencia || 0,
+      languages: doctor.idiomas?.map(idioma => idioma.nombre.toLowerCase().substring(0, 2)) || [],
+      insuranceAccepted: doctor.segurosAceptados?.map(seguro => seguro.nombre?.toLowerCase() || '') || [],
+      insuranceAcceptedIds: doctor.segurosAceptados?.map(seguro => seguro.id).filter((id): id is number => id !== null) || [],
+      isFavorite: doctor.esFavorito || false,
+      urlImage: doctor.fotoPerfil || "",
+      lastAppointment: doctor.ultimaCita?.fecha,
+    }));
+  }, [doctorsData, t]);
+  
+  // Estado local para los doctores (para manejar favoritos localmente)
+  const [doctorList, setDoctorList] = useState<Doctor[]>([]);
+  
+  // Actualiza doctorList cuando cambian los datos transformados
+  useEffect(() => {
+    setDoctorList(transformedDoctors);
+  }, [transformedDoctors]);
+  
+  // ✅ Funciones de carga memoizadas con useCallback para evitar re-renders innecesarios
+  // y garantizar que siempre usen el idioma correcto
+  const loadInsurances = useCallback(async () => {
     try {
       setIsLoadingInsurances(true);
       const response = await patientService.getMyInsurances(i18n.language);
@@ -132,9 +140,9 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingInsurances(false);
     }
-  };
+  }, [i18n.language]);
   
-  const loadAllergies = async () => {
+  const loadAllergies = useCallback(async () => {
     try {
       setIsLoadingAllergies(true);
       const response = await patientService.getMyAllergies(i18n.language);
@@ -147,9 +155,9 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingAllergies(false);
     }
-  };
+  }, [i18n.language]);
   
-  const loadConditions = async () => {
+  const loadConditions = useCallback(async () => {
     try {
       setIsLoadingConditions(true);
       const response = await patientService.getMyConditions(i18n.language);
@@ -162,10 +170,10 @@ function PatientProfilePage() {
     } finally {
       setIsLoadingConditions(false);
     }
-  };
+  }, [i18n.language]);
   
   // ✅ EFECTO 1: Carga inicial de todos los datos médicos
-  // Se ejecuta solo al montar el componente y cuando cambia el idioma
+  // Se ejecuta solo al montar el componente y cuando cambian las funciones de carga (que dependen del idioma)
   useEffect(() => {
     const loadAllMedicalData = async () => {
       // Carga paralela para mejor performance
@@ -177,7 +185,7 @@ function PatientProfilePage() {
     };
     
     loadAllMedicalData();
-  }, [i18n.language]);
+  }, [loadInsurances, loadAllergies, loadConditions]);
   
   // ✅ EFECTO 2: Suscripción a eventos globales de cambios
   // Consolida todos los event listeners en un solo useEffect
@@ -192,19 +200,19 @@ function PatientProfilePage() {
       unsubscribeAllergies();
       unsubscribeConditions();
     };
-  }, [i18n.language]);
+  }, [loadInsurances, loadAllergies, loadConditions]);
   
   // Callbacks para cambios locales (desde el Sheet)
   const handleInsurancesChanged = useCallback(() => {
     loadInsurances();
     emitInsuranceChanged();
-  }, [i18n.language]);
+  }, [loadInsurances]);
   
   const handleClinicalHistoryChanged = useCallback(() => {
     loadAllergies();
     loadConditions();
     emitClinicalHistoryChanged();
-  }, [i18n.language]);
+  }, [loadAllergies, loadConditions]);
   
   // Calcular la edad del paciente
   const patientAge = getPatientAge(user?.paciente || null);
@@ -228,6 +236,15 @@ function PatientProfilePage() {
     });
     setSearchName("");
   };
+  
+  // Función para hacer toggle de favorito
+  const handleToggleFavorite = (doctorId: number) => {
+    setDoctorList((prev) =>
+      prev.map((doc) =>
+        doc.id === doctorId ? { ...doc, isFavorite: !doc.isFavorite } : doc,
+      ),
+    );
+  };
 
   const getActiveFiltersCount = () => {
     let count = 0;
@@ -241,39 +258,63 @@ function PatientProfilePage() {
     return count;
   };
 
-  const filteredDoctors = doctorsList.filter((doctor) => {
-    if (
-      searchName &&
-      !doctor.name.toLowerCase().includes(searchName.toLowerCase())
-    )
-      return false;
+  const filteredDoctors = doctorList.filter((doctor) => {
+    // Filtro por búsqueda (nombre o especialidad)
+    if (searchName) {
+      const q = searchName.toLowerCase();
+      const nameMatch = doctor.name.toLowerCase().includes(q);
+      const specialtyMatch = doctor.specialty?.toLowerCase().includes(q);
+      if (!nameMatch && !specialtyMatch) return false;
+    }
+    
+    // Filtro por especialidad
     if (
       doctorFilters.specialty &&
       doctor.specialty.toLowerCase() !== doctorFilters.specialty.toLowerCase()
     )
       return false;
+    
+    // Filtro por idiomas
     if (
       doctorFilters.languages.length &&
       !doctorFilters.languages.some((lang: any) =>
-        doctor.languages.includes(lang),
+        doctor.languages?.includes(lang),
       )
     )
       return false;
-    if (
-      doctorFilters.acceptingInsurance.length &&
-      !doctorFilters.acceptingInsurance.some((ins) =>
-        doctor.insuranceAccepted.includes(ins),
-      )
-    )
-      return false;
+    
+    // Filtro por seguros — soporta nombres o IDs
+    if (doctorFilters.acceptingInsurance.length) {
+      const hasMatchingInsurance = doctorFilters.acceptingInsurance.some(
+        (ins) => {
+          // intentar tratar como ID numérico
+          const id = Number(ins);
+          if (!Number.isNaN(id) && doctor.insuranceAcceptedIds?.includes(id))
+            return true;
+          // fallback a comparar por nombre (case-insensitive)
+          return doctor.insuranceAccepted?.some(
+            (name) => name.toLowerCase() === ins.toLowerCase(),
+          );
+        },
+      );
+
+      if (!hasMatchingInsurance) return false;
+    }
+    
+    // Filtro por años de experiencia
     if (
       doctorFilters.yearsOfExperience &&
-      doctor.yearsOfExperience < doctorFilters.yearsOfExperience
+      (doctor.yearsOfExperience ?? 0) < doctorFilters.yearsOfExperience
     )
       return false;
+    
+    // Filtro por rating
     if (doctorFilters.rating && doctor.rating < doctorFilters.rating)
       return false;
+    
+    // Filtro por favoritos
     if (doctorFilters.isFavorite === true && !doctor.isFavorite) return false;
+    
     return true;
   });
 
@@ -419,7 +460,14 @@ function PatientProfilePage() {
           </CardHeader>
 
           <CardContent className={isMobile ? "p-4 pt-2" : "p-6 pt-4"}>
-            {filteredDoctors.length === 0 ? (
+            {isLoadingDoctors ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">
+                  {t("myDoctors.loading", "Cargando doctores...")}
+                </span>
+              </div>
+            ) : filteredDoctors.length === 0 ? (
               <Empty>
                 <EmptyHeader>
                   <div className="flex flex-col items-center gap-2">
@@ -449,10 +497,10 @@ function PatientProfilePage() {
               </Empty>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                {filteredDoctors.map((doctor, idx) => (
+                {filteredDoctors.map((doctor) => (
                   <MCDoctorsCards
-                    id={idx}
-                    key={idx}
+                    id={doctor.id}
+                    key={doctor.id}
                     name={doctor.name}
                     specialty={doctor.specialty}
                     rating={doctor.rating}
@@ -461,6 +509,7 @@ function PatientProfilePage() {
                     insuranceAccepted={doctor.insuranceAccepted}
                     isFavorite={doctor.isFavorite}
                     urlImage={doctor.urlImage}
+                    onToggleFavorite={() => handleToggleFavorite(doctor.id)}
                   />
                 ))}
               </div>

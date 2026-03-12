@@ -152,7 +152,10 @@ export const AppointmentDetails = ({
                 {t("appointments.reschedule")}
               </MCButton>
             </RescheduleAppointment>
-            <CancelAppointmentDialog appointmentId={appointment.id}>
+            <CancelAppointmentDialog 
+              appointmentId={appointment.id}
+              onCancelSuccess={onClose}
+            >
               <MCButton variant="outlineDelete" className="w-full" size="sm">
                 {t("appointments.cancel")}
               </MCButton>
@@ -270,7 +273,10 @@ export const AppointmentDetails = ({
               {t("appointments.reschedule")}
             </MCButton>
           </ScheduleAppointmentDialog>
-          <CancelAppointmentDialog appointmentId={appointment.id}>
+          <CancelAppointmentDialog 
+            appointmentId={appointment.id}
+            onCancelSuccess={onClose}
+          >
             <MCButton variant="outlineDelete" className="w-full" size="sm">
               {t("appointments.cancel")}
             </MCButton>

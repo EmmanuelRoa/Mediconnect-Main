@@ -54,15 +54,45 @@ function MapScheduleLocation({
   // Calcular el centro del mapa cuando hay múltiples ubicaciones
   const getMapCenter = (): [number, number] => {
     if (multipleLocations && multipleLocations.length > 0) {
-      const avgLat =
-        multipleLocations.reduce((sum, loc) => sum + loc.lat, 0) /
-        multipleLocations.length;
-      const avgLng =
-        multipleLocations.reduce((sum, loc) => sum + loc.lng, 0) /
-        multipleLocations.length;
-      return [avgLng, avgLat];
+      // Filtrar ubicaciones con coordenadas válidas
+      const validLocations = multipleLocations.filter(
+        (loc) =>
+          loc &&
+          typeof loc.lat === "number" &&
+          typeof loc.lng === "number" &&
+          !isNaN(loc.lat) &&
+          !isNaN(loc.lng) &&
+          isFinite(loc.lat) &&
+          isFinite(loc.lng)
+      );
+
+      if (validLocations.length > 0) {
+        const avgLat =
+          validLocations.reduce((sum, loc) => sum + loc.lat, 0) /
+          validLocations.length;
+        const avgLng =
+          validLocations.reduce((sum, loc) => sum + loc.lng, 0) /
+          validLocations.length;
+
+        // Validar que el resultado no sea NaN
+        if (!isNaN(avgLat) && !isNaN(avgLng) && isFinite(avgLat) && isFinite(avgLng)) {
+          return [avgLng, avgLat];
+        }
+      }
     }
-    return [location.lng, location.lat];
+
+    // Validar ubicación por defecto
+    if (
+      !isNaN(location.lat) &&
+      !isNaN(location.lng) &&
+      isFinite(location.lat) &&
+      isFinite(location.lng)
+    ) {
+      return [location.lng, location.lat];
+    }
+
+    // Retornar coordenadas por defecto si todo falla
+    return [defaultLocation.lng, defaultLocation.lat];
   };
 
   // Inicializar el mapa (solo cuando cambia el contenedor o tema)
@@ -80,6 +110,8 @@ function MapScheduleLocation({
         : "mapbox://styles/mapbox/streets-v12";
 
     const center = getMapCenter();
+
+    console.log("datos de ubicación:", multipleLocations);
 
     mapRef.current = new mapboxgl.Map({
       container,
@@ -109,14 +141,26 @@ function MapScheduleLocation({
 
     mapRef.current.on("load", () => {
       setisLoading(false);
-
       // Si hay múltiples ubicaciones, ajustar el mapa para mostrar todas
       if (multipleLocations && multipleLocations.length > 1) {
-        const bounds = new mapboxgl.LngLatBounds();
-        multipleLocations.forEach((loc) => {
-          bounds.extend([loc.lng, loc.lat]);
-        });
-        mapRef.current!.fitBounds(bounds, { padding: 50 });
+        const validLocations = multipleLocations.filter(
+          (loc) =>
+            loc &&
+            typeof loc.lat === "number" &&
+            typeof loc.lng === "number" &&
+            !isNaN(loc.lat) &&
+            !isNaN(loc.lng) &&
+            isFinite(loc.lat) &&
+            isFinite(loc.lng)
+        );
+
+        if (validLocations.length > 1) {
+          const bounds = new mapboxgl.LngLatBounds();
+          validLocations.forEach((loc) => {
+            bounds.extend([loc.lng, loc.lat]);
+          });
+          mapRef.current!.fitBounds(bounds, { padding: 50 });
+        }
       }
     });
 
@@ -229,8 +273,20 @@ function MapScheduleLocation({
     // Esperar a que el mapa esté cargado
     const updateMarkers = () => {
       if (multipleLocations && multipleLocations.length > 0) {
+        // Filtrar ubicaciones con coordenadas válidas
+        const validLocations = multipleLocations.filter(
+          (loc) =>
+            loc &&
+            typeof loc.lat === "number" &&
+            typeof loc.lng === "number" &&
+            !isNaN(loc.lat) &&
+            !isNaN(loc.lng) &&
+            isFinite(loc.lat) &&
+            isFinite(loc.lng)
+        );
+
         // Múltiples marcadores
-        multipleLocations.forEach((loc) => {
+        validLocations.forEach((loc) => {
           const marker = new mapboxgl.Marker({
             color: loc.color || "#e11d48",
             scale: isMobile ? 1.2 : 1.5,
@@ -282,16 +338,21 @@ function MapScheduleLocation({
           multipleMarkersRef.current.push(marker);
         });
 
-        // Ajustar vista si hay múltiples ubicaciones
-        if (multipleLocations.length > 1) {
+        // Ajustar vista si hay múltiples ubicaciones válidas
+        if (validLocations.length > 1) {
           const bounds = new mapboxgl.LngLatBounds();
-          multipleLocations.forEach((loc) => {
+          validLocations.forEach((loc) => {
             bounds.extend([loc.lng, loc.lat]);
           });
           mapRef.current!.fitBounds(bounds, { padding: 50, duration: 1000 });
         }
-      } else {
-        // Marcador único
+      } else if (
+        !isNaN(location.lat) &&
+        !isNaN(location.lng) &&
+        isFinite(location.lat) &&
+        isFinite(location.lng)
+      ) {
+        // Marcador único (solo si las coordenadas son válidas)
         markerRef.current = new mapboxgl.Marker({
           color: "#e11d48",
           scale: isMobile ? 1.2 : 1.5,
@@ -310,12 +371,22 @@ function MapScheduleLocation({
 
   // Parsear dirección cuando cambia la ubicación (solo para ubicación única)
   useEffect(() => {
-    if (initialLocation && !multipleLocations && showAddressInfo) {
+    if (
+      initialLocation &&
+      !multipleLocations &&
+      showAddressInfo &&
+      !isNaN(location.lat) &&
+      !isNaN(location.lng) &&
+      isFinite(location.lat) &&
+      isFinite(location.lng)
+    ) {
       ParseDominicanAddress(location.lat, location.lng).then(
         (parsedAddress) => {
           setAddress(parsedAddress);
         },
-      );
+      ).catch((error) => {
+        console.error("Error parsing address:", error);
+      });
     }
   }, [location, initialLocation, multipleLocations, showAddressInfo]);
 

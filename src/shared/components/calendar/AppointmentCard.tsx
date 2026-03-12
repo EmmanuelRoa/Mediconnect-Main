@@ -6,9 +6,9 @@ import MCButton from "../forms/MCButton";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useTranslation } from "react-i18next";
 import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import CancelAppointmentDialog from "@/features/patient/components/appoiments/CancelAppointmentDialog";
 import type { ServiceDetail } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.types";
 import { format } from "date-fns";
-import { useAppStore } from "@/stores/useAppStore";
 import ViewDetailsAppointmentDialog from "@/features/patient/components/appoiments/ViewDetailsAppointmentDialog";
 import MCAppointmentsStatus from "@/shared/components/tables/MCAppointmentsStatus";
 
@@ -44,10 +44,9 @@ interface AppointmentCardProps {
   appointment: Appointment;
   isVertical?: boolean; // Para forzar diseño vertical en móviles
   index: number;
-  onCancel?: (appointmentId: string) => void;
 }
 
-export function AppointmentCard({ appointment, index, onCancel, isVertical }: AppointmentCardProps) {
+export function AppointmentCard({ appointment, index, isVertical }: AppointmentCardProps) {
   const isMobile = useIsMobile();
   const { t } = useTranslation("patient");
   
@@ -88,14 +87,15 @@ export function AppointmentCard({ appointment, index, onCancel, isVertical }: Ap
               {t("appointments.reschedule")}
             </MCButton>
           </ScheduleAppointmentDialog>
-          <MCButton
-            variant="outlineDelete"
-            size="s"
-            className="rounded-full w-full sm:w-auto"
-            onClick={() => onCancel?.(appointment.id)}
-          >
-            {t("appointments.cancel")}
-          </MCButton>
+          <CancelAppointmentDialog appointmentId={appointment.id}>
+            <MCButton
+              variant="outlineDelete"
+              size="s"
+              className="rounded-full w-full sm:w-auto"
+            >
+              {t("appointments.cancel")}
+            </MCButton>
+          </CancelAppointmentDialog>
         </div>
       );
     }

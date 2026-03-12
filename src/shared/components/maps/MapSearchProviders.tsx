@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import { createRoot } from "react-dom/client";
 import { type Provider } from "@/data/providers";
@@ -13,6 +13,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
  * 2. Marker reuse: Existing markers are reused and updated instead of recreated
  * 3. Separate user marker management: User location marker is managed independently
  * 4. Efficient cleanup: Properly unmounts React roots to prevent memory leaks
+ * 5. Separated effects: Selection style updates don't recreate popups
+ * 6. Four-tier effect system:
+ *    - User location marker (independent)
+ *    - Marker creation/deletion (when providers change, NOT selection)
+ *    - Style updates only (when selection changes using SVG manipulation)
+ *    - Smart fitBounds (only when providers change significantly)
+ * 7. useMemo for efficient Set lookups (O(1) vs O(n) for includes)
+ * 8. Removed unnecessary dependencies from effects to prevent cascading updates
+ * 9. Proper DOM manipulation using SVG querySelector with smooth transitions
+ * 10. Tracks initialization state to avoid unnecessary fitBounds calls
+ * 11. Asynchronous popup attachment with timeout cleanup to prevent memory leaks
+ * 12. Popup content updates when selection changes for real-time UI feedback
  * 
  * This approach significantly reduces DOM manipulations and improves rendering
  * performance, especially when dealing with many providers or frequent updates.
@@ -21,9 +33,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 import { AnimatePresence, motion } from "framer-motion";
 import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
+import { useAppStore } from "@/stores/useAppStore";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useNavigate } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import type { FeatureCollection, Geometry } from "geojson";
+import ScheduleAppointmentDialog from "@/features/patient/components/appoiments/ScheduleAppointmentDialog";
+import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
+import { useStartConversation } from "@/lib/hooks/useStartConversation";
+import MCButton from "../forms/MCButton";
+import { useTranslation } from "react-i18next";
 
 interface MapSearchProvidersProps {
   providers: Provider[];
@@ -36,15 +55,25 @@ const PopupContent: React.FC<{
   provider: Provider;
   isSelected: boolean;
   onSelect?: (id: string) => void;
+  onScheduleAppointment?: (providerId: string) => void;
   navigateFn: (path: string) => void;
-}> = ({ provider, isSelected, onSelect, navigateFn }) => {
+  userRole?: string | null;
+  isMobile?: boolean;
+  onContact?: (providerId: string) => void;
+  isContactLoading?: boolean;
+}> = ({ provider, isSelected, onSelect, onScheduleAppointment, navigateFn, userRole, isMobile, onContact, isContactLoading }) => {
   return (
     <TooltipProvider>
       <ProviderPopup
         provider={provider}
         isSelected={isSelected}
         onSelect={onSelect ?? (() => {})}
+        onScheduleAppointment={onScheduleAppointment}
         navigateFn={navigateFn}
+        userRole={userRole}
+        isMobile={isMobile}
+        onContact={onContact}
+        isStartingConversation={isContactLoading}
       />
     </TooltipProvider>
   );
@@ -55,22 +84,31 @@ export default function MapSearchProviders({
   selectedProviders = [],
   onProviderSelect,
 }: MapSearchProvidersProps) {
-  const navigate = useNavigate(); // Capturar navigate aquí
+  const navigate = useNavigate();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const normalContainerRef = useRef<HTMLDivElement | null>(null);
   const fullscreenContainerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const markersMapRef = useRef<Map<string, { marker: mapboxgl.Marker; root: any }>>(new Map());
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const popupTimeoutsRef = useRef<Map<string, number>>(new Map());
+  const hasInitializedBoundsRef = useRef(false);
+  const previousProviderCountRef = useRef(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [is3D, setIs3D] = useState(true);
   const setisLoading = useGlobalUIStore((state) => state.setIsLoading);
   const isdarkMode = useGlobalUIStore((state) => state.theme);
+  const userRole = useAppStore((state) => state.user?.rol);
+  const isMobile = useIsMobile();
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   );
   const [locationDenied, setLocationDenied] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingConnectionId, setPendingConnectionId] = useState<string | null>(null);
   const [geoDatas, setGeoDatas] = useState<{
     santoDomingo: FeatureCollection<Geometry> | null;
     distritoNacional: FeatureCollection<Geometry> | null;
@@ -78,6 +116,42 @@ export default function MapSearchProviders({
     santoDomingo: null,
     distritoNacional: null,
   });
+
+  const { t } = useTranslation("doctor");
+  const { startConversation, isLoading: isStartingConversation } = useStartConversation();
+
+  // Memoize selected providers set for efficient lookups
+  const selectedProvidersSet = useMemo(
+    () => new Set(selectedProviders),
+    [selectedProviders]
+  );
+
+  // Callback handlers
+  const handleScheduleAppointment = (providerId: string) => {
+    console.log("Scheduling appointment with provider ID:", providerId);
+    setSelectedProviderId(providerId);
+    setScheduleDialogOpen(true);
+  };
+
+  const handleConnect = (providerId: string) => {
+    // Si el userRole es CENTER o DOCTOR, abrir diálogo de confirmación
+    if (userRole === "CENTER" || userRole === "DOCTOR") {
+      setPendingConnectionId(providerId);
+      setConfirmDialogOpen(true);
+    }
+  };
+
+  const handleContact = (providerId: string) => {
+    startConversation(Number(providerId));
+  };
+
+  const handleConfirmConnection = () => {
+    if (pendingConnectionId) {
+      onProviderSelect?.(pendingConnectionId);
+      setPendingConnectionId(null);
+      setConfirmDialogOpen(false);
+    }
+  };
 
   // Cargar los polígonos GeoJSON
   useEffect(() => {
@@ -187,10 +261,20 @@ export default function MapSearchProviders({
       markersMapRef.current.clear();
       markersRef.current = [];
       
+      // Clear all pending timeouts
+      popupTimeoutsRef.current.forEach((timeout) => {
+        clearTimeout(timeout);
+      });
+      popupTimeoutsRef.current.clear();
+      
       if (userMarkerRef.current) {
         userMarkerRef.current.remove();
         userMarkerRef.current = null;
       }
+      
+      // Reset tracking refs
+      hasInitializedBoundsRef.current = false;
+      previousProviderCountRef.current = 0;
       
       mapRef.current?.remove();
       setisLoading(false);
@@ -319,11 +403,10 @@ export default function MapSearchProviders({
     }
   }, [is3D, isMapLoaded, isFullscreen]);
 
-  // Actualizar marcadores cuando cambien los providers (optimizado)
+  // Manage user location marker (independent effect)
   useEffect(() => {
     if (!mapRef.current || !isMapLoaded) return;
 
-    // Manage user location marker
     if (userLocation) {
       if (!userMarkerRef.current) {
         userMarkerRef.current = new mapboxgl.Marker({
@@ -339,24 +422,23 @@ export default function MapSearchProviders({
       userMarkerRef.current.remove();
       userMarkerRef.current = null;
     }
+  }, [userLocation, isMapLoaded]);
+
+  // Create/update/remove markers when providers change (optimized - no selection dependency)
+  useEffect(() => {
+    if (!mapRef.current || !isMapLoaded) return;
 
     // Get current provider IDs with coordinates
     const currentProviderIds = new Set<string>();
-    const providerCoordMap = new Map<string, { provider: Provider; coord: { lat: number; lng: number } }[]>();
     
     providers.forEach((provider) => {
       const coordinates = Array.isArray(provider.coordinates)
         ? provider.coordinates
         : [provider.coordinates];
       
-      coordinates.forEach((coord, idx) => {
+      coordinates.forEach((_coord, idx) => {
         const markerId = `${provider.id}_${idx}`;
         currentProviderIds.add(markerId);
-        
-        if (!providerCoordMap.has(markerId)) {
-          providerCoordMap.set(markerId, []);
-        }
-        providerCoordMap.get(markerId)!.push({ provider, coord });
       });
     });
 
@@ -366,110 +448,188 @@ export default function MapSearchProviders({
         markerData.marker.remove();
         markerData.root?.unmount?.();
         markersMapRef.current.delete(markerId);
+        
+        // Clear pending timeout if exists
+        const timeout = popupTimeoutsRef.current.get(markerId);
+        if (timeout) {
+          clearTimeout(timeout);
+          popupTimeoutsRef.current.delete(markerId);
+        }
       }
     });
 
-    // Update or create markers
+    // Create new markers (always with scale 1 initially)
     providers.forEach((provider) => {
-      const isSelected = selectedProviders.includes(provider.id);
       const coordinates = Array.isArray(provider.coordinates)
-        ? provider.coordinates
-        : [provider.coordinates];
+      ? provider.coordinates 
+      : provider.coordinates  
+        ? [provider.coordinates]
+        : [];
 
       coordinates.forEach((coord, idx) => {
+        if (!coord || !coord.lat || !coord.lng) {
+          console.warn(`Invalid coordinates for provider ${provider.id} at index ${idx}:`, coord);
+          return;
+        }
+
+        const lat = Number(coord.lat);
+        const lng = Number(coord.lng);
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn(`Non-numeric coordinates for provider ${provider.id} at index ${idx}:`, coord);
+          return;
+        }
+
         const markerId = `${provider.id}_${idx}`;
         const existingMarker = markersMapRef.current.get(markerId);
 
-        if (existingMarker) {
-          // Update existing marker scale if selection changed
-          const currentScale = isSelected ? 1.2 : 1;
-          const element = existingMarker.marker.getElement();
-          element.style.transform = `scale(${currentScale})`;
-          
-          // Update popup content if provider data changed
-          const popupNode = document.createElement("div");
-          const root = createRoot(popupNode);
-          root.render(
-            <PopupContent
-              provider={provider}
-              isSelected={isSelected}
-              onSelect={(id) => onProviderSelect?.(id)}
-              navigateFn={navigate}
-            />,
-          );
-          
-          if (existingMarker.root) {
-            existingMarker.root.unmount();
-          }
-          existingMarker.root = root;
-          
-          const popup = new mapboxgl.Popup({
-            offset: 20,
-            closeButton: false,
-            closeOnClick: true,
-            maxWidth: "none",
-            className: "mapbox-popup-high-z",
-          }).setDOMContent(popupNode);
-          
-          existingMarker.marker.setPopup(popup);
-        } else {
-          // Create new marker
-          const popupNode = document.createElement("div");
-          const root = createRoot(popupNode);
-          root.render(
-            <PopupContent
-              provider={provider}
-              isSelected={isSelected}
-              onSelect={(id) => onProviderSelect?.(id)}
-              navigateFn={navigate}
-            />,
-          );
-
-          const popup = new mapboxgl.Popup({
-            offset: 20,
-            closeButton: false,
-            closeOnClick: true,
-            maxWidth: "none",
-            className: "mapbox-popup-high-z",
-          }).setDOMContent(popupNode);
-
+        // Only create if it doesn't exist
+        if (!existingMarker) {
+          // Create the marker first
           const marker = new mapboxgl.Marker({
             color: provider.type === "doctor" ? "#A8C3A0" : "#8BB1CA",
-            scale: isSelected ? 1.2 : 1,
+            scale: 1,
           })
-            .setLngLat([coord.lng, coord.lat])
-            .setPopup(popup)
+            .setLngLat([lng, lat])
             .addTo(mapRef.current!);
 
+          // Create popup container and root
+          const popupNode = document.createElement("div");
+          const root = createRoot(popupNode);
+          
+          // Store marker and root immediately
           markersMapRef.current.set(markerId, { marker, root });
+
+          // Render the popup content and attach to marker
+          root.render(
+            <PopupContent
+              provider={provider}
+              isSelected={false}
+              onSelect={handleConnect}
+              onScheduleAppointment={handleScheduleAppointment}
+              navigateFn={navigate}
+              userRole={userRole}
+              isMobile={isMobile}
+              onContact={handleContact}
+              isContactLoading={isStartingConversation}
+            />,
+          );
+
+          // Create and attach popup after React renders
+          const timeoutId = setTimeout(() => {
+            const popup = new mapboxgl.Popup({
+              offset: 20,
+              closeButton: false,
+              closeOnClick: true,
+              maxWidth: "none",
+              className: "mapbox-popup-high-z",
+            }).setDOMContent(popupNode);
+
+            marker.setPopup(popup);
+            popupTimeoutsRef.current.delete(markerId);
+          }, 0);
+          
+          // Store timeout for cleanup
+          popupTimeoutsRef.current.set(markerId, timeoutId);
         }
       });
     });
 
     // Legacy support: keep markersRef updated
     markersRef.current = Array.from(markersMapRef.current.values()).map(m => m.marker);
-  }, [providers, selectedProviders, onProviderSelect, userLocation, isMapLoaded, navigate]);
+  }, [providers, onProviderSelect, isMapLoaded, navigate]);
 
-  // Ajustar vista cuando cambian los providers
+  // Update marker styles when selection changes (optimized - only updates scale)
+  useEffect(() => {
+    if (!mapRef.current || !isMapLoaded) return;
+
+    providers.forEach((provider) => {
+      const isSelected = selectedProvidersSet.has(provider.id);
+      const coordinates = Array.isArray(provider.coordinates)
+        ? provider.coordinates
+        : provider.coordinates
+          ? [provider.coordinates]
+          : [];
+
+      coordinates.forEach((_coord, idx) => {
+        const markerId = `${provider.id}_${idx}`;
+        const existingMarker = markersMapRef.current.get(markerId);
+
+        if (existingMarker) {
+          // Update scale using DOM manipulation with proper transform preservation
+          const targetScale = isSelected ? 1.2 : 1;
+          const element = existingMarker.marker.getElement();
+          
+          // Get the SVG element and apply scale directly
+          const svg = element.querySelector('svg');
+          if (svg) {
+            svg.style.transform = `scale(${targetScale})`;
+            svg.style.transformOrigin = 'center bottom';
+            svg.style.transition = 'transform 0.2s ease';
+          }
+
+          // Update popup content to reflect selection state
+          existingMarker.root.render(
+            <PopupContent
+              provider={provider}
+              isSelected={isSelected}
+              onSelect={handleConnect}
+              onScheduleAppointment={handleScheduleAppointment}
+              navigateFn={navigate}
+              userRole={userRole}
+              isMobile={isMobile}
+              onContact={handleContact}
+              isContactLoading={isStartingConversation}
+            />,
+          );
+        }
+      });
+    });
+  }, [selectedProvidersSet, providers, isMapLoaded, navigate, onProviderSelect]);
+
+  // Ajustar vista cuando cambian los providers (solo si hay cambio significativo)
   useEffect(() => {
     if (!mapRef.current || !isMapLoaded || providers.length === 0) return;
 
+    // Only fit bounds if this is the first load or provider count changed significantly
+    const shouldFitBounds = 
+      !hasInitializedBoundsRef.current || 
+      Math.abs(providers.length - previousProviderCountRef.current) > 3;
+
+    if (!shouldFitBounds) return;
+
     const bounds = new mapboxgl.LngLatBounds();
+    let validCoordCount = 0;
+
     providers.forEach((provider) => {
-      // Normalizar coordenadas para fitBounds también
       const coordinates = Array.isArray(provider.coordinates)
-        ? provider.coordinates
-        : [provider.coordinates];
+      ? provider.coordinates
+      : provider.coordinates  
+        ? [provider.coordinates]
+        : [];
 
       coordinates.forEach((coord) => {
-        bounds.extend([coord.lng, coord.lat]);
+        if (!coord || !coord.lat || !coord.lng) return;
+      
+        const lat = Number(coord.lat);
+        const lng = Number(coord.lng);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+          bounds.extend([lng, lat]);
+          validCoordCount++;
+        }
       });
     });
 
-    mapRef.current.fitBounds(bounds, {
-      padding: 50,
-      maxZoom: 15,
-    });
+    if (validCoordCount > 0) {
+      mapRef.current.fitBounds(bounds, {
+        padding: 50,
+        maxZoom: 15,
+        duration: hasInitializedBoundsRef.current ? 1000 : 0,
+      });
+      
+      hasInitializedBoundsRef.current = true;
+      previousProviderCountRef.current = providers.length;
+    }
   }, [providers, isMapLoaded]);
 
   useEffect(() => {
@@ -655,6 +815,31 @@ export default function MapSearchProviders({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Diálogos renderizados en el componente padre (dentro del contexto de React) */}
+      {userRole === "PATIENT" && selectedProviderId && (
+        <ScheduleAppointmentDialog
+          idProvider={selectedProviderId}
+          isOpen={scheduleDialogOpen}
+          onClose={() => setScheduleDialogOpen(false)}
+        >
+          <MCButton className="w-full font-body text-sm sm:text-base py-5 sm:py-6">
+            {t("service.schedule", "Agendar")}
+          </MCButton>
+        </ScheduleAppointmentDialog>
+      )}
+
+      {(userRole === "CENTER" || userRole === "DOCTOR") && pendingConnectionId && (
+        <ToogleConfirmConnection
+          status="not_connected"
+          id={parseInt(pendingConnectionId)}
+          onConfirm={handleConfirmConnection}
+          isOpen={confirmDialogOpen}
+          onClose={() => setConfirmDialogOpen(false)}
+        >
+          <div style={{ display: 'none' }} />
+        </ToogleConfirmConnection>
+      )}
     </>
   );
 }

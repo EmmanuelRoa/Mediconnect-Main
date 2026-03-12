@@ -65,13 +65,26 @@ function CenterReadOnlyView({ data }: CenterReadOnlyViewProps) {
       </div>
 
       <div className="flex flex-col w-full">
-        <MapScheduleLocation
-          fontSizeVariant="s"
-          initialLocation={{
-            lat: data.coordinates.latitude,
-            lng: data.coordinates.longitude,
-          }}
-        />
+        {data.coordinates?.latitude !== undefined &&
+         data.coordinates?.longitude !== undefined &&
+         !isNaN(data.coordinates.latitude) &&
+         !isNaN(data.coordinates.longitude) &&
+         isFinite(data.coordinates.latitude) &&
+         isFinite(data.coordinates.longitude) ? (
+          <MapScheduleLocation
+            fontSizeVariant="s"
+            initialLocation={{
+              lat: data.coordinates.latitude,
+              lng: data.coordinates.longitude,
+            }}
+          />
+        ) : (
+          <div className="w-full h-[300px] rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">
+              {t("verification.location.noLocation", "Ubicación no disponible")}
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );

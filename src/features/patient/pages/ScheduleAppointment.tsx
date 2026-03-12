@@ -412,12 +412,26 @@ function ScheduleAppointment() {
                           <>, {primaryLocation.barrio.nombre}, {primaryLocation.barrio.seccion.municipio.nombre}, {primaryLocation.barrio.seccion.municipio.provincia.nombre}</>
                         )}
                       </p>
-                      <MapScheduleLocation
-                        initialLocation={{
-                          lat: primaryLocation.latitud,
-                          lng: primaryLocation.longitud,
-                        }}
-                      />
+                      {primaryLocation.latitud !== undefined &&
+                       primaryLocation.longitud !== undefined &&
+                       !isNaN(primaryLocation.latitud) &&
+                       !isNaN(primaryLocation.longitud) &&
+                       isFinite(primaryLocation.latitud) &&
+                       isFinite(primaryLocation.longitud) ? (
+                        <MapScheduleLocation
+                          initialLocation={{
+                            lat: primaryLocation.latitud,
+                            lng: primaryLocation.longitud,
+                          }}
+                        />
+                      ) : (
+                        <MapScheduleLocation
+                          initialLocation={{
+                            lat: 18.47267,
+                            lng: -69.94101,
+                          }}
+                        />
+                      )}
                     </>
                   ) : (
                     <MapScheduleLocation

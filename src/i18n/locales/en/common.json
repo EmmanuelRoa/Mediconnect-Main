@@ -40,7 +40,9 @@
     "acceptedInsurances": "Accepted insurances:",
     "andOtherLanguages": "and {{count}} other languages...",
     "andMore": "and {{count}} more...",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "scheduleAppointment": "Schedule appointment",
+    "contact": "Contact"
   },
   "doctorCard": {
     "availability": "Availability:",
@@ -53,6 +55,8 @@
     "favoriteAddError": "Could not add to favorites",
     "confirmFavoriteTitle": "Add to favorites",
     "confirmFavoriteDescription": "Do you want to add {{name}} to your favorites doctors?",
+    "confirmRemoveFavoriteTitle": "Remove from favorites",
+    "confirmRemoveFavoriteDescription": "Do you want to remove {{name}} from your favorite doctors?",
     "favoriteRemoved": "Doctor removed from favorites",
     "favoriteRemoveError": "Could not remove from favorites"
   },
@@ -100,12 +104,21 @@
         "5": "5 years or more",
         "10": "10 years or more"
       },
+      "radio": {
+        "1": "5 km",
+        "2": "10 km",
+        "3": "20 km",
+        "4": "30 km",
+        "5": "40 km",
+        "6": "50 km"
+      },
       "languages": {
         "spanish": "Spanish",
         "english": "English",
         "french": "French"
       }
     },
+    "radio": "Proximity",
     "selectedProviders": "{{count}} of {{max}} providers selected for comparison",
     "compare": "Compare",
     "providersFound": "{{count}} providers found",

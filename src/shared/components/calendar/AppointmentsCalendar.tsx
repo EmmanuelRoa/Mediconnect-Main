@@ -9,13 +9,8 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { fadeInUp, fadeInUpDelayed } from "@/lib/animations/commonAnimations";
 import { useTranslation } from "react-i18next";
 import { useAppointments } from "@/lib/hooks/useAppointments";
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { cancelCita } from '@/services/api/appointments.service';
-import { QUERY_KEYS } from '@/lib/react-query/config';
-import { MCDialogBase } from '@/shared/components/MCDialogBase';
 import { mapCitasToAppointments } from "@/utils/appointmentMapper";
 import { useAppStore } from "@/stores/useAppStore";
-import i18n from "@/i18n/config";
 
 type Orientation = "vertical" | "horizontal";
 
@@ -60,28 +55,6 @@ export function AppointmentsCalendar({
   const appointmentsForDate = appointmentsData.filter((apt) =>
     isSameDay(apt.date, selectedDate),
   );
-
-  // Cancel dialog state
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
-  const [cancelReason, setCancelReason] = useState("");
-  const queryClient = useQueryClient();
-
-  const cancelMutation = useMutation({
-    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
-      return await cancelCita(id, reason);
-    },
-    onSuccess: async () => {
-      // Invalidate citas cache to refresh list
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CITAS() });
-      setCancelDialogOpen(false);
-      setSelectedAppointmentId(null);
-      setCancelReason("");
-    },
-    onError: (err) => {
-      console.error('Error cancelling appointment', err);
-    }
-  });
 
   // Calculate appointment counts per date
   const appointmentCounts = useMemo(() => {
@@ -178,37 +151,6 @@ export function AppointmentsCalendar({
           </div>
         </motion.div>
 
-        {/* Cancel confirmation dialog */}
-        <MCDialogBase
-          open={cancelDialogOpen}
-          onOpenChange={setCancelDialogOpen}
-          title={t('appointments.cancelConfirmTitle')}
-          description={t('appointments.cancelConfirmDescription')}
-          confirmText={t('appointments.confirmCancel')}
-          secondaryText={t('appointments.back')}
-          variant="decide"
-          onConfirm={() => {
-            if (!selectedAppointmentId) return;
-            cancelMutation.mutate({ id: selectedAppointmentId, reason: cancelReason });
-          }}
-          loading={cancelMutation.isPending}
-          disableClose={cancelMutation.isPending}
-        >
-          <div className="flex flex-col gap-3">
-            <label className="text-sm text-muted-foreground">{t('appointments.cancelReasonLabel')}</label>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              disabled={cancelMutation.isPending}
-              className="w-full min-h-[120px] p-2 border rounded-md bg-bg-primary"
-              placeholder={t('appointments.cancelReasonPlaceholder')}
-            />
-            {cancelMutation.isError && (
-              <p className="text-sm text-destructive">{t('appointments.cancelError')}</p>
-            )}
-          </div>
-        </MCDialogBase>
-
         {/* Divider más compacto */}
         <div className="w-full h-px bg-primary/10 my-2 flex-shrink-0" />
 
@@ -255,10 +197,6 @@ export function AppointmentsCalendar({
                       key={appointment.id}
                       appointment={appointment}
                       index={index}
-                      onCancel={(id) => {
-                        setSelectedAppointmentId(id);
-                        setCancelDialogOpen(true);
-                      }}
                       isVertical={isVertical}
                     />
                   ))}
@@ -360,10 +298,6 @@ export function AppointmentsCalendar({
                     key={appointment.id}
                     appointment={appointment}
                     index={index}
-                    onCancel={(id) => {
-                      setSelectedAppointmentId(id);
-                      setCancelDialogOpen(true);
-                    }}
                     isVertical={isVertical}
                   />
                 ))}
@@ -389,37 +323,6 @@ export function AppointmentsCalendar({
             )}
           </AnimatePresence>
         </div>
-
-        {/* Cancel confirmation dialog (shared for horizontal layout too) */}
-        <MCDialogBase
-          open={cancelDialogOpen}
-          onOpenChange={setCancelDialogOpen}
-          title={t('appointments.cancelConfirmTitle')}
-          description={t('appointments.cancelConfirmDescription')}
-          confirmText={t('appointments.confirmCancel')}
-          secondaryText={t('appointments.back')}
-          variant="decide"
-          onConfirm={() => {
-            if (!selectedAppointmentId) return;
-            cancelMutation.mutate({ id: selectedAppointmentId, reason: cancelReason });
-          }}
-          loading={cancelMutation.isPending}
-          disableClose={cancelMutation.isPending}
-        >
-          <div className="flex flex-col gap-3">
-            <label className="text-sm text-muted-foreground">{t('appointments.cancelReasonLabel')}</label>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              disabled={cancelMutation.isPending}
-              className="w-full min-h-[120px] p-2 border rounded-md bg-bg-primary"
-              placeholder={t('appointments.cancelReasonPlaceholder')}
-            />
-            {cancelMutation.isError && (
-              <p className="text-sm text-destructive">{t('appointments.cancelError')}</p>
-            )}
-          </div>
-        </MCDialogBase>
       </motion.div>
     </div>
   );

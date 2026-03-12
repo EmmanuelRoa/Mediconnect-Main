@@ -55,7 +55,7 @@ export const QUERY_KEYS = {
   // Doctors
   DOCTORS: ['doctors'],
   DOCTOR_BY_ID: (id: string | number) => ['doctors', id],
-  MY_DOCTORS: ['doctors', 'my'],
+  MY_DOCTORS: (filters?: Record<string, any>) => ['doctors', 'my', filters].filter(Boolean),
   
   // Patients
   PATIENTS: ['patients'],

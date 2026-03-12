@@ -23,7 +23,7 @@ export const ListView = ({
   const { t } = useTranslation("common");
   const isMobile = useIsMobile();
   const today = startOfToday();
-  const userRole = useAppStore((state) => state.user?.role);
+  const userRole = useAppStore((state) => state.user?.rol);
 
   const statusLabels: Record<AppointmentStatus, string> = {
     scheduled: t("calendar.status.scheduled"),
@@ -84,7 +84,9 @@ export const ListView = ({
   return (
     <div className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 h-full">
       {Object.entries(groupedAppointments).map(([dateKey, dayAppointments]) => {
-        const date = new Date(dateKey);
+        // Parsear el dateKey correctamente para evitar problemas de zona horaria
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
         const isToday = isSameDay(date, today);
 
         return (

@@ -61,7 +61,16 @@ function ServiceLocationStep() {
     if (!doctorLocations || doctorLocations.length === 0) return [];
     const locations = doctorLocations as DoctorLocation[];
     return locations
-      .filter((loc) => loc.puntoGeografico?.coordinates && loc.puntoGeografico.coordinates.length === 2)
+      .filter((loc) => 
+        loc.puntoGeografico?.coordinates && 
+        loc.puntoGeografico.coordinates.length === 2 &&
+        typeof loc.puntoGeografico.coordinates[0] === 'number' &&
+        typeof loc.puntoGeografico.coordinates[1] === 'number' &&
+        !isNaN(loc.puntoGeografico.coordinates[0]) &&
+        !isNaN(loc.puntoGeografico.coordinates[1]) &&
+        isFinite(loc.puntoGeografico.coordinates[0]) &&
+        isFinite(loc.puntoGeografico.coordinates[1])
+      )
       .map((loc) => ({
         lat: loc.puntoGeografico.coordinates[1],
         lng: loc.puntoGeografico.coordinates[0],

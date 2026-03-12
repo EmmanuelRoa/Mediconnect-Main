@@ -228,7 +228,13 @@ function DetailsTabContent({ appointment }: { appointment: CitaDetalle}) {
           {appointment.motivoConsulta || t("appointment.noConsultationReason", "Sin motivo especificado")}
         </p>
       </div>
-      {!isMobile && appointment.servicio.latitude && appointment.servicio.longitude && (
+      {!isMobile && 
+       appointment.servicio.latitude !== undefined && 
+       appointment.servicio.longitude !== undefined && 
+       !isNaN(appointment.servicio.latitude) && 
+       !isNaN(appointment.servicio.longitude) &&
+       isFinite(appointment.servicio.latitude) &&
+       isFinite(appointment.servicio.longitude) && (
         <div className="flex flex-col items-start gap-1 pb-4">
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.location")}
@@ -243,7 +249,13 @@ function DetailsTabContent({ appointment }: { appointment: CitaDetalle}) {
           </div>
         </div>
       )}
-      {isMobile && appointment.servicio.latitude && appointment.servicio.longitude && (
+      {isMobile && 
+       appointment.servicio.latitude !== undefined && 
+       appointment.servicio.longitude !== undefined && 
+       !isNaN(appointment.servicio.latitude) && 
+       !isNaN(appointment.servicio.longitude) &&
+       isFinite(appointment.servicio.latitude) &&
+       isFinite(appointment.servicio.longitude) && (
         <div className="flex flex-col items-start gap-1 pt-2">
           <h3 className="text-md text-primary/75 font-medium">
             {t("appointment.location")}

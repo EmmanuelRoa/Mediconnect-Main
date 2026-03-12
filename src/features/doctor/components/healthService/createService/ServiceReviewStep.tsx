@@ -167,12 +167,22 @@ function ServiceReviewStep({ isEditMode = false, serviceId }: { isEditMode?: boo
 
   const modality = serviceCreateData.selectedModality;
   const selectedEspecialty = serviceCreateData.specialityName || serviceCreateData.specialty || "";
-  const locationSelected = [{
-    lat: locationData.coordinates?.latitude || 0,
-    lng: locationData.coordinates?.longitude || 0,
+  
+  // Validar coordenadas antes de crear la ubicación
+  const hasValidCoordinates = 
+    locationData?.coordinates?.latitude !== undefined &&
+    locationData?.coordinates?.longitude !== undefined &&
+    !isNaN(locationData.coordinates.latitude) &&
+    !isNaN(locationData.coordinates.longitude) &&
+    isFinite(locationData.coordinates.latitude) &&
+    isFinite(locationData.coordinates.longitude);
+
+  const locationSelected = hasValidCoordinates ? [{
+    lat: locationData.coordinates.latitude,
+    lng: locationData.coordinates.longitude,
     label: locationData.name || "",
     color: "#e11d48",
-  }];
+  }] : [];
 
   return (
     <ServicesLayoutsSteps

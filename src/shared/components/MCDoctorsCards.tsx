@@ -84,7 +84,7 @@ function MCDoctorsCards({
   const { t } = useTranslation("patient");
   const navigate = useNavigate();
 
-  const userRole = useAppStore((state) => state.user?.role);
+  const userRole = useAppStore((state) => state.user?.rol);
 
   const handleProfileClick = () => {
     if (id) {

@@ -1122,6 +1122,29 @@ export const doctorService = {
     }
   },
 
+  getDoctorAndCenterByFilters: async (lat?: number | null, lng?: number | null, radiusKm?: number | null, params: any | null = null): Promise<GetDoctoresByDistanceResponse> => {
+    try {
+      // Only include location params if all are provided
+      const locationParams = (lat !== null && lat !== undefined && lng !== null && lng !== undefined && radiusKm !== null && radiusKm !== undefined)
+        ? { lat, lng, radio: radiusKm }
+        : {};
+
+      const response = await apiClient.get<GetDoctoresByDistanceResponse>(
+        `/busqueda/cercanos`,
+        { params: { ...locationParams, ...params } }
+      );
+      return response.data ;
+    } catch (error: any) {
+      console.error('❌ [Doctor Service] Error al obtener servicios por distancia:', error);
+      const errorData = error.response?.data as DoctorServiceError;
+      throw new Error(
+        errorData?.message || 
+        error.message || 
+        'Error al obtener servicios por distancia. Intenta nuevamente.'
+      );
+    }
+  },
+
   getDoctorSlotsAvailableInRange: async (doctorId: number, startDate: string, days: Number, params: any | null = null): Promise<any> => {
     try {
       const response = await apiClient.get<any>(

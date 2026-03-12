@@ -400,7 +400,13 @@ function ServicesPage() {
               <Separator />
 
               {/* Location Map */}
-              {primaryLocation && (
+              {primaryLocation && 
+               primaryLocation.latitud !== undefined &&
+               primaryLocation.longitud !== undefined &&
+               !isNaN(primaryLocation.latitud) &&
+               !isNaN(primaryLocation.longitud) &&
+               isFinite(primaryLocation.latitud) &&
+               isFinite(primaryLocation.longitud) && (
                 <>
                   <div>
                     <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-3">

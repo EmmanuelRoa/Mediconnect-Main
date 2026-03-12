@@ -99,7 +99,7 @@ export const transformCitaToAppointment = (cita: CitaDetalle): Appointment => {
       lng: cita.servicio.longitude || 0,
     },
     // Campos opcionales que pueden no estar disponibles
-    address: undefined, // El backend no devuelve la dirección directamente
+    address: cita.servicio.ubicaciones.direccionCompleta, // El backend no devuelve la dirección directamente
     patientPhone: undefined,
     doctorPhone: formatPhoneNumber(cita?.doctor?.usuario?.telefono),
   };

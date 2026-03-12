@@ -18,7 +18,9 @@ export interface UseSearchDoctorsParams {
   language?: string;
   enabled?: boolean;
   especialidadesOptions?: Array<{ value: string; label: string }>;
+  tiposCentroOptions?: Array<{ value: string; label: string }>;
 }
+
 
 export interface UseSearchDoctorsResult {
   /**
@@ -59,6 +61,7 @@ export interface UseSearchDoctorsResult {
  * - Background refetch disabled to save resources
  * - Proper caching with stale time of 5 minutes
  * - Debounced filter updates to reduce API calls
+ * - Accurate loading state: Tracks both API loading and data transformation
  * 
  * Features:
  * - Searches doctors within a specified radius
@@ -66,6 +69,7 @@ export interface UseSearchDoctorsResult {
  * - Applies client-side filters (languages, insurances, name search)
  * - Transforms API doctor data to UI Provider format
  * - Automatic caching and refetching with React Query
+ * - Prevents premature display of empty state during data transformation
  * 
  * @param params - Search parameters
  * @returns Query result with provider data and filtered results
@@ -89,16 +93,17 @@ export function useSearchDoctors({
   language = "es",
   enabled = true,
   especialidadesOptions = [],
+  tiposCentroOptions = []
 }: UseSearchDoctorsParams): UseSearchDoctorsResult {
-  // Only enable query if we have valid coordinates
-  const shouldFetch = enabled && lat !== null && lng !== null;
+  // Enable query if enabled flag is true (coordinates are now optional)
+  const shouldFetch = enabled;
 
   // Map filters to API parameters
   const apiParams = useMemo(() => {
     if (!filters) return {};
     
-    return mapFiltersToAPIParams(filters, language, especialidadesOptions);
-  }, [filters, language, especialidadesOptions]);
+    return mapFiltersToAPIParams(filters, language, especialidadesOptions, tiposCentroOptions);
+  }, [filters, language, especialidadesOptions, tiposCentroOptions]);
 
   // Create cache key based on location and filters
   const queryKey = useMemo(() => {
@@ -112,18 +117,15 @@ export function useSearchDoctors({
   const query = useQuery<DoctorNearby[], Error>({
     queryKey,
     queryFn: async () => {
-      if (lat === null || lng === null) {
-        throw new Error("Location coordinates are required");
-      }
-
-      const response = await doctorService.getDoctoresByDistance(
+      console.log("Fetching doctors with params:", { lat, lng, radiusKm, apiParams });
+      const response = await doctorService.getDoctorAndCenterByFilters(
         lat,
         lng,
         radiusKm,
         apiParams
       );
 
-      return response.data || [];
+      return response.doctores || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
@@ -135,20 +137,33 @@ export function useSearchDoctors({
 
   // Transform doctors to providers asynchronously (mapper fetches availability)
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [isTransforming, setIsTransforming] = useState(false);
+  
   useEffect(() => {
     let mounted = true;
 
     const buildProviders = async () => {
       if (!query.data || query.data.length === 0) {
-        if (mounted) setProviders([]);
+        if (mounted) {
+          setProviders([]);
+          setIsTransforming(false);
+        }
         return;
       }
 
+      if (mounted) setIsTransforming(true);
+
       try {
         const mapped = await mapDoctorsToProviders(query.data);
-        if (mounted) setProviders(mapped);
+        if (mounted) {
+          setProviders(mapped);
+          setIsTransforming(false);
+        }
       } catch (e) {
-        if (mounted) setProviders([]);
+        if (mounted) {
+          setProviders([]);
+          setIsTransforming(false);
+        }
       }
     };
 
@@ -184,10 +199,20 @@ export function useSearchDoctors({
         !filters.insuranceAccepted.includes("all")
       ) {
         const hasMatchingInsurance = filters.insuranceAccepted.some(
-          (insurance) =>
-            rawDoctor.segurosAceptados.some(
-              (s) => s.seguro.nombre.toLowerCase().includes(insurance.toLowerCase())
-            )
+          (insurance) => {
+            // Check if insurance is numeric ID or string name
+            const isNumericId = !isNaN(Number(insurance));
+            
+            return rawDoctor.segurosAceptados.some((s) => {
+              if (isNumericId) {
+                // Match by ID
+                return s.seguro.id === Number(insurance) || s.seguroId === Number(insurance);
+              } else {
+                // Match by name (case-insensitive partial match)
+                return s.seguro.nombre.toLowerCase().includes(insurance.toLowerCase());
+              }
+            });
+          }
         );
         if (!hasMatchingInsurance) {
           return false;
@@ -196,8 +221,8 @@ export function useSearchDoctors({
 
       // Language filter (client-side - not available in API data yet)
       if (
-        filters.languages?.length > 0 &&
-        !filters.languages.includes("all")
+        filters.languages &&
+        filters.languages !== "all"
       ) {
         // TODO: Implement when language data is available in API
         // For now, skip this filter
@@ -205,8 +230,8 @@ export function useSearchDoctors({
 
       // Scheduled appointments filter (client-side - would need horarios processing)
       if (
-        filters.scheduledAppointments?.length > 0 &&
-        !filters.scheduledAppointments.includes("all")
+        filters.scheduledAppointments &&
+        filters.scheduledAppointments !== "all"
       ) {
         // TODO: Implement when horarios data is processed
         // For now, skip this filter
@@ -220,7 +245,7 @@ export function useSearchDoctors({
     data: providers,
     filteredProviders,
     rawDoctors: query.data || [],
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || isTransforming,
     error: query.error,
     isSuccess: query.isSuccess,
     refetch: query.refetch,

@@ -55,23 +55,38 @@ const DoctorCardsComponent = ({
     setFavoriteDialogOpen(true);
   };
 
-  const confirmAddFavorite = async () => {
+  const confirmToggleFavorite = async () => {
     setFavoriteLoading(true);
     try {
-      await doctorService.addDoctorToFavorites(parseInt(doctor.id, 10));
-      setIsFavorite(true);
-      setToast?.({
-        type: "success",
-        message: t("doctorCard.favoriteAdded") || "Doctor agregado a favoritos",
-        open: true,
-      });
+      if (isFavorite) {
+        // Eliminar de favoritos
+        await doctorService.removeDoctorFromFavorites(parseInt(doctor.id, 10));
+        setIsFavorite(false);
+        setToast?.({
+          type: "success",
+          message: t("doctorCard.favoriteRemoved") || "Doctor eliminado de favoritos",
+          open: true,
+        });
+      } else {
+        // Agregar a favoritos
+        await doctorService.addDoctorToFavorites(parseInt(doctor.id, 10));
+        setIsFavorite(true);
+        setToast?.({
+          type: "success",
+          message: t("doctorCard.favoriteAdded") || "Doctor agregado a favoritos",
+          open: true,
+        });
+      }
       setFavoriteDialogOpen(false);
     } catch (err: any) {
-      console.error("Failed to add favorite", err);
+      console.error("Failed to toggle favorite", err);
       setToast?.({
         type: "error",
         message:
-          err?.message || t("doctorCard.favoriteAddError") || "No se pudo agregar a favoritos",
+          err?.message || 
+          (isFavorite 
+            ? t("doctorCard.favoriteRemoveError") || "No se pudo eliminar de favoritos"
+            : t("doctorCard.favoriteAddError") || "No se pudo agregar a favoritos"),
         open: true,
       });
     } finally {
@@ -101,14 +116,21 @@ const DoctorCardsComponent = ({
       <MCDialogBase
         open={favoriteDialogOpen}
         onOpenChange={(o) => setFavoriteDialogOpen(o)}
-        title={t("doctorCard.confirmFavoriteTitle") || "Agregar a favoritos"}
+        title={
+          isFavorite
+            ? t("doctorCard.confirmRemoveFavoriteTitle") || "Eliminar de favoritos"
+            : t("doctorCard.confirmFavoriteTitle") || "Agregar a favoritos"
+        }
         description={
-          t("doctorCard.confirmFavoriteDescription", { name: doctor.name }) ||
-          `¿Deseas agregar a ${doctor.name} a tus favoritos?`
+          isFavorite
+            ? t("doctorCard.confirmRemoveFavoriteDescription", { name: doctor.name }) ||
+              `¿Deseas eliminar a ${doctor.name} de tus favoritos?`
+            : t("doctorCard.confirmFavoriteDescription", { name: doctor.name }) ||
+              `¿Deseas agregar a ${doctor.name} a tus favoritos?`
         }
         confirmText={t("common.confirm") || "Confirmar"}
         secondaryText={t("common.cancel") || "Cancelar"}
-        onConfirm={confirmAddFavorite}
+        onConfirm={confirmToggleFavorite}
         onSecondary={() => setFavoriteDialogOpen(false)}
         variant="confirm"
         loading={favoriteLoading}

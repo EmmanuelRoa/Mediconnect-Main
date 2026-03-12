@@ -99,6 +99,17 @@ export interface CitaServicio {
     estado: string;
     servicioId: number;
   };
+  ubicaciones: {
+    barrio_nombre: string;
+    barrioId: number;
+    direccionCompleta: string;
+    id: number;
+    latitud: number;
+    longitud: number;
+    municipio_nombre: string;
+    nombre: string;
+    provincia_nombre: string;
+  }
 }
 
 /**
@@ -132,6 +143,67 @@ export interface CitaTipoSeguro {
 /**
  * Detalle completo de una cita del backend
  */
+/**
+ * Información del doctor en "Mis Doctores"
+ */
+export interface MyDoctor {
+  id: number;
+  nombre: string;
+  apellido: string;
+  fotoPerfil: string | null;
+  email: string | null;
+  telefono: string | null;
+  calificacionPromedio: number | null;
+  esFavorito: boolean;
+  especialidadPrincipal: {
+    id: number;
+    nombre: string;
+  } | null;
+  anosExperiencia: number | null;
+  idiomas: {
+    nombre: string;
+    nivel: string | null;
+  }[];
+  segurosAceptados: {
+    id: number | null;
+    nombre: string | null;
+    urlImage: string | null;
+    tipoSeguro: {
+      id: number;
+      nombre: string;
+    } | null;
+  }[];
+  totalServiciosActivos: number;
+  ultimaCita: {
+    id: number;
+    fecha: string;
+    estado: string;
+    servicio: {
+      id: number;
+      nombre: string;
+      precio: number | null;
+    } | null;
+  };
+}
+
+/**
+ * Filtros para la lista de Mis Doctores
+ */
+export interface MyDoctorsFilters {
+  target?: string;
+  source?: string;
+  translate_fields?: string;
+}
+
+/**
+ * Respuesta de la API de Mis Doctores
+ */
+export interface MyDoctorsResponse {
+  success: boolean;
+  total: number;
+  data: MyDoctor[];
+}
+
 export interface CitaDetalle {
   id: number;
   doctorId?: number;
