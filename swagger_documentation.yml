@@ -76,6 +76,10 @@ tags:
     description: Permite a los pacientes marcar y gestionar sus doctores favoritos
   - name: Media
     description: Gestión de archivos multimedia (imágenes, audios, videos, documentos, ZIP) para el chat y otros módulos
+  - name: Teleconsultas
+    description: Gestión de teleconsultas médicas por videollamada usando Daily.co como proveedor. El backend actúa como Signaling Server (crea la sala, registra el log y retorna la URL de acceso).
+  - name: Búsqueda
+    description: Endpoint unificado para buscar doctores y centros de salud con o sin filtro geográfico (PostGIS). Acepta filtros combinados por especialidad, idioma, turno, modalidad, seguro y más.
 
 # --- RUTAS (ENDPOINTS) ---
 paths:
@@ -9683,165 +9687,6 @@ paths:
         '500':
           description: Error interno del servidor
 
-  /doctores/cercanos:
-    get:
-      summary: Buscar doctores cercanos (geolocalización)
-      tags:
-        - Doctores
-      description: |
-        Retorna doctores **activos** y **verificados** (`estadoVerificacion = Aprobado`) que tienen
-        al menos una ubicación con coordenadas geográficas dentro del radio indicado.
-
-        Los resultados se ordenan de **menor a mayor distancia**.
-
-        Solo se retornan doctores que han registrado al menos una ubicación con `punto_geografico`.
-
-        **Filtros opcionales:** `especialidadId`, `genero`, `calificacionMin`
-
-        **Traducción Automática:** soportada vía `target` + `translate_fields`
-
-        **Acceso:** Paciente, Doctor, Admin autenticado.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: lat
-          in: query
-          required: true
-          schema:
-            type: number
-          description: Latitud del punto de referencia (-90 a 90)
-          example: 18.4861
-        - name: lng
-          in: query
-          required: true
-          schema:
-            type: number
-          description: Longitud del punto de referencia (-180 a 180)
-          example: -69.9312
-        - name: radio
-          in: query
-          required: false
-          schema:
-            type: number
-            default: 5
-            minimum: 0
-            maximum: 15
-          description: Radio de búsqueda en kilómetros (0–15). Por defecto 5 km
-          example: 5
-        - name: especialidadId
-          in: query
-          required: false
-          schema:
-            type: integer
-          description: Filtrar por ID de especialidad
-          example: 3
-        - name: genero
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [M, F]
-          description: Filtrar por género del doctor
-          example: M
-        - name: calificacionMin
-          in: query
-          required: false
-          schema:
-            type: number
-            minimum: 0
-            maximum: 5
-          description: Calificación promedio mínima (0–5)
-          example: 4
-        - name: target
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Idioma destino para traducción automática
-          example: "en"
-        - name: source
-          in: query
-          required: false
-          schema:
-            type: string
-            default: "es"
-          description: Idioma origen para traducción
-          example: "es"
-        - name: translate_fields
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Campos a traducir separados por coma
-          example: "biografia,nombre"
-      responses:
-        '200':
-          description: Lista de doctores cercanos ordenados por distancia
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  total:
-                    type: integer
-                    description: Número de doctores encontrados
-                    example: 3
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        usuarioId:
-                          type: integer
-                          example: 6
-                        nombre:
-                          type: string
-                          example: "Juan"
-                        apellido:
-                          type: string
-                          example: "Aramboles"
-                        calificacionPromedio:
-                          type: number
-                          nullable: true
-                          example: 4.5
-                        distanciaMetros:
-                          type: integer
-                          description: Distancia en metros desde el punto de referencia
-                          example: 1200
-                        especialidades:
-                          type: array
-                          items:
-                            type: object
-                        ubicaciones:
-                          type: array
-                          items:
-                            type: object
-                        servicios:
-                          type: array
-                          items:
-                            type: object
-                        segurosAceptados:
-                          type: array
-                          items:
-                            type: object
-                        usuario:
-                          type: object
-                          properties:
-                            email:
-                              type: string
-                            telefono:
-                              type: string
-                              nullable: true
-                            fotoPerfil:
-                              type: string
-                              nullable: true
-        '400':
-          description: Parámetros lat, lng o radio inválidos
-        '401':
-          description: No autenticado
 
   /doctores/comparar:
 
@@ -14273,81 +14118,88 @@ paths:
       tags:
         - Notificaciones
       description: |
-        Obtiene las notificaciones del usuario autenticado con soporte para filtros y paginación.
-        
-        **Traducción Automática:**
-        Este endpoint soporta traducción automática de campos. Agrega los siguientes parámetros de query:
-        
-        - `target`: Idioma destino (ej: en, fr, de)
+        Obtiene las notificaciones del usuario autenticado, ordenadas por `creadoEn` DESC.
 
-        - `source`: Idioma origen (opcional, default: es)
+        Las notificaciones son generadas automáticamente por el sistema en respuesta a eventos
+        como nuevas citas, mensajes, cambios de estado, etc. — y se emiten en tiempo real
+        vía **WebSocket** al canal privado del usuario.
 
-        - `translate_fields`: Campos a traducir separados por coma (ej: titulo,mensaje)
-        
-        Ejemplo: `/api/notificaciones?target=en&translate_fields=titulo,mensaje`
-        
+        **Filtros disponibles:**
+        - `leidas=false` → solo no leídas (para el panel de campana)
+        - `tipoAlerta` → filtrar por severidad
+        - `tipoEntidad` → filtrar por módulo (Cita, Mensaje, etc.)
+        - `limite` / `offset` → paginación
+
+        **Traducción automática:**
+        Agrega `?target=en&translate_fields=titulo,mensaje` para traducir los textos.
       security:
         - bearerAuth: []
       parameters:
-        - name: usuarioId
-          in: query
-          schema:
-            type: integer
-          description: ID del usuario (temporal, en producción viene del JWT)
-          example: 1
         - name: leidas
           in: query
           schema:
             type: boolean
-          description: Filtrar por notificaciones leídas (true) o no leídas (false)
+          description: "false = solo no leídas · omitir = todas"
           example: false
         - name: tipoAlerta
           in: query
           schema:
             type: string
-            enum: ["Informacion", "Advertencia", "Error", "Exito"]
-          description: Filtrar por tipo de alerta
-          example: "Informacion"
+            enum:
+              - Informacion
+              - Advertencia
+              - Atencion
+              - Exito
+              - Importante
+              - Urgente
+          description: Filtrar por tipo/severidad de la alerta
+          example: Informacion
         - name: tipoEntidad
           in: query
           schema:
             type: string
-            enum: ["Cita", "Mensaje", "Resena", "Usuario", "Sistema"]
-          description: Filtrar por tipo de entidad relacionada
-          example: "Cita"
+            enum:
+              - Cita
+              - Teleconsulta
+              - Alianza
+              - Resena
+              - Perfil
+              - Mensaje
+          description: Filtrar por módulo relacionado
+          example: Cita
         - name: limite
           in: query
           schema:
             type: integer
             default: 50
             maximum: 100
-          description: Número máximo de resultados por página
+          description: Máximo de resultados (default 50)
           example: 20
         - name: offset
           in: query
           schema:
             type: integer
             default: 0
-          description: Número de resultados a omitir (para paginación)
+          description: Resultados a omitir (paginación)
           example: 0
         - name: target
           in: query
           schema:
             type: string
-          description: "Idioma destino para traducción automática (activa la traducción)"
-          example: "en"
+          description: Idioma destino para traducción automática (ej. en, fr)
+          example: en
         - name: source
           in: query
           schema:
             type: string
-            default: "es"
+            default: es
           description: Idioma origen para traducción automática
-          example: "es"
+          example: es
         - name: translate_fields
           in: query
           schema:
             type: string
-          description: Campos a traducir separados por coma (ej titulo,mensaje)
+          description: Campos a traducir separados por coma
           example: "titulo,mensaje"
       responses:
         '200':
@@ -14357,9 +14209,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  mensaje:
-                    type: string
-                    example: "Notificaciones obtenidas exitosamente"
+                  success:
+                    type: boolean
+                    example: true
                   data:
                     type: object
                     properties:
@@ -14367,171 +14219,12 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Notificacion'
-                      total:
-                        type: integer
-                        example: 10
                       noLeidas:
                         type: integer
+                        description: Total de notificaciones no leídas del usuario
                         example: 3
-        '400':
-          description: Parámetros inválidos
-        '500':
-          description: Error interno del servidor
-
-    post:
-      summary: Crear una nueva notificación
-      tags:
-        - Notificaciones
-      description: Crea una nueva notificación para un usuario. La notificación se enviará automáticamente en tiempo real vía WebSocket si el usuario está conectado.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - usuarioId
-                - titulo
-                - mensaje
-              properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                  description: ID del usuario destinatario
-                titulo:
-                  type: string
-                  maxLength: 100
-                  example: "Nueva cita programada"
-                  description: Título de la notificación (máximo 100 caracteres)
-                mensaje:
-                  type: string
-                  example: "Tu cita con el Dr. Pérez está confirmada para mañana a las 10:00 AM"
-                  description: Contenido del mensaje
-                tipoAlerta:
-                  type: string
-                  enum: ["Informacion", "Advertencia", "Error", "Exito"]
-                  default: "Informacion"
-                  example: "Exito"
-                  description: Tipo de alerta para el estilo visual
-                tipoEntidad:
-                  type: string
-                  enum: ["Cita", "Mensaje", "Resena", "Usuario", "Sistema"]
-                  nullable: true
-                  example: "Cita"
-                  description: Tipo de entidad relacionada (opcional)
-                entidadId:
-                  type: integer
-                  nullable: true
-                  example: 123
-                  description: ID de la entidad relacionada (opcional)
-      responses:
-        '201':
-          description: Notificación creada exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-                    example: "Notificación creada exitosamente"
-                  data:
-                    $ref: '#/components/schemas/Notificacion'
-        '400':
-          description: Datos inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Error interno del servidor
-
-  /notificaciones/{id}:
-    get:
-      summary: Obtener notificación por ID
-      tags:
-        - Notificaciones
-      description: Obtiene los detalles de una notificación específica. Solo puede acceder el usuario propietario.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la notificación
-          example: 1
-        - name: usuarioId
-          in: query
-          schema:
-            type: integer
-          description: ID del usuario (temporal)
-          example: 1
-      responses:
-        '200':
-          description: Notificación obtenida exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-                    example: "Notificación obtenida exitosamente"
-                  data:
-                    $ref: '#/components/schemas/Notificacion'
-        '400':
-          description: ID o usuarioId inválido
-        '404':
-          description: No tienes permiso para acceder a esta notificación
-        '500':
-          description: Error interno del servidor
-
-  /notificaciones/{id}/leer:
-    patch:
-      summary: Marcar notificación como leída
-      tags:
-        - Notificaciones
-      description: Marca una notificación específica como leída. Actualiza el contador de no leídas en tiempo real.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID de la notificación
-          example: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - usuarioId
-              properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                  description: ID del usuario
-      responses:
-        '200':
-          description: Notificación marcada como leída
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-                    example: "Notificación marcada como leída"
-                  data:
-                    $ref: '#/components/schemas/Notificacion'
+                      total:
+                        type: integer
         '404':
           description: Notificación no encontrada o sin permiso
         '500':
@@ -14542,7 +14235,9 @@ paths:
       summary: Marcar varias notificaciones como leídas
       tags:
         - Notificaciones
-      description: Marca múltiples notificaciones como leídas en una sola operación.
+      description: |
+        Marca un conjunto específico de notificaciones como leídas en una sola operación.
+        Devuelve la cantidad marcada y el nuevo contador de no leídas.
       security:
         - bearerAuth: []
       requestBody:
@@ -14552,17 +14247,13 @@ paths:
             schema:
               type: object
               required:
-                - usuarioId
                 - notificacionesIds
               properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                  description: ID del usuario
                 notificacionesIds:
                   type: array
                   items:
                     type: integer
+                  minItems: 1
                   example: [1, 2, 3, 4, 5]
                   description: Array de IDs de notificaciones a marcar como leídas
       responses:
@@ -14573,17 +14264,26 @@ paths:
               schema:
                 type: object
                 properties:
-                  mensaje:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
                     type: string
-                    example: "5 notificaciones marcadas como leídas"
+                    example: "5 notificaciones marcadas como leídas."
                   data:
                     type: object
                     properties:
                       cantidadMarcadas:
                         type: integer
                         example: 5
+                      noLeidas:
+                        type: integer
+                        description: Nuevo total de no leídas tras la operación
+                        example: 2
         '400':
-          description: Datos inválidos
+          description: "notificacionesIds debe ser un array con al menos un ID"
+        '401':
+          description: No autenticado
         '500':
           description: Error interno del servidor
 
@@ -14592,41 +14292,33 @@ paths:
       summary: Marcar todas las notificaciones como leídas
       tags:
         - Notificaciones
-      description: Marca todas las notificaciones no leídas del usuario como leídas.
+      description: |
+        Marca todas las notificaciones no leídas del usuario autenticado.
+        Ideal para el botón "Marcar todo como leído".
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - usuarioId
-              properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                  description: ID del usuario
       responses:
         '200':
-          description: Notificaciones marcadas exitosamente
+          description: Todas las notificaciones marcadas como leídas
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  mensaje:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
                     type: string
-                    example: "10 notificaciones marcadas como leídas"
+                    example: "10 notificaciones marcadas como leídas."
                   data:
                     type: object
                     properties:
                       cantidadMarcadas:
                         type: integer
                         example: 10
-        '400':
-          description: usuarioId requerido
+        '401':
+          description: No autenticado
         '500':
           description: Error interno del servidor
 
@@ -14635,17 +14327,11 @@ paths:
       summary: Contar notificaciones no leídas
       tags:
         - Notificaciones
-      description: Obtiene el número de notificaciones no leídas del usuario.
+      description: |
+        Devuelve el número de notificaciones no leídas del usuario autenticado.
+        Útil para el **badge** en el icono de campana del frontend.
       security:
         - bearerAuth: []
-      parameters:
-        - name: usuarioId
-          in: query
-          required: true
-          schema:
-            type: integer
-          description: ID del usuario
-          example: 1
       responses:
         '200':
           description: Contador obtenido exitosamente
@@ -14654,74 +14340,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  mensaje:
-                    type: string
-                    example: "Contador obtenido exitosamente"
+                  success:
+                    type: boolean
+                    example: true
                   data:
                     type: object
                     properties:
                       contador:
                         type: integer
                         example: 5
-        '400':
-          description: usuarioId requerido
+        '401':
+          description: No autenticado
         '500':
           description: Error interno del servidor
 
-  /notificaciones/eliminar-varias:
-    delete:
-      summary: Eliminar varias notificaciones
+  /notificaciones/{id}/leer:
+    patch:
+      summary: Marcar una notificación como leída
       tags:
         - Notificaciones
-      description: Elimina (desactiva) múltiples notificaciones en una sola operación.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - usuarioId
-                - notificacionesIds
-              properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                notificacionesIds:
-                  type: array
-                  items:
-                    type: integer
-                  example: [1, 2, 3]
-      responses:
-        '200':
-          description: Notificaciones eliminadas exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-                    example: "3 notificaciones eliminadas exitosamente"
-                  data:
-                    type: object
-                    properties:
-                      cantidadEliminadas:
-                        type: integer
-                        example: 3
-        '400':
-          description: Datos inválidos
-        '500':
-          description: Error interno del servidor
-
-  /notificaciones/{id}:
-    delete:
-      summary: Eliminar una notificación
-      tags:
-        - Notificaciones
-      description: Elimina (desactiva) una notificación específica del usuario.
+      description: |
+        Marca una notificación específica como leída y emite el contador actualizado
+        en tiempo real vía **WebSocket**.
       security:
         - bearerAuth: []
       parameters:
@@ -14731,20 +14371,50 @@ paths:
           schema:
             type: integer
           description: ID de la notificación
-          example: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - usuarioId
-              properties:
-                usuarioId:
-                  type: integer
-                  example: 1
-                  description: ID del usuario
+          example: 42
+      responses:
+        '200':
+          description: Notificación marcada como leída
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Notificación marcada como leída."
+                  data:
+                    $ref: '#/components/schemas/Notificacion'
+        '400':
+          description: ID de notificación inválido
+        '401':
+          description: No autenticado
+        '404':
+          description: Notificación no encontrada o sin permiso
+        '500':
+          description: Error interno del servidor
+
+  /notificaciones/{id}:
+    delete:
+      summary: Eliminar una notificación
+      tags:
+        - Notificaciones
+      description: |
+        Soft-delete de la notificación (estado → `Inactivo`).
+        Solo el propietario puede eliminarla.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la notificación a eliminar
+          example: 42
       responses:
         '200':
           description: Notificación eliminada exitosamente
@@ -14753,15 +14423,21 @@ paths:
               schema:
                 type: object
                 properties:
-                  mensaje:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
                     type: string
-                    example: "Notificación eliminada exitosamente"
+                    example: "Notificación eliminada exitosamente."
         '400':
-          description: usuarioId requerido
+          description: ID de notificación inválido
+        '401':
+          description: No autenticado
         '404':
           description: Notificación no encontrada o sin permiso
         '500':
           description: Error interno del servidor
+
 
   # --- CONVERSACIONES ENDPOINTS ---
   /conversaciones:
@@ -18442,6 +18118,512 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ================================================================
+  # TELECONSULTAS
+  # ================================================================
+
+  /teleconsultas/{citaId}/iniciar:
+    post:
+      summary: Iniciar una teleconsulta (videollamada)
+      tags:
+        - Teleconsultas
+      description: |
+        Permite al **Doctor** autenticado iniciar una teleconsulta para una cita médica.
+
+        **Flujo interno:**
+        1. Verifica que la cita exista y pertenezca al doctor autenticado.
+        2. Comprueba que el estado de la cita sea `Programada`.
+        3. Valida que no sea más de **15 minutos antes** del inicio programado (sin límite de tiempo posterior mientras la cita siga `Programada`).
+        4. Busca o crea la `Conversacion` entre doctor y paciente.
+        5. Crea una sala privada en **Daily.co** y genera dos tokens:
+           - **Owner token** para el doctor (`urlAcceso` en la respuesta).
+           - **Participant token** para el paciente (guardado en `LogTeleconsulta.urlPaciente`; el paciente lo obtiene via `GET /{citaId}/url-acceso`).
+        6. Registra el `LogTeleconsulta` con estado `Iniciada`, guardando ambas URLs.
+        7. Cambia el estado de la `Cita` a `En curso`.
+        8. Notifica al paciente en tiempo real vía WebSocket con el enlace de acceso.
+
+        **Acceso:** Solo el Doctor dueño de la cita.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: citaId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: ID de la cita que se desea iniciar como teleconsulta.
+          example: 42
+      responses:
+        '200':
+          description: Teleconsulta iniciada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Teleconsulta iniciada exitosamente.
+                  data:
+                    $ref: '#/components/schemas/IniciarTeleconsultaResponse'
+        '400':
+          description: |
+            Alguna de estas condiciones:
+            - La cita no está en estado `Programada`.
+            - El doctor intenta iniciar más de 15 minutos antes de la hora programada.
+            - `citaId` inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado (JWT inválido o ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No autorizado — el doctor no es el dueño de la cita o el rol no es Doctor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cita no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Error al comunicarse con la API de Daily.co (proveedor externo)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teleconsultas/{citaId}/finalizar:
+    post:
+      summary: Finalizar una teleconsulta (colgar la llamada)
+      tags:
+        - Teleconsultas
+      description: |
+        Permite al **Doctor** o al **Paciente** finalizar una teleconsulta activa (colgar la videollamada).
+
+        **Flujo interno:**
+        1. Verifica que la cita exista y que el usuario sea el doctor o el paciente de dicha cita.
+        2. Busca el registro `LogTeleconsulta` activo (estado `Iniciada`) para esa cita.
+        3. Calcula la duración: `fechaFin = ahora`, `duracionMinutos = ceil((fin - inicio) / 60_000)`.
+        4. Actualiza `LogTeleconsulta`: guarda `fin`, `duracionMinutos` y cambia estado a `Finalizada`.
+        5. Destruye la sala de Daily.co (DELETE a su API) de forma segura — si ya no existe, no lanza error.
+        6. Emite el evento WebSocket **`llamada-finalizada`** al canal `cita:{citaId}` para que el frontend del otro extremo cierre la pantalla de video.
+        7. Retorna la duración de la llamada.
+
+        **Acceso:** Doctor o Paciente autenticados y participantes en la cita.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: citaId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: ID de la cita cuya teleconsulta se desea finalizar.
+          example: 42
+      responses:
+        '200':
+          description: Teleconsulta finalizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Teleconsulta finalizada. Duración: 28 minuto(s)."
+                  data:
+                    $ref: '#/components/schemas/FinalizarTeleconsultaResponse'
+        '400':
+          description: |
+            Alguna de estas condiciones:
+            - No existe un `LogTeleconsulta` en estado `Iniciada` para esta cita.
+            - `citaId` inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado (JWT inválido o ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No autorizado — el usuario no es el doctor ni el paciente de la cita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cita no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teleconsultas/{citaId}/url-acceso:
+    get:
+      summary: Obtener URL de acceso del paciente a la teleconsulta
+      tags:
+        - Teleconsultas
+      description: |
+        Permite al **Paciente** obtener su URL personal de acceso a la sala de videollamada.
+
+        La URL ya incluye un **participant token** de Daily.co, generado cuando el doctor inició
+        la sala. Sin este token la sala privada rechazaría el acceso.
+
+        El endpoint retorna **404** si el doctor aún no ha iniciado la sala.
+
+        **Acceso:** Solo el Paciente dueño de la cita.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: citaId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: ID de la cita médica.
+          example: 15
+      responses:
+        '200':
+          description: URL de acceso obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: URL de acceso obtenida exitosamente.
+                  data:
+                    type: object
+                    properties:
+                      urlAcceso:
+                        type: string
+                        format: uri
+                        description: URL de Daily.co con participant token incluido
+                        example: "https://mediconnect-cita.daily.co/MediConnect-cita-15-1773...?t=PARTICIPANT_TOKEN"
+                      citaId:
+                        type: integer
+                        example: 15
+                      estado:
+                        type: string
+                        example: Iniciada
+                      inicio:
+                        type: string
+                        format: date-time
+                        example: "2026-03-10T17:00:00.000Z"
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El usuario no es el Paciente de esta cita o no tiene el rol Paciente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cita no encontrada o el doctor aún no ha iniciado la teleconsulta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─── Búsqueda Unificada ────────────────────────────────────────────────────
+  /busqueda/cercanos:
+    get:
+      summary: Búsqueda unificada de doctores y centros de salud
+      tags:
+        - Búsqueda
+      description: |
+        Endpoint unificado que devuelve **doctores** y **centros de salud** en una sola respuesta.
+        Las dos consultas se ejecutan **en paralelo** para maximizar el rendimiento.
+
+        **Filtro geográfico:** Si se pasan `lat` y `lng`, se aplica un radio de búsqueda con PostGIS (`ST_DWithin`).
+        Si se omiten, se devuelven todos los registros activos sin filtro de distancia.
+
+        **Tipo:** Usa el parámetro `tipo` para limitar la respuesta a solo doctores o solo centros.
+
+        **Auth opcional:** Si se envía un token JWT de paciente, los doctores incluirán el campo `esFavorito`.
+
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: nombre
+          in: query
+          required: false
+          schema: { type: string, example: "García" }
+          description: |
+            Búsqueda de texto libre (case-insensitive):
+            - **Doctores:** coincide con `nombre`, `apellido` o nombre de especialidad asociada.
+            - **Centros:** coincide con `nombreComercial`.
+        - name: lat
+          in: query
+          required: false
+          schema: { type: number, example: 18.4861 }
+          description: Latitud del punto de referencia (−90 a 90). Si se omite, no aplica filtro geográfico.
+        - name: lng
+          in: query
+          required: false
+          schema: { type: number, example: -69.9312 }
+          description: Longitud del punto de referencia (−180 a 180).
+        - name: radio
+          in: query
+          required: false
+          schema: { type: number, default: 5, maximum: 50 }
+          description: Radio de búsqueda en km (máx 50). Ignorado si no hay coordenadas.
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Doctor, CentroSalud]
+          description: Filtra el tipo de resultado. Si se omite, devuelve ambos.
+        # ── Filtros Doctor ────────────────────────────────────────────────────
+        - name: especialidadId
+          in: query
+          required: false
+          schema: { type: integer }
+          description: ID de especialidad médica.
+        - name: genero
+          in: query
+          required: false
+          schema: { type: string, enum: [M, F] }
+          description: Género del doctor.
+        - name: calificacionMin
+          in: query
+          required: false
+          schema: { type: number, minimum: 0, maximum: 5 }
+          description: Calificación promedio mínima (0–5).
+        - name: idioma
+          in: query
+          required: false
+          schema: { type: string, example: inglés }
+          description: Nombre del idioma que debe hablar el doctor (case-insensitive).
+        - name: anosExperienciaMin
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0 }
+          description: Años mínimos de experiencia del doctor.
+        - name: turno
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [manana, tarde, noche]
+          description: |
+            Turno del servicio basado en `horaInicio` de los horarios activos:
+            - `manana`: 06:00–12:00
+            - `tarde`: 12:00–18:00
+            - `noche`: 18:00–24:00
+        - name: modalidad
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Presencial, Virtual, Domicilio]
+          description: Modalidad del servicio ofrecido por el doctor.
+        - name: seguroId
+          in: query
+          required: false
+          schema: { type: integer }
+          description: ID del seguro médico que el doctor acepta.
+        - name: soloFavoritos
+          in: query
+          required: false
+          schema: { type: boolean }
+          description: Si `true` (y el token es de Paciente), solo devuelve doctores marcados como favoritos.
+        # ── Filtros Centro ────────────────────────────────────────────────────
+        - name: tipoCentroId
+          in: query
+          required: false
+          schema: { type: integer }
+          description: ID del tipo de centro de salud.
+        - name: estadoVerificacion
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Aprobado, "En revisión"]
+            default: Aprobado
+          description: Estado de verificación de los centros (default `Aprobado`).
+        # ── Traducción ────────────────────────────────────────────────────────
+        - name: target
+          in: query
+          required: false
+          schema: { type: string, example: en }
+          description: Código de idioma destino para traducción automática.
+        - name: source
+          in: query
+          required: false
+          schema: { type: string, example: es }
+          description: Idioma fuente (default `es`).
+        - name: translate_fields
+          in: query
+          required: false
+          schema: { type: string }
+          description: Campos a traducir separados por coma.
+      responses:
+        '200':
+          description: Resultados obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  total:
+                    type: object
+                    properties:
+                      doctores:
+                        type: integer
+                        example: 4
+                      centros:
+                        type: integer
+                        example: 2
+                  doctores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        nombre:
+                          type: string
+                        apellido:
+                          type: string
+                        fotoPerfil:
+                          type: string
+                          nullable: true
+                        calificacionPromedio:
+                          type: number
+                          nullable: true
+                        anosExperiencia:
+                          type: integer
+                          nullable: true
+                        especialidades:
+                          type: array
+                          items:
+                            type: object
+                        idiomas:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              nombre: { type: string }
+                              nivel: { type: string, nullable: true }
+                        servicios:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id: { type: integer }
+                              nombre: { type: string }
+                              precio: { type: number, nullable: true }
+                              modalidad: { type: string }
+                        segurosAceptados:
+                          type: array
+                          items:
+                            type: object
+                        esFavorito:
+                          type: boolean
+                          description: Solo presente si el token JWT corresponde a un Paciente.
+                        distanciaMetros:
+                          type: integer
+                          nullable: true
+                          description: Distancia en metros. `null` si no se proporcionaron coordenadas.
+                  centros:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        usuarioId:
+                          type: integer
+                        nombreComercial:
+                          type: string
+                        foto_perfil:
+                          type: string
+                          nullable: true
+                        sitio_web:
+                          type: string
+                          nullable: true
+                        descripcion:
+                          type: string
+                          nullable: true
+                        tipoCentro:
+                          type: object
+                          properties:
+                            id: { type: integer }
+                            nombre: { type: string }
+                        ubicacion:
+                          type: object
+                          properties:
+                            id: { type: integer }
+                            direccion: { type: string, nullable: true }
+                            latitud: { type: number, nullable: true }
+                            longitud: { type: number, nullable: true }
+                            direccionCompleta: { type: string, nullable: true }
+                        distanciaMetros:
+                          type: integer
+                          nullable: true
+        '400':
+          description: Parámetros de coordenadas o radio inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # ─── Media ───────────────────────────────────────────────────────────────
@@ -18653,6 +18835,76 @@ components:
                 fotoPerfil:
                   type: string
                   nullable: true
+
+    IniciarTeleconsultaResponse:
+      type: object
+      description: Respuesta al iniciar una teleconsulta exitosamente (solo para el Doctor)
+      properties:
+        urlAcceso:
+          type: string
+          format: uri
+          description: |
+            URL de Daily.co con **owner token** incluido. Solo para el Doctor.
+            El paciente obtiene su propia URL via `GET /teleconsultas/{citaId}/url-acceso`.
+          example: "https://mediconnect-cita.daily.co/MediConnect-cita-42-1741583035000?t=OWNER_TOKEN"
+        logId:
+          type: integer
+          description: ID del registro LogTeleconsulta creado en la base de datos
+          example: 7
+
+    FinalizarTeleconsultaResponse:
+      type: object
+      description: Respuesta al finalizar una teleconsulta exitosamente
+      properties:
+        duracionMinutos:
+          type: integer
+          description: Duración real de la llamada en minutos (redondeado hacia arriba)
+          example: 28
+
+    LogTeleconsulta:
+      type: object
+      description: Registro de log de una teleconsulta médica
+      properties:
+        id:
+          type: integer
+          example: 7
+        citaId:
+          type: integer
+          description: ID de la cita asociada
+          example: 42
+        conversacionId:
+          type: integer
+          description: ID de la conversación entre doctor y paciente
+          example: 15
+        inicio:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio de la teleconsulta (UTC)
+          example: "2026-03-10T05:00:00.000Z"
+        fin:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha y hora de fin (null si aún está activa)
+          example: null
+        duracionMinutos:
+          type: integer
+          nullable: true
+          description: Duración real en minutos (null hasta que finalice)
+          example: null
+        salaReunion:
+          type: string
+          nullable: true
+          description: Nombre de la sala en Daily.co
+          example: "MediConnect-cita-42-1741583035000"
+        estado:
+          type: string
+          enum: ["Iniciada", "Finalizada", "Fallida"]
+          example: "Iniciada"
+        creadoEn:
+          type: string
+          format: date-time
+          example: "2026-03-10T05:00:00.000Z"
 
     Paginacion:
       type: object

@@ -245,7 +245,7 @@ function ServiceScheduleStep({ isEditMode = false }: { isEditMode?: boolean }) {
         </div>
       )}
 
-      <ManageSchedule onScheduleCreated={loadSchedules} readonly={!isEditMode}>
+      <ManageSchedule onScheduleCreated={loadSchedules}>
         <MCButton className="w-full rounded-xl mt-6" variant="tercero">
           {t("createService.schedule.addSchedule")}
         </MCButton>

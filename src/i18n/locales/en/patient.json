@@ -417,6 +417,20 @@
     }
   },
   "appointment": {
+    "patient": {
+      "name": "Full Name",
+      "age": "Age",
+      "bloodType": "Blood Type",
+      "height": "Height",
+      "weight": "Weight",
+      "contactInfo": "Contact Information",
+      "email": "Email",
+      "phone": "Phone",
+      "medicalInfo": "Medical Information",
+      "allergies": "Allergies",
+      "conditions": "Conditions"
+    },
+    "patientDetailsTab": "Patient Details",
     "detailsTitle": "Appointment Details",
     "detailsTab": "Appointment details",
     "historyTab": "History",

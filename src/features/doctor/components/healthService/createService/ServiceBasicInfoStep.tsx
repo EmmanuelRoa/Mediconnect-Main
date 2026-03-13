@@ -12,6 +12,7 @@ import MCSelect from "@/shared/components/forms/MCSelect";
 import MCInput from "@/shared/components/forms/MCInput";
 import { useEffect, useRef, useState } from "react";
 import { especialidadesService } from "@/features/onboarding/services/especialidades.service";
+import { formatCurrency } from "@/utils/formatCurrency";
 import type { SelectOption } from "@/features/onboarding/services/especialidades.types";
 import i18n from "@/i18n/config";
 
@@ -275,6 +276,7 @@ function ServiceBasicInfoStep() {
               internalTitle={t("form.pricePerSession")}
               internalPlaceholder={t("form.pricePerSessionPlaceholder")}
               displayMode="value"
+              customDisplayValue={formatCurrency(createServiceData.pricePerSession)}
             />
           </PriceModal>
         </div>

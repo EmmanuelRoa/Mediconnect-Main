@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useDoctorServicesStats } from "@/lib/hooks/useDoctorStats";
 import MyServicesTable from "../components/healthService/MyServicesTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
@@ -40,8 +41,6 @@ import { ROUTES } from "@/router/routes";
 import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services";
 import { useAppStore } from "@/stores/useAppStore";
 import type { GetServicesOfDoctor } from "@/shared/navigation/userMenu/editProfile/doctor/services";
-import i18n from "@/i18n/config";
-
 const ITEMS_PER_PAGE = 8;
 const TABLE_PAGE_SIZE = 15;
 
@@ -57,12 +56,20 @@ interface MyServiceFilters {
 
 function MyServicesPage() {
   const { t } = useTranslation("doctor");
+  const { i18n } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   const user = useAppStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
   const [services, setServices] = useState<GetServicesOfDoctor[]>([]);
+
+  // Hook para obtener estadísticas de servicios desde la API
+  const { 
+    data: servicesStats, 
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useDoctorServicesStats();
 
   // Estados de vista y filtros
   const [showCards, setShowCards] = useState(() => {
@@ -114,7 +121,7 @@ function MyServicesPage() {
     };
 
     loadServices();
-  }, [user?.id]);
+  }, [user?.id, i18n.language]);
 
   // Contar filtros activos
   const activeFiltersCount = useMemo(() => {
@@ -586,51 +593,100 @@ function MyServicesPage() {
     />
   );
 
-  // Métricas
+  // Métricas obtenidas de la API
   const metrics = useMemo(() => {
-    const activeServices = filteredServices.filter(
-      (s) => s.estado.toLowerCase() === "activo"
-    ).length;
-    const inactiveServices = filteredServices.filter(
-      (s) => s.estado.toLowerCase() === "inactivo"
-    ).length;
-    const avgRating =
-      filteredServices.length > 0
-        ? (
-            filteredServices.reduce(
-              (acc, s) => acc + (s.calificacionPromedio || 0),
-              0
-            ) / filteredServices.length
-          ).toFixed(2)
-        : "0.00";
+    // Mostrar valores por defecto mientras se cargan
+    if (isLoadingStats) {
+      return [
+        {
+          title: t("services.metrics.activeServices"),
+          value: "...",
+          subtitle: t("services.metrics.activeServicesSubtitle"),
+          icon: <CheckCircle />,
+          isLoading: true,
+        },
+        {
+          title: t("services.metrics.inactiveServices"),
+          value: "...",
+          subtitle: t("services.metrics.inactiveServicesSubtitle"),
+          icon: <Ban />,
+          isLoading: true,
+        },
+        {
+          title: t("services.metrics.averageRating"),
+          value: "...",
+          subtitle: t("services.metrics.averageRatingSubtitle"),
+          icon: <Star />,
+          isLoading: true,
+        },
+        {
+          title: t("services.metrics.totalRegistered"),
+          value: "...",
+          subtitle: t("services.metrics.totalRegisteredSubtitle"),
+          icon: <Layers />,
+          isLoading: true,
+        },
+      ];
+    }
 
+    // Mostrar datos de la API
+    if (servicesStats) {
+      return [
+        {
+          title: t("services.metrics.activeServices"),
+          value: servicesStats.serviciosActivos,
+          subtitle: t("services.metrics.activeServicesSubtitle"),
+          icon: <CheckCircle />,
+        },
+        {
+          title: t("services.metrics.inactiveServices"),
+          value: servicesStats.serviciosInactivos,
+          subtitle: t("services.metrics.inactiveServicesSubtitle"),
+          icon: <Ban />,
+        },
+        {
+          title: t("services.metrics.averageRating"),
+          value: servicesStats.promedioRating.toFixed(2),
+          subtitle: t("services.metrics.averageRatingSubtitle"),
+          icon: <Star />,
+        },
+        {
+          title: t("services.metrics.totalRegistered"),
+          value: servicesStats.totalServicios,
+          subtitle: t("services.metrics.totalRegisteredSubtitle"),
+          icon: <Layers />,
+        },
+      ];
+    }
+
+    // Fallback si hay error o no hay datos
     return [
       {
         title: t("services.metrics.activeServices"),
-        value: activeServices,
+        value: 0,
         subtitle: t("services.metrics.activeServicesSubtitle"),
         icon: <CheckCircle />,
       },
       {
         title: t("services.metrics.inactiveServices"),
-        value: inactiveServices,
+        value: 0,
         subtitle: t("services.metrics.inactiveServicesSubtitle"),
         icon: <Ban />,
       },
       {
         title: t("services.metrics.averageRating"),
-        value: avgRating,
+        value: "0.00",
         subtitle: t("services.metrics.averageRatingSubtitle"),
         icon: <Star />,
       },
       {
         title: t("services.metrics.totalRegistered"),
-        value: filteredServices.length,
+        value: 0,
         subtitle: t("services.metrics.totalRegisteredSubtitle"),
         icon: <Layers />,
       },
     ];
-  }, [filteredServices, t]);
+  }, [servicesStats, isLoadingStats, t]);
 
   return (
     <MCTablesLayouts

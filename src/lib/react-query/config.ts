@@ -116,6 +116,14 @@ export const QUERY_KEYS = {
     ['insurances', 'accepted', language].filter(Boolean),
   INSURANCE_TYPES: (language?: string) => 
     ['insurances', 'types', language].filter(Boolean),
+
+  // Doctor Stats
+  DOCTOR_STATS_RESUMEN: ['doctor', 'stats', 'resumen'],
+  DOCTOR_STATS_PRODUCTIVIDAD: ['doctor', 'stats', 'productividad'],
+  DOCTOR_STATS_SERVICIOS_UTILIZADOS: ['doctor', 'stats', 'servicios-utilizados'],
+  DOCTOR_STATS_CITAS: ['doctor', 'stats', 'citas'],
+  DOCTOR_STATS_PACIENTES: ['doctor', 'stats', 'pacientes'],
+  DOCTOR_STATS_SERVICIOS: ['doctor', 'stats', 'servicios'],
 } as const;
 
 export default queryClient;

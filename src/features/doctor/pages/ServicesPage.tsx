@@ -29,6 +29,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { Skeleton } from "@/shared/ui/skeleton";
 import i18n from "@/i18n/config";
 import { useStartConversation } from "@/lib/hooks/useStartConversation";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 const PATIENT_PROFILE_PUBLIC = "/patient/profile/:patientId";
 const DOCTOR_PROFILE = "/doctor/profile/:doctorId";
@@ -523,7 +524,7 @@ function ServicesPage() {
                 <div className="text-center space-y-4">
                   <div>
                     <span className="text-xl sm:text-2xl font-heading text-foreground">
-                      RD${serviceData.precio.toLocaleString()}
+                      {formatCurrency(serviceData.precio)}
                     </span>
                     <span className="text-muted-foreground font-body text-xs sm:text-sm ml-1">
                       {t("service.perPatient", "por paciente")}

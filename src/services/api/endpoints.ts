@@ -163,6 +163,16 @@ export const API_ENDPOINTS = {
   SEGUROS: {
     ACEPTADOS: '/seguros/seguros-aceptados',
   },
+
+  // --- ESTADÍSTICAS DEL DOCTOR ---
+  DOCTOR_STATS: {
+    RESUMEN: '/doctores/estadisticas/resumen',
+    PRODUCTIVIDAD: '/doctores/estadisticas/productividad',
+    SERVICIOS_UTILIZADOS: '/doctores/estadisticas/servicios-mas-utilizados',
+    CITAS: '/doctores/estadisticas/citas',
+    PACIENTES: '/doctores/estadisticas/pacientes',
+    SERVICIOS: '/doctores/estadisticas/servicios',
+  },
 } as const;
 
 export default API_ENDPOINTS;

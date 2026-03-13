@@ -317,6 +317,20 @@
     }
   },
   "appointment": {
+    "patient": {
+      "name": "Nombre Completo",
+      "age": "Edad",
+      "bloodType": "Tipo de Sangre",
+      "height": "Altura",
+      "weight": "Peso",
+      "contactInfo": "Información de Contacto",
+      "email": "Email",
+      "phone": "Teléfono",
+      "medicalInfo": "Información Médica",
+      "allergies": "Alergias",
+      "conditions": "Condiciones"
+    },
+    "patientDetailsTab": "Detalles del Paciente",
     "detailsTitle": "Detalles de la Cita",
     "detailsTab": "Detalles de la cita",
     "historyTab": "Historial",
@@ -324,7 +338,6 @@
     "specialty": "Especialidad",
     "date": "Fecha",
     "schedule": "Horario",
-    "insure": "Aseguradora",
     "price": "Precio",
     "numberOfPatients": "Número de Pacientes",
     "modality": "Modalidad",

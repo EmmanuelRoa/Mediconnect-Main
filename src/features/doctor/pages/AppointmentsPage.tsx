@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useDoctorAppointments } from "@/lib/hooks/useDoctorAppointments";
 import MyAppointmentTable from "../components/appointments/MyAppointmentTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
@@ -23,134 +23,127 @@ import {
   XCircle,
   CheckCircle,
   Calendar,
+  AlertCircle,
 } from "lucide-react";
 import FilterMyAppointments from "../components/filters/FilterMyAppoinments";
+import type { CitasFilters, CitaDetalle } from "@/types/AppointmentTypes";
 
 // Import the Appointment type
 import type { Appointment } from "../components/appointments/MyAppointmentTable";
 
-const mockAppointments: Appointment[] = [
-  {
-    id: "1",
-    doctorId: "doc-1",
-    patientName: "Francisco Madera",
-    patientImage: "https://randomuser.me/api/portraits/men/1.jpg",
-    service: "Consulta general",
-    specialty: "Medicina Familiar",
-    date: "11/10/2025",
-    time: "10:00 AM – 10:45 AM",
-    phone: "809-432-9532",
-    email: "francisco.m@correo.com",
-    appointmentType: "in_person",
-    location: "Clínica Santo Domingo",
-    status: "pending",
-  },
-  {
-    id: "2",
-    doctorId: "doc-2",
-    patientName: "Emmanuel Jimenez",
-    patientImage: "https://randomuser.me/api/portraits/men/2.jpg",
-    service: "Evaluación de seguimiento",
-    specialty: "Cardiología",
-    date: "11/10/2025",
-    time: "11:30 AM – 12:15 PM",
-    phone: "809-432-9532",
-    email: "emmanuelj@correo.com",
-    appointmentType: "virtual",
-    location: "N/A",
-    status: "in_progress",
-  },
-  {
-    id: "3",
-    doctorId: "doc-3",
-    patientName: "Derek Hernandez",
-    patientImage: "https://randomuser.me/api/portraits/men/3.jpg",
-    service: "Control de presión",
-    specialty: "Medicina Interna",
-    date: "11/10/2025",
-    time: "1:00 PM – 1:30 PM",
-    phone: "809-432-9532",
-    email: "derekh@correo.com",
-    appointmentType: "in_person",
-    location: "Clínica Santo Domingo",
-    status: "completed",
-  },
-  {
-    id: "4",
-    doctorId: "doc-4",
-    patientName: "Jackson Martinez",
-    patientImage: "https://randomuser.me/api/portraits/men/4.jpg",
-    service: "Rehabilitación post-lesión",
-    specialty: "Fisioterapia",
-    date: "12/10/2025",
-    time: "9:00 AM – 9:45 AM",
-    phone: "809-432-9532",
-    email: "jacksonm@correo.com",
-    appointmentType: "virtual",
-    location: "N/A",
-    status: "scheduled",
-  },
-  {
-    id: "5",
-    doctorId: "doc-5",
-    patientName: "Gabriela Melo",
-    patientImage: "https://randomuser.me/api/portraits/women/5.jpg",
-    service: "Plan nutricional",
-    specialty: "Nutrición",
-    date: "12/10/2025",
-    time: "2:00 PM – 2:40 PM",
-    phone: "809-432-9532",
-    email: "gabrielam@correo.com",
-    appointmentType: "in_person",
-    location: "Clínica Santo Domingo",
-    status: "in_progress",
-  },
-  {
-    id: "6",
-    doctorId: "doc-6",
-    patientName: "Juan Olivo",
-    patientImage: "https://randomuser.me/api/portraits/men/6.jpg",
-    service: "Sesión de fisioterapia",
-    specialty: "Fisioterapia",
-    date: "13/10/2025",
-    time: "11:00 AM – 11:45 AM",
-    phone: "809-432-9532",
-    email: "juanolivo@correo.com",
-    appointmentType: "in_person",
-    location: "Clínica Santo Domingo",
-    status: "cancelled",
-  },
-  {
-    id: "7",
-    doctorId: "doc-7",
-    patientName: "María Santos",
-    patientImage: "https://randomuser.me/api/portraits/women/7.jpg",
-    service: "Consulta general",
-    specialty: "Medicina Familiar",
-    date: "14/10/2025",
-    time: "3:00 PM – 3:45 PM",
-    phone: "809-432-9532",
-    email: "maria.santos@correo.com",
-    appointmentType: "virtual",
-    location: "N/A",
-    status: "pending",
-  },
-];
+/**
+ * Mapea una cita del API (CitaDetalle) al formato de UI (Appointment)
+ */
+const mapCitaDetalleToAppointment = (cita: CitaDetalle): Appointment => {
+  const fechaInicio = new Date(cita.fechaInicio);
+  
+  // Formatear fecha como DD/MM/YYYY
+  const formattedDate = fechaInicio.toLocaleDateString('es-DO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  
+  // Formatear hora como HH:MM
+  const horaInicio = cita.horaInicio.substring(0, 5);
+  const horaFin = cita.horaFin.substring(0, 5);
+  const formattedTime = `${horaInicio} – ${horaFin}`;
+  
+  // Mapear estado del API a estado de UI
+  const statusMap: { [key: string]: Appointment['status'] } = {
+    'Programada': 'scheduled',
+    'En Progreso': 'in_progress',
+    'Completada': 'completed',
+    'Cancelada': 'cancelled',
+    'Reprogramada': 'scheduled',
+  };
+
+  return {
+    id: cita.id.toString(),
+    doctorId: cita.doctorId?.toString() || '',
+    patientName: `${cita.paciente.nombre} ${cita.paciente.apellido}`,
+    patientImage: cita.paciente.usuario.fotoPerfil || undefined,
+    service: cita.servicio.nombre,
+    specialty: cita.servicio.especialidad.nombre,
+    date: formattedDate,
+    time: formattedTime,
+    phone: cita.paciente.usuario.email || 'N/A',
+    email: cita.paciente.usuario.email || 'N/A',
+    appointmentType: cita.modalidad === 'virtual' ? 'virtual' : 'in_person',
+    location: cita.modalidad === 'virtual' ? 'Virtual' : 'En sitio',
+    status: statusMap[cita.estado] || 'scheduled',
+  };
+};
+
 
 function AppointmentsPage() {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
 
-  // Estados
+  // Estados UI
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+  
   const [filters, setFilters] = useState({
     status: "all",
     appointmentType: "all",
     specialty: "all",
     service: "all",
-    dateRange: undefined as [Date, Date] | undefined, // Actualizado
+    dateRange: undefined as [Date, Date] | undefined,
   });
+
+  // Convertir filtros UI a filtros API
+  const apiFilters = useMemo<CitasFilters>(() => {
+    const converted: CitasFilters = {
+      pagina: currentPage,
+      limite: PAGE_SIZE,
+    };
+
+    // Mapear estado
+    if (filters.status !== "all") {
+      const statusMap: { [key: string]: CitasFilters['estado'] } = {
+        'scheduled': 'Programada',
+        'in_progress': 'En Progreso',
+        'completed': 'Completada',
+        'cancelled': 'Cancelada',
+      };
+      converted.estado = statusMap[filters.status];
+    }
+
+    // Mapear rango de fechas
+    if (filters.dateRange) {
+      const [startDate, endDate] = filters.dateRange;
+      converted.fechaDesde = startDate.toISOString().split('T')[0];
+      converted.fechaHasta = endDate.toISOString().split('T')[0];
+    }
+
+    return converted;
+  }, [filters.status, filters.dateRange, currentPage]);
+
+  // Petición al API
+  const { data: apiResponse, isLoading, error } = useDoctorAppointments(apiFilters);
+
+  // Mapear respuesta del API
+  const allAppointments = useMemo(() => {
+    if (!apiResponse?.data) return [];
+    const data = Array.isArray(apiResponse.data) ? apiResponse.data : [apiResponse.data];
+    return data.map(mapCitaDetalleToAppointment);
+  }, [apiResponse?.data]);
+
+  // Filtrar por búsqueda (cliente-side)
+  const filteredAppointments = useMemo(() => {
+    if (!searchTerm) return allAppointments;
+    
+    return allAppointments.filter((appointment) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        appointment.patientName.toLowerCase().includes(searchLower) ||
+        appointment.service.toLowerCase().includes(searchLower) ||
+        appointment.specialty.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [allAppointments, searchTerm]);
 
   // Contar filtros activos
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
@@ -161,7 +154,7 @@ function AppointmentsPage() {
   }).length;
 
   // Limpiar filtros
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({
       status: "all",
       appointmentType: "all",
@@ -169,75 +162,14 @@ function AppointmentsPage() {
       service: "all",
       dateRange: undefined,
     });
-  };
+    setCurrentPage(1);
+  }, []);
 
-  // Función auxiliar para parsear fecha
-  const parseDate = (dateStr: string) => {
-    const [day, month, year] = dateStr.split("/");
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-  };
-
-  // Función para filtrar por rango de fechas personalizado
-  const matchesCustomDateRange = (
-    dateStr: string,
-    range?: [Date, Date],
-  ): boolean => {
-    if (!range) return true;
-
-    const appointmentDate = parseDate(dateStr);
-    appointmentDate.setHours(0, 0, 0, 0);
-
-    const startDate = new Date(range[0]);
-    startDate.setHours(0, 0, 0, 0);
-
-    const endDate = new Date(range[1]);
-    endDate.setHours(23, 59, 59, 999);
-
-    return appointmentDate >= startDate && appointmentDate <= endDate;
-  };
-
-  // Filtrar citas
-  const filteredAppointments = useMemo(() => {
-    return mockAppointments.filter((appointment) => {
-      // Búsqueda por texto
-      const matchesSearch =
-        appointment.patientName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        appointment.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        appointment.specialty.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // Filtros
-      const matchesStatus =
-        filters.status === "all" || appointment.status === filters.status;
-      const matchesType =
-        filters.appointmentType === "all" ||
-        appointment.appointmentType === filters.appointmentType;
-      const matchesSpecialty =
-        filters.specialty === "all" ||
-        appointment.specialty
-          .toLowerCase()
-          .includes(filters.specialty.replace("-", " "));
-      const matchesService =
-        filters.service === "all" ||
-        appointment.service
-          .toLowerCase()
-          .includes(filters.service.replace("-", " "));
-      const matchesDate = matchesCustomDateRange(
-        appointment.date,
-        filters.dateRange,
-      );
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesType &&
-        matchesSpecialty &&
-        matchesService &&
-        matchesDate
-      );
-    });
-  }, [searchTerm, filters]);
+  // Manejar cambios de filtros
+  const handleFiltersChange = useCallback((newFilters: any) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setCurrentPage(1); // Resetear a página 1 al cambiar filtros
+  }, []);
 
   // Search input
   const searchComponent = (
@@ -287,15 +219,61 @@ function AppointmentsPage() {
     >
       <FilterMyAppointments
         filters={filters}
-        onFiltersChange={(newFilters) =>
-          setFilters((prev) => ({ ...prev, ...newFilters }))
-        }
+        onFiltersChange={handleFiltersChange}
       />
     </MCFilterPopover>
   );
 
-  // Empty state
-  const emptyState = (
+  // Error state
+  if (error) {
+    return (
+      <MCTablesLayouts
+        title={t("appointments.title")}
+        metrics={[]}
+        filtersInlineWithTitle
+        tableComponent={
+          <Empty>
+            <EmptyHeader>
+              <div className="flex flex-col items-center gap-2">
+                <span className="flex items-center justify-center gap-2 text-destructive">
+                  <AlertCircle className={isMobile ? "w-5 h-5" : "w-7 h-7"} />
+                  <EmptyTitle className={`font-semibold ${isMobile ? "text-lg" : "text-xl"}`}>
+                    {t("common.error")}
+                  </EmptyTitle>
+                </span>
+                <EmptyDescription className={`text-muted-foreground text-center max-w-md mx-auto ${isMobile ? "text-sm" : "text-base"}`}>
+                  {t("appointments.empty.loadError")}
+                </EmptyDescription>
+              </div>
+            </EmptyHeader>
+            <EmptyContent>
+              <MCButton
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className={isMobile ? "px-4 py-2" : "px-6 py-2"}
+                size="sm"
+              >
+                {t("common.retry")}
+              </MCButton>
+            </EmptyContent>
+          </Empty>
+        }
+        searchComponent={searchComponent}
+        pdfGeneratorComponent={pdfGeneratorComponent}
+        filterComponent={filterComponent}
+      />
+    );
+  }
+
+  // Loading state - mostrar tabla vacía con esqueleto
+  const tableComponent = isLoading ? (
+    <div className="space-y-4">
+      {[...Array(PAGE_SIZE)].map((_, i) => (
+        <div key={i} className="h-20 bg-muted rounded-lg animate-pulse" />
+      ))}
+    </div>
+  ) : filteredAppointments.length === 0 ? (
+    // Empty state
     <Empty>
       <EmptyHeader>
         <div className="flex flex-col items-center gap-2">
@@ -305,19 +283,13 @@ function AppointmentsPage() {
             ) : (
               <CalendarX className={isMobile ? "w-5 h-5" : "w-7 h-7"} />
             )}
-            <EmptyTitle
-              className={`font-semibold ${isMobile ? "text-lg" : "text-xl"}`}
-            >
+            <EmptyTitle className={`font-semibold ${isMobile ? "text-lg" : "text-xl"}`}>
               {activeFiltersCount > 0
                 ? t("appointments.empty.noResults")
                 : t("appointments.empty.noAppointments")}
             </EmptyTitle>
           </span>
-          <EmptyDescription
-            className={`text-muted-foreground text-center max-w-md mx-auto ${
-              isMobile ? "text-sm" : "text-base"
-            }`}
-          >
+          <EmptyDescription className={`text-muted-foreground text-center max-w-md mx-auto ${isMobile ? "text-sm" : "text-base"}`}>
             {activeFiltersCount > 0
               ? t("appointments.empty.noResultsDescription")
               : t("appointments.empty.noAppointmentsDescription")}
@@ -339,39 +311,33 @@ function AppointmentsPage() {
         </div>
       </EmptyContent>
     </Empty>
+  ) : (
+    <MyAppointmentTable appointments={filteredAppointments} />
   );
 
-  // Tabla con empty state
-  const tableComponent =
-    filteredAppointments.length === 0 ? (
-      emptyState
-    ) : (
-      <MyAppointmentTable appointments={filteredAppointments} />
-    );
-
-  // Métricas
+  // Métricas: Calcular desde los datos cargados
   const metrics = [
     {
       title: t("appointments.metrics.total"),
-      value: mockAppointments.length,
+      value: apiResponse?.paginacion.total || 0,
       subtitle: t("appointments.metrics.totalSubtitle"),
       icon: <Calendar />,
     },
     {
       title: t("appointments.metrics.pending"),
-      value: mockAppointments.filter((a) => a.status === "pending").length,
+      value: allAppointments.filter((a) => a.status === "scheduled").length,
       subtitle: t("appointments.metrics.pendingSubtitle"),
       icon: <Clock />,
     },
     {
       title: t("appointments.metrics.cancelled"),
-      value: mockAppointments.filter((a) => a.status === "cancelled").length,
+      value: allAppointments.filter((a) => a.status === "cancelled").length,
       subtitle: t("appointments.metrics.cancelledSubtitle"),
       icon: <XCircle />,
     },
     {
       title: t("appointments.metrics.completed"),
-      value: mockAppointments.filter((a) => a.status === "completed").length,
+      value: allAppointments.filter((a) => a.status === "completed").length,
       subtitle: t("appointments.metrics.completedSubtitle"),
       icon: <CheckCircle />,
     },

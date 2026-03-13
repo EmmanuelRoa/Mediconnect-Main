@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { QUERY_KEYS } from "@/lib/react-query/config";
+import { getDoctorPatientsStats } from "@/services/api/doctor-stats.service";
 import MyPatientsTable from "../components/patients/PatientsTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
@@ -100,6 +103,18 @@ function PatientsPage() {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
 
+  // Fetching statistics from backend
+  const {
+    data: patientsStats,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: QUERY_KEYS.DOCTOR_STATS_PACIENTES,
+    queryFn: getDoctorPatientsStats,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     gender: "all",
@@ -172,51 +187,66 @@ function PatientsPage() {
     });
   }, [searchTerm, filters]);
 
-  // Métricas
-  const avgAge =
-    mockPatients.length > 0
-      ? (
-          mockPatients.reduce((sum, p) => sum + p.age, 0) / mockPatients.length
-        ).toFixed(1)
-      : "0";
+  // Métricas del backend
+  const metrics = useMemo(() => {
+    if (!patientsStats) {
+      return [
+        {
+          title: t("patients.metrics.total"),
+          value: 0,
+          subtitle: t("patients.metrics.totalSubtitle"),
+          icon: <Users />,
+        },
+        {
+          title: t("patients.metrics.withConditions"),
+          value: 0,
+          subtitle: t("patients.metrics.withConditionsSubtitle"),
+          icon: <ShieldAlert />,
+        },
+        {
+          title: t("patients.metrics.withAllergies"),
+          value: 0,
+          subtitle: t("patients.metrics.withAllergiesSubtitle"),
+          icon: <AlertTriangle />,
+        },
+        {
+          title: t("patients.metrics.avgAge"),
+          value: `0 ${t("patients.metrics.years")}`,
+          subtitle: t("patients.metrics.avgAgeSubtitle"),
+          icon: <BarChart2 />,
+        },
+      ];
+    }
 
-  const metrics = [
-    {
-      title: t("patients.metrics.total"),
-      value: mockPatients.length,
-      subtitle: t("patients.metrics.totalSubtitle"),
-      icon: <Users />,
-    },
-    {
-      title: t("patients.metrics.withConditions"),
-      value: mockPatients.filter((p) => p.conditionsCount > 0).length,
-      subtitle: t("patients.metrics.withConditionsSubtitle"),
-      icon: <ShieldAlert />,
-    },
-    {
-      title: t("patients.metrics.withAllergies"),
-      value: mockPatients.filter((p) => p.allergiesCount > 0).length,
-      subtitle: t("patients.metrics.withAllergiesSubtitle"),
-      icon: <AlertTriangle />,
-    },
-    {
-      title: t("patients.metrics.avgAge"),
-      value: `${avgAge} ${t("patients.metrics.years")}`,
-      subtitle: t("patients.metrics.avgAgeSubtitle"),
-      icon: <BarChart2 />,
-    },
-  ];
-
-  // Search
-  const searchComponent = (
-    <div className="w-full sm:w-auto sm:min-w-[200px] lg:min-w-[250px]">
-      <MCFilterInput
-        placeholder={t("patients.searchPlaceholder")}
-        value={searchTerm}
-        onChange={setSearchTerm}
-      />
-    </div>
-  );
+    return [
+      {
+        title: t("patients.metrics.total"),
+        value: patientsStats.totalPacientes,
+        subtitle: t("patients.metrics.totalSubtitle"),
+        icon: <Users />,
+      },
+      {
+        title: t("patients.metrics.withConditions"),
+        value: patientsStats.pacientesConCondicionesActivas,
+        subtitle: t("patients.metrics.withConditionsSubtitle"),
+        icon: <ShieldAlert />,
+      },
+      {
+        title: t("patients.metrics.withAllergies"),
+        value: patientsStats.pacientesConAlergias,
+        subtitle: t("patients.metrics.withAllergiesSubtitle"),
+        icon: <AlertTriangle />,
+      },
+      {
+        title: t("patients.metrics.avgAge"),
+        value: `${patientsStats.edadPromedio.toFixed(1)} ${t(
+          "patients.metrics.years"
+        )}`,
+        subtitle: t("patients.metrics.avgAgeSubtitle"),
+        icon: <BarChart2 />,
+      },
+    ];
+  }, [patientsStats, t]);
 
   // PDF
   const pdfGeneratorComponent = (
@@ -314,13 +344,94 @@ function PatientsPage() {
       <MyPatientsTable patients={filteredPatients} />
     );
 
+  // Handle loading and error states
+  if (isLoading) {
+    return (
+      <MCTablesLayouts
+        title={t("patients.title")}
+        metrics={[
+          {
+            title: t("patients.metrics.total"),
+            value: "—",
+            subtitle: t("patients.metrics.totalSubtitle"),
+            icon: <Users />,
+          },
+          {
+            title: t("patients.metrics.withConditions"),
+            value: "—",
+            subtitle: t("patients.metrics.withConditionsSubtitle"),
+            icon: <ShieldAlert />,
+          },
+          {
+            title: t("patients.metrics.withAllergies"),
+            value: "—",
+            subtitle: t("patients.metrics.withAllergiesSubtitle"),
+            icon: <AlertTriangle />,
+          },
+          {
+            title: t("patients.metrics.avgAge"),
+            value: "—",
+            subtitle: t("patients.metrics.avgAgeSubtitle"),
+            icon: <BarChart2 />,
+          },
+        ]}
+        filtersInlineWithTitle
+        tableComponent={
+          <div className="flex items-center justify-center w-full h-64">
+            <div className="text-muted-foreground">
+              {t("common.loading") || "Cargando..."}
+            </div>
+          </div>
+        }
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <MCTablesLayouts
+        title={t("patients.title")}
+        filtersInlineWithTitle
+        tableComponent={
+          <Empty>
+            <EmptyHeader>
+              <div className="flex flex-col items-center gap-2">
+                <span className="flex items-center justify-center gap-2 text-destructive">
+                  <AlertTriangle className={isMobile ? "w-5 h-5" : "w-7 h-7"} />
+                  <EmptyTitle className="font-semibold">
+                    {t("common.errorOccurred") || "Ocurrió un error"}
+                  </EmptyTitle>
+                </span>
+                <EmptyDescription className={`text-muted-foreground text-center max-w-md mx-auto ${
+                  isMobile ? "text-sm" : "text-base"
+                }`}>
+                  {error instanceof Error
+                    ? error.message
+                    : t("common.tryAgainLater") || "Por favor, intenta más tarde"}
+                </EmptyDescription>
+              </div>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
+    );
+  }
+
   return (
     <MCTablesLayouts
       title={t("patients.title")}
       metrics={metrics}
       filtersInlineWithTitle
       tableComponent={tableComponent}
-      searchComponent={searchComponent}
+      searchComponent={
+        <div className="w-full sm:w-auto sm:min-w-[200px] lg:min-w-[250px]">
+          <MCFilterInput
+            placeholder={t("patients.searchPlaceholder")}
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
+        </div>
+      }
       pdfGeneratorComponent={pdfGeneratorComponent}
       filterComponent={filterComponent}
     />

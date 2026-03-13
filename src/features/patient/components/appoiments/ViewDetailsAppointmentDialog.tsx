@@ -25,6 +25,7 @@ import type { CitaDetalle } from "@/types/AppointmentTypes";
 import { formatTimeTo12h, mapCitaEstadoToAppointmentStatus } from "@/utils/appointmentMapper";
 import ubicacionesService from "@/features/onboarding/services/ubicaciones.services";
 import i18n from "@/i18n/config";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 
 // Add the HistoryFilters interface
@@ -44,28 +45,8 @@ interface ViewDetailsAppointmentDialogProps {
   preview?: "details" | "history" | "patientDetails"; // <--- agrega "patientDetails"
 }
 
-function PacientDetailsTabContent() {
+function PacientDetailsTabContent({ patientData }: { patientData?: any }) {
   const { t } = useTranslation("patient");
-
-  // Simulación de datos, reemplaza por props o datos reales
-  const patient = {
-    name: "Edwin Lopez",
-    age: "45 años",
-    blood: "O+",
-    height: "175 cm",
-    weight: "80 kg",
-    email: "edwin.lopez@email.com",
-    phone: "809-432-9532",
-    allergies: [
-      "Penicilina (produce erupción cutánea)",
-      // Puedes agregar más alergias aquí
-    ],
-    conditions: [
-      "Apendicectomía en 2010.",
-      "Antecedentes familiares de diabetes tipo 2.",
-      // Puedes agregar más condiciones aquí
-    ],
-  };
 
   return (
     <div className="mt-4 pr-2">
@@ -74,63 +55,67 @@ function PacientDetailsTabContent() {
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Nombre Completo</h3>
-          <p className="text-primary font-medium">{patient.name}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.name", "Nombre Completo")}</h3>
+          <p className="text-primary font-medium">{patientData?.nombre} {patientData?.apellido}</p>
         </div>
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Edad</h3>
-          <p className="text-primary font-medium">{patient.age}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.age", "Edad")}</h3>
+          <p className="text-primary font-medium">{patientData?.edad}</p>
         </div>
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Sangre</h3>
-          <p className="text-primary font-medium">{patient.blood}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.bloodType", "Sangre")}</h3>
+          <p className="text-primary font-medium">{patientData?.tipoSangre}</p>
         </div>
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Altura</h3>
-          <p className="text-primary font-medium">{patient.height}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.height", "Altura")}</h3>
+          <p className="text-primary font-medium">{patientData?.altura}</p>
         </div>
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Peso</h3>
-          <p className="text-primary font-medium">{patient.weight}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.weight", "Peso")}</h3>
+          <p className="text-primary font-medium">{patientData?.peso}</p>
         </div>
       </div>
       <h2 className="text-xl font-semibold mb-2 mt-4 text-primary">
-        Información de Contacto
+        {t("appointment.patient.contactInfo", "Información de Contacto")}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Email</h3>
-          <p className="text-primary font-medium">{patient.email}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.email", "Email")}</h3>
+          <p className="text-primary font-medium">{patientData?.usuario?.email}</p>
         </div>
         <div>
-          <h3 className="font-medium text-primary/75 mb-1">Teléfono</h3>
-          <p className="text-primary font-medium">{patient.phone}</p>
+          <h3 className="font-medium text-primary/75 mb-1">{t("appointment.patient.phone", "Teléfono")}</h3>
+          <p className="text-primary font-medium">{patientData?.usuario?.telefono}</p>
         </div>
       </div>
       <h2 className="text-xl font-semibold mb-2 mt-4 text-primary">
-        Información Médica
+        {t("appointment.patient.medicalInfo", "Información Médica")}
       </h2>
       <div className="mb-4">
-        <h3 className="font-medium mb-1 text-red-700">Alergias</h3>
+        <h3 className="font-medium mb-1 text-red-700">{t("appointment.patient.allergies", "Alergias")}</h3>
         <div className="max-h-32 overflow-y-auto">
           <ul className="list-disc ml-5">
-            {patient.allergies.map((al, i) => (
-              <li key={i} className="font-medium text-primary">
-                {al}
-              </li>
-            ))}
+            {patientData?.caracteristicas?.map((al: any, i: number) =>
+              al?.condicion.tipo === "Alergia" ? (
+                <li key={i} className="font-medium text-primary">
+                  {al.condicion.nombre} - {al.condicion.descripcion}
+                </li>
+              ) : null
+            )}
           </ul>
         </div>
       </div>
       <div>
-        <h3 className="font-medium mb-1 text-orange-500">Condiciones</h3>
+        <h3 className="font-medium mb-1 text-orange-500">{t("appointment.patient.conditions", "Condiciones")}</h3>
         <div className="max-h-32 overflow-y-auto">
           <ul className="list-disc ml-5">
-            {patient.conditions.map((cond, i) => (
-              <li key={i} className="font-medium text-primary">
-                {cond}
-              </li>
-            ))}
+            {patientData?.caracteristicas?.map((cond: any, i: number) => 
+              cond?.condicion.tipo === "Condicion" ? (
+                <li key={i} className="font-medium text-primary">
+                  {cond.condicion.nombre} - {cond.condicion.descripcion}
+                </li>
+              ) : null
+            )}
           </ul>
         </div>
       </div>
@@ -184,7 +169,7 @@ function DetailsTabContent({ appointment }: { appointment: CitaDetalle}) {
             {t("appointment.price")}
           </h3>
           <p className="text-lg text-primary font-medium break-words max-w-xs">
-            RD$ {appointment.totalAPagar}
+            {formatCurrency(appointment.totalAPagar)}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -534,7 +519,7 @@ function ViewDetailsAppointmentDialog({
       setLoading(true);
       try{
         const params = {
-          translate_fields: "modalidad,nombre,descripcion",
+          translate_fields: "modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
           target: i18n.language === "es" ? "es" : "en",
           source: i18n.language === "es" ? "en" : "es",
         };
@@ -677,7 +662,7 @@ function ViewDetailsAppointmentDialog({
         </TabsContent>
         {userRole === "DOCTOR" && (
           <TabsContent value="patientDetails">
-            <PacientDetailsTabContent />
+            <PacientDetailsTabContent patientData={appointment?.paciente} />
           </TabsContent>
         )}
       </Tabs>
