@@ -176,6 +176,10 @@ export const API_ENDPOINTS = {
     SERVICIOS: '/doctores/estadisticas/servicios',
   },
 
+  // --- DOCTORES ---
+  DOCTORES: {
+    PACIENTE_INFO: (pacienteId: string | number) => `/doctores/pacientes-info/${pacienteId}`,
+  },
   // --- TELECONSULTAS ---
   TELECONSULTAS: {
     /** GET  – Paciente obtiene su URL de acceso */
