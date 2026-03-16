@@ -136,15 +136,13 @@ export default function MyPatientsTable({ patients }: MyPatientsTableProps) {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div
-                      className={`${
-                        isMobile ? "h-12 w-12" : "h-16 w-16"
-                      } shrink-0 overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center`}
+                      className={`${isMobile ? "h-12 w-12" : "h-16 w-16"
+                        } shrink-0 overflow-hidden rounded-full border border-primary/10 bg-muted flex items-center justify-center`}
                     >
                       {row.patientImage ? (
                         <Avatar
-                          className={`${
-                            isMobile ? "h-12 w-12" : "h-16 w-16"
-                          } rounded-full overflow-hidden`}
+                          className={`${isMobile ? "h-12 w-12" : "h-16 w-16"
+                            } rounded-full overflow-hidden`}
                         >
                           <AvatarImage
                             src={row.patientImage}
@@ -278,7 +276,8 @@ export default function MyPatientsTable({ patients }: MyPatientsTableProps) {
                     <PopoverContent isTablet placement="left">
                       <PatientActions
                         patient={{
-                          id: row.id,
+                          id: row.id || row.pacienteId,
+                          pacienteId: row.pacienteId || row.id,
                           conversationId: row.conversationId,
                         }}
                       />

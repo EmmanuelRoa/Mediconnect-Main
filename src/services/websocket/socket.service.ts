@@ -19,6 +19,9 @@ import type {
   UsuarioDejoEscribirEvent,
   MensajesLeidosEvent,
   SolicitarEstadoConexionEvent,
+  NotificacionEvent,
+  ContadorNotificacionesEvent,
+  LlamadaEntranteEvent,
 } from "@/types/WebSocketTypes";
 import {
   SocketConnectionStatus,
@@ -428,6 +431,58 @@ class SocketService {
     this.socket.on(SERVER_EVENTS.ESTADO_CONEXION_USUARIOS, callback);
     return () => {
       this.socket?.off(SERVER_EVENTS.ESTADO_CONEXION_USUARIOS, callback);
+    };
+  }
+
+  /**
+   * Escuchar nuevas notificaciones del sistema
+   */
+  onNewNotification(
+    callback: SocketEventCallback<NotificacionEvent>
+  ): () => void {
+    if (!this.socket) return () => {};
+    this.socket.on(SERVER_EVENTS.NUEVA_NOTIFICACION, callback);
+    return () => {
+      this.socket?.off(SERVER_EVENTS.NUEVA_NOTIFICACION, callback);
+    };
+  }
+
+  /**
+   * Escuchar actualizaciones del contador de notificaciones no leídas
+   */
+  onUnreadNotificationsCount(
+    callback: SocketEventCallback<ContadorNotificacionesEvent>
+  ): () => void {
+    if (!this.socket) return () => {};
+    this.socket.on(SERVER_EVENTS.CONTADOR_NO_LEIDAS, callback);
+    return () => {
+      this.socket?.off(SERVER_EVENTS.CONTADOR_NO_LEIDAS, callback);
+    };
+  }
+
+  /**
+   * Escuchar llamadas entrantes
+   */
+  onIncomingCall(
+    callback: SocketEventCallback<LlamadaEntranteEvent>
+  ): () => void {
+    if (!this.socket) return () => {};
+    this.socket.on(SERVER_EVENTS.LLAMADA_ENTRANTE, callback);
+    return () => {
+      this.socket?.off(SERVER_EVENTS.LLAMADA_ENTRANTE, callback);
+    };
+  }
+
+  /**
+   * Escuchar cuando una llamada ha finalizado
+   */
+  onCallEnded(
+    callback: SocketEventCallback<void>
+  ): () => void {
+    if (!this.socket) return () => {};
+    this.socket.on(SERVER_EVENTS.LLAMADA_FINALIZADA, callback);
+    return () => {
+      this.socket?.off(SERVER_EVENTS.LLAMADA_FINALIZADA, callback);
     };
   }
 

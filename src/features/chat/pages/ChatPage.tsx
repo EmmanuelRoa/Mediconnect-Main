@@ -5,14 +5,6 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useConversations } from "@/lib/hooks/useConversations";
 import { useWebSocket } from "@/lib/hooks/useWebSocket";
 import { useAppStore } from "@/stores/useAppStore";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-  EmptyContent,
-  EmptyMedia,
-} from "@/shared/ui/empty";
 import { useParams, useNavigate } from "react-router-dom";
 
 const ChatPage = () => {
@@ -55,10 +47,10 @@ const ChatPage = () => {
 
   const handleSelectConversation = (id: number) => {
     setActiveConversation(id);
-    
+
     // Navegar a la URL de la conversación
     navigate(`/chat/${id}`);
-    
+
     if (isMobile) {
       setSidebarOpen(false);
     }

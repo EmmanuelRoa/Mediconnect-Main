@@ -19,6 +19,8 @@ function MCNavbar() {
   const { t } = useTranslation(); // Usar namespace automático
   const theme = useGlobalUIStore((state) => state.theme);
   const role = useAppStore((state) => state.user?.rol);
+  // Obtener el total de mensajes no leídos desde el estado global directamente
+  const unreadMessagesCount = useAppStore((state) => state.globalUnreadCount);
 
   const effectiveRole = role || "PATIENT";
   const menuConfig = NAVBAR_CONFIG[effectiveRole as keyof typeof NAVBAR_CONFIG];
@@ -53,11 +55,10 @@ function MCNavbar() {
                   <NavigationMenuLink asChild>
                     <Link
                       to={item.href}
-                      className={`${navigationMenuTriggerStyle()} text-sm lg:text-base px-2 lg:px-4 py-2 rounded-full hover:rounded-full transition-all ${
-                        location.pathname === item.href
-                          ? "font-medium bg-primary text-primary-foreground shadow-md"
-                          : "font-normal  opacity-70 hover:opacity-100"
-                      }`}
+                      className={`${navigationMenuTriggerStyle()} text-sm lg:text-base px-2 lg:px-4 py-2 rounded-full hover:rounded-full transition-all ${location.pathname === item.href
+                        ? "font-medium bg-primary text-primary-foreground shadow-md"
+                        : "font-normal  opacity-70 hover:opacity-100"
+                        }`}
                     >
                       {t(`navbar.${item.label.toLowerCase()}`, { ns })}
                     </Link>
@@ -83,11 +84,10 @@ function MCNavbar() {
           `}
         >
           <Search
-            className={`h-7 w-7 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${
-              location.pathname === "/search"
-                ? "text-background"
-                : "text-primary/70"
-            }`}
+            className={`h-7 w-7 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${location.pathname === "/search"
+              ? "text-background"
+              : "text-primary/70"
+              }`}
           />
         </Link>
         {/* Mensajes */}
@@ -99,12 +99,16 @@ function MCNavbar() {
           `}
         >
           <MessageCircle
-            className={`h-7 w-7 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${
-              location.pathname.startsWith("/chat")
-                ? "text-background"
-                : "text-primary/70"
-            }`}
+            className={`h-7 w-7 transition-colors duration-300 stroke-[1.5px] group-hover:text-primary ${location.pathname.startsWith("/chat")
+              ? "text-background"
+              : "text-primary/70"
+              }`}
           />
+          {unreadMessagesCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+              {unreadMessagesCount > 99 ? "99+" : unreadMessagesCount}
+            </span>
+          )}
         </Link>
         <NavbarBell />
         <div className="hidden md:block">

@@ -12,6 +12,7 @@ const ROUTES = {
 interface PatientActionsProps {
   patient: {
     id: string;
+    pacienteId?: string | number;
     conversationId?: string;
   };
 }
@@ -21,15 +22,17 @@ export default function PatientActions({ patient }: PatientActionsProps) {
   const navigate = useNavigate();
 
   const { startConversation, isLoading: isStartingConversation } = useStartConversation();
-  
-    
+
+
   const handleViewDetails = () => {
     navigate(ROUTES.PATIENT_DETAILS.replace(":patientId", patient.id));
   };
 
   const handleMessage = () => {
-    if(patient.id){
-      startConversation(Number(patient.id));
+    // Si la tabla pasa pacienteId, lo priorizamos (refiere a usuarioId para chat)
+    const chatUserId = patient.pacienteId || patient.id;
+    if (chatUserId) {
+      startConversation(Number(chatUserId));
     }
   };
 
@@ -42,11 +45,10 @@ export default function PatientActions({ patient }: PatientActionsProps) {
         {t("patients.actions.viewDetails")}
       </div>
       <div
-        className={`p-2 rounded-lg transition text-sm text-center flex items-center justify-center gap-2 ${
-          isStartingConversation
-            ? "bg-blue-500/10 text-blue-600 cursor-not-allowed opacity-75"
-            : "cursor-pointer hover:bg-blue-500/10 text-blue-600"
-        }`}
+        className={`p-2 rounded-lg transition text-sm text-center flex items-center justify-center gap-2 ${isStartingConversation
+          ? "bg-blue-500/10 text-blue-600 cursor-not-allowed opacity-75"
+          : "cursor-pointer hover:bg-blue-500/10 text-blue-600"
+          }`}
         onClick={handleMessage}
       >
         {isStartingConversation && <Loader2 className="w-4 h-4 animate-spin" />}

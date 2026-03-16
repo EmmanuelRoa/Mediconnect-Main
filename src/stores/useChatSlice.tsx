@@ -12,12 +12,14 @@ export interface ChatSlice {
   activeConversationId: number | null;
   typingUsers: Map<number, TypingUser[]>; // conversacionId → usuarios escribiendo
   unreadCounts: Map<number, number>; // conversacionId → contador
+  globalUnreadCount: number; // Contador total global
   onlineUsers: Set<number>; // Set de IDs de usuarios conectados
   isConnectedToWS: boolean;
   connectionStatus: SocketConnectionStatus;
 
   // Acciones - Conversaciones
   setConversations: (conversations: ConversationWithDetails[]) => void;
+  setGlobalUnreadCount: (count: number) => void;
   addConversation: (conversation: ConversationWithDetails) => void;
   updateConversation: (
     id: number,
@@ -62,6 +64,7 @@ const initialState = {
   activeConversationId: null,
   typingUsers: new Map(),
   unreadCounts: new Map(),
+  globalUnreadCount: 0,
   onlineUsers: new Set<number>(),
   isConnectedToWS: false,
   connectionStatus: "disconnected" as SocketConnectionStatus,
@@ -76,6 +79,9 @@ export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
 
   setConversations: (conversations) =>
     set({ conversations }),
+
+  setGlobalUnreadCount: (count) =>
+    set({ globalUnreadCount: count }),
 
   addConversation: (conversation) =>
     set((state) => {
@@ -275,6 +281,7 @@ export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
 
   updateUnreadCount: (conversacionId, count) =>
     set((state) => {
+      const currentCount = state.unreadCounts.get(conversacionId) || 0;
       const newUnreadCounts = new Map(state.unreadCounts);
       newUnreadCounts.set(conversacionId, count);
 
@@ -285,7 +292,11 @@ export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
           : conv
       );
 
-      return { unreadCounts: newUnreadCounts, conversations };
+      return {
+        unreadCounts: newUnreadCounts,
+        conversations,
+        globalUnreadCount: Math.max(0, state.globalUnreadCount - currentCount + count)
+      };
     }),
 
   incrementUnreadCount: (conversacionId) =>
@@ -303,11 +314,12 @@ export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
           : conv
       );
 
-      return { unreadCounts: newUnreadCounts, conversations };
+      return { unreadCounts: newUnreadCounts, conversations, globalUnreadCount: state.globalUnreadCount + 1 };
     }),
 
   resetUnreadCount: (conversacionId) =>
     set((state) => {
+      const currentConvCount = state.unreadCounts.get(conversacionId) || 0;
       const newUnreadCounts = new Map(state.unreadCounts);
       newUnreadCounts.set(conversacionId, 0);
 
@@ -316,7 +328,11 @@ export const createChatSlice: StateCreator<ChatSlice> = (set) => ({
         conv.id === conversacionId ? { ...conv, mensajesNoLeidos: 0 } : conv
       );
 
-      return { unreadCounts: newUnreadCounts, conversations };
+      return {
+        unreadCounts: newUnreadCounts,
+        conversations,
+        globalUnreadCount: Math.max(0, state.globalUnreadCount - currentConvCount)
+      };
     }),
 
   // ============================================

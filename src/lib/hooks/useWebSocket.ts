@@ -1,5 +1,6 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { socketService } from "@/services/websocket";
 import { chatService } from "@/services/chat";
 import { useAppStore } from "@/stores/useAppStore";
@@ -16,6 +17,7 @@ import type {
   UsuarioConectadoEvent,
   UsuarioDesconectadoEvent,
   EstadoConexionUsuariosEvent,
+  LlamadaEntranteEvent,
 } from "@/types/WebSocketTypes";
 import { getUserFullName, getUserName, getUserLastName, getUserAvatar } from "@/services/auth/auth.types";
 
@@ -32,64 +34,75 @@ const typingTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 /**
  * Hook personalizado para manejo de WebSocket en el chat
  * Conecta, registra listeners y sincroniza con React Query y Zustand
- * 
+ *
  * Uses module-level ref counting so that the socket lifecycle is shared
- * across all component instances that call this hook.  Only the first
+ * across all component instances that call this hook. Only the first
  * mount creates the connection & listeners; only the last unmount tears
  * them down.
- * 
+ *
+ * IMPORTANT: All event handlers use useAppStore.getState() instead of
+ * reactive selectors to avoid stale closures that would cause the singleton
+ * to rebuild unnecessarily.
+ *
  * @returns Métodos para interactuar con WebSocket
  */
 export const useWebSocket = () => {
   const queryClient = useQueryClient();
 
-  // Store selectors
+  // Only select what is needed for lifecycle (accessToken triggers connect/disconnect)
   const accessToken = useAppStore((state) => state.accessToken);
+  // user is needed for methods returned to the consumer (markAsRead, sendTypingIndicator)
   const user = useAppStore((state) => state.user);
-  const setConnectionStatus = useAppStore((state) => state.setConnectionStatus);
-  const addMessage = useAppStore((state) => state.addMessage);
-  const updateMessage = useAppStore((state) => state.updateMessage);
-  const removeMessage = useAppStore((state) => state.removeMessage);
-  const addConversation = useAppStore((state) => state.addConversation);
-  const updateConversation = useAppStore((state) => state.updateConversation);
-  const updateUnreadCount = useAppStore((state) => state.updateUnreadCount);
-  const setTypingUser = useAppStore((state) => state.setTypingUser);
-  const removeTypingUser = useAppStore((state) => state.removeTypingUser);
-  const setUserOnline = useAppStore((state) => state.setUserOnline);
-  const setUserOffline = useAppStore((state) => state.setUserOffline);
 
   // ============================================
   // SETUP LISTENERS
+  // Registered once. All dynamic state is read via useAppStore.getState()
+  // inside event handlers to avoid stale closure issues.
   // ============================================
 
+  // Use a stable ref to hold the queryClient so it doesn't appear in deps
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
+
   const setupListeners = useCallback(() => {
+    const qc = queryClientRef.current;
+
     // Nuevo mensaje recibido
     const unsubNewMessage = socketService.onNewMessage(
       (event: NuevoMensajeEvent) => {
         console.log("[useWebSocket] Nuevo mensaje recibido:", event);
 
-        // Ensure esPropio field is correctly set
-        // If backend doesn't provide it, calculate it based on current user
+        // Read current user from store (avoids stale closure)
+        const currentUser = useAppStore.getState().user;
+
+        // IMPORTANTE: Siempre recalcular esPropio desde remitenteId para evitar
+        // el bug del backend que envía esPropio:true al receptor también.
+        // El único campo confiable es remitenteId.
+        const isOwnMessage = Number(event.remitenteId) === Number(currentUser?.id);
+
         let messageWithEsPropio = {
           ...event,
-          esPropio: event.esPropio !== undefined 
-            ? event.esPropio 
-            : event.remitenteId === user?.id,
+          esPropio: isOwnMessage,
         };
 
         // Enriquecer mensaje con datos del usuario actual si es mensaje propio y faltan datos
-        if (messageWithEsPropio.esPropio && (!messageWithEsPropio.remitente || !messageWithEsPropio.remitente.nombre)) {
-          console.warn("[useWebSocket] Mensaje propio sin datos del remitente, enriqueciendo con datos del usuario actual");
+        if (
+          isOwnMessage &&
+          (!messageWithEsPropio.remitente || !messageWithEsPropio.remitente.nombre)
+        ) {
+          console.warn(
+            "[useWebSocket] Mensaje propio sin datos del remitente, enriqueciendo con datos del usuario actual"
+          );
           messageWithEsPropio.remitente = {
-            id: user?.id || 0,
-            nombre: getUserName(user) || "Usuario",
-            apellido: getUserLastName(user) || "",
-            fotoPerfil: getUserAvatar(user) || "",
+            id: currentUser?.id || 0,
+            nombre: getUserName(currentUser) || "Usuario",
+            apellido: getUserLastName(currentUser) || "",
+            fotoPerfil: getUserAvatar(currentUser) || "",
           };
         }
 
         // Actualizar query de mensajes
-        queryClient.setQueryData(
+        qc.setQueryData(
           QUERY_KEYS.MESSAGES(event.conversacionId),
           (old: any) => {
             if (!old?.pages) return old;
@@ -99,47 +112,40 @@ export const useWebSocket = () => {
               (m: any) => m.id === event.id
             );
             if (exists) {
-              console.log(`[useWebSocket] Mensaje ${event.id} ya existe, ignorando duplicado`);
+              console.log(
+                `[useWebSocket] Mensaje ${event.id} ya existe, ignorando duplicado`
+              );
               return old;
             }
 
             // Si el mensaje es propio, buscar y reemplazar mensaje optimista
             if (messageWithEsPropio.esPropio) {
               const firstPage = old.pages[0];
-              // Buscar mensaje optimista reciente (ID negativo) del mismo tipo
               const optimisticIndex = firstPage.mensajes.findIndex(
-                (m: any) => 
-                  m.id < 0 && 
+                (m: any) =>
+                  m.id < 0 &&
                   m.remitenteId === event.remitenteId &&
                   m.tipo === event.tipo &&
-                  // Verificar que sea reciente (últimos 10 segundos)
-                  (Date.now() - new Date(m.enviadoEn).getTime() < 10000)
+                  Date.now() - new Date(m.enviadoEn).getTime() < 10000
               );
 
               if (optimisticIndex !== -1) {
-                console.log(`[useWebSocket] Reemplazando mensaje optimista ${firstPage.mensajes[optimisticIndex].id} con mensaje real ${event.id}`);
-                // Hacer merge del mensaje optimista con el real, preservando datos del usuario
                 const optimisticMessage = firstPage.mensajes[optimisticIndex];
                 const updatedMessages = [...firstPage.mensajes];
-                
-                // Merge inteligente: usar datos del servidor pero preservar datos críticos si no vienen
+
                 updatedMessages[optimisticIndex] = {
                   ...messageWithEsPropio,
-                  // Preservar remitente del optimista si el del servidor no tiene nombre
-                  remitente: messageWithEsPropio.remitente?.nombre 
-                    ? messageWithEsPropio.remitente 
+                  remitente: messageWithEsPropio.remitente?.nombre
+                    ? messageWithEsPropio.remitente
                     : optimisticMessage.remitente,
-                  // Preservar fecha si la del servidor es inválida
-                  enviadoEn: messageWithEsPropio.enviadoEn || optimisticMessage.enviadoEn,
+                  enviadoEn:
+                    messageWithEsPropio.enviadoEn || optimisticMessage.enviadoEn,
                 };
-                
+
                 return {
                   ...old,
                   pages: [
-                    {
-                      ...firstPage,
-                      mensajes: updatedMessages,
-                    },
+                    { ...firstPage, mensajes: updatedMessages },
                     ...old.pages.slice(1),
                   ],
                 };
@@ -162,12 +168,16 @@ export const useWebSocket = () => {
         );
 
         // Actualizar store
-        addMessage(event.conversacionId, messageWithEsPropio);
+        useAppStore.getState().addMessage(event.conversacionId, messageWithEsPropio);
+
+        // Si el mensaje no es propio y no estamos viendo esa conversación activa, incrementamos contador
+        const activeConvId = useAppStore.getState().activeConversationId;
+        if (!messageWithEsPropio.esPropio && activeConvId !== event.conversacionId) {
+          useAppStore.getState().incrementUnreadCount(event.conversacionId);
+        }
 
         // Invalidar conversaciones para actualizar último mensaje
-        queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.CONVERSATIONS,
-        });
+        qc.invalidateQueries({ queryKey: QUERY_KEYS.CONVERSATIONS });
       }
     );
 
@@ -176,12 +186,10 @@ export const useWebSocket = () => {
       (event: MensajeEditadoEvent) => {
         console.log("[useWebSocket] Mensaje editado:", event);
 
-        // Actualizar query de mensajes
-        queryClient.setQueryData(
+        qc.setQueryData(
           QUERY_KEYS.MESSAGES(event.conversacionId),
           (old: any) => {
             if (!old?.pages) return old;
-
             return {
               ...old,
               pages: old.pages.map((page: any) => ({
@@ -194,8 +202,7 @@ export const useWebSocket = () => {
           }
         );
 
-        // Actualizar store
-        updateMessage(event.conversacionId, event.id, event);
+        useAppStore.getState().updateMessage(event.conversacionId, event.id, event);
       }
     );
 
@@ -203,15 +210,12 @@ export const useWebSocket = () => {
     const unsubMessageDeleted = socketService.onMessageDeleted(
       (event: MensajeEliminadoEvent) => {
         console.log("[useWebSocket] Mensaje eliminado:", event);
-
         const { conversacionId, mensajeId } = event;
 
-        // Actualizar query de mensajes
-        queryClient.setQueryData(
+        qc.setQueryData(
           QUERY_KEYS.MESSAGES(conversacionId),
           (old: any) => {
             if (!old?.pages) return old;
-
             return {
               ...old,
               pages: old.pages.map((page: any) => ({
@@ -222,8 +226,7 @@ export const useWebSocket = () => {
           }
         );
 
-        // Actualizar store
-        removeMessage(conversacionId, mensajeId);
+        useAppStore.getState().removeMessage(conversacionId, mensajeId);
       }
     );
 
@@ -231,16 +234,8 @@ export const useWebSocket = () => {
     const unsubNewConversation = socketService.onNewConversation(
       (event: NuevaConversacionEvent) => {
         console.log("[useWebSocket] Nueva conversación:", event);
-
-        const { conversacion } = event;
-
-        // Actualizar store
-        addConversation(conversacion);
-
-        // Invalidar query de conversaciones
-        queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.CONVERSATIONS,
-        });
+        useAppStore.getState().addConversation(event.conversacion);
+        qc.invalidateQueries({ queryKey: QUERY_KEYS.CONVERSATIONS });
       }
     );
 
@@ -248,16 +243,8 @@ export const useWebSocket = () => {
     const unsubConversationUpdated = socketService.onConversationUpdated(
       (event: ConversacionActualizadaEvent) => {
         console.log("[useWebSocket] Conversación actualizada:", event);
-
-        const { conversacion } = event;
-
-        // Actualizar store
-        updateConversation(conversacion.id, conversacion);
-
-        // Invalidar query de conversaciones
-        queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.CONVERSATIONS,
-        });
+        useAppStore.getState().updateConversation(event.conversacion.id, event.conversacion);
+        qc.invalidateQueries({ queryKey: QUERY_KEYS.CONVERSATIONS });
       }
     );
 
@@ -265,25 +252,20 @@ export const useWebSocket = () => {
     const unsubUnreadCount = socketService.onUnreadCountUpdate(
       (event: ContadorNoLeidosConversacionEvent) => {
         console.log("[useWebSocket] Contador no leídos:", event);
-
         const { conversacionId, contador } = event;
 
-        // Actualizar store
-        updateUnreadCount(conversacionId, contador);
+        useAppStore.getState().updateUnreadCount(conversacionId, contador);
 
-        // Also update the React Query cache for conversations so UI lists
-        // that read from the query (e.g. ChatSidebar) reflect the change
         try {
-          queryClient.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
+          qc.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
             if (!old) return old;
-
-            // old may be an array of conversations
             if (Array.isArray(old)) {
               return old.map((conv: any) =>
-                conv.id === conversacionId ? { ...conv, mensajesNoLeidos: contador } : conv
+                conv.id === conversacionId
+                  ? { ...conv, mensajesNoLeidos: contador }
+                  : conv
               );
             }
-
             return old;
           });
         } catch (err) {
@@ -296,25 +278,21 @@ export const useWebSocket = () => {
     const unsubUserTyping = socketService.onUserTyping(
       (event: UsuarioEscribiendoRecibidoEvent) => {
         console.log("[useWebSocket] Usuario escribiendo:", event);
-
         const { conversacionId, usuarioId, nombre } = event;
 
-        // Actualizar store
-        setTypingUser(conversacionId, {
+        useAppStore.getState().setTypingUser(conversacionId, {
           usuarioId,
           nombre,
           conversacionId,
           timestamp: Date.now(),
         });
 
-        // Clear previous timeout for this user before scheduling a new one.
-        // This prevents the indicator from disappearing while the user is still typing.
         const key = `${conversacionId}-${usuarioId}`;
         const existing = typingTimeouts.get(key);
         if (existing) clearTimeout(existing);
 
         const timeout = setTimeout(() => {
-          removeTypingUser(conversacionId, usuarioId);
+          useAppStore.getState().removeTypingUser(conversacionId, usuarioId);
           typingTimeouts.delete(key);
         }, 5000);
         typingTimeouts.set(key, timeout);
@@ -325,11 +303,7 @@ export const useWebSocket = () => {
     const unsubUserStopTyping = socketService.onUserStopTyping(
       (event: UsuarioDejoEscribirRecibidoEvent) => {
         console.log("[useWebSocket] Usuario dejó de escribir:", event);
-
-        const { conversacionId, usuarioId } = event;
-
-        // Actualizar store
-        removeTypingUser(conversacionId, usuarioId);
+        useAppStore.getState().removeTypingUser(event.conversacionId, event.usuarioId);
       }
     );
 
@@ -337,27 +311,18 @@ export const useWebSocket = () => {
     const unsubUserConnected = socketService.onUserConnected(
       (event: UsuarioConectadoEvent) => {
         console.log("[useWebSocket] Usuario conectado:", event);
-
         const { usuarioId } = event;
+        useAppStore.getState().setUserOnline(usuarioId);
 
-        // Actualizar store
-        setUserOnline(usuarioId);
-
-        // Actualizar query de conversaciones
-        queryClient.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
+        qc.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
           if (!old) return old;
-
           if (Array.isArray(old)) {
             return old.map((conv: any) =>
               conv.otroUsuario?.id === usuarioId
-                ? {
-                    ...conv,
-                    otroUsuario: { ...conv.otroUsuario, conectado: true },
-                  }
+                ? { ...conv, otroUsuario: { ...conv.otroUsuario, conectado: true } }
                 : conv
             );
           }
-
           return old;
         });
       }
@@ -367,27 +332,18 @@ export const useWebSocket = () => {
     const unsubUserDisconnected = socketService.onUserDisconnected(
       (event: UsuarioDesconectadoEvent) => {
         console.log("[useWebSocket] Usuario desconectado:", event);
-
         const { usuarioId } = event;
+        useAppStore.getState().setUserOffline(usuarioId);
 
-        // Actualizar store
-        setUserOffline(usuarioId);
-
-        // Actualizar query de conversaciones
-        queryClient.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
+        qc.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
           if (!old) return old;
-
           if (Array.isArray(old)) {
             return old.map((conv: any) =>
               conv.otroUsuario?.id === usuarioId
-                ? {
-                    ...conv,
-                    otroUsuario: { ...conv.otroUsuario, conectado: false },
-                  }
+                ? { ...conv, otroUsuario: { ...conv.otroUsuario, conectado: false } }
                 : conv
             );
           }
-
           return old;
         });
       }
@@ -397,45 +353,64 @@ export const useWebSocket = () => {
     const unsubConnectionStatus = socketService.onConnectionStatusResponse(
       (event: EstadoConexionUsuariosEvent) => {
         console.log("[useWebSocket] Estado de conexión recibido:", event);
-
         const { estados } = event;
 
-        // Actualizar store para cada usuario
         Object.entries(estados).forEach(([userIdStr, isOnline]) => {
           const userId = parseInt(userIdStr, 10);
           if (isOnline) {
-            setUserOnline(userId);
+            useAppStore.getState().setUserOnline(userId);
           } else {
-            setUserOffline(userId);
+            useAppStore.getState().setUserOffline(userId);
           }
         });
 
-        // Actualizar query de conversaciones
-        queryClient.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
+        qc.setQueryData(QUERY_KEYS.CONVERSATIONS, (old: any) => {
           if (!old) return old;
-
           if (Array.isArray(old)) {
             return old.map((conv: any) => {
               const otroUsuarioId = conv.otroUsuario?.id;
               if (otroUsuarioId && estados[otroUsuarioId] !== undefined) {
                 return {
                   ...conv,
-                  otroUsuario: { 
-                    ...conv.otroUsuario, 
-                    conectado: estados[otroUsuarioId] 
+                  otroUsuario: {
+                    ...conv.otroUsuario,
+                    conectado: estados[otroUsuarioId],
                   },
                 };
               }
               return conv;
             });
           }
-
           return old;
         });
-
-        console.log(`[useWebSocket] Estados actualizados: ${Object.keys(estados).length} usuarios`);
       }
     );
+
+    // ============================================
+    // TELECONSULTATION LISTENERS
+    // ============================================
+
+    const unsubLlamadaEntrante = socketService.onIncomingCall(
+      (event: LlamadaEntranteEvent) => {
+        console.log("[useWebSocket] Llamada entrante recibida:", event);
+
+        toast.info(`Videollamada entrante de Dr. ${event.doctorNombre}`, {
+          description: `Cita #${event.citaId}`,
+          duration: 30000,
+          action: {
+            label: "Contestar",
+            onClick: () => {
+              window.location.href = `/teleconsult/${event.citaId}`;
+            },
+          },
+        });
+      }
+    );
+
+    const unsubLlamadaFinalizada = socketService.onCallEnded(() => {
+      console.log("[useWebSocket] Llamada finalizada");
+      toast.dismiss();
+    });
 
     // Retornar función de cleanup
     return () => {
@@ -450,20 +425,10 @@ export const useWebSocket = () => {
       unsubUserConnected();
       unsubUserDisconnected();
       unsubConnectionStatus();
+      unsubLlamadaEntrante();
+      unsubLlamadaFinalizada();
     };
-  }, [
-    queryClient,
-    addMessage,
-    updateMessage,
-    removeMessage,
-    addConversation,
-    updateConversation,
-    updateUnreadCount,
-    setTypingUser,
-    removeTypingUser,
-    setUserOnline,
-    setUserOffline,
-  ]);
+  }, []); // Empty deps — all dynamic state is accessed via useAppStore.getState()
 
   // ============================================
   // CONNECTION EFFECT — ref-counted singleton
@@ -482,14 +447,7 @@ export const useWebSocket = () => {
 
       statusCleanup = socketService.onConnectionStatusChange((status) => {
         console.log("[useWebSocket] Estado de conexión:", status);
-        setConnectionStatus(status);
-        
-        // Cuando se conecta exitosamente, unirse a la sala personal del usuario
-        if (status === "connected" && user?.id) {
-          const personalRoom = `usuario:${user.id}`;
-          socketService.joinRoom(personalRoom);
-          console.log(`[useWebSocket] Usuario ${user.id} se unió a su sala personal: ${personalRoom}`);
-        }
+        useAppStore.getState().setConnectionStatus(status);
       });
 
       listenerCleanup = setupListeners();
@@ -511,7 +469,34 @@ export const useWebSocket = () => {
         socketService.disconnect();
       }
     };
-  }, [accessToken, user, setupListeners, setConnectionStatus]);
+  }, [accessToken, setupListeners]);
+
+  // Asegurar que el usuario se una a su sala personal
+  useEffect(() => {
+    const isConn =
+      socketService.isConnected() ||
+      socketService.getConnectionStatus() === "connected";
+    if (isConn && user?.id) {
+      const personalRoom = `usuario:${user.id}`;
+      socketService.joinRoom(personalRoom);
+      console.log(
+        `[useWebSocket] Usuario ${user.id} se aseguró en sala personal: ${personalRoom}`
+      );
+    }
+  }, [socketService.getConnectionStatus(), user?.id]);
+
+  // Unir a todas las salas de conversación activas (fallback para casos de ID incorrecto)
+  useEffect(() => {
+    const isConn =
+      socketService.isConnected() ||
+      socketService.getConnectionStatus() === "connected";
+    const convs = useAppStore.getState().conversations;
+    if (isConn && convs.length > 0) {
+      convs.forEach((conv) => {
+        socketService.joinConversation(conv.id);
+      });
+    }
+  }, [socketService.getConnectionStatus()]);
 
   // ============================================
   // EXPORTED METHODS
@@ -545,25 +530,28 @@ export const useWebSocket = () => {
     async (conversacionId: number, ultimoMensajeLeidoId: number) => {
       if (!user) return;
 
-      // Validate parameters before proceeding
       if (!Number.isInteger(conversacionId) || conversacionId <= 0) {
-        console.error("[useWebSocket.markAsRead] Invalid conversacionId:", conversacionId);
+        console.error(
+          "[useWebSocket.markAsRead] Invalid conversacionId:",
+          conversacionId
+        );
         return;
       }
 
       if (!Number.isInteger(ultimoMensajeLeidoId) || ultimoMensajeLeidoId <= 0) {
-        console.error("[useWebSocket.markAsRead] Invalid ultimoMensajeLeidoId:", ultimoMensajeLeidoId);
+        console.error(
+          "[useWebSocket.markAsRead] Invalid ultimoMensajeLeidoId:",
+          ultimoMensajeLeidoId
+        );
         return;
       }
 
-      // Emitir evento por WebSocket
       socketService.emitMessagesRead({
         conversacionId,
         usuarioId: user.id,
         ultimoMensajeLeidoId,
       });
 
-      // También llamar al REST API
       try {
         await chatService.markMessagesAsRead(conversacionId, ultimoMensajeLeidoId);
       } catch (error) {

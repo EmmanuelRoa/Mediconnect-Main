@@ -18,7 +18,7 @@ import type { ConversationWithDetails } from "@/types/ChatTypes";
 export const useConversations = () => {
   const setConversations = useAppStore((state) => state.setConversations);
   const onlineUsers = useAppStore((state) => state.onlineUsers);
-  const { requestConnectionStatus, connectionStatus } = useWebSocket();
+  const { requestConnectionStatus, connectionStatus, joinConversation } = useWebSocket();
 
   const query = useQuery<ConversationWithDetails[], Error>({
     queryKey: QUERY_KEYS.CONVERSATIONS,
@@ -26,7 +26,7 @@ export const useConversations = () => {
     staleTime: 1000 * 60 * 2, // 2 minutos (datos cambian frecuentemente)
     refetchOnMount: true, // Siempre refetch al montar
     refetchOnWindowFocus: true, // Refetch al volver a la ventana
-    
+
     // onSuccess/onError handled with effects below to satisfy strict TS checks
   });
 
@@ -42,10 +42,10 @@ export const useConversations = () => {
           conectado: onlineUsers.has(conv.otroUsuario.id),
         },
       }));
-      
+
       setConversations(conversationsWithOnlineStatus);
-      
-      // If WebSocket is connected, request connection status for all users
+
+      // If WebSocket is connected, request connection status and join rooms
       if (connectionStatus === "connected" && query.data.length > 0) {
         const userIds = query.data
           .map((conv) => conv.otroUsuario.id)
@@ -53,9 +53,17 @@ export const useConversations = () => {
         if (userIds.length > 0) {
           requestConnectionStatus(userIds);
         }
+
+        // Subscribirse explícitamente a las salas de cada conversación
+        // Sirve como fallback frente al bug de receptorId del backend
+        query.data.forEach((conv) => {
+          setTimeout(() => {
+            joinConversation(conv.id);
+          }, Math.random() * 500); // Stagger joins slightly to prevent flood
+        });
       }
     }
-  }, [query.data, onlineUsers, connectionStatus, setConversations, requestConnectionStatus]);
+  }, [query.data, onlineUsers, connectionStatus, setConversations, requestConnectionStatus, joinConversation]);
 
   // Log errors
   useEffect(() => {

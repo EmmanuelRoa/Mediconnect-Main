@@ -10,8 +10,12 @@ import {
   createAuthFlowSlice,
 } from "@/stores/useAuthFlowSlice";
 import { type ChatSlice, createChatSlice } from "@/stores/useChatSlice";
+import {
+  type NotificationsSlice,
+  createNotificationsSlice,
+} from "./useNotificationsSlice";
 
-type AppStore = AuthSlice & OnboardingSlice & AuthFlowSlice & ChatSlice;
+type AppStore = AuthSlice & OnboardingSlice & AuthFlowSlice & ChatSlice & NotificationsSlice;
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -20,6 +24,7 @@ export const useAppStore = create<AppStore>()(
       ...createOnboardingSlice(...a),
       ...createAuthFlowSlice(...a),
       ...createChatSlice(...a),
+      ...createNotificationsSlice(...a),
     }),
     {
       name: "app-storage",
@@ -44,7 +49,10 @@ export const useAppStore = create<AppStore>()(
         doctorOnboardingData: state.doctorOnboardingData,
         centerOnboardingData: state.centerOnboardingData,
 
-        // ChatSlice NO se persiste - se carga desde API
+        // NotificationsSlice - Opcional: descomenta si quieres persistir el contador
+        // unreadNotificationsCount: state.unreadNotificationsCount,
+
+        // ChatSlice y incomingCall NO se persistem - se cargan desde API/WebSocket
       }),
     },
   ),

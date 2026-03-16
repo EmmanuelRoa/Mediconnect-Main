@@ -2,6 +2,8 @@ import type { ConversationWithDetails, AttachmentQueueItem, AllowedMediaTypes } 
 import { AttachmentStatus, MediaValidationError, MessageType } from "@/types/ChatTypes";
 import { ChatAvatar } from "./ChatAvatar";
 import { MessageBubble } from "./MessageBubble";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/lib/react-query/config";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChatInput } from "./ChatInput";
@@ -33,10 +35,10 @@ export function ChatPanel({
   const [isAtBottom, setIsAtBottom] = useState(true);
   const isMobile = useIsMobile();
   const { t } = useTranslation("common");
-  
+
   // Store state
   const conversations = useAppStore((state) => state.conversations);
-  
+
   // Get online status from store
   const conversationData = conversations.find((c) => c.id === conversation?.id);
   const isOnline = conversationData?.otroUsuario?.conectado || false;
@@ -45,7 +47,7 @@ export function ChatPanel({
   // Use a selector that returns a primitive to ensure Zustand detects changes.
   const isTyping = useAppStore((state) => {
     const users = state.typingUsers.get(conversation?.id ?? 0) || [];
-    
+
     return users.length > 0;
   });
   // Local UI state
@@ -86,6 +88,9 @@ export function ChatPanel({
   const { uploadMedia, isUploading } = useUploadMedia();
   const { joinConversation, leaveConversation, sendTypingIndicator, sendStopTypingIndicator, markAsRead } = useWebSocket();
   const resetUnreadCount = useAppStore((state) => state.resetUnreadCount);
+
+  // React Query Client
+  const queryClient = useQueryClient();
   const setToast = useGlobalUIStore((state) => state.setToast);
 
   // Join/leave conversation when it changes
@@ -162,7 +167,7 @@ export function ChatPanel({
               // And must have a valid positive ID (> 0)
               return m.esPropio === false && typeof m.id === 'number' && m.id > 0;
             });
-          
+
           if (!lastReceivedMessage) return;
           const lastId = lastReceivedMessage.id;
 
@@ -182,6 +187,11 @@ export function ChatPanel({
             try {
               markAsRead(conversation.id, lastId);
               lastSentReadRef.current = lastId;
+
+              // Refetch en background para evitar sobrescrituras con data antigua
+              setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONVERSATIONS });
+              }, 1000);
             } catch (err) {
               console.error("[ChatPanel] markAsRead error:", err);
             }
@@ -232,11 +242,11 @@ export function ChatPanel({
       if (scrollElement) {
         const newScrollHeight = scrollElement.scrollHeight;
         const scrollDiff = newScrollHeight - previousScrollHeightRef.current;
-        
+
         if (scrollDiff > 0) {
           scrollElement.scrollTop = scrollElement.scrollTop + scrollDiff;
         }
-        
+
         previousScrollHeightRef.current = 0;
       }
     }
@@ -245,16 +255,16 @@ export function ChatPanel({
   // Handle typing indicator emission
   const handleInputChange = (value: string) => {
     setInputValue(value);
-    
+
     if (conversation?.id) {
       // Emit typing event
       sendTypingIndicator(conversation.id);
-      
+
       // Clear existing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      
+
       // Set timeout to emit stop typing after 3 seconds
       typingTimeoutRef.current = setTimeout(() => {
         sendStopTypingIndicator(conversation.id);
@@ -330,12 +340,12 @@ export function ChatPanel({
           prev.map((item) =>
             item.id === id
               ? {
-                  ...item,
-                  file: compressedFile,
-                  preview: URL.createObjectURL(compressedFile),
-                  status: AttachmentStatus.PENDING,
-                  compressedSize: wasCompressed ? compressedSize : undefined,
-                }
+                ...item,
+                file: compressedFile,
+                preview: URL.createObjectURL(compressedFile),
+                status: AttachmentStatus.PENDING,
+                compressedSize: wasCompressed ? compressedSize : undefined,
+              }
               : item
           )
         );
@@ -506,7 +516,7 @@ export function ChatPanel({
       } else if (file.type.startsWith("image/")) {
         detectedType = "image";
       }
-      
+
       addToQueue(file, detectedType);
     });
     e.target.value = ""; // Reset input
@@ -563,7 +573,7 @@ export function ChatPanel({
       console.error("Error al acceder al micrófono:", error);
       alert(
         t("chatPanel.microphoneError") ||
-          "No se pudo acceder al micrófono. Verifica los permisos.",
+        "No se pudo acceder al micrófono. Verifica los permisos.",
       );
     }
   };
@@ -689,7 +699,7 @@ export function ChatPanel({
           <div className="space-y-2 md:space-y-3">
             {/* Sentinel to detect when user scrolls to top for loading older messages */}
             <div ref={topSentinelRef} aria-hidden style={{ width: 1, height: 20 }} />
-            
+
             {isFetchingNextPage && (
               <div className="flex justify-center py-2">
                 <p className="text-sm text-muted-foreground">
@@ -697,14 +707,14 @@ export function ChatPanel({
                 </p>
               </div>
             )}
-            
+
             {messages.length > 0 ? (
               (() => {
                 // Extraer todas las imágenes de la conversación una sola vez
                 const allImageMediaIds = messages
                   .filter((m) => m.tipo === MessageType.IMAGEN && m.mediaId)
                   .map((m) => m.mediaId!);
-                
+
                 return messages.map((message, index) => {
                   // Encontrar el índice de la imagen actual
                   const currentImageIndex = message.tipo === MessageType.IMAGEN && message.mediaId

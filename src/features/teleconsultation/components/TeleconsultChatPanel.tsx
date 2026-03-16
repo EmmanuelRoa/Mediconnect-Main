@@ -51,6 +51,7 @@ function buildOtroUsuarioFromAppointment(
 export function TeleconsultChatPanel({ appointmentId }: TeleconsultChatPanelProps) {
   const queryClient = useQueryClient();
   const user = useAppStore((s) => s.user);
+  const setActiveConversation = useAppStore((s) => s.setActiveConversation);
   const role = user ? getUserAppRole(user) : null;
   const { appointment, loading: loadingCita } = useCitaDetails(
     appointmentId || undefined
@@ -116,6 +117,18 @@ export function TeleconsultChatPanel({ appointmentId }: TeleconsultChatPanelProp
       },
     };
   }, [conversation, fallbackOtroUsuario]);
+
+  // Marcar la conversación como activa en el store general del chat para que el IntersectionObserver
+  // (dentro de RealChatPanel) sepa que estamos viéndola y marque los mensajes automáticamente como leídos.
+  // Debe ir antes de los retornos tempranos para cumplir las Reglas de los Hooks.
+  useEffect(() => {
+    if (safeConversation?.id) {
+      setActiveConversation(safeConversation.id);
+    }
+    return () => {
+      setActiveConversation(null);
+    };
+  }, [safeConversation?.id, setActiveConversation]);
 
   if (loadingCita || (otherUserId != null && loadingConversation)) {
     return (

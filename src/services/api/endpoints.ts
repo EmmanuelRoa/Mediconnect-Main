@@ -89,10 +89,11 @@ export const API_ENDPOINTS = {
 
   // --- NOTIFICACIONES ---
   NOTIFICATIONS: {
-    BASE: '/notifications',
-    BY_ID: (id: string | number) => `/notifications/${id}`,
-    MARK_AS_READ: (id: string | number) => `/notifications/${id}/read`,
-    MARK_ALL_AS_READ: '/notifications/read-all',
+    BASE: '/notificaciones',
+    BY_ID: (id: string | number) => `/notificaciones/${id}`,
+    MARK_AS_READ: (id: string | number) => `/notificaciones/${id}/leer`,
+    MARK_ALL_AS_READ: '/notificaciones/leer-todas',
+    UNREAD_COUNT: '/notificaciones/no-leidas/contar',
   },
 
   // --- UBICACIONES ---

@@ -31,7 +31,10 @@ export function useCitaDetails(appointmentId: string | undefined) {
                     source: i18n.language === "es" ? "en" : "es",
                 };
                 const response = await getCitaById(appointmentId, params);
-                const payload = response?.data;
+                // La API ahora retorna { data: { cita: {...}, historial: {...} }, _translation: {...} }
+                const rawData = response?.data as any;
+                const payload = rawData?.cita || rawData; // Por si acaso ya viene directo
+                const translation = (response as any)?._translation;
 
                 if (!isMounted) return;
 
@@ -42,6 +45,11 @@ export function useCitaDetails(appointmentId: string | undefined) {
                 }
 
                 const appointmentData: CitaDetalle | null = Array.isArray(payload) ? (payload[0] ?? null) : payload;
+
+                // Inyectar traducciones si existen en la respuesta global
+                if (appointmentData && translation) {
+                    (appointmentData as any)._translation = translation;
+                }
 
                 if (appointmentData) {
                     // Fetch location data if ID is present

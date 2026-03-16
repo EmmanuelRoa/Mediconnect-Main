@@ -1,4 +1,5 @@
 import apiClient from "../api/client";
+import { useAppStore } from "@/stores/useAppStore";
 import API_ENDPOINTS from "../api/endpoints";
 import type {
   ConversationWithDetails,
@@ -31,7 +32,23 @@ export const chatService = {
       const { data } = await apiClient.get<{ success: boolean; mensaje: string; data: { conversaciones: ConversationWithDetails[]; total: number; totalNoLeidos: number } }>(
         API_ENDPOINTS.CONVERSATIONS.BASE
       );
-      return data.data.conversaciones ?? [];
+
+      // Prevenir el bug donde el conteo de no leidos incremente para el EMISOR del mensaje
+      // Sumamos manualmente los mensajesNoLeidos ignorando conversaciones donde el último mensaje es nuestro
+      if (data.data?.conversaciones) {
+        let calculatedUnread = 0;
+        const currentUserId = useAppStore.getState().user?.id;
+
+        data.data.conversaciones.forEach((conv) => {
+          if (conv.mensajesNoLeidos && conv.ultimoMensaje?.remitenteId !== currentUserId) {
+            calculatedUnread += conv.mensajesNoLeidos;
+          }
+        });
+
+        useAppStore.getState().setGlobalUnreadCount(calculatedUnread);
+      }
+
+      return data.data?.conversaciones ?? [];
     } catch (error) {
       console.error("[chatService.getConversations] Error:", error);
       throw error;
@@ -116,18 +133,18 @@ export const chatService = {
         API_ENDPOINTS.CONVERSATIONS.MESSAGES(conversacionId),
         { params }
       );
-      
+
       console.log("[chatService.getMessages] Raw response:", {
         messagesCount: data.data?.length,
         paginacion: data.paginacion,
         firstMessageId: data.data?.[0]?.id,
         lastMessageId: data.data?.[data.data.length - 1]?.id,
       });
-      
+
       return {
         mensajes: data.data ?? [],
         tieneMas: data.paginacion?.hayMas ?? false,
-        siguienteCursor: data.data && data.data.length > 0 
+        siguienteCursor: data.data && data.data.length > 0
           ? data.data[data.data.length - 1].id // El último mensaje (más antiguo) es el cursor
           : undefined,
       };
@@ -173,7 +190,7 @@ export const chatService = {
     request: SendMediaMessageRequest
   ): Promise<MessageWithSender> => {
     try {
-      const { conversacionId, mediaId, tipo, contenido  } = request;
+      const { conversacionId, mediaId, tipo, contenido } = request;
       const payload = {
         mediaId,
         tipo,

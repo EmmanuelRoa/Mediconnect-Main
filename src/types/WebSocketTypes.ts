@@ -178,6 +178,43 @@ export interface EstadoConexionUsuariosEvent {
   estados: Record<number, boolean>; // { usuarioId: conectado }
 }
 
+/**
+ * Nueva notificación del sistema
+ */
+export interface NotificacionEvent {
+  id: number;
+  titulo: string;
+  mensaje: string;
+  tipoAlerta?: string;
+  tipoEntidad?: string;
+  entidadId?: number;
+  creadoEn: string;
+}
+
+/**
+ * Contador total de notificaciones no leídas
+ */
+export interface ContadorNotificacionesEvent {
+  contador: number;
+}
+
+/**
+ * Llamada entrante
+ */
+export interface LlamadaEntranteEvent {
+  citaId: number;
+  doctorNombre: string;
+  urlAcceso: string;
+}
+
+/**
+ * Llamada finalizada
+ */
+export interface LlamadaFinalizadaEvent {
+  citaId: number;
+  timestamp: string;
+}
+
 // ============================================
 // SOCKET EVENT NAMES (Constants)
 // ============================================
@@ -215,9 +252,10 @@ export const SERVER_EVENTS = {
   USUARIO_CONECTADO: "usuario-conectado",
   USUARIO_DESCONECTADO: "usuario-desconectado",
   ESTADO_CONEXION_USUARIOS: "estado-conexion-usuarios",
-  // Eventos de notificaciones (para referencia)
   NUEVA_NOTIFICACION: "nueva-notificacion",
   CONTADOR_NO_LEIDAS: "contador-no-leidas",
+  LLAMADA_ENTRANTE: "llamada-entrante",
+  LLAMADA_FINALIZADA: "llamada-finalizada",
 } as const;
 
 /**
