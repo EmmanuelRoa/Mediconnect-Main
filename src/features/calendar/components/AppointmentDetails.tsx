@@ -79,6 +79,7 @@ export const AppointmentDetails = ({
 
   const modLower = appointment?.modality?.toLowerCase() || "";
   const isVirtual = modLower.includes("virtual") || modLower.includes("teleconsulta");
+  const isPresencial = modLower.includes("presencial") || modLower.includes("in_person");
 
   const isInProgress = appointment?.status === "in_progress";
   const isPending = appointment?.status === "pending";
@@ -92,15 +93,6 @@ export const AppointmentDetails = ({
     );
   };
 
-  const handleCompleteAppointment = (appointmentId: string) => {
-    // Logic to mark as completed
-    console.log("Completing appointment:", appointmentId);
-  };
-
-  const handleContinueConsultation = (appointmentId: string) => {
-    navigate(ROUTES.DOCTOR.CONSULTATION.replace(":id", appointmentId));
-  };
-
   function handleChatClick(event: React.MouseEvent<HTMLButtonElement>): void {
     event.stopPropagation(); // Evita que el clic se propague al contenedor padre
 
@@ -109,6 +101,10 @@ export const AppointmentDetails = ({
       startConversation(Number(recipientId));
     }
   }
+
+  const handleAddMedicalDiagnosis = (appointmentId: string) => {
+    navigate(ROUTES.DOCTOR.CONSULTATION.replace(":id", appointmentId));
+  };
 
   // Render actions based on user role and appointment status
   const renderActions = () => {
@@ -151,6 +147,15 @@ export const AppointmentDetails = ({
                 onClick={() => handleJoin(appointment.id)}
               >
                 {t("appointments.joinTeleconsult")}
+              </MCButton>
+            )}
+            {isPresencial && (
+              <MCButton
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+                onClick={() => handleAddMedicalDiagnosis(appointment.id)}
+              >
+                {t("appointments.addMedicalDiagnosis")}
               </MCButton>
             )}
             <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
@@ -201,37 +206,55 @@ export const AppointmentDetails = ({
               >
                 {t("appointments.joinTeleconsult")}
               </MCButton>
-              <MCButton
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                size="sm"
-                onClick={() => handleCompleteAppointment(appointment.id)}
+              <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
+                <MCButton className="w-full" size="sm">
+                  {t("appointments.viewAppointment")}
+                </MCButton>
+              </ViewDetailsAppointmentDialog>
+              <RescheduleAppointment appointmentId={appointment.id}>
+                <MCButton className="w-full" size="sm" variant="outline">
+                  {t("appointments.reschedule")}
+                </MCButton>
+              </RescheduleAppointment>
+              <CancelAppointmentDialog
+                appointmentId={appointment.id}
+                onCancelSuccess={onClose}
               >
-                {t("appointments.markCompleted")}
-              </MCButton>
+                <MCButton variant="outlineDelete" className="w-full" size="sm">
+                  {t("appointments.cancel")}
+                </MCButton>
+              </CancelAppointmentDialog>
             </div>
           );
         } else {
           return (
             <div className="flex flex-col gap-2">
               <ViewDetailsAppointmentDialog appointmentId={appointment.id}>
-                <MCButton className="w-full" size="sm" variant="outline">
+                <MCButton className="w-full" size="sm">
                   {t("appointments.viewAppointment")}
                 </MCButton>
               </ViewDetailsAppointmentDialog>
+              <RescheduleAppointment appointmentId={appointment.id}>
+                <MCButton className="w-full" size="sm" variant="outline">
+                  {t("appointments.reschedule")}
+                </MCButton>
+              </RescheduleAppointment>
+              <CancelAppointmentDialog
+                appointmentId={appointment.id}
+                onCancelSuccess={onClose}
+              >
+                <MCButton variant="outlineDelete" className="w-full" size="sm">
+                  {t("appointments.cancel")}
+                </MCButton>
+              </CancelAppointmentDialog>
               <MCButton
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
-                onClick={() => handleContinueConsultation(appointment.id)}
+                onClick={() => handleAddMedicalDiagnosis(appointment.id)}
               >
-                {t("appointments.continueConsultation")}
+                {t("appointments.addMedicalDiagnosis")}
               </MCButton>
-              <MCButton
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                size="sm"
-                onClick={() => handleCompleteAppointment(appointment.id)}
-              >
-                {t("appointments.markCompleted")}
-              </MCButton>
+
             </div>
           );
         }

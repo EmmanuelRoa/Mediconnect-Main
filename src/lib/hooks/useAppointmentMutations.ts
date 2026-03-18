@@ -5,6 +5,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { cancelCita } from '@/services/api/appointments.service';
+import { patientService } from '@/shared/navigation/userMenu/editProfile/patient/services/patient.service';
 import { QUERY_KEYS } from '@/lib/react-query/config';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -16,14 +17,14 @@ interface CancelAppointmentVariables {
 
 /**
  * Hook para cancelar una cita
- * 
+ *
  * @example
  * ```tsx
  * const { mutate: cancelAppointment, isPending } = useCancelAppointment();
- * 
- * cancelAppointment({ 
- *   appointmentId: '123', 
- *   reason: 'No puedo asistir' 
+ *
+ * cancelAppointment({
+ *   appointmentId: '123',
+ *   reason: 'No puedo asistir'
  * });
  * ```
  */
@@ -45,7 +46,7 @@ export const useCancelAppointment = () => {
       // Optimistic update: actualizar el estado de la cita localmente
       queryClient.setQueriesData({ queryKey: QUERY_KEYS.CITAS() }, (old: any) => {
         if (!old?.data) return old;
-        
+
         const updateAppointment = (appointment: any) => {
           if (appointment.id.toString() === appointmentId) {
             return { ...appointment, estado: 'Cancelada' };
@@ -55,7 +56,7 @@ export const useCancelAppointment = () => {
 
         return {
           ...old,
-          data: Array.isArray(old.data) 
+          data: Array.isArray(old.data)
             ? old.data.map(updateAppointment)
             : updateAppointment(old.data)
         };
@@ -67,29 +68,46 @@ export const useCancelAppointment = () => {
       // Revertir al estado anterior en caso de error
       if (context?.previousAppointments) {
         queryClient.setQueryData(
-          QUERY_KEYS.CITAS(), 
+          QUERY_KEYS.CITAS(),
           context.previousAppointments
         );
       }
-      
+
       console.error('Error cancelling appointment:', error);
       toast.error(t('myAppointments.cancelError'));
     },
     onSuccess: () => {
       // Invalidar queries para refetch desde el servidor
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CITAS() });
-      
+
       toast.success(t('myAppointments.cancelSuccess'));
     },
   });
 };
 
+// ─── Reschedule ───────────────────────────────────────────────────────────────
+
+interface RescheduleVariables {
+  /** ID de la cita a reprogramar (string porque así viene de los call-sites) */
+  appointmentId: string;
+  /** ID del horario seleccionado */
+  horarioId: number;
+  /** Fecha nueva en formato YYYY-MM-DD */
+  fecha: string;
+  /** Hora nueva en formato HH:mm (24h) */
+  hora: string;
+}
+
 /**
- * Hook para reagendar una cita (placeholder para futura implementación)
- * 
+ * Hook para reagendar una cita.
+ * Llama a PATCH /citas/{id}/reprogramar con { horarioId, fecha, hora }.
+ * Aplica optimistic update (estado → "Reprogramada") e invalida el caché al resolver.
+ *
  * @example
  * ```tsx
- * const { mutate: rescheduleAppointment } = useRescheduleAppointment();
+ * const { mutate, isPending } = useRescheduleAppointment();
+ *
+ * mutate({ appointmentId: '5', horarioId: 3, fecha: '2026-03-20', hora: '10:00' });
  * ```
  */
 export const useRescheduleAppointment = () => {
@@ -97,17 +115,49 @@ export const useRescheduleAppointment = () => {
   const { t } = useTranslation('patient');
 
   return useMutation({
-    mutationFn: async (_data: any) => {
-      // TODO: Implementar servicio de reagendamiento cuando esté disponible
-      throw new Error('Reschedule service not implemented yet');
+    mutationFn: ({ appointmentId, horarioId, fecha, hora }: RescheduleVariables) =>
+      patientService.rescheduleAppointment(Number(appointmentId), {
+        horarioId,
+        fecha,
+        hora,
+      }),
+
+    onMutate: async ({ appointmentId }) => {
+      // Cancelar queries en vuelo para evitar override del optimistic update
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.CITAS() });
+
+      const previousAppointments = queryClient.getQueryData(QUERY_KEYS.CITAS());
+
+      // Optimistic update: marcar la cita como reprogramada
+      queryClient.setQueriesData({ queryKey: QUERY_KEYS.CITAS() }, (old: any) => {
+        if (!old?.data) return old;
+
+        const update = (appointment: any) =>
+          appointment.id.toString() === appointmentId
+            ? { ...appointment, estado: 'Reprogramada' }
+            : appointment;
+
+        return {
+          ...old,
+          data: Array.isArray(old.data) ? old.data.map(update) : update(old.data),
+        };
+      });
+
+      return { previousAppointments };
     },
+
+    onError: (error, _vars, context) => {
+      // Revertir snapshot al estado anterior
+      if (context?.previousAppointments) {
+        queryClient.setQueryData(QUERY_KEYS.CITAS(), context.previousAppointments);
+      }
+      console.error('Error rescheduling appointment:', error);
+      toast.error(t('appointments.error', 'Error al reprogramar la cita'));
+    },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CITAS() });
-      toast.success(t('appointments.rescheduleSuccess'));
-    },
-    onError: (error) => {
-      console.error('Error rescheduling appointment:', error);
-      toast.error(t('appointments.error'));
+      toast.success(t('appointments.rescheduleSuccess', 'Cita reprogramada correctamente'));
     },
   });
 };

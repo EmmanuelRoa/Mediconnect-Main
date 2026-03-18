@@ -22,19 +22,19 @@ function DashboardPage() {
   const { t, i18n } = useTranslation("patient");
   const user = useAppStore((state) => state.user);
   const navigate = useNavigate();
-  
+
   // Estados para alergias y condiciones médicas
   const [myAllergies, setMyAllergies] = useState<CondicionMedica[]>([]);
   const [myConditions, setMyConditions] = useState<CondicionMedica[]>([]);
   const [isLoadingAllergies, setIsLoadingAllergies] = useState(true);
   const [isLoadingConditions, setIsLoadingConditions] = useState(true);
-  
+
   // Cargar alergias del usuario
   const loadAllergies = useCallback(async () => {
     try {
       setIsLoadingAllergies(true);
       const response = await patientService.getMyAllergies(i18n.language);
-      
+
       if (response.success) {
         setMyAllergies(response.data);
       }
@@ -44,13 +44,13 @@ function DashboardPage() {
       setIsLoadingAllergies(false);
     }
   }, [i18n.language]);
-  
+
   // Cargar condiciones médicas del usuario
   const loadConditions = useCallback(async () => {
     try {
       setIsLoadingConditions(true);
       const response = await patientService.getMyConditions(i18n.language);
-      
+
       if (response.success) {
         setMyConditions(response.data);
       }
@@ -60,35 +60,35 @@ function DashboardPage() {
       setIsLoadingConditions(false);
     }
   }, [i18n.language]);
-  
+
   // Cargar alergias del usuario
   useEffect(() => {
     loadAllergies();
   }, [loadAllergies]);
-  
+
   // Cargar condiciones médicas del usuario
   useEffect(() => {
     loadConditions();
   }, [loadConditions]);
-  
+
   // Escuchar evento global de cambios en alergias
   useEffect(() => {
     const unsubscribe = onAllergiesChanged(() => {
       loadAllergies();
     });
-    
+
     return unsubscribe;
   }, [loadAllergies]);
-  
+
   // Escuchar evento global de cambios en condiciones médicas
   useEffect(() => {
     const unsubscribe = onConditionsChanged(() => {
       loadConditions();
     });
-    
+
     return unsubscribe;
   }, [loadConditions]);
-  
+
   // Calcular datos del paciente
   const patientAge = getPatientAge(user?.paciente || null);
   const IMC = calculatePatientBMI(user?.paciente || null);
@@ -116,7 +116,7 @@ function DashboardPage() {
             {t("dashboard.searchTitle")}
           </h1>
           <div className="w-full">
-            <DoctorSearchBar 
+            <DoctorSearchBar
               onDoctorSelect={handleDoctorSelect}
               onInsuranceSelect={handleInsuranceSelect}
             />
@@ -127,7 +127,7 @@ function DashboardPage() {
           {/* FILA 1: CALENDARIO + SEGUROS */}
           <div className="grid grid-cols-1 lg:grid-cols-[69.5%_29.5%] gap-4 w-full">
             {/* Calendario + citas */}
-            <Card className="rounded-2xl md:rounded-4xl  min-h-0">
+            <Card className="rounded-2xl md:rounded-4xl min-h-0 lg:h-[480px] flex flex-col">
               <AppointmentsCalendar />
             </Card>
 

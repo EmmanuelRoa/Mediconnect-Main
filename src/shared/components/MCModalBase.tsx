@@ -21,16 +21,16 @@ interface MCModalBaseProps {
   triggerClassName?: string;
   title?: string;
   size?:
-    | "sm"
-    | "smWide"
-    | "md"
-    | "mdAuto"
-    | "lg"
-    | "lgAuto"
-    | "xl"
-    | "2xl"
-    | "wider"
-    | "image-preview";
+  | "sm"
+  | "smWide"
+  | "md"
+  | "mdAuto"
+  | "lg"
+  | "lgAuto"
+  | "xl"
+  | "2xl"
+  | "wider"
+  | "image-preview";
   className?: string;
   variant?: "warning" | "confirm" | "decide" | "info";
   onConfirm?: () => void;
@@ -169,7 +169,7 @@ export function MCModalBase({
           {trigger}
         </MorphingDialogTrigger>
       )}
-      <MorphingDialogContainer className={paddingClasses}>
+      <MorphingDialogContainer className={paddingClasses} style={{ zIndex }}>
         <MorphingDialogContent
           className={`bg-bg-secondary rounded-3xl shadow-lg ${sizeClasses[size]} ${className} flex flex-col dark:border dark:border-primary/15`}
         >
@@ -184,9 +184,8 @@ export function MCModalBase({
               {title && (
                 <MorphingDialogTitle>
                   <h2
-                    className={`font-semibold text-primary dark:text-primary-dark ${
-                      isMobile ? "text-lg" : "text-xl"
-                    }`}
+                    className={`font-semibold text-primary dark:text-primary-dark ${isMobile ? "text-lg" : "text-xl"
+                      }`}
                   >
                     {title}
                   </h2>
@@ -201,11 +200,10 @@ export function MCModalBase({
 
           {/* Content con scroll vertical oculto */}
           <MorphingDialogDescription
-            className={`${contentPadding} flex-1 min-h-0 text-gray-600 dark:text-gray-300 ${
-              size === "wider"
+            className={`${contentPadding} flex-1 min-h-0 text-gray-600 dark:text-gray-300 ${size === "wider"
                 ? "overflow-x-auto overflow-y-auto scrollbar-hide"
                 : "overflow-y-auto scrollbar-hide"
-            }`}
+              }`}
           >
             {/* Muestra la descripción si existe */}
             {description && (
@@ -219,11 +217,10 @@ export function MCModalBase({
           {/* Footer */}
           {!actionOne && variant === "warning" && (
             <div
-              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${
-                borderFooter
+              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${borderFooter
                   ? "border-t border-gray-100 dark:border-neutral-800"
                   : ""
-              } ${isMobile ? "flex-col-reverse" : ""}`}
+                } ${isMobile ? "flex-col-reverse" : ""}`}
             >
               <MCButton
                 variant="secondary"
@@ -247,11 +244,10 @@ export function MCModalBase({
 
           {!actionOne && variant === "confirm" && (
             <div
-              className={`flex justify-end ${footerPadding} flex-shrink-0 ${
-                borderFooter
+              className={`flex justify-end ${footerPadding} flex-shrink-0 ${borderFooter
                   ? "border-t border-gray-100 dark:border-neutral-800"
                   : ""
-              }`}
+                }`}
             >
               <MCButton
                 variant="primary"
@@ -267,11 +263,10 @@ export function MCModalBase({
 
           {!actionOne && variant === "decide" && (
             <div
-              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${
-                borderFooter
+              className={`flex gap-2 justify-end ${footerPadding} flex-shrink-0 ${borderFooter
                   ? "border-t border-gray-100 dark:border-neutral-800"
                   : ""
-              } ${isMobile ? "flex-col-reverse" : ""}`}
+                } ${isMobile ? "flex-col-reverse" : ""}`}
             >
               <MCButton
                 variant="secondary"

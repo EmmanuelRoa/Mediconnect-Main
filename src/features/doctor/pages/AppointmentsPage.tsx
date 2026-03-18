@@ -143,7 +143,9 @@ function AppointmentsPage() {
   }, [filters.status, filters.dateRange, currentPage, i18n.language]);
 
   // Petición al API
-  const { data: apiResponse, isLoading, isFetching, error } = useDoctorAppointments(apiFilters);
+  const { data: apiResponse, isLoading, isFetching, isPlaceholderData, error } = useDoctorAppointments(apiFilters);
+
+  const isChanginPage = isFetching && !isPlaceholderData;
 
   // Mapear respuesta del API
   const allAppointments = useMemo(() => {
@@ -295,20 +297,20 @@ function AppointmentsPage() {
 
   // Callbacks para paginación - Memoizados
   const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1 && !isFetching) setCurrentPage((p) => Math.max(1, p - 1));
-  }, [currentPage, isFetching]);
+    if (currentPage > 1 && !isChanginPage) setCurrentPage((p) => Math.max(1, p - 1));
+  }, [currentPage, isChanginPage]);
 
   const handlePageClick = useCallback(
     (pageNum: number) => {
-      if (!isFetching) setCurrentPage(pageNum);
+      if (!isChanginPage) setCurrentPage(pageNum);
     },
-    [isFetching]
+    [isChanginPage]
   );
 
   const handleNextPage = useCallback(() => {
-    if (currentPage < totalPages && !isFetching)
+    if (currentPage < totalPages && !isChanginPage)
       setCurrentPage((p) => Math.min(totalPages, p + 1));
-  }, [currentPage, totalPages, isFetching]);
+  }, [currentPage, totalPages, isChanginPage]);
 
   // Componente de paginación separado - Memoizar para evitar re-renders
   const paginationComponent = useMemo(
@@ -319,10 +321,10 @@ function AppointmentsPage() {
             <PaginationItem>
               <PaginationPrevious
                 onClick={handlePreviousPage}
-                aria-disabled={currentPage === 1 || isFetching}
-                tabIndex={currentPage === 1 || isFetching ? -1 : 0}
+                aria-disabled={currentPage === 1 || isChanginPage}
+                tabIndex={currentPage === 1 || isChanginPage ? -1 : 0}
                 className={
-                  currentPage === 1 || isFetching
+                  currentPage === 1 || isChanginPage
                     ? "pointer-events-none opacity-50"
                     : "cursor-pointer"
                 }
@@ -334,7 +336,7 @@ function AppointmentsPage() {
                   isActive={currentPage === idx + 1}
                   onClick={() => handlePageClick(idx + 1)}
                   className={
-                    isFetching ? "pointer-events-none opacity-50" : "cursor-pointer"
+                    isChanginPage ? "pointer-events-none opacity-50" : "cursor-pointer"
                   }
                 >
                   {idx + 1}
@@ -344,10 +346,10 @@ function AppointmentsPage() {
             <PaginationItem>
               <PaginationNext
                 onClick={handleNextPage}
-                aria-disabled={currentPage === totalPages || isFetching}
-                tabIndex={currentPage === totalPages || isFetching ? -1 : 0}
+                aria-disabled={currentPage === totalPages || isChanginPage}
+                tabIndex={currentPage === totalPages || isChanginPage ? -1 : 0}
                 className={
-                  currentPage === totalPages || isFetching
+                  currentPage === totalPages || isChanginPage
                     ? "pointer-events-none opacity-50"
                     : "cursor-pointer"
                 }
@@ -356,7 +358,7 @@ function AppointmentsPage() {
           </PaginationContent>
         </Pagination>
       ) : null,
-    [totalPages, currentPage, isFetching, handlePreviousPage, handlePageClick, handleNextPage]
+    [totalPages, currentPage, isChanginPage, handlePreviousPage, handlePageClick, handleNextPage]
   );
 
   // Error state
@@ -449,7 +451,7 @@ function AppointmentsPage() {
   ) : (
     <div className="relative">
       {/* Spinner overlay cuando está cargando */}
-      {isFetching && (
+      {isChanginPage && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -459,7 +461,7 @@ function AppointmentsPage() {
           </div>
         </div>
       )}
-      <div className={`transition-opacity duration-300 ${isFetching ? "opacity-40" : "opacity-100"}`}>
+      <div className={`transition-opacity duration-300 ${isChanginPage ? "opacity-40" : "opacity-100"}`}>
         <MyAppointmentTable appointments={paginatedAppointments} />
       </div>
     </div>

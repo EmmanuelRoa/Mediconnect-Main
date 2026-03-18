@@ -40,11 +40,6 @@ export default function AppointmentActions({
     );
   };
 
-  const handleCompleteAppointment = (appointmentId: string) => {
-    // Lógica para marcar como completada
-    console.log("Completing appointment:", appointmentId);
-  };
-
   const handleContinueConsultation = (appointmentId: string) => {
     navigate(ROUTES.DOCTOR.CONSULTATION.replace(":id", appointmentId));
   };
@@ -80,7 +75,7 @@ export default function AppointmentActions({
         <div className="flex flex-col gap-1 p-2">
           {isVirtual && (
             <div
-              className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/10 text-blue-600 transition text-sm flex items-center justify-center font-medium"
+              className="p-2 cursor-pointer rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition text-sm flex items-center justify-center font-medium"
               onClick={() => handleJoin(appointment.id)}
             >
               {t("appointments.joinTeleconsult")}
@@ -127,16 +122,10 @@ export default function AppointmentActions({
               </div>
             </ViewDetailsAppointmentDialog>
             <div
-              className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/10 text-blue-600 transition text-sm flex items-center justify-center"
+              className="p-2 cursor-pointer rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition text-sm flex items-center justify-center font-medium"
               onClick={() => handleJoin(appointment.id)}
             >
               {t("appointments.joinTeleconsult")}
-            </div>
-            <div
-              className="p-2 cursor-pointer rounded-lg hover:bg-green-500/10 text-green-600 transition text-sm"
-              onClick={() => handleCompleteAppointment(appointment.id)}
-            >
-              {t("appointments.markCompleted")}
             </div>
           </div>
         );
@@ -155,12 +144,6 @@ export default function AppointmentActions({
             >
               {t("appointments.continueConsultation")}
             </div>
-            <div
-              className="p-2 cursor-pointer rounded-lg hover:bg-green-500/10 text-green-600 transition text-sm"
-              onClick={() => handleCompleteAppointment(appointment.id)}
-            >
-              {t("appointments.markCompleted")}
-            </div>
           </div>
         );
       }
@@ -175,7 +158,7 @@ export default function AppointmentActions({
         return (
           <div className="flex flex-col gap-1 p-2">
             <div
-              className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/10 text-blue-600 transition text-sm flex items-center justify-center"
+              className="p-2 cursor-pointer rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition text-sm flex items-center justify-center font-medium"
               onClick={() => handleJoin(appointment.id)}
             >
               {t("appointments.join")}
@@ -203,7 +186,7 @@ export default function AppointmentActions({
       <div className="flex flex-col gap-1 p-2">
         {isScheduled && isVirtual && (
           <div
-            className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/10 text-blue-600 transition text-sm flex items-center justify-center font-medium"
+            className="p-2 cursor-pointer rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition text-sm flex items-center justify-center font-medium"
             onClick={() => handleJoin(appointment.id)}
           >
             {t("appointments.join")}

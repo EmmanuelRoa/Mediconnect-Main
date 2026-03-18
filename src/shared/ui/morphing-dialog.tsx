@@ -308,7 +308,7 @@ export type MorphingDialogContainerProps = {
   style?: React.CSSProperties;
 };
 
-function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
+function MorphingDialogContainer({ children, className, style }: MorphingDialogContainerProps) {
   const { isOpen, uniqueId, setIsOpen } = useMorphingDialog();
   const [mounted, setMounted] = useState(false);
 
@@ -339,7 +339,14 @@ function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
 
   if (!mounted) return null;
 
-  const zIndex = 50 + getStackIndex(uniqueId) * 10;
+  let stackIndex = getStackIndex(uniqueId);
+  if (stackIndex === -1 && isOpen) {
+    stackIndex = dialogStack.length;
+  }
+  
+  // Base zIndex or override from style
+  const baseZIndex = style?.zIndex !== undefined ? Number(style.zIndex) : 50;
+  const calculatedZIndex = baseZIndex + stackIndex * 10;
 
   return createPortal(
     <AnimatePresence initial={false} mode="sync">
@@ -348,17 +355,19 @@ function MorphingDialogContainer({ children }: MorphingDialogContainerProps) {
           <motion.div
             key={`backdrop-${uniqueId}`}
             className="fixed inset-0 h-full w-full bg-black/10 backdrop-blur-sm dark:bg-black/40"
-            style={{ zIndex: zIndex - 1 }}
+            style={{ zIndex: calculatedZIndex - 1 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleBackdropClick}
           />
           <div
-            className="fixed inset-0 flex items-center justify-center pointer-events-none"
-            style={{ zIndex }}
+            className={cn("fixed inset-0 flex items-center justify-center pointer-events-none", className)}
+            style={{ zIndex: calculatedZIndex }}
           >
-            <div className="pointer-events-auto">{children}</div>
+            <div className="pointer-events-auto flex items-center justify-center max-w-full max-h-full">
+               {children}
+            </div>
           </div>
         </>
       )}

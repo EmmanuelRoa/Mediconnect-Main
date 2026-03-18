@@ -132,7 +132,7 @@ function TeleconsultRoomPage() {
               )}
               {mobileView === "chat" && (
                 <div className="h-full">
-                  <TeleconsultChatPanel appointmentId={appointmentId || ""} />
+                  <TeleconsultChatPanel appointmentId={appointmentId || ""} onEndCall={handleEndCall} />
                 </div>
               )}
               {mobileView === "info" && (
@@ -160,7 +160,7 @@ function TeleconsultRoomPage() {
             </div>
 
             <div className="w-[400px] flex-shrink-0 h-full">
-              <TeleconsultChatPanel appointmentId={appointmentId || ""} />
+              <TeleconsultChatPanel appointmentId={appointmentId || ""} onEndCall={handleEndCall} />
             </div>
           </div>
         )}

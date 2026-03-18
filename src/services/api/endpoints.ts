@@ -47,6 +47,7 @@ export const API_ENDPOINTS = {
     CALENDARIO: '/citas/calendario',
     MIS_DOCTORES: '/citas/mis-doctores',
     MIS_PACIENTES: '/citas/mis-pacientes',
+    DIAGNOSTICAR: (id: string | number) => `/citas/${id}/diagnosticar`,
   },
 
   // --- PERFILES ---

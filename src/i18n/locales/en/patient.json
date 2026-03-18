@@ -171,7 +171,7 @@
     "viewAppointment": "View appointment",
     "joinTeleconsult": "Join teleconsult",
     "markCompleted": "Mark as completed",
-    "continueConsultation": "Continue consultation",
+    "continueConsultation": "Add Medical diagnosis",
     "success": "Appointment scheduled successfully",
     "error": "Error scheduling appointment. Please try again.",
     "rescheduleSuccess": "Appointment rescheduled successfully",
@@ -412,7 +412,7 @@
     },
     "empty": {
       "noResults": "No doctors found",
-      "noResultsDescription":"No consultations found with the applied filters. Try adjusting the filters to see more results.",
+      "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results.",
       "clearFilters": "Clear Filters"
     }
   },

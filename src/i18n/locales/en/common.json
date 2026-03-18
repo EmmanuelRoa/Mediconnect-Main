@@ -648,7 +648,8 @@
     "continueConsultation": "Continue Consultation",
     "joinTeleconsult": "Join Teleconsultation",
     "markCompleted": "Mark as Completed",
-    "openChat": "Open chat"
+    "openChat": "Open chat",
+    "addMedicalDiagnosis": "Add Medical Diagnosis"
   },
   "requests": {
     "title": "Manage Requests",

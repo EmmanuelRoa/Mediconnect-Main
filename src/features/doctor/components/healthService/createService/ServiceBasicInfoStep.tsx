@@ -271,7 +271,6 @@ function ServiceBasicInfoStep() {
               name="pricePerSession"
               label={t("form.price")}
               type="number"
-              isPrice
               variant="internal-horizontal"
               internalTitle={t("form.pricePerSession")}
               internalPlaceholder={t("form.pricePerSessionPlaceholder")}

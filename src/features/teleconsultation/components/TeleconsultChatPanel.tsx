@@ -15,6 +15,7 @@ type PanelView = "chat" | "notas";
 
 interface TeleconsultChatPanelProps {
   appointmentId: string;
+  onEndCall?: () => void;
 }
 
 /** Construye ChatUser para el otro participante desde la cita (evita undefined .nombre) */
@@ -51,7 +52,7 @@ function buildOtroUsuarioFromAppointment(
  * doctor-paciente de la cita y muestra el chat real (mensajes, WebSocket, etc.).
  * Usa pacienteId/doctorId del backend y asegura otroUsuario con nombre para evitar crashes.
  */
-export function TeleconsultChatPanel({ appointmentId }: TeleconsultChatPanelProps) {
+export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultChatPanelProps) {
   const queryClient = useQueryClient();
   const user = useAppStore((s) => s.user);
   const setActiveConversation = useAppStore((s) => s.setActiveConversation);
@@ -209,7 +210,7 @@ export function TeleconsultChatPanel({ appointmentId }: TeleconsultChatPanelProp
         {panelView === "chat" ? (
           <RealChatPanel conversation={safeConversation} />
         ) : (
-          <Prescription />
+          <Prescription onSuccess={onEndCall} />
         )}
       </div>
     </div>

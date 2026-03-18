@@ -53,16 +53,8 @@ type DashboardAppointmentRow = Pick<Appointment, "id" | "doctorId" | "appointmen
 
 const mapCitaToDashboardRow = (
   cita: CitaDetalle,
-  locale: string,
   t: (key: string) => string
 ): DashboardAppointmentRow => {
-  const startDate = new Date(cita.fechaInicio);
-  const formattedDate = startDate.toLocaleDateString(locale === "es" ? "es-DO" : "en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
   const startTime = formatTimeTo12h(cita.horaInicio) || cita.horaInicio.slice(0, 5);
   const endTime = formatTimeTo12h(cita.horaFin) || cita.horaFin.slice(0, 5);
   const isVirtual = isVirtualModality(cita.modalidad);
@@ -77,7 +69,7 @@ const mapCitaToDashboardRow = (
       : t("appointments.table.inPerson"),
     appointmentType: isVirtual ? "virtual" : "in_person",
     doctorId: cita.doctorId?.toString() || "",
-    date: formattedDate,
+    date: cita.fechaInicio,
     contact: cita.paciente.usuario.email || "N/A",
     specialty: cita.servicio.especialidad.nombre,
     time: endTime ? `${startTime} - ${endTime}` : startTime,
@@ -125,8 +117,8 @@ function DashboardTable() {
     const list = Array.isArray(apiResponse.data)
       ? apiResponse.data
       : [apiResponse.data];
-    return list.map((cita) => mapCitaToDashboardRow(cita, i18n.language, t));
-  }, [apiResponse?.data, i18n.language, t]);
+    return list.map((cita) => mapCitaToDashboardRow(cita, t));
+  }, [apiResponse?.data, t]);
 
   const totalPages = apiResponse?.paginacion?.totalPaginas || 1;
 
@@ -265,11 +257,11 @@ function DashboardTable() {
                     <MCAppointmentsStatus
                       status={
                         a.status as
-                          | "pending"
-                          | "in_progress"
-                          | "completed"
-                          | "scheduled"
-                          | "cancelled"
+                        | "pending"
+                        | "in_progress"
+                        | "completed"
+                        | "scheduled"
+                        | "cancelled"
                       }
                     />
                   </TableCell>
@@ -314,7 +306,7 @@ function DashboardTable() {
 
       {/* Pagination anchored to bottom — always visible */}
       {totalPages > 1 && !isLoading && (
-        <div className="flex-shrink-0 border-t px-4 py-3">
+        <div className="flex-shrink-0 border-t px-4 py-5">
           <Pagination>
             <PaginationContent>
               <PaginationItem>

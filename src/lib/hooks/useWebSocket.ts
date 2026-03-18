@@ -18,6 +18,7 @@ import type {
   UsuarioDesconectadoEvent,
   EstadoConexionUsuariosEvent,
   LlamadaEntranteEvent,
+  NotificacionEvent,
 } from "@/types/WebSocketTypes";
 import { getUserFullName, getUserName, getUserLastName, getUserAvatar } from "@/services/auth/auth.types";
 
@@ -412,6 +413,43 @@ export const useWebSocket = () => {
       toast.dismiss();
     });
 
+    // ============================================
+    // APPOINTMENT NOTIFICATION LISTENER
+    // Invalidates cita-related caches whenever the server pushes a
+    // nueva-notificacion whose tipoEntidad is 'cita'.
+    // This covers: nueva cita, cita cancelada, cita reprogramada.
+    // ============================================
+    const CITA_ENTITIES = new Set([
+      "cita", 
+      "Cita", 
+      "appointment", 
+      "historial_clinico", 
+      "Historial_clinico", 
+      "historial", 
+      "medical_history", 
+      "clinical_history"
+    ]);
+
+    const unsubNuevaNotificacion = socketService.onNewNotification(
+      (event: NotificacionEvent) => {
+        console.log("[useWebSocket] Nueva notificación:", event);
+
+        if (event.tipoEntidad && CITA_ENTITIES.has(event.tipoEntidad)) {
+          console.log(
+            "[useWebSocket] Notificación de cita detectada — invalidando caché de citas"
+          );
+
+          const qc = queryClientRef.current;
+
+          // Invalidate all cita queries (list + individual + calendar)
+          qc.invalidateQueries({ queryKey: ["citas"] });
+
+          // Also refresh doctor stats that aggregate appointments
+          qc.invalidateQueries({ queryKey: QUERY_KEYS.DOCTOR_STATS_CITAS });
+        }
+      }
+    );
+
     // Retornar función de cleanup
     return () => {
       unsubNewMessage();
@@ -427,6 +465,7 @@ export const useWebSocket = () => {
       unsubConnectionStatus();
       unsubLlamadaEntrante();
       unsubLlamadaFinalizada();
+      unsubNuevaNotificacion();
     };
   }, []); // Empty deps — all dynamic state is accessed via useAppStore.getState()
 

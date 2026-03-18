@@ -444,7 +444,7 @@
     "viewAppointment": "Ver cita",
     "joinTeleconsult": "Unirse a teleconsulta",
     "markCompleted": "Marcar como completada",
-    "continueConsultation": "Continuar consulta",
+    "continueConsultation": "Agregar diagnóstico médico",
     "pdfColumns": {
       "doctor": "Doctor",
       "patient": "Paciente",
@@ -497,7 +497,7 @@
     },
     "empty": {
       "noResults": "No se encontraron doctores",
-      "noResultsDescription":"No tienes doctores favoritos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda o agrega doctores a tu lista de favoritos.",
+      "noResultsDescription": "No tienes doctores favoritos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda o agrega doctores a tu lista de favoritos.",
       "clearFilters": "Limpiar Filtros"
     }
   },

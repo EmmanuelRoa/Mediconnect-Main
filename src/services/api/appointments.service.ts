@@ -318,3 +318,52 @@ export const getDoctorPatientInfo = async (
     throw error;
   }
 };
+
+// ─── Diagnóstico de una cita ──────────────────────────────────────────────────
+
+export interface DiagnosticarPayload {
+  /** Nombre / título del diagnóstico */
+  nombreDiagnostico: string;
+  /** Descripción detallada del diagnóstico (puede contener HTML de RichText) */
+  descripcionDiagnostico: string;
+  /** Imágenes adjuntas (máx. 10, 10 MB c/u) */
+  archivos?: File[];
+}
+
+export interface DiagnosticarResponse {
+  success: boolean;
+  message?: string;
+  data?: unknown;
+}
+
+/**
+ * Envía el diagnóstico de una cita al backend.
+ * Construye `multipart/form-data` con los campos y archivos adjuntos.
+ * El interceptor de `client.ts` elimina automáticamente `Content-Type`
+ * para que axios incluya el boundary correcto.
+ *
+ * @param citaId - ID de la cita activa
+ * @param payload - Datos del diagnóstico
+ */
+export const diagnosticarCita = async (
+  citaId: string | number,
+  payload: DiagnosticarPayload,
+): Promise<DiagnosticarResponse> => {
+  const formData = new FormData();
+
+  formData.append('nombreDiagnostico', payload.nombreDiagnostico);
+  formData.append('descripcionDiagnostico', payload.descripcionDiagnostico);
+
+  if (payload.archivos && payload.archivos.length > 0) {
+    payload.archivos.forEach((file) => {
+      formData.append('archivos', file);
+    });
+  }
+
+  const { data } = await apiClient.post<DiagnosticarResponse>(
+    API_ENDPOINTS.CITAS.DIAGNOSTICAR(citaId),
+    formData,
+  );
+
+  return data;
+};

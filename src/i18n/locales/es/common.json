@@ -647,7 +647,8 @@
     "continueConsultation": "Continuar consulta",
     "joinTeleconsult": "Unirse a teleconsulta",
     "markCompleted": "Marcar como completada",
-    "openChat": "Abrir chat"
+    "openChat": "Abrir chat",
+    "addMedicalDiagnosis": "Agregar diagnóstico médico"
   },
   "requests": {
     "title": "Gestionar Solicitudes",

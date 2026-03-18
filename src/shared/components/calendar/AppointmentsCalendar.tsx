@@ -174,12 +174,10 @@ export function AppointmentsCalendar({
           </div>
 
           <div
-            className="flex-1 hide-scrollbar"
+            className="flex-1 hide-scrollbar overflow-y-auto pr-1"
             style={{
               minHeight: 0,
-              overflow: "auto",
               WebkitOverflowScrolling: "touch",
-              maxHeight: "100%",
             }}
           >
             <AnimatePresence mode="wait">
@@ -189,16 +187,17 @@ export function AppointmentsCalendar({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="space-y-2"
+                  className="space-y-2 flex flex-col"
                   style={{ paddingBottom: "0.5rem" }}
                 >
                   {appointmentsForDate.map((appointment, index) => (
-                    <AppointmentCard
-                      key={appointment.id}
-                      appointment={appointment}
-                      index={index}
-                      isVertical={isVertical}
-                    />
+                    <div key={appointment.id} className="shrink-0 w-full">
+                      <AppointmentCard
+                        appointment={appointment}
+                        index={index}
+                        isVertical={isVertical}
+                      />
+                    </div>
                   ))}
                 </motion.div>
               ) : (
@@ -268,7 +267,7 @@ export function AppointmentsCalendar({
       {/* Appointments Section */}
       <motion.div
         {...fadeInUpDelayed}
-        className="flex flex-col w-full min-h-0"
+        className="flex flex-col w-full min-h-0 h-full max-h-[500px] lg:max-h-full"
         style={{
           WebkitOverflowScrolling: "touch",
           minWidth: 0,
@@ -283,7 +282,7 @@ export function AppointmentsCalendar({
           </span>
         </div>
 
-        <div className="space-y-4 w-full overflow-y-auto hide-scrollbar ">
+        <div className="space-y-4 w-full overflow-y-auto hide-scrollbar flex-1 pb-4 pr-2">
           <AnimatePresence mode="wait">
             {appointmentsForDate.length > 0 ? (
               <motion.div
@@ -291,15 +290,16 @@ export function AppointmentsCalendar({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-4 w-full"
+                className="space-y-4 w-full flex flex-col"
               >
                 {appointmentsForDate.map((appointment, index) => (
-                  <AppointmentCard
-                    key={appointment.id}
-                    appointment={appointment}
-                    index={index}
-                    isVertical={isVertical}
-                  />
+                  <div key={appointment.id} className="shrink-0 w-full">
+                    <AppointmentCard
+                      appointment={appointment}
+                      index={index}
+                      isVertical={isVertical}
+                    />
+                  </div>
                 ))}
               </motion.div>
             ) : (
