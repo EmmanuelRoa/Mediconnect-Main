@@ -67,7 +67,7 @@ const PopupContent: React.FC<{
       <ProviderPopup
         provider={provider}
         isSelected={isSelected}
-        onSelect={onSelect ?? (() => {})}
+        onSelect={onSelect ?? (() => { })}
         onScheduleAppointment={onScheduleAppointment}
         navigateFn={navigateFn}
         userRole={userRole}
@@ -179,7 +179,7 @@ export default function MapSearchProviders({
   // Inicializar el mapa (solo cuando cambia el contenedor o tema)
   useEffect(() => {
     if (!geoDatas.santoDomingo || !geoDatas.distritoNacional) return;
-    
+
     const container = isFullscreen
       ? fullscreenContainerRef.current
       : normalContainerRef.current;
@@ -260,22 +260,22 @@ export default function MapSearchProviders({
       });
       markersMapRef.current.clear();
       markersRef.current = [];
-      
+
       // Clear all pending timeouts
       popupTimeoutsRef.current.forEach((timeout) => {
         clearTimeout(timeout);
       });
       popupTimeoutsRef.current.clear();
-      
+
       if (userMarkerRef.current) {
         userMarkerRef.current.remove();
         userMarkerRef.current = null;
       }
-      
+
       // Reset tracking refs
       hasInitializedBoundsRef.current = false;
       previousProviderCountRef.current = 0;
-      
+
       mapRef.current?.remove();
       setisLoading(false);
     };
@@ -430,12 +430,12 @@ export default function MapSearchProviders({
 
     // Get current provider IDs with coordinates
     const currentProviderIds = new Set<string>();
-    
+
     providers.forEach((provider) => {
       const coordinates = Array.isArray(provider.coordinates)
         ? provider.coordinates
         : [provider.coordinates];
-      
+
       coordinates.forEach((_coord, idx) => {
         const markerId = `${provider.id}_${idx}`;
         currentProviderIds.add(markerId);
@@ -448,7 +448,7 @@ export default function MapSearchProviders({
         markerData.marker.remove();
         markerData.root?.unmount?.();
         markersMapRef.current.delete(markerId);
-        
+
         // Clear pending timeout if exists
         const timeout = popupTimeoutsRef.current.get(markerId);
         if (timeout) {
@@ -461,10 +461,10 @@ export default function MapSearchProviders({
     // Create new markers (always with scale 1 initially)
     providers.forEach((provider) => {
       const coordinates = Array.isArray(provider.coordinates)
-      ? provider.coordinates 
-      : provider.coordinates  
-        ? [provider.coordinates]
-        : [];
+        ? provider.coordinates
+        : provider.coordinates
+          ? [provider.coordinates]
+          : [];
 
       coordinates.forEach((coord, idx) => {
         if (!coord || !coord.lat || !coord.lng) {
@@ -495,7 +495,7 @@ export default function MapSearchProviders({
           // Create popup container and root
           const popupNode = document.createElement("div");
           const root = createRoot(popupNode);
-          
+
           // Store marker and root immediately
           markersMapRef.current.set(markerId, { marker, root });
 
@@ -527,7 +527,7 @@ export default function MapSearchProviders({
             marker.setPopup(popup);
             popupTimeoutsRef.current.delete(markerId);
           }, 0);
-          
+
           // Store timeout for cleanup
           popupTimeoutsRef.current.set(markerId, timeoutId);
         }
@@ -558,7 +558,7 @@ export default function MapSearchProviders({
           // Update scale using DOM manipulation with proper transform preservation
           const targetScale = isSelected ? 1.2 : 1;
           const element = existingMarker.marker.getElement();
-          
+
           // Get the SVG element and apply scale directly
           const svg = element.querySelector('svg');
           if (svg) {
@@ -591,8 +591,8 @@ export default function MapSearchProviders({
     if (!mapRef.current || !isMapLoaded || providers.length === 0) return;
 
     // Only fit bounds if this is the first load or provider count changed significantly
-    const shouldFitBounds = 
-      !hasInitializedBoundsRef.current || 
+    const shouldFitBounds =
+      !hasInitializedBoundsRef.current ||
       Math.abs(providers.length - previousProviderCountRef.current) > 3;
 
     if (!shouldFitBounds) return;
@@ -602,14 +602,14 @@ export default function MapSearchProviders({
 
     providers.forEach((provider) => {
       const coordinates = Array.isArray(provider.coordinates)
-      ? provider.coordinates
-      : provider.coordinates  
-        ? [provider.coordinates]
-        : [];
+        ? provider.coordinates
+        : provider.coordinates
+          ? [provider.coordinates]
+          : [];
 
       coordinates.forEach((coord) => {
         if (!coord || !coord.lat || !coord.lng) return;
-      
+
         const lat = Number(coord.lat);
         const lng = Number(coord.lng);
 
@@ -626,7 +626,7 @@ export default function MapSearchProviders({
         maxZoom: 15,
         duration: hasInitializedBoundsRef.current ? 1000 : 0,
       });
-      
+
       hasInitializedBoundsRef.current = true;
       previousProviderCountRef.current = providers.length;
     }
@@ -699,11 +699,10 @@ export default function MapSearchProviders({
                     <button
                       type="button"
                       onClick={() => setIs3D((prev) => !prev)}
-                      className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${
-                        is3D
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground"
-                      }`}
+                      className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${is3D
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground"
+                        }`}
                       aria-label="Toggle 3D"
                     >
                       <Cuboid size={24} />
@@ -769,11 +768,10 @@ export default function MapSearchProviders({
                   <button
                     type="button"
                     onClick={() => setIs3D((prev) => !prev)}
-                    className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${
-                      is3D
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground"
-                    }`}
+                    className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${is3D
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground"
+                      }`}
                     aria-label="Toggle 3D"
                   >
                     <Cuboid size={24} />

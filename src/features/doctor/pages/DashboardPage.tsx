@@ -43,31 +43,31 @@ function DashboardPage() {
   });
 
   // Obtener estadísticas del doctor
-  const { 
-    data: statsData, 
-    isLoading: isStatsLoading, 
+  const {
+    data: statsData,
+    isLoading: isStatsLoading,
     error: statsError,
   } = useDoctorStatsResumen();
 
   // Obtener servicios más utilizados
-  const { 
-    data: serviciosRawData, 
-    error: serviciosError 
+  const {
+    data: serviciosRawData,
+    error: serviciosError
   } = useDoctorMostUsedServices();
 
   // Obtener datos de productividad con período mapeado
-  const { 
-    data: productividadData, 
-    error: productividadError 
+  const {
+    data: productividadData,
+    error: productividadError
   } = useDoctorProductivity(dateRangeToPeriodo(dateRange));
 
   // Transformar servicios más utilizados al formato esperado por PieServices
   const serviciosMasUtilizados = serviciosRawData
     ? serviciosRawData.map((servicio) => ({
-        name: servicio.nombre || "Sin nombre",
-        value: servicio.totalCitas || 0,
-        color: servicio.color || "hsl(var(--chart-1))",
-      }))
+      name: servicio.nombre || "Sin nombre",
+      value: servicio.totalCitas || 0,
+      color: servicio.color || "hsl(var(--chart-1))",
+    }))
     : []; // Array vacío mientras carga
 
   const resetFilters = () => {
@@ -89,11 +89,11 @@ function DashboardPage() {
   if (statsError) {
     console.error("Error loading doctor stats:", statsError);
   }
-  
+
   if (serviciosError) {
     console.error("Error loading most used services:", serviciosError);
   }
-  
+
   if (productividadError) {
     console.error("Error loading productivity stats:", productividadError);
   }
@@ -111,23 +111,23 @@ function DashboardPage() {
                 icon={<UsersIcon />}
                 value={isStatsLoading ? "..." : statsData?.totalPacientes || 0}
                 subtitle={t("dashboard.metrics.totalPatientsSubtitle")}
-                percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
+                // percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
                 bordered
               />
               <MCMetricCard
                 title={t("dashboard.metrics.totalAppointments")}
                 icon={<CalendarCheckIcon />}
-                value={isStatsLoading ? "..." : statsData?.totalCitas || 0}
+                value={isStatsLoading ? "..." : statsData?.totalConsultas || 0}
                 subtitle={t("dashboard.metrics.totalAppointmentsSubtitle")}
-                percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
+                // percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
                 bordered
               />
               <MCMetricCard
                 title={t("dashboard.metrics.totalEarned")}
                 icon={<DollarSignIcon />}
-                value={isStatsLoading ? "..." : formatCurrency(statsData?.totalGanancias)}
+                value={isStatsLoading ? "..." : formatCurrency(statsData?.totalDineroGanado)}
                 subtitle={t("dashboard.metrics.totalEarnedSubtitle")}
-                percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
+                // percentage={statsData?.porcentajeCambio ? `${statsData.porcentajeCambio}%` : undefined}
                 bordered
               />
             </div>
@@ -184,8 +184,8 @@ function DashboardPage() {
               </div>
             </div>
             <div className="h-[250px] sm:h-[325px] w-full">
-              <AreaChart 
-                data={productividadData} 
+              <AreaChart
+                data={productividadData}
                 dateRange={dateRange}
                 showFooter={false}
               />

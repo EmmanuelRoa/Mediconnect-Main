@@ -366,4 +366,33 @@ export const diagnosticarCita = async (
   );
 
   return data;
-};
+};
+
+/**
+ * Obtiene el historial de citas/diagnósticos de un paciente según su ID
+ * @param pacienteId - ID del paciente
+ * @param params - Parámetros de paginación o filtros
+ * @returns Promise con la lista del historial y la paginación
+ */
+export const getHistorialByPacienteId = async (
+  pacienteId: string | number,
+  params?: any
+) => {
+  const { data } = await apiClient.get<any>(
+    API_ENDPOINTS.CITAS.HISTORIAL(pacienteId),
+    { params }
+  );
+  return data;
+};
+
+/**
+ * Obtiene los servicios a los cuales el paciente ha realizado alguna consulta
+ * @param pacienteId - ID del paciente
+ * @returns Promise con la lista de servicios
+ */
+export const getPatientServices = async (pacienteId: string | number) => {
+  const { data } = await apiClient.get<any>('/citas/servicios', {
+    params: { pacienteId },
+  });
+  return data;
+};

@@ -5,10 +5,10 @@ import apiClient from "@/services/api/client";
 
 export async function mapCenterOnboardingToRequest(
   centerData: CenterOnboardingSchemaType,
-  token: string
+  token: string,
+  ubicacionId: number
 ): Promise<RegisterCenterRequest> {
-  console.log('[Mapper] Iniciando conversión de datos del centro...');
-  
+
   // Convertir imagen de perfil a File (opcional)
   const fotoPerfil = centerData.urlImg?.url
     ? await urlToFile(centerData.urlImg.url, 'profile-photo', centerData.urlImg.type)
@@ -31,6 +31,7 @@ export async function mapCenterOnboardingToRequest(
     email: centerData.email,
     direccion: centerData.address,
     barrioId: parseInt(centerData.neighborhood), // TODO: Asegurarse que sea número
+    ubicacionId,
     sitioWeb: centerData.website ?? "",
     tipoCentroId: parseInt(centerData.centerType), // TODO: Asegurarse que sea número
     password: centerData.password,
@@ -43,7 +44,7 @@ export async function mapCenterOnboardingToRequest(
 
 
 export const centerRegistrationService = {
-  
+
   registerCenter: async (
     request: RegisterCenterRequest
   ): Promise<RegisterCenterResponse> => {
@@ -58,6 +59,7 @@ export const centerRegistrationService = {
       formData.append('descripcion', request.descripcion);
       formData.append('direccion', request.direccion);
       formData.append('barrioId', request.barrioId.toString());
+      formData.append('ubicacionId', request.ubicacionId.toString());
       formData.append('sitioWeb', request.sitioWeb);
       formData.append('password', request.password);
       formData.append('tipoCentroId', request.tipoCentroId.toString());

@@ -134,14 +134,30 @@ const AttachmentCard = memo(function AttachmentCard({
         <span className="text-xs text-muted-foreground items-center flex">
           {doc.media.tipoMime || "FILE"}
         </span>
-        <a
-          href={doc.media.archivo}
-          download
-          className="text-xs text-secondary underline flex items-center"
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const response = await fetch(doc.media.archivo);
+              const blob = await response.blob();
+              const blobUrl = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = blobUrl;
+              link.download = doc.media.nombre;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(blobUrl);
+            } catch {
+              // Fallback si el fetch falla por CORS
+              window.open(doc.media.archivo, "_blank");
+            }
+          }}
+          className="text-xs text-secondary underline flex items-center cursor-pointer"
         >
           <Download className="inline-block mr-1 size-3" />
           {t("appointment.download") || "Descargar"}
-        </a>
+        </button>
       </div>
     </div>
   );

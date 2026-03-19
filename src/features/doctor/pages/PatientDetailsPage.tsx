@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
@@ -33,8 +33,9 @@ import AppointmentActions from "@/features/patient/components/appoiments/Appoint
 import FilterMyAppointments from "@/features/doctor/components/filters/FilterMyAppoinments";
 import { useDoctorPatientInfo } from "@/features/doctor/hooks/useDoctorPatientInfo";
 import type { DoctorPatientInfo } from "@/types/DoctorStatsTypes";
-import { formatTimeTo12h, mapCitaEstadoToAppointmentStatus } from "@/utils/appointmentMapper";
+import { formatTimeTo12h, mapCitaEstadoToAppointmentStatus, isVirtualModality } from "@/utils/appointmentMapper";
 import { useAppStore } from "@/stores/useAppStore";
+import { getHistorialByPacienteId } from "@/services/api/appointments.service";
 
 const DEFAULT_PATIENT_COVER_IMAGE =
   "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=900&auto=format&fit=crop";
@@ -125,36 +126,7 @@ interface HistoryFilters {
   locations: string[];
 }
 
-const mockHistory = [
-  {
-    id: "1",
-    service: "Control de Presión",
-    date: "15 de Mayo, 2024",
-    time: "10:00 AM",
-    place: "Clínica Santo Domingo",
-  },
-  {
-    id: "2",
-    service: "Evaluación Metabólica",
-    date: "20 de Marzo, 2024",
-    time: "9:30 AM",
-    place: "Clínica Santo Domingo",
-  },
-  {
-    id: "3",
-    service: "Consulta General",
-    date: "10 de Enero, 2024",
-    time: "11:00 AM",
-    place: "Clínica Norte",
-  },
-  {
-    id: "4",
-    service: "Revisión de Condición",
-    date: "5 de Noviembre, 2023",
-    time: "3:00 PM",
-    place: "Clínica Santo Domingo",
-  },
-];
+
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function InfoField({ label, value }: { label: string; value: string }) {
@@ -305,61 +277,165 @@ function HistoryCard({
   historyItem,
   active,
   onClick,
+  resetTrigger
 }: {
-  historyItem: (typeof mockHistory)[0];
+  historyItem: any;
   active: boolean;
   onClick: () => void;
+  resetTrigger?: number;
 }) {
   const isMobile = useIsMobile();
+  const [prescriptionOpen, setPrescriptionOpen] = useState(false);
+
+  useEffect(() => {
+    setPrescriptionOpen(false);
+  }, [resetTrigger]);
+
+  const serviceName =
+    historyItem.cita?.servicio?.nombre || historyItem.nombre_diagnostico || "";
+  const dateFormatted = historyItem.creadoEn
+    ? historyItem.creadoEn.split("T")[0]
+    : historyItem.cita?.fechaInicio || "";
+  const timeFormatted = historyItem.cita?.horaInicio
+    ? formatTimeTo12h(historyItem.cita.horaInicio)
+    : "";
+  const addressFormatted = historyItem.cita?.modalidad || "";
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setPrescriptionOpen(true);
+      onClick();
+    },
+    [onClick]
+  );
+
+  const handlePrescriptionClose = useCallback(() => {
+    setPrescriptionOpen(false);
+  }, []);
 
   return (
-    <MedicalPrescriptionDialog
-      appointmentId={historyItem.id}
-      historyId={historyItem.id}
-    >
+    <>
       <div
-        className={`flex flex-row bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-3 p-3 md:p-4 items-center cursor-pointer transition
+        className={`flex flex-col md:flex-row bg-accent/30 dark:bg-primary/50 rounded-2xl w-full gap-4 justify-starts p-4 items-center cursor-pointer transition
           hover:bg-accent/50 dark:hover:bg-primary/30
           ${active ? "ring-2 ring-primary/60 bg-accent/60 dark:bg-primary/50" : "opacity-40 hover:opacity-100"}
         `}
-        onClick={onClick}
+        onClick={handleCardClick}
       >
-        <div
-          className={`rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 ${isMobile ? "w-10 h-10" : "w-12 h-12"}`}
-        >
-          <FolderClock
-            className={`text-primary ${isMobile ? "w-5 h-5" : "w-6 h-6"}`}
-          />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 bg-accent/60 dark:bg-primary/80 p-5 rounded-full w-fit">
+            <FolderClock
+              className="text-primary dark:text-background"
+              size={isMobile ? 20 : 28}
+            />
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p
-            className={`font-semibold text-primary truncate ${isMobile ? "text-sm" : "text-base"}`}
-          >
-            {historyItem.service}
-          </p>
-          <p className="text-xs text-primary/70 mt-0.5 truncate">
-            {historyItem.date} · {historyItem.time}
-          </p>
-          {!isMobile && (
-            <p className="text-xs text-primary/50 mt-0.5">
-              {historyItem.place}
-            </p>
-          )}
-          {isMobile && (
-            <p className="text-xs text-primary/50 mt-0.5 truncate">
-              {historyItem.place}
-            </p>
-          )}
+        <div className="flex flex-col justify-start items-start">
+          <h1 className="text-lg font-semibold text-primary">{serviceName}</h1>
+          <div className="flex text-md text-primary/75 font-medium gap-2 items-center">
+            {dateFormatted} · {timeFormatted} · {addressFormatted}
+          </div>
         </div>
       </div>
-    </MedicalPrescriptionDialog>
+
+      <MedicalPrescriptionDialog
+        historyItem={historyItem}
+        isOpen={prescriptionOpen}
+        onClose={handlePrescriptionClose}
+      />
+    </>
   );
 }
 
-function HistoryTab() {
-  const { t } = useTranslation("doctor");
+function HistoryTab({ pacienteId }: { pacienteId?: string | number }) {
+  const { t, i18n } = useTranslation("doctor");
   const isMobile = useIsMobile();
+
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [fetched, setFetched] = useState(false);
+
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [resetTrigger, setResetTrigger] = useState(0);
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      setActiveIndex(null);
+      setResetTrigger(prev => prev + 1);
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (pacienteId && !fetched && !loading) {
+        setLoading(true);
+        try {
+          const params = {
+            pagina: 1,
+            limite: 10,
+            translate_fields:
+              "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+            target: i18n.language === "es" ? "es" : "en",
+            source: i18n.language === "es" ? "en" : "es",
+          };
+          const response = await getHistorialByPacienteId(pacienteId, params);
+          if (response?.success && Array.isArray(response.data)) {
+            setHistory(response.data);
+            setPage(1);
+            setHasMore(response.paginacion?.pagina < response.paginacion?.totalPaginas);
+          }
+        } catch (error) {
+          console.error("Error fetching patient history", error);
+        } finally {
+          setLoading(false);
+          setFetched(true);
+        }
+      }
+    };
+    fetchHistory();
+  }, [pacienteId, fetched, i18n.language]);
+
+  const loadMore = useCallback(async () => {
+    if (!pacienteId || loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const nextPage = page + 1;
+      const params = {
+        pagina: nextPage,
+        limite: 10,
+        translate_fields:
+          "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+        target: i18n.language === "es" ? "es" : "en",
+        source: i18n.language === "es" ? "en" : "es",
+      };
+      const response = await getHistorialByPacienteId(pacienteId, params);
+      if (response?.success && Array.isArray(response.data)) {
+        setHistory((prev) => [...prev, ...response.data]);
+        setPage(nextPage);
+        setHasMore(response.paginacion?.pagina < response.paginacion?.totalPaginas);
+      }
+    } catch (error) {
+      console.error("Error loading more history", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [pacienteId, page, hasMore, loading, i18n.language]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !loading) {
+        loadMore();
+      }
+    }, { threshold: 0.1 });
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
+
   const [filters, setFilters] = useState<HistoryFilters>({
     services: [],
     timeRange: [],
@@ -386,88 +462,95 @@ function HistoryTab() {
     });
   };
 
-  const filteredHistory = mockHistory.filter((histItem) => {
+  const safeHistory = history[0] !== null && Array.isArray(history) ? history : [];
+
+  const filteredHistory = safeHistory.filter((histItem) => {
     if (
       filters.services.length > 0 &&
-      !filters.services.includes(histItem.service)
+      !filters.services.includes(
+        histItem.cita?.servicio?.nombre || histItem.nombre_diagnostico || ""
+      )
     )
       return false;
+
     if (
       filters.locations.length > 0 &&
-      !filters.locations.includes(histItem.place)
+      !filters.locations.includes(histItem.cita?.servicio?.id_ubicacion?.toString())
     )
       return false;
+
     if (filters.timeRange.length > 0) {
-      const hour = parseInt(histItem.time.split(":")[0]);
-      const isPM = histItem.time.toLowerCase().includes("pm");
-      const adjustedHour = isPM && hour !== 12 ? hour + 12 : hour;
+      const itemTime = histItem.cita?.horaInicio || "00:00";
+      const hour = parseInt(itemTime.split(":")[0]);
       const timeMatches = filters.timeRange.some((range) => {
-        if (range === "morning" && adjustedHour >= 6 && adjustedHour < 12)
-          return true;
-        if (range === "afternoon" && adjustedHour >= 12 && adjustedHour < 18)
-          return true;
-        if (range === "evening" && adjustedHour >= 18 && adjustedHour <= 24)
-          return true;
+        if (range === "morning" && hour >= 6 && hour < 12) return true;
+        if (range === "afternoon" && hour >= 12 && hour < 18) return true;
+        if (range === "evening" && hour >= 18 && hour <= 24) return true;
         return false;
       });
       if (!timeMatches) return false;
     }
+
     if (filters.dateRange) {
-      const dateStr = histItem.date.replace(" de ", " ").replace(",", "");
-      const itemDate = new Date(dateStr);
+      const itemDateStr =
+        histItem.creadoEn?.split("T")[0] ?? histItem.cita?.fechaInicio;
+      if (!itemDateStr) return false;
+      const itemDate = new Date(itemDateStr);
       const [startDate, endDate] = filters.dateRange;
       if (itemDate < startDate || itemDate > endDate) return false;
     }
     return true;
   });
 
+  if (loading && history.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 mt-4">
+        <div className="flex items-center justify-center p-6 text-primary">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3 mt-4 md:gap-4 md:mt-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
         <div className="flex flex-col gap-0.5">
           <h3
             className={`font-semibold text-primary ${isMobile ? "text-base" : "text-xl"}`}
           >
             {t("patientDetails.history.title")}
           </h3>
-          {mockHistory.length > 0 && (
+          {safeHistory.length > 0 && (
             <span className="text-xs text-muted-foreground">
               {t("patientDetails.history.count", {
                 filtered: filteredHistory.length,
-                total: mockHistory.length,
+                total: safeHistory.length,
               })}
             </span>
           )}
         </div>
-        <MCFilterPopover
-          activeFiltersCount={activeFiltersCount}
-          onClearFilters={handleClearFilters}
-        >
-          <FilterHistoryAppointments
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-          />
-        </MCFilterPopover>
+        {safeHistory.length > 0 && (
+          <MCFilterPopover
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={handleClearFilters}
+          >
+            <FilterHistoryAppointments
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              pacienteId={pacienteId}
+            />
+          </MCFilterPopover>
+        )}
       </div>
 
-      {/* List */}
       <div
         className={`flex flex-col gap-3 md:gap-5 ${filteredHistory.length > 5
           ? "max-h-[420px] md:max-h-[480px] overflow-y-auto pr-1 md:pr-2"
           : ""
           } transition-all`}
       >
-        {filteredHistory.length > 0 ? (
-          filteredHistory.map((h, index) => (
-            <HistoryCard
-              key={h.id}
-              historyItem={h}
-              active={activeIndex === index}
-              onClick={() => setActiveIndex(index)}
-            />
-          ))
-        ) : mockHistory.length > 0 ? (
+        {safeHistory.length > 0 && filteredHistory.length === 0 && (
           <Empty className="py-8 md:py-12">
             <EmptyContent>
               <EmptyMedia>
@@ -486,7 +569,9 @@ function HistoryTab() {
               </EmptyHeader>
             </EmptyContent>
           </Empty>
-        ) : (
+        )}
+
+        {safeHistory.length === 0 && (
           <Empty className="py-8 md:py-12">
             <EmptyContent>
               <EmptyMedia>
@@ -505,6 +590,26 @@ function HistoryTab() {
               </EmptyHeader>
             </EmptyContent>
           </Empty>
+        )}
+
+        {filteredHistory.map((h, index) => (
+          <HistoryCard
+            key={h.id || index}
+            historyItem={h}
+            active={activeIndex === index}
+            onClick={() => setActiveIndex(index)}
+            resetTrigger={resetTrigger}
+          />
+        ))}
+
+        {hasMore && (
+          <div ref={observerTarget} className="py-4 flex justify-center w-full">
+            {loading ? (
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            ) : (
+              <div className="h-8 w-8" />
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -545,22 +650,48 @@ function UpcomingTab({ incommingCitas }: { incommingCitas: DoctorPatientInfo["fu
     });
   };
 
+  const { specialtyOptions, serviceOptions } = useMemo(() => {
+    const specialties = new Map<string, boolean>();
+    const services = new Map<string, boolean>();
+
+    incommingCitas.flat().forEach((apt) => {
+      if (!apt) return;
+      if (apt.servicio?.especialidad?.nombre) {
+        specialties.set(apt.servicio.especialidad.nombre, true);
+      }
+      if (apt.servicio?.nombre) {
+        services.set(apt.servicio.nombre, true);
+      }
+    });
+
+    return {
+      specialtyOptions: Array.from(specialties.keys()).sort(),
+      serviceOptions: Array.from(services.keys()).sort(),
+    };
+  }, [incommingCitas]);
+
   const filteredUpcoming = incommingCitas.flat().filter((apt) => {
     if (!apt) return false;
-    if (filters.status !== "all" && apt?.estado !== filters.status) return false;
-    if (
-      filters.appointmentType !== "all" &&
-      apt.modalidad !== filters.appointmentType
-    )
-      return false;
+
+    if (filters.status !== "all") {
+      const mappedStatus = mapCitaEstadoToAppointmentStatus(apt.estado || "");
+      if (mappedStatus !== filters.status) return false;
+    }
+
+    if (filters.appointmentType !== "all") {
+      const isVirtual = isVirtualModality(apt.modalidad || "");
+      const expectedVirtual = filters.appointmentType === "virtual";
+      if (isVirtual !== expectedVirtual) return false;
+    }
+
     if (
       filters.specialty !== "all" &&
-      apt.servicio.especialidad?.nombre.toLowerCase().replace(/\s+/g, "-") !== filters.specialty
+      apt.servicio.especialidad?.nombre.toLowerCase() !== filters.specialty.toLowerCase()
     )
       return false;
     if (
       filters.service !== "all" &&
-      apt.servicio.nombre.toLowerCase().replace(/\s+/g, "-") !== filters.service
+      apt.servicio.nombre.toLowerCase() !== filters.service.toLowerCase()
     )
       return false;
     if (filters.dateRange) {
@@ -619,6 +750,8 @@ function UpcomingTab({ incommingCitas }: { incommingCitas: DoctorPatientInfo["fu
           <FilterMyAppointments
             filters={filters}
             onFiltersChange={handleFiltersChange}
+            specialtyOptions={specialtyOptions}
+            serviceOptions={serviceOptions}
           />
         </MCFilterPopover>
       </div>
@@ -985,7 +1118,7 @@ function PatientDetailsPage() {
               <PersonalTab patient={patient} />
             </TabsContent>
             <TabsContent value="history">
-              <HistoryTab />
+              <HistoryTab pacienteId={patientId} />
             </TabsContent>
             <TabsContent value="appointments">
               <UpcomingTab incommingCitas={[patient.futurasCitas]} />

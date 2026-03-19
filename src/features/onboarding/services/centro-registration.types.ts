@@ -7,6 +7,7 @@ export interface RegisterCenterRequest {
   email: string;
   direccion: string;
   barrioId: number;
+  ubicacionId: number;
   sitioWeb: string;
   password: string;
   tipoCentroId: number;

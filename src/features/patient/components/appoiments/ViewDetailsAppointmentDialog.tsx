@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, memo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import { useTranslation } from "react-i18next";
 import MapScheduleLocation from "@/shared/components/maps/MapScheduleLocation";
@@ -19,7 +19,7 @@ import {
   EmptyMedia,
 } from "@/shared/ui/empty";
 import { useAppStore } from "@/stores/useAppStore";
-import { getCitaById } from "@/services/api/appointments.service";
+import { getCitaById, getHistorialByPacienteId } from "@/services/api/appointments.service";
 import type { CitaDetalle, CitaDetallePaciente } from "@/types/AppointmentTypes";
 import { formatTimeTo12h, mapCitaEstadoToAppointmentStatus } from "@/utils/appointmentMapper";
 import ubicacionesService from "@/features/onboarding/services/ubicaciones.services";
@@ -396,13 +396,18 @@ const HistoryCard = memo(function HistoryCard({
 // ─── HistoryTabContent ────────────────────────────────────────────────────────
 const HistoryTabContent = memo(function HistoryTabContent({
   history,
-  appointmentId,
-  loading
+  loading,
+  hasMore,
+  onLoadMore,
+  pacienteId,
 }: {
   history: any[];
-  appointmentId: string;
   loading?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  pacienteId?: string | number;
 }) {
+
   const { t } = useTranslation("patient");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
@@ -413,6 +418,8 @@ const HistoryTabContent = memo(function HistoryTabContent({
     dateRange: undefined,
   });
 
+  const observerTarget = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     return () => {
       setActiveIndex(null);
@@ -420,7 +427,24 @@ const HistoryTabContent = memo(function HistoryTabContent({
     };
   }, []);
 
-  const safeHistory = Array.isArray(history) ? history : [];
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          onLoadMore?.();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, onLoadMore]);
+
+  const safeHistory = history[0] !== null && Array.isArray(history) ? history : [];
 
   // ✅ useCallback: stable reference for filter change handler
   const handleFiltersChange = useCallback((newFilters: Partial<HistoryFilters>) => {
@@ -431,6 +455,7 @@ const HistoryTabContent = memo(function HistoryTabContent({
   const handleClearFilters = useCallback(() => {
     setFilters({ services: [], timeRange: [], locations: [], dateRange: undefined });
   }, []);
+
 
   // ✅ useMemo: only recompute filtered list when history or filters change
   const filteredHistory = useMemo(() => {
@@ -445,7 +470,7 @@ const HistoryTabContent = memo(function HistoryTabContent({
 
       if (
         filters.locations.length > 0 &&
-        !filters.locations.includes(histItem.cita?.modalidad)
+        !filters.locations.includes(histItem.cita?.servicio?.id_ubicacion.toString())
       )
         return false;
 
@@ -522,6 +547,7 @@ const HistoryTabContent = memo(function HistoryTabContent({
             <FilterHistoryAppointments
               filters={filters}
               onFiltersChange={handleFiltersChange}
+              pacienteId={pacienteId}
             />
           </MCFilterPopover>
         )}
@@ -569,6 +595,12 @@ const HistoryTabContent = memo(function HistoryTabContent({
             resetTrigger={resetTrigger}
           />
         ))}
+
+        {hasMore && (
+          <div ref={observerTarget} className="py-4 flex justify-center w-full">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -589,6 +621,12 @@ function ViewDetailsAppointmentDialog({
   const [appointment, setAppointment] = useState<CitaDetalle | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [appointmentStatusKey, setAppointmentStatusKey] = useState<StatusKey | null>(null);
+  const [activeTab, setActiveTab] = useState<string>(preview);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyFetched, setHistoryFetched] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [loadingMoreHistory, setLoadingMoreHistory] = useState(false);
 
   const appointmentStatus = mockAppointments.find(
     (appt) => appt.id === appointmentId
@@ -649,8 +687,6 @@ function ViewDetailsAppointmentDialog({
         }
 
         setAppointment(appointmentData.cita);
-        const rawHistory = appointmentData.historial;
-        setHistory(Array.isArray(rawHistory) ? rawHistory : [rawHistory]);
         setAppointmentStatusKey(
           mapCitaEstadoToAppointmentStatus(appointmentData.cita.estado) as StatusKey
         );
@@ -663,6 +699,87 @@ function ViewDetailsAppointmentDialog({
 
     getAppointmentData();
   }, [appointmentId]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (
+        activeTab === "history" &&
+        appointment?.paciente?.usuarioId &&
+        !historyFetched &&
+        !historyLoading
+      ) {
+        setHistoryLoading(true);
+        try {
+          const params = {
+            pagina: 1,
+            limite: 10,
+            translate_fields:
+              "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+            target: i18n.language === "es" ? "es" : "en",
+            source: i18n.language === "es" ? "en" : "es",
+          };
+          const response = await getHistorialByPacienteId(
+            appointment.paciente.usuarioId,
+            params
+          );
+          if (response?.success && Array.isArray(response.data)) {
+            setHistory(response.data);
+            setHistoryPage(1);
+            setHasMoreHistory(
+              response.paginacion?.pagina < response.paginacion?.totalPaginas
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching patient history", error);
+        } finally {
+          setHistoryLoading(false);
+          setHistoryFetched(true);
+        }
+      }
+    };
+
+    fetchHistory();
+  }, [activeTab, appointment?.paciente?.usuarioId, historyFetched, i18n.language]);
+
+  const loadMoreHistory = useCallback(async () => {
+    if (!appointment?.paciente?.usuarioId || loadingMoreHistory || !hasMoreHistory) return;
+
+    setLoadingMoreHistory(true);
+    try {
+      const nextPage = historyPage + 1;
+      const params = {
+        pagina: nextPage,
+        limite: 10,
+        translate_fields:
+          "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+        target: i18n.language === "es" ? "es" : "en",
+        source: i18n.language === "es" ? "en" : "es",
+      };
+
+      const response = await getHistorialByPacienteId(
+        appointment.paciente.usuarioId,
+        params
+      );
+
+      if (response?.success && Array.isArray(response.data)) {
+        setHistory((prev) => [...prev, ...response.data]);
+        setHistoryPage(nextPage);
+        setHasMoreHistory(
+          response.paginacion?.pagina < response.paginacion?.totalPaginas
+        );
+      }
+    } catch (error) {
+      console.error("Error loading more history", error);
+    } finally {
+      setLoadingMoreHistory(false);
+    }
+  }, [
+    appointment?.paciente?.usuarioId,
+    historyPage,
+    hasMoreHistory,
+    loadingMoreHistory,
+    i18n.language,
+  ]);
 
   const statusKey: StatusKey = (appointmentStatusKey || appointmentStatus || status) as StatusKey;
 
@@ -685,7 +802,7 @@ function ViewDetailsAppointmentDialog({
       size="xl"
       variant="info"
     >
-      <Tabs defaultValue={preview}>
+      <Tabs defaultValue={preview} onValueChange={(val) => setActiveTab(val)}>
         <TabsList variant="line" className="mb-4">
           <TabsTrigger value="details" className="text-lg">
             {t("appointment.detailsTab")}
@@ -761,8 +878,10 @@ function ViewDetailsAppointmentDialog({
             <div className="mt-4 h-full text-center">
               <HistoryTabContent
                 history={history}
-                appointmentId={appointmentId}
-                loading={loading}
+                loading={historyLoading}
+                hasMore={hasMoreHistory}
+                onLoadMore={loadMoreHistory}
+                pacienteId={appointment?.paciente?.usuarioId}
               />
             </div>
           )}

@@ -209,6 +209,7 @@ export function centerProfileSchema(t: (key: string) => string) {
         message: t("validation.taxIdInvalid"),
       }),
     address: z.string().min(1, t("validation.addressRequired")).optional(),
+    description: z.string().optional(),
   });
 }
 
@@ -217,6 +218,9 @@ export function centerLocationSchema(t: (key: string) => string) {
     address: z.string().min(1, t("validation.addressRequired")),
     province: z.string().min(1, t("validation.provinceRequired")),
     municipality: z.string().min(1, t("validation.municipalityRequired")),
+    section: z.string().min(1, t("validation.sectionRequired")),
+    district: z.string().optional(),
+    neighborhood: z.string().min(1, t("validation.neighborhoodRequired")),
     coordinates: z.object({
       latitude: z
         .number()

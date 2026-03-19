@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     MIS_DOCTORES: '/citas/mis-doctores',
     MIS_PACIENTES: '/citas/mis-pacientes',
     DIAGNOSTICAR: (id: string | number) => `/citas/${id}/diagnosticar`,
+    HISTORIAL: (pacienteId: string | number) => `/citas/historial/${pacienteId}`,
   },
 
   // --- PERFILES ---
@@ -154,6 +155,7 @@ export const API_ENDPOINTS = {
     LOCATIONS_BY_DOCTOR: '/ubicaciones/mis-ubicaciones',
     CREATE_LOCATION: '/ubicaciones/mis-ubicaciones',
     LOCATION_BY_ID: (id: string | number) => `/ubicaciones/${id}`,
+    CREATE_LOCATION_FOR_HEALTH_CENTER: '/ubicaciones',
   },
 
   // --- Tipos de centro ---

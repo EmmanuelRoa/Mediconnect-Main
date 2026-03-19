@@ -88,7 +88,7 @@ const ProviderCard = memo(
           connectionStatus={
             (provider as Doctor).connectionStatus ?? "not_connected"
           }
-          onConnect={onConnect || (() => {})}
+          onConnect={onConnect || (() => { })}
         />
       );
     } else {
@@ -96,7 +96,7 @@ const ProviderCard = memo(
         <CenterCards
           clinic={provider as Clinic}
           isConnected={(provider as Clinic).connectionStatus ?? "not_connected"}
-          onConnect={onConnect || (() => {})}
+          onConnect={onConnect || (() => { })}
           onViewProfile={onViewProfile}
         />
       );
@@ -228,7 +228,7 @@ const DesktopFilters = memo(
         <MCFilterSelect
           name="providerType"
           placeholder={isLoadingCentro ? t("search.loadingProviderTypes") : t("search.providerType", "Tipo")}
-          options={[{value: "all", label: t("search.options.all", "Todos")}, ...tiposCentroOptions]}
+          options={[{ value: "all", label: t("search.options.all", "Todos") }, ...tiposCentroOptions]}
           multiple
           noBadges
           disabled={isLoadingCentro}
@@ -242,8 +242,8 @@ const DesktopFilters = memo(
         />
         <MCFilterSelect
           name="specialty"
-          placeholder={ isLoadingEspecialidades ? t("search.loadingSpecialties") : t("search.specialty", "Especialidad")}
-          options={[{value: "all", label: t("search.options.all", "Todos")}, ...especialidadesOptions]}
+          placeholder={isLoadingEspecialidades ? t("search.loadingSpecialties") : t("search.specialty", "Especialidad")}
+          options={[{ value: "all", label: t("search.options.all", "Todos") }, ...especialidadesOptions]}
           multiple
           noBadges
           disabled={isLoadingEspecialidades}
@@ -380,7 +380,7 @@ function Search() {
 
   const { data: tiposCentroOptions = [], isLoading: isLoadingCentro } = useTiposCentros();
   const { data: especialidadesOptions = [], isLoading: isLoadingEspecialidades } = useEspecialidades();
-  
+
   // Use the search doctors hook with real API integration
   const {
     filteredProviders,
@@ -538,7 +538,9 @@ function Search() {
       ),
     [selectedProviders, filteredProviders],
   );
-  
+
+  console.log("filteredProviders", filteredProviders);
+
   return (
     <div className="min-h-screen flex flex-col bg-background rounded-4xl">
       <motion.div
@@ -547,7 +549,7 @@ function Search() {
       >
         <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-12">
           <div className="flex flex-col gap-4 justify-center items-center">
-            <DoctorSearchBar 
+            <DoctorSearchBar
               onSearchChange={handleSearchChange}
               onInsuranceChange={handleInsuranceChange}
             />
@@ -603,9 +605,8 @@ function Search() {
         <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-4 lg:h-[calc(100vh-200px)]">
           <motion.div
             {...fadeInUp}
-            className={`space-y-3 sm:space-y-4 overflow-y-auto ${
-              isMobile && showMap ? "hidden" : "block"
-            }`}
+            className={`space-y-3 sm:space-y-4 overflow-y-auto ${isMobile && showMap ? "hidden" : "block"
+              }`}
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
@@ -644,27 +645,26 @@ function Search() {
           </motion.div>
           <motion.div
             {...fadeInUp}
-            className={`bg-card rounded-xl border border-border h-[500px] sm:h-[600px] lg:h-full ${
-              isMobile && !showMap ? "hidden" : "block"
-            }`}
+            className={`bg-card rounded-xl border border-border h-[500px] sm:h-[600px] lg:h-full ${isMobile && !showMap ? "hidden" : "block"
+              }`}
           >
             <div className="h-full rounded-xl overflow-hidden relative">
-                <MapSearchProviders
-                  providers={filteredProviders}
-                  selectedProviders={selectedProviders}
-                  onProviderSelect={handleProviderSelect}
-                />
-                {locationPermission === 'denied' && (
-                  <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
-                    <div className="pointer-events-auto bg-yellow-50 border border-yellow-400 text-yellow-900 px-4 py-2 rounded max-w-lg mx-4 text-center">
-                      {t(
-                        'search.locationWarning',
-                        'Debe permitir el acceso a la ubicación para listar los servicios por cercanía.',
-                      )}
-                    </div>
+              <MapSearchProviders
+                providers={filteredProviders}
+                selectedProviders={selectedProviders}
+                onProviderSelect={handleProviderSelect}
+              />
+              {locationPermission === 'denied' && (
+                <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+                  <div className="pointer-events-auto bg-yellow-50 border border-yellow-400 text-yellow-900 px-4 py-2 rounded max-w-lg mx-4 text-center">
+                    {t(
+                      'search.locationWarning',
+                      'Debe permitir el acceso a la ubicación para listar los servicios por cercanía.',
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       </main>

@@ -15,17 +15,12 @@ export interface DoctorStatsResumen {
   /**
    * Total de citas/consultas
    */
-  totalCitas: number;
+  totalConsultas: number;
 
   /**
    * Total ganado en la moneda local (ej: RD$)
    */
-  totalGanancias: string | number;
-
-  /**
-   * Porcentaje de cambio respecto al período anterior
-   */
-  porcentajeCambio?: number;
+  totalDineroGanado: string | number;
 }
 
 /**
@@ -284,10 +279,10 @@ export interface FiltrosPacientes {
   condicionId?: number;
   alergiaId?: number;
   servicioId?: number;
-  especialidadId?: number;   
-  ubicacionId?: number;      
-  tieneCondiciones?: boolean; 
-  tieneAlergias?: boolean;    
+  especialidadId?: number;
+  ubicacionId?: number;
+  tieneCondiciones?: boolean;
+  tieneAlergias?: boolean;
   ultimaCitaDesde?: string;
   ultimaCitaHasta?: string;
 }

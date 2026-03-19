@@ -17,7 +17,9 @@ import { normalizeLoginResponse } from "@/services/auth/auth.types";
 import { ROUTES } from "@/router/routes";
 import centerRegistrationService, { mapCenterOnboardingToRequest } from "../services/centro-registration.services";
 import { doctorService } from "@/shared/navigation/userMenu/editProfile/doctor/services/doctor.service";
+import ubicacionesService from "@/features/onboarding/services/ubicaciones.services";
 import { AVAILABLE_LANGUAGES, PROFICIENCY_LEVELS } from "@/features/onboarding/constants/languages.constants";
+import type { createLocationRequest } from "../services/ubicaciones.types";
 
 function SetCredentialsPage() {
   const { t } = useTranslation("auth");
@@ -179,7 +181,7 @@ function SetCredentialsPage() {
             const selectedLanguage = AVAILABLE_LANGUAGES.find(
               lang => lang.value === updatedDoctorData.language
             );
-            
+
             // Convertir el ID del nivel de dominio a nombre
             const selectedProficiency = PROFICIENCY_LEVELS.find(
               level => level.value === updatedDoctorData.proficiencyLevel
@@ -191,7 +193,7 @@ function SetCredentialsPage() {
                 nombre: selectedLanguage.label,
                 nivel: selectedProficiency.label,
               });
-              
+
             }
           } catch (languageError) {
             // No fallar el registro si hay error al agregar el idioma
@@ -233,15 +235,39 @@ function SetCredentialsPage() {
           email: centerBasicInfo.email,
           urlImg: centerBasicInfo.urlImg ?? undefined,
           descripcion: centerBasicInfo.Description,
+          // Datos explícitos de ubicación:
+          province: centerBasicInfo.province,
+          municipality: centerBasicInfo.municipality,
+          district: centerBasicInfo.district,
+          section: centerBasicInfo.section,
+          neighborhood: centerBasicInfo.neighborhood,
+          coordinates: centerBasicInfo.coordinates,
         };
 
-        setCenterOnboardingData(updatedCenterData); 
-        
-        if(!registrationToken) {
+        setCenterOnboardingData(updatedCenterData);
+
+        if (!registrationToken) {
           throw new Error(t('setCredentialsPage.errors.noRegistrationToken'));
         }
 
-        const request = await mapCenterOnboardingToRequest(updatedCenterData, registrationToken);
+        const locationPayload: createLocationRequest = {
+          barrioId: Number(updatedCenterData.neighborhood),
+          direccion: updatedCenterData.address,
+          nombre: updatedCenterData.name,
+          codigoPostal: "",
+          puntoGeografico: {
+            type: "Point",
+            coordinates: [updatedCenterData.coordinates?.longitude || 0, updatedCenterData.coordinates?.latitude || 0],
+          },
+        };
+        const ubicacionResponse = await ubicacionesService.createLocationForHealthCenter(locationPayload);
+        const ubicacionId = ubicacionResponse?.data?.id;
+
+        if (!ubicacionId) {
+          throw new Error(t('setCredentialsPage.errors.locationCreationFailed'));
+        }
+
+        const request = await mapCenterOnboardingToRequest(updatedCenterData, registrationToken, ubicacionId);
 
         await centerRegistrationService.registerCenter(request);
 
@@ -270,10 +296,10 @@ function SetCredentialsPage() {
       }
     } catch (error: any) {
       console.error('Error al procesar el registro:', error);
-      
+
       // Determinar el mensaje de error apropiado
       let errorMsg = t('setCredentialsPage.errors.registrationFailed');
-      
+
       if (error.response?.data?.message) {
         // Error del servidor
         errorMsg = error.response.data.message;
@@ -289,7 +315,7 @@ function SetCredentialsPage() {
           errorMsg = error.message;
         }
       }
-      
+
       setErrorMessage(errorMsg);
     } finally {
       setIsSubmitting(false);
