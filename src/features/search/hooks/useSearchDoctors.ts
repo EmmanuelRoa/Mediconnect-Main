@@ -15,7 +15,7 @@ export interface UseSearchDoctorsParams {
   lng: number | null;
   radiusKm?: number;
   filters?: SearchProviderFilters;
-  language?: string;
+  language: string;
   enabled?: boolean;
   especialidadesOptions?: Array<{ value: string; label: string }>;
   tiposCentroOptions?: Array<{ value: string; label: string }>;
@@ -90,7 +90,7 @@ export function useSearchDoctors({
   lng,
   radiusKm = 15,
   filters,
-  language = "es",
+  language,
   enabled = true,
   especialidadesOptions = [],
   tiposCentroOptions = []
@@ -101,7 +101,7 @@ export function useSearchDoctors({
   // Map filters to API parameters
   const apiParams = useMemo(() => {
     if (!filters) return {};
-    
+
     return mapFiltersToAPIParams(filters, language, especialidadesOptions, tiposCentroOptions);
   }, [filters, language, especialidadesOptions, tiposCentroOptions]);
 
@@ -138,7 +138,7 @@ export function useSearchDoctors({
   // Transform doctors to providers asynchronously (mapper fetches availability)
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isTransforming, setIsTransforming] = useState(false);
-  
+
   useEffect(() => {
     let mounted = true;
 
@@ -202,7 +202,7 @@ export function useSearchDoctors({
           (insurance) => {
             // Check if insurance is numeric ID or string name
             const isNumericId = !isNaN(Number(insurance));
-            
+
             return rawDoctor.segurosAceptados.some((s) => {
               if (isNumericId) {
                 // Match by ID

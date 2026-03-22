@@ -12,7 +12,7 @@ interface Props {
 }
 
 const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet, doctorId }: Props) => {
-  const { t, i18n } = useTranslation("doctor");
+  const { t } = useTranslation("doctor");
   // Determine doctorId param: when viewing another doctor's profile (isMyProfile=false)
   // and a doctorId is provided, pass it to the hook to fetch that doctor's accepted insurances.
   const doctorIdParam = !isMyProfile && doctorId ? doctorId : undefined;
@@ -39,7 +39,7 @@ const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet, doctorId }:
         <CardTitle className="text-2xl font-semibold text-foreground">
           {t("profile.insurance.title", "Seguros Médicos Aceptados")}
         </CardTitle>
-        {seguros.length > 0 && !isMyProfile && ( 
+        {seguros.length > 0 && !isMyProfile && (
           <span className="text-sm text-muted-foreground">
             {t(
               "profile.insurance.question",
@@ -49,7 +49,7 @@ const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet, doctorId }:
         )}
       </CardHeader>
       <CardContent className="p-4">
-          {isLoading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <p className="text-muted-foreground">
               {t("profile.insurance.loading", "Cargando seguros...")}
@@ -97,13 +97,13 @@ const DoctorInsurancesSection = ({ isMyProfile = false, onOpenSheet, doctorId }:
             <p className="text-muted-foreground mb-4">
               {isMyProfile
                 ? t(
-                    "profile.insurance.addInsurance",
-                    "Agrega los seguros médicos que aceptas para ayudar a tus pacientes",
-                  )
+                  "profile.insurance.addInsurance",
+                  "Agrega los seguros médicos que aceptas para ayudar a tus pacientes",
+                )
                 : t(
-                    "profile.insurance.noInsurance",
-                    "Este doctor no ha registrado seguros médicos aceptados.",
-                  )}
+                  "profile.insurance.noInsurance",
+                  "Este doctor no ha registrado seguros médicos aceptados.",
+                )}
             </p>
             {isMyProfile && onOpenSheet && (
               <MCButton variant="outline" onClick={onOpenSheet} size="sm">

@@ -1,6 +1,6 @@
 import apiClient from '@/services/api/client';
-import type { 
-  UpdatePatientProfileRequest, 
+import type {
+  UpdatePatientProfileRequest,
   UpdatePatientProfileResponse,
   UpdatePatientProfileError,
   UpdateProfilePhotoResponse,
@@ -51,23 +51,23 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al actualizar perfil:', error);
-      
+
       // El apiClient ya maneja los errores comunes (401, 403, etc.)
       // Aquí solo manejamos errores específicos del endpoint
       const errorData = error.response?.data as UpdatePatientProfileError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Perfil de paciente no encontrado.');
       }
-      
+
       if (error.response?.status === 409) {
         throw new Error('El documento de identidad ya está registrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar el perfil. Intenta nuevamente.'
       );
     }
@@ -111,24 +111,24 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al actualizar foto de perfil:', error);
-      
+
       const errorData = error.response?.data as UpdateProfilePhotoError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Archivo inválido. Verifica el tipo y tamaño del archivo.'
         );
       }
-      
+
       if (error.response?.status === 404) {
         throw new Error('Usuario no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar la foto de perfil. Intenta nuevamente.'
       );
     }
@@ -172,24 +172,24 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al actualizar banner:', error);
-      
+
       const errorData = error.response?.data as UpdateBannerError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Archivo inválido. Verifica el tipo y tamaño del archivo.'
         );
       }
-      
+
       if (error.response?.status === 404) {
         throw new Error('Usuario no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar el banner. Intenta nuevamente.'
       );
     }
@@ -230,12 +230,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener alergias disponibles:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener alergias disponibles. Intenta nuevamente.'
       );
     }
@@ -276,12 +276,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener condiciones médicas disponibles:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener condiciones médicas disponibles. Intenta nuevamente.'
       );
     }
@@ -320,12 +320,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener alergias del paciente:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tus alergias. Intenta nuevamente.'
       );
     }
@@ -364,12 +364,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener condiciones médicas del paciente:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tus condiciones médicas. Intenta nuevamente.'
       );
     }
@@ -390,19 +390,19 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al agregar alergia:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Alergia ya registrada o datos inválidos.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar alergia. Intenta nuevamente.'
       );
     }
@@ -423,19 +423,19 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al agregar condición médica:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Condición médica ya registrada o datos inválidos.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar condición médica. Intenta nuevamente.'
       );
     }
@@ -457,19 +457,19 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al agregar condición médica personal:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'La condición médica personal no es válida.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar condición médica personal. Intenta nuevamente.'
       );
     }
@@ -489,16 +489,16 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al eliminar alergia:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Alergia no encontrada.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar alergia. Intenta nuevamente.'
       );
     }
@@ -518,16 +518,16 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al eliminar condición médica:', error);
-      
+
       const errorData = error.response?.data as MedicalConditionError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Condición médica no encontrada.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar condición médica. Intenta nuevamente.'
       );
     }
@@ -565,12 +565,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener tipos de seguros disponibles:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tipos de seguros disponibles. Intenta nuevamente.'
       );
     }
@@ -605,12 +605,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener seguros disponibles:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener seguros disponibles. Intenta nuevamente.'
       );
     }
@@ -646,12 +646,12 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al obtener seguros del paciente:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tus seguros. Intenta nuevamente.'
       );
     }
@@ -672,19 +672,19 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al agregar seguro:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Ya tienes 3 seguros o el seguro ya está registrado.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar seguro. Intenta nuevamente.'
       );
     }
@@ -704,16 +704,16 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al eliminar seguro:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Seguro no encontrado.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar seguro. Intenta nuevamente.'
       );
     }
@@ -728,9 +728,9 @@ export const patientService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Patient Service] Error al crear cita:', error);
-      
+
       throw new Error(
-        error.message || 
+        error.message ||
         'Error al crear cita. Intenta nuevamente.'
       );
     }
@@ -747,7 +747,10 @@ export const patientService = {
     return response.data;
   },
 
-  updateAppointment: async ( appointmentId: number, data: CreateHealthDateRequest): Promise<any> => {
+  updateAppointment: async (
+    appointmentId: number,
+    data: CreateHealthDateRequest
+  ): Promise<any> => {
     try {
       const response = await apiClient.patch(
         `/citas/${appointmentId}`,

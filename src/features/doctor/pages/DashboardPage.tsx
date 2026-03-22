@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { Card } from "@/shared/ui/card";
@@ -15,6 +15,7 @@ import AreaChart from "../components/dashboard/AreaChart";
 import { MCFilterPopover } from "@/shared/components/filters/MCFilterPopover";
 import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import PieServices from "../components/dashboard/PieServices";
+
 
 type DateRangeType = "week" | "month" | "3months" | "year" | "all";
 
@@ -34,6 +35,7 @@ const dateRangeToPeriodo = (dateRange: DateRangeType): string => {
 function DashboardPage() {
   const isMobile = useIsMobile();
   const { t } = useTranslation("doctor");
+  const { i18n } = useTranslation();
   const [dateRange, setDateRange] = useState<DateRangeType>("month");
   const [filters, setFilters] = useState({
     specialty: "",
@@ -53,7 +55,7 @@ function DashboardPage() {
   const {
     data: serviciosRawData,
     error: serviciosError
-  } = useDoctorMostUsedServices();
+  } = useDoctorMostUsedServices(i18n.language);
 
   // Obtener datos de productividad con período mapeado
   const {
@@ -62,13 +64,15 @@ function DashboardPage() {
   } = useDoctorProductivity(dateRangeToPeriodo(dateRange));
 
   // Transformar servicios más utilizados al formato esperado por PieServices
-  const serviciosMasUtilizados = serviciosRawData
-    ? serviciosRawData.map((servicio) => ({
-      name: servicio.nombre || "Sin nombre",
-      value: servicio.totalCitas || 0,
-      color: servicio.color || "hsl(var(--chart-1))",
-    }))
-    : []; // Array vacío mientras carga
+  const serviciosMasUtilizados = useMemo(() => {
+    return serviciosRawData
+      ? serviciosRawData.map((servicio) => ({
+        name: servicio.nombre || "Sin nombre",
+        value: servicio.totalCitas || 0,
+        color: servicio.color || "hsl(var(--chart-1))",
+      }))
+      : [];
+  }, [serviciosRawData, i18n.language]);
 
   const resetFilters = () => {
     setFilters({

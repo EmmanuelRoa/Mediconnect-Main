@@ -30,10 +30,11 @@ import { motion } from "framer-motion";
 export const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedAppointment, setSelectedAppointment] =useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [view, setView] = useState<CalendarView>("month");
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const { t } = useTranslation("common");
+  const { i18n } = useTranslation();
   const isMobile = useIsMobile();
 
   // Mapear la vista del calendario local a la vista de la API
@@ -61,6 +62,9 @@ export const CalendarPage = () => {
     params: {
       vista: apiVista,
       fecha: fechaParam,
+      target: i18n.language === 'en' ? 'en' : 'es',
+      source: i18n.language === 'en' ? 'es' : 'en',
+      translate_fields: 'nombre,motivoConsulta,diagnostico,motivoCancelacion,comentario',
     },
   });
 
@@ -68,8 +72,8 @@ export const CalendarPage = () => {
   const appointments = useMemo<Appointment[]>(() => {
     if (!calendarData?.dias) return [];
     return flattenCalendarioDias(calendarData.dias);
-  }, [calendarData]);
-  
+  }, [calendarData, i18n.language]);
+
   const navigatePrevious = () => {
     switch (view) {
       case "month":

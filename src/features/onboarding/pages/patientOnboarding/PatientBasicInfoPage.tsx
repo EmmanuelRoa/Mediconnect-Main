@@ -11,6 +11,7 @@ import type { PatientBasicInfoSchemaType } from "@/types/OnbordingTypes";
 import MCSelect from "@/shared/components/forms/MCSelect";
 import { authService } from "@/services/auth/auth.service";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { ValidateDominicanID } from "@/utils/ValidateDominicanID";
 
 function PatientBasicInfoPage() {
   const { t } = useTranslation("auth");
@@ -85,8 +86,15 @@ function PatientBasicInfoPage() {
   // useEffect con debounce para verificar el documento
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (basicInfo?.identityDocument) {
-        verificarDocumento(basicInfo.identityDocument);
+      const identityDocument = basicInfo?.identityDocument ?? "";
+      if (identityDocument && ValidateDominicanID(identityDocument)) {
+        verificarDocumento(identityDocument);
+      } else {
+        setDocumentoStatus({
+          isChecking: false,
+          isAvailable: null,
+          message: "",
+        });
       }
     }, 800); // Esperar 800ms después del último cambio
 
@@ -147,7 +155,7 @@ function PatientBasicInfoPage() {
   }
 
   // Calcular si el botón debe estar deshabilitado
-  const isDocumentValid = basicInfo?.identityDocument?.replace(/\D/g, "").length === 11;
+  const isDocumentValid = !!basicInfo?.identityDocument && ValidateDominicanID(basicInfo.identityDocument);
   const isButtonDisabled = 
     !isFormValid || // Formulario no válido
     documentoStatus.isChecking || // Mientras se verifica

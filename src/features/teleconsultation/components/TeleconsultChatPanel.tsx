@@ -57,6 +57,9 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
   const user = useAppStore((s) => s.user);
   const setActiveConversation = useAppStore((s) => s.setActiveConversation);
   const role = user ? getUserAppRole(user) : null;
+  
+  const isPatientRole = role === "PATIENT";
+
   const { appointment, loading: loadingCita } = useCitaDetails(
     appointmentId || undefined
   );
@@ -181,17 +184,20 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
         </button>
 
         {/* Notas button */}
-        <button
-          onClick={() => setPanelView("notas")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-            panelView === "notas"
-              ? "bg-primary text-primary-foreground shadow-sm"
+        {/* Solo se muestra el botón de Notas para el doctor, que es quien puede escribir la receta. El paciente solo ve el chat. */}
+        {!isPatientRole && (
+          <button
+            onClick={() => setPanelView("notas")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+              panelView === "notas"
+                ? "bg-primary text-primary-foreground shadow-sm"
               : "border border-border text-foreground hover:bg-accent/60"
-          }`}
-        >
-          <ClipboardList size={15} />
-          Notas
-        </button>
+            }`}
+            > 
+            <ClipboardList size={15} />
+            Notas
+          </button>
+        )}
 
         {/* Spacer + X */}
         <div className="ml-auto">

@@ -15,6 +15,8 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/shared/ui/chart";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface ChartDataItem {
   day: string;
@@ -29,16 +31,6 @@ interface AreaChartProps {
   dateRange?: "week" | "month" | "3months" | "year" | "all";
 }
 
-const chartConfig: ChartConfig = {
-  consultas: {
-    label: "Consultas",
-    color: "var(--accent)",
-  },
-  ingresos: {
-    label: "Ingresos",
-    color: "var(--secondary)",
-  },
-};
 
 
 function AreaChart({
@@ -49,6 +41,19 @@ function AreaChart({
 }: AreaChartProps) {
   // Usar datos personalizados o datos según el período seleccionado
   const chartData = data;
+
+  const { t } = useTranslation("doctor");
+
+  const chartConfig: ChartConfig = {
+    consultas: {
+      label: t("dashboard.metrics.totalAppointments"),
+      color: "var(--accent)",
+    },
+    ingresos: {
+      label: t("dashboard.metrics.totalEarned"),
+      color: "var(--secondary)",
+    },
+  };
 
   return (
     <Card className="h-full flex flex-col rounded-3xl border-none shadow-none p-0 m-0">
@@ -78,7 +83,49 @@ function AreaChart({
                 orientation="right"
                 stroke="var(--primary)"
               />
-              <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+              <Tooltip
+                content={
+                  <ChartTooltipContent
+                    indicator="dot"
+                    formatter={(value, name) => {
+                      if (name === "ingresos") {
+                        return (
+                          <div className="flex w-full flex-wrap items-center gap-2">
+                            <div
+                              className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                              style={{ backgroundColor: "var(--secondary)" }}
+                            />
+                            <div className="flex flex-1 justify-between leading-none items-center">
+                              <span className="text-muted-foreground font-bold">
+                                {chartConfig.ingresos.label}
+                              </span>
+                              <span className="text-foreground font-mono font-medium tabular-nums ml-3">
+                                {formatCurrency(value)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="flex w-full flex-wrap items-center gap-2">
+                          <div
+                            className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                            style={{ backgroundColor: "var(--accent)" }}
+                          />
+                          <div className="flex flex-1 justify-between leading-none items-center">
+                            <span className="text-muted-foreground font-bold">
+                              {chartConfig.consultas.label}
+                            </span>
+                            <span className="text-foreground font-mono font-medium tabular-nums ml-3">
+                              {Number(value).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
+                }
+              />
 
               {/* Área de Consultas - sin stackId para que no se apile */}
               <Area

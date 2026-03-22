@@ -1,6 +1,40 @@
 import { z } from "zod";
 import { ValidateDominicanID } from "@/utils/ValidateDominicanID";
 import { ValidateDominicanRNC } from "@/utils/ValidateDominicanRNC";
+import i18next from "i18next";
+
+const PASSWORD_SECURITY_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
+const getValidationMessage = (
+  t: (key: string) => string,
+  key: string,
+  fallback: { es: string; en: string },
+) => {
+  const translated = t(key);
+  if (!translated || translated === key) {
+    return i18next.language?.toLowerCase().startsWith("en")
+      ? fallback.en
+      : fallback.es;
+  }
+  return translated;
+};
+
+const passwordWithSecurity = (t: (key: string) => string) =>
+  z
+    .string()
+    .min(
+      8,
+      getValidationMessage(t, "validation.passwordMin", {
+        es: "La contraseña debe tener al menos 8 caracteres",
+        en: "Password must be at least 8 characters",
+      }),
+    )
+    .refine((val) => PASSWORD_SECURITY_REGEX.test(val), {
+      message: getValidationMessage(t, "validation.passwordSecurity", {
+        es: "La contraseña debe incluir al menos una mayúscula, un número y un carácter especial.",
+        en: "Password must include at least one uppercase letter, one number, and one special character.",
+      }),
+    });
 
 // Schema para archivos subidos
 export const UploadedFileSchema = z.object({
@@ -82,8 +116,8 @@ export function PatientOnboardingSchema(t: (key: string) => string) {
       .string()
       .min(1, t("validation.emailRequired"))
       .email(t("validation.emailInvalid")),
-    password: z.string().min(6, t("validation.passwordMin")),
-    confirmPassword: z.string().min(6, t("validation.passwordMin")),
+    password: passwordWithSecurity(t),
+    confirmPassword: passwordWithSecurity(t),
   }).superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({
@@ -120,8 +154,8 @@ export function CreatePasswordSchema(t: (key: string) => string) {
     confirmPassword: true,
   })
     .extend({
-      password: z.string().min(8, t("validation.passwordMin")),
-      confirmPassword: z.string().min(8, t("validation.passwordMin")),
+      password: passwordWithSecurity(t),
+      confirmPassword: passwordWithSecurity(t),
     })
     .superRefine((data, ctx) => {
       if (data.password !== data.confirmPassword) {
@@ -176,8 +210,8 @@ export function DoctorOnboardingSchema(t: (key: string) => string) {
     identityDocumentFile: z.array(UploadedFileSchema).max(2, t("validation.maxDocumentFiles")).optional(),
     certifications: z.array(UploadedFileSchema).optional(),
     academicTitle: UploadedFileSchema.optional(),
-    password: z.string().min(6, t("validation.passwordMin")),
-    confirmPassword: z.string().min(6, t("validation.passwordMin")),
+    password: passwordWithSecurity(t),
+    confirmPassword: passwordWithSecurity(t),
   }).superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({
@@ -286,8 +320,8 @@ export function CenterOnboardingSchema(t: (key: string) => string) {
       .email(t("validation.emailInvalid")),
     urlImg: UploadedFileSchema.optional(),
     healthCertificateFile: UploadedFileSchema.optional(),
-    password: z.string().min(6, t("validation.passwordMin")),
-    confirmPassword: z.string().min(6, t("validation.passwordMin")),
+    password: passwordWithSecurity(t),
+    confirmPassword: passwordWithSecurity(t),
   }).superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({

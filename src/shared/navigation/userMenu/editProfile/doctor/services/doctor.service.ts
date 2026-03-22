@@ -1,5 +1,5 @@
 import apiClient from '@/services/api/client';
-import type { 
+import type {
   GetDoctorProfileResponse,
   DoctorServiceError,
   UpdateDoctorProfileRequest,
@@ -65,28 +65,36 @@ export const doctorService = {
    * - Ubicación
    * - Formaciones académicas
    */
-  getProfile: async (): Promise<GetDoctorProfileResponse> => {
+  getProfile: async (params?: any): Promise<GetDoctorProfileResponse> => {
     try {
-      const response = await apiClient.get<GetDoctorProfileResponse>(
-        '/doctores/me'
-      );
+      const searchParams = new URLSearchParams();
+      if (params?.target) searchParams.append('target', params.target);
+      if (params?.source) searchParams.append('source', params.source);
+      if (params?.translate_fields) searchParams.append('translate_fields', params.translate_fields);
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `/doctores/me?${queryString}`
+        : `/doctores/me`;
+
+      const response = await apiClient.get<GetDoctorProfileResponse>(url);
 
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener perfil de doctor:', error);
-      
+
       // El apiClient ya maneja los errores comunes (401, 403, etc.)
       // Aquí solo manejamos errores específicos del endpoint
       const errorData = error.response?.data as DoctorServiceError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Perfil de doctor no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener el perfil del doctor. Intenta nuevamente.'
       );
     }
@@ -108,11 +116,19 @@ export const doctorService = {
    * - nacionalidad: Nacionalidad del doctor
    * - estado: Estado del perfil (Activo/Inactivo)
    */
-  getDoctorById: async (id: number): Promise<{ success: boolean; data: Doctor }> => {
+  getDoctorById: async (id: number, params?: any): Promise<{ success: boolean; data: Doctor }> => {
     try {
-      const response = await apiClient.get<{ success: boolean; data: Doctor }>(
-        `/doctores/${id}`
-      );
+      const searchParams = new URLSearchParams();
+      if (params?.target) searchParams.append('target', params.target);
+      if (params?.source) searchParams.append('source', params.source);
+      if (params?.translate_fields) searchParams.append('translate_fields', params.translate_fields);
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `/doctores/${id}?${queryString}`
+        : `/doctores/${id}`;
+
+      const response = await apiClient.get<{ success: boolean; data: Doctor }>(url);
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener perfil de doctor por ID:', error);
@@ -136,23 +152,23 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar perfil:', error);
-      
+
       // El apiClient ya maneja los errores comunes (401, 403, etc.)
       // Aquí solo manejamos errores específicos del endpoint
       const errorData = error.response?.data as UpdateDoctorProfileError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Perfil de doctor no encontrado.');
       }
-      
+
       if (error.response?.status === 409) {
         throw new Error('El exequatur o documento de identidad ya existe.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar el perfil. Intenta nuevamente.'
       );
     }
@@ -214,30 +230,30 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar documento:', error);
-      
+
       const errorData = error.response?.data as UpdateDocumentError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'El documento no está en estado rechazado o el archivo es inválido.'
         );
       }
-      
+
       if (error.response?.status === 403) {
         throw new Error(
           'No tienes permiso para actualizar este documento o tu cuenta no está en revisión.'
         );
       }
-      
+
       if (error.response?.status === 404) {
         throw new Error('Documento no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar el documento. Intenta nuevamente.'
       );
     }
@@ -281,24 +297,24 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar foto de perfil:', error);
-      
+
       const errorData = error.response?.data as UpdateProfilePhotoError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'La foto de perfil es inválida o supera el tamaño permitido.'
         );
       }
-      
+
       if (error.response?.status === 404) {
         throw new Error('Usuario no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar la foto de perfil. Intenta nuevamente.'
       );
     }
@@ -342,24 +358,24 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar banner:', error);
-      
+
       const errorData = error.response?.data as UpdateBannerError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'El banner es inválido o supera el tamaño permitido.'
         );
       }
-      
+
       if (error.response?.status === 404) {
         throw new Error('Usuario no encontrado.');
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar el banner. Intenta nuevamente.'
       );
     }
@@ -385,9 +401,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener experiencias laborales:', error);
-      
+
       const errorData = error.response?.data as DoctorServiceError;
-      
+
       if (error.response?.status === 404) {
         // Si no hay experiencias, devolver array vacío
         return {
@@ -399,11 +415,11 @@ export const doctorService = {
           }
         };
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener las experiencias laborales. Intenta nuevamente.'
       );
     }
@@ -422,9 +438,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener experiencias laborales:', error);
-      
+
       const errorData = error.response?.data as DoctorServiceError;
-      
+
       if (error.response?.status === 404) {
         // Si no hay experiencias, devolver array vacío
         return {
@@ -436,11 +452,11 @@ export const doctorService = {
           }
         };
       }
-      
+
       // Error genérico del servidor o del cliente API
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener las experiencias laborales. Intenta nuevamente.'
       );
     }
@@ -468,19 +484,19 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al crear experiencia laboral:', error);
-      
+
       const errorData = error.response?.data as ExperienciaLaboralError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Datos de experiencia laboral inválidos. Verifica los campos requeridos.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al crear la experiencia laboral. Intenta nuevamente.'
       );
     }
@@ -507,23 +523,23 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar experiencia laboral:', error);
-      
+
       const errorData = error.response?.data as ExperienciaLaboralError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Experiencia laboral no encontrada.');
       }
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'Datos de experiencia laboral inválidos.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar la experiencia laboral. Intenta nuevamente.'
       );
     }
@@ -547,16 +563,16 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al eliminar experiencia laboral:', error);
-      
+
       const errorData = error.response?.data as ExperienciaLaboralError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Experiencia laboral no encontrada.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar la experiencia laboral. Intenta nuevamente.'
       );
     }
@@ -594,12 +610,12 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener tipos de seguros disponibles:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tipos de seguros disponibles. Intenta nuevamente.'
       );
     }
@@ -634,12 +650,12 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener seguros disponibles:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener seguros disponibles. Intenta nuevamente.'
       );
     }
@@ -669,8 +685,8 @@ export const doctorService = {
       const errorData = error.response?.data as InsuranceError;
 
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener seguros populares. Intenta nuevamente.'
       );
     }
@@ -678,7 +694,9 @@ export const doctorService = {
 
   /**
    * Obtiene los seguros aceptados por el doctor autenticado
-   * @param language - Idioma para traducción automática (opcional, por defecto 'es')
+   * @param target - Idioma para traducción automática (opcional, por defecto 'es')
+   * @param source - Idioma de origen (opcional, por defecto 'es')
+   * @param translate_fields - Campos a traducir (opcional, por defecto 'nombre,descripcion')
    * @returns Lista de seguros aceptados por el doctor
    * 
    * Soporta traducción automática mediante query params:
@@ -686,16 +704,16 @@ export const doctorService = {
    * - source: idioma origen (español)
    * - translate_fields: campos a traducir (nombre,descripcion)
    */
-  getAcceptedInsurances: async (language?: string): Promise<GetAcceptedInsurancesResponse> => {
+  getAcceptedInsurances: async (target?: string, source?: string, translate_fields?: string): Promise<GetAcceptedInsurancesResponse> => {
     try {
       // Construir query params
       const params: Record<string, string> = {};
 
       // Agregar traducción si se especifica un idioma diferente al español
-      if (language && language !== 'es') {
-        params.target = language;
-        params.source = 'es';
-        params.translate_fields = 'nombre,descripcion';
+      if (target && source && translate_fields) {
+        params.target = target;
+        params.source = source;
+        params.translate_fields = translate_fields;
       }
 
       const response = await apiClient.get<GetAcceptedInsurancesResponse>(
@@ -706,28 +724,28 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener seguros aceptados:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tus seguros aceptados. Intenta nuevamente.'
       );
     }
   },
 
 
-  getAcceptedInsurancesByDoctorId: async (doctorId: number, language?: string): Promise<GetAcceptedInsurancesResponse> => {
+  getAcceptedInsurancesByDoctorId: async (doctorId: number, target?: string, source?: string, translate_fields?: string): Promise<GetAcceptedInsurancesResponse> => {
     try {
       // Construir query params
       const params: Record<string, string> = {};
 
       // Agregar traducción si se especifica un idioma diferente al español
-      if (language && language !== 'es') {
-        params.target = language;
-        params.source = 'es';
-        params.translate_fields = 'nombre,descripcion';
+      if (target && source && translate_fields) {
+        params.target = target;
+        params.source = source;
+        params.translate_fields = translate_fields;
       }
 
       const response = await apiClient.get<GetAcceptedInsurancesResponse>(
@@ -742,8 +760,8 @@ export const doctorService = {
       const errorData = error.response?.data as InsuranceError;
 
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener seguros aceptados por ID de doctor. Intenta nuevamente.'
       );
     }
@@ -764,19 +782,19 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al agregar seguro aceptado:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'El seguro ya está en tu lista de seguros aceptados.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar seguro. Intenta nuevamente.'
       );
     }
@@ -800,16 +818,16 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al eliminar seguro aceptado:', error);
-      
+
       const errorData = error.response?.data as InsuranceError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Seguro no encontrado.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar seguro. Intenta nuevamente.'
       );
     }
@@ -830,12 +848,12 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener idiomas del doctor:', error);
-      
+
       const errorData = error.response?.data as LanguageError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener tus idiomas. Intenta nuevamente.'
       );
     }
@@ -856,19 +874,19 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al agregar idioma:', error);
-      
+
       const errorData = error.response?.data as LanguageError;
-      
+
       if (error.response?.status === 400) {
         throw new Error(
-          errorData?.message || 
+          errorData?.message ||
           'El idioma ya está en tu lista.'
         );
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al agregar idioma. Intenta nuevamente.'
       );
     }
@@ -899,16 +917,16 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar idioma:', error);
-      
+
       const errorData = error.response?.data as LanguageError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Idioma no encontrado.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al actualizar idioma. Intenta nuevamente.'
       );
     }
@@ -928,16 +946,16 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al eliminar idioma:', error);
-      
+
       const errorData = error.response?.data as LanguageError;
-      
+
       if (error.response?.status === 404) {
         throw new Error('Idioma no encontrado.');
       }
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al eliminar idioma. Intenta nuevamente.'
       );
     }
@@ -974,7 +992,7 @@ export const doctorService = {
     }
   },
 
-  
+
   createService: async (data: CreateDoctorServiceRequest): Promise<CreateDoctorServiceResponse> => {
     try {
       const formData = new FormData();
@@ -1010,7 +1028,7 @@ export const doctorService = {
       if (data.imagenes && data.imagenes.length > 0) {
         data.imagenes.forEach((file) => {
           // 'imagenes' must match the field name your backend file interceptor expects
-          formData.append('imagenes', file); 
+          formData.append('imagenes', file);
         });
       }
 
@@ -1028,9 +1046,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al crear servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al crear servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,
@@ -1048,7 +1066,7 @@ export const doctorService = {
   getServiceById: async (serviceId: number, params: any | null = null): Promise<GetServiceByIdResponse> => {
     try {
       const response = await apiClient.get<GetServiceByIdResponse>(
-        `/servicios/${serviceId}`, 
+        `/servicios/${serviceId}`,
         { params }
       );
       return response.data;
@@ -1070,16 +1088,16 @@ export const doctorService = {
         `/servicios/doctor/${doctorId}`,
         { params }
       );
-      
+
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener servicios del doctor:', error);
-      
+
       const errorData = error.response?.data as DoctorServiceError;
-      
+
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener servicios del doctor. Intenta nuevamente.'
       );
     }
@@ -1097,8 +1115,8 @@ export const doctorService = {
       console.error('❌ [Doctor Service] Error al obtener slots disponibles para el servicio:', error);
       const errorData = error.response?.data as DoctorServiceError;
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener slots disponibles para el servicio. Intenta nuevamente.'
       );
     }
@@ -1115,8 +1133,8 @@ export const doctorService = {
       console.error('❌ [Doctor Service] Error al obtener servicios por distancia:', error);
       const errorData = error.response?.data as DoctorServiceError;
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener servicios por distancia. Intenta nuevamente.'
       );
     }
@@ -1133,13 +1151,13 @@ export const doctorService = {
         `/busqueda/cercanos`,
         { params: { ...locationParams, ...params } }
       );
-      return response.data ;
+      return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al obtener servicios por distancia:', error);
       const errorData = error.response?.data as DoctorServiceError;
       throw new Error(
-        errorData?.message || 
-        error.message || 
+        errorData?.message ||
+        error.message ||
         'Error al obtener servicios por distancia. Intenta nuevamente.'
       );
     }
@@ -1149,11 +1167,12 @@ export const doctorService = {
     try {
       const response = await apiClient.get<any>(
         `/servicios/doctor/${doctorId}/disponibilidad`,
-        { params: { 
+        {
+          params: {
             fechaInicio: startDate,
             dias: days,
-            ...params 
-          } 
+            ...params
+          }
         }
       );
       return response.data;
@@ -1161,7 +1180,7 @@ export const doctorService = {
       console.error('❌ [Doctor Service] Error al obtener slots disponibles del doctor en rango de fechas:', error);
       const errorData = error.response?.data as DoctorServiceError;
       throw new Error(
-        errorData?.message || 
+        errorData?.message ||
         error.message ||
         'Error al obtener slots disponibles del doctor en rango de fechas. Intenta nuevamente.'
       );
@@ -1177,9 +1196,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar estado del servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al actualizar estado del servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,
@@ -1197,9 +1216,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al eliminar servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al eliminar servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,
@@ -1216,10 +1235,10 @@ export const doctorService = {
       if (imageFile && imageFile.length > 0) {
         imageFile.forEach((file) => {
           // 'imagenes' must match the field name your backend file interceptor expects
-          formData.append('imagenes', file); 
+          formData.append('imagenes', file);
         });
       }
-      
+
 
       const response = await apiClient.post<AddImageToServiceResponse>(`/servicios/${serviceId}/imagenes`, formData, {
         headers: {
@@ -1230,9 +1249,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al agregar imagen al servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al agregar imagen al servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,
@@ -1250,9 +1269,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al eliminar imagen del servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al eliminar imagen del servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,
@@ -1271,9 +1290,9 @@ export const doctorService = {
       return response.data;
     } catch (error: any) {
       console.error('❌ [Doctor Service] Error al actualizar servicio:', error);
-      
+
       const errorData = error.response?.data;
-      
+
       throw {
         message: errorData?.message || 'Error al actualizar el servicio. Intenta nuevamente.',
         statusCode: error.response?.status || 500,

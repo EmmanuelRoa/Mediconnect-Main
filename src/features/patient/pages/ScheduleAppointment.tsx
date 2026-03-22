@@ -31,6 +31,7 @@ import { useMyInsurances } from "../hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/config";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { formatTimeTo12h } from "@/utils/appointmentMapper";
 
 // Skeleton para la página de resumen de cita
 const ScheduleAppointmentSkeleton = ({ isMobile }: { isMobile: boolean }) => {
@@ -271,18 +272,6 @@ function ScheduleAppointment() {
                   idProvider={appointmentDetails.doctorId}
                   serviceData={serviceData || undefined}
                   idAppointment={appointmentDetails?.appointmentId}
-                  initialRescheduleData={{
-                    date: appointmentDetails.date,
-                    time: appointmentDetails.time || "",
-                    selectedModality: appointmentDetails.selectedModality ? "teleconsulta" : "presencial",
-                    serviceId: appointmentDetails.serviceId || "",
-                    reason: appointmentDetails.reason || "",
-                    numberOfSessions: appointmentDetails.numberOfSessions || 1,
-                    useInsurance: appointmentDetails.useInsurance ?? false,
-                    insuranceProvider: appointmentDetails.insuranceProvider || "",
-                    doctorId: appointmentDetails.doctorId || "",
-                    appointmentId: appointmentDetails.appointmentId || "",
-                  }}
                 >
                   <MCButton size="sm" variant="outline">
                     {t("appointments.reschedule", "Edit Appointment")}
@@ -359,7 +348,7 @@ function ScheduleAppointment() {
                 </div>
                 <div>
                   <span className="text-primary opacity-75">
-                    {appointmentDetails.time}
+                    {formatTimeTo12h(appointmentDetails.time)}
                   </span>
                 </div>
               </div>

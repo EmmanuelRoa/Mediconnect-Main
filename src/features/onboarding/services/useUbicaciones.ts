@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type {UseQueryResult} from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { QUERY_KEYS } from '@/lib/react-query/config';
 import ubicacionesService from './ubicaciones.services';
@@ -48,10 +48,10 @@ export function useUbicaciones(
 	const queryClient = useQueryClient();
 	const { i18n } = useTranslation();
 	const currentLanguage = i18n.language;
+	const source = currentLanguage === "en" ? "es" : "en";
 
 	// Mapear nivel a función de servicio
 	const fetchFn = () => {
-		console.log(`Fetching ubicaciones for nivel: ${nivel} with params:`, params);
 		switch (nivel) {
 			case 'provincias':
 				return ubicacionesService.getProvincias(currentLanguage);
@@ -66,7 +66,7 @@ export function useUbicaciones(
 			case 'subbarrios':
 				return ubicacionesService.getSubbarrios(currentLanguage, Number(params?.idBarrio));
 			case 'doctor':
-				return ubicacionesService.getLocationsByDoctor(currentLanguage, params);
+				return ubicacionesService.getLocationsByDoctor(currentLanguage, source, params);
 			default:
 				return Promise.resolve([]);
 		}

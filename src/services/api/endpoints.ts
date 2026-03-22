@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
     MIS_DOCTORES: '/citas/mis-doctores',
     MIS_PACIENTES: '/citas/mis-pacientes',
     DIAGNOSTICAR: (id: string | number) => `/citas/${id}/diagnosticar`,
+    HISTORIAL_SELF: '/citas/historial',
     HISTORIAL: (pacienteId: string | number) => `/citas/historial/${pacienteId}`,
   },
 
@@ -139,6 +140,11 @@ export const API_ENDPOINTS = {
   TRANSLATOR: {
     TRANSLATE: '/traductor',
     UTILITIES: '/traductor/utilidades',
+  },
+
+  // --- RESEÑAS ---
+  RESENAS: {
+    CREATE: '/resenas',
   },
 
   // --- Ubicaciones ---

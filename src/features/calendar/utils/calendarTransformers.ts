@@ -92,6 +92,7 @@ export const transformCitaToAppointment = (cita: CitaDetalle): Appointment => {
     type: determineAppointmentType(cita),
     status: mapCitaEstadoToAppointmentStatus(cita.estado),
     notes: cita.motivoConsulta || undefined,
+    cancelReason: cita.motivoCancelacion || undefined,
     patientEmail: cita.paciente.usuario.email,
     doctorEmail: cita.doctor.usuario.email,
     modality: cita.modalidad?.toLowerCase() === 'teleconsulta' ? 'virtual' : cita.modalidad?.toLowerCase() === 'presencial' ? 'presencial' : 'mixta',

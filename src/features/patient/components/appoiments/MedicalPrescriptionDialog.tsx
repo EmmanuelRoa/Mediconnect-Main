@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect, useMemo } from "react";
 import { MCModalBase } from "@/shared/components/MCModalBase";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
@@ -10,7 +10,7 @@ import {
   EmptyContent,
   EmptyMedia,
 } from "@/shared/ui/empty";
-import { AlertCircle, Download } from "lucide-react";
+import { AlertCircle, Download, Loader2 } from "lucide-react";
 import PreviewDocumentsDialog from "./PreviewDocumentsDialog";
 import { Separator } from "@/shared/ui/separator";
 import { ImageCarouselModal } from "@/features/doctor/components/healthService/ImageCarouselModal";
@@ -23,17 +23,20 @@ import {
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
 import { useAppStore } from "@/stores/useAppStore";
 import { MCGeneratePrescriptionPDF } from "@/shared/components/MCGeneratePrescriptionPDF";
+import {
+  getHistorialByPacienteId,
+  getHistorialSelf,
+} from "@/services/api/appointments.service";
 import { formatTimeTo12h } from "@/utils/appointmentMapper";
 import { formatCurrency } from "@/utils/formatCurrency";
 import DOMPurify from "dompurify";
 
 interface MedicalPrescriptionDialogProps {
   children?: React.ReactNode;
-  historyItem: any;
-  // ✅ FIX: Controlled open state lifted to parent to avoid portal nesting issues
-  // Uses MCModalBase's API: isOpen + onClose (not open/onOpenChange)
-  isOpen: boolean;
-  onClose: () => void;
+  historyItem?: any;
+  patientId?: string | number;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 function truncateFileName(name: string, maxLength = 22) {
@@ -41,17 +44,29 @@ function truncateFileName(name: string, maxLength = 22) {
   return name.slice(0, maxLength - 3) + "...";
 }
 
+function normalizeDiagnosisHtml(input?: string): string {
+  if (!input) return "";
+
+  const decoded = input
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+
+  return decoded.replace(
+    /<\s*(\/?)\s*(p|strong|b|em|i|u|ul|ol|li|h2|h3|br)\s*>/gi,
+    (_match, slash: string, tag: string) => `<${slash}${tag.toLowerCase()}>`,
+  );
+}
+
 // ✅ Memoized attachment card to prevent re-renders when carousel state changes
 const AttachmentCard = memo(function AttachmentCard({
   doc,
-  idx,
   isMobile,
   imageUrls,
   onImageClick,
   t,
 }: {
   doc: any;
-  idx: number;
   isMobile: boolean;
   imageUrls: string[];
   onImageClick: (index: number) => void;
@@ -165,17 +180,78 @@ const AttachmentCard = memo(function AttachmentCard({
 
 function MedicalPrescriptionDialog({
   children,
-  historyItem,
-  isOpen,
-  onClose,
+  historyItem: initialHistoryItem,
+  patientId,
+  isOpen: externalIsOpen,
+  onClose: externalOnClose,
 }: MedicalPrescriptionDialogProps) {
-  const { t } = useTranslation("patient");
+  const { t, i18n } = useTranslation("patient");
   const isMobile = useIsMobile();
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselStartIndex, setCarouselStartIndex] = useState(0);
 
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  
+  const [fetchedHistoryItem, setFetchedHistoryItem] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const user = useAppStore((state) => state.user);
   const userRole = user?.rol || "PATIENT";
+  const isPatientRole = userRole === "PATIENT";
+
+  const historyItem = initialHistoryItem || fetchedHistoryItem;
+  const diagnosisHtml = useMemo(() => {
+    const normalized = normalizeDiagnosisHtml(historyItem?.descripcion_diagnostico);
+    return DOMPurify.sanitize(normalized);
+  }, [historyItem?.descripcion_diagnostico]);
+
+  const handleClose = useCallback(() => {
+    if (externalOnClose) externalOnClose();
+    if (externalIsOpen === undefined) setInternalIsOpen(false);
+  }, [externalOnClose, externalIsOpen]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const canFetchHistory = isPatientRole || !!patientId;
+      if (isOpen && canFetchHistory && !initialHistoryItem && !fetchedHistoryItem && !loading) {
+        setLoading(true);
+        try {
+          const params = {
+            pagina: 1,
+            limite: 1,
+            translate_fields: "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+            target: i18n.language === "es" ? "es" : "en",
+            source: i18n.language === "es" ? "en" : "es",
+          };
+          if (!isPatientRole && !patientId) return;
+          const resolvedPatientId = patientId;
+          let response;
+          if (isPatientRole) {
+            response = await getHistorialSelf(params);
+          } else {
+            if (resolvedPatientId === undefined) return;
+            response = await getHistorialByPacienteId(resolvedPatientId, params);
+          }
+          if (response?.success && Array.isArray(response.data) && response.data.length > 0) {
+            setFetchedHistoryItem(response.data[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching patient history", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchHistory();
+  }, [
+    isOpen,
+    patientId,
+    initialHistoryItem,
+    fetchedHistoryItem,
+    loading,
+    i18n.language,
+    isPatientRole,
+  ]);
 
   // ✅ useCallback prevents new function reference on every render
   const handleGeneratePDF = useCallback(async () => {
@@ -191,7 +267,7 @@ function MedicalPrescriptionDialog({
       modality: historyItem.cita?.modalidad || "-",
       location: historyItem.cita?.ubicacion?.nombre || "-",
       diagnosis: historyItem.nombre_diagnostico || "-",
-      observations: DOMPurify.sanitize(historyItem.descripcion_diagnostico) || "-",
+      observations: diagnosisHtml || "-",
       documents: historyItem.adjuntos?.map((adjunto: any) => adjunto.media?.archivo) || [],
       insurance: historyItem.cita?.seguro?.nombre || "-",
       doctorName: historyItem.cita?.doctor ? `${historyItem.cita.doctor.nombre} ${historyItem.cita.doctor.apellido}` : "-",
@@ -205,7 +281,7 @@ function MedicalPrescriptionDialog({
     };
 
     await MCGeneratePrescriptionPDF(pdfData);
-  }, [historyItem, userRole]);
+  }, [historyItem, userRole, diagnosisHtml]);
 
   // ✅ useCallback for carousel handlers
   const handleImageClick = useCallback((index: number) => {
@@ -222,15 +298,30 @@ function MedicalPrescriptionDialog({
     ? historyItem.adjuntos.map((adjunto: any) => adjunto.media.archivo)
     : [];
 
+  let triggerElem = children;
+  if (children && externalIsOpen === undefined) {
+    if (React.isValidElement(children)) {
+      const child = children as React.ReactElement<any>;
+      triggerElem = React.cloneElement(child, {
+        onClick: (e: any) => {
+          if (child.props.onClick) child.props.onClick(e);
+          setInternalIsOpen(true);
+        },
+      });
+    } else {
+      triggerElem = <span onClick={() => setInternalIsOpen(true)} className="cursor-pointer">{children}</span>;
+    }
+  }
+
   // ✅ Empty state modal — controlled
-  if (!historyItem) {
+  if (!historyItem && !loading) {
     return (
       <MCModalBase
         id="prescription-empty"
         title={t("appointment.medicalPrescription")}
-        trigger={children}
+        trigger={triggerElem}
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         size="lg"
         variant="info"
         zIndex={100}
@@ -252,13 +343,33 @@ function MedicalPrescriptionDialog({
     );
   }
 
+  if (loading) {
+    return (
+      <MCModalBase
+        id="prescription-loading"
+        title={t("appointment.medicalPrescription")}
+        trigger={triggerElem}
+        isOpen={isOpen}
+        onClose={handleClose}
+        size="lg"
+        variant="info"
+        zIndex={100}
+      >
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </MCModalBase>
+    );
+  }
+
   return (
     <>
       <MCModalBase
         id={`prescription-${historyItem.cita.id}-${historyItem.id}`}
         title={historyItem.cita.servicio.nombre}
+        trigger={triggerElem}
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         size="xl"
         variant="info"
         zIndex={100}
@@ -358,12 +469,10 @@ function MedicalPrescriptionDialog({
                 {t("appointment.observations")}
               </h3>
               <div className="w-full bg-bg-btn-secondary border border-primary/5 p-3 sm:p-4 rounded-xl">
-                <p
-                  className="text-sm sm:text-base text-primary font-medium break-words"
+                <div
+                  className="text-sm sm:text-base text-primary font-medium break-words [&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_u]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:mb-1 [&_h2]:text-base [&_h2]:sm:text-lg [&_h2]:font-semibold [&_h2]:my-2 [&_h3]:font-semibold [&_h3]:my-2"
                   dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(
-                      historyItem.descripcion_diagnostico
-                    ),
+                    __html: diagnosisHtml,
                   }}
                 />
               </div>
@@ -378,11 +487,10 @@ function MedicalPrescriptionDialog({
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {historyItem.adjuntos && historyItem.adjuntos.length > 0 ? (
-                historyItem.adjuntos.map((doc: any, idx: number) => (
+                historyItem.adjuntos.map((doc: any, index: number) => (
                   <AttachmentCard
-                    key={doc.media?.id ?? idx}
+                    key={doc.media?.id ?? index}
                     doc={doc}
-                    idx={idx}
                     isMobile={isMobile}
                     imageUrls={imageUrls}
                     onImageClick={handleImageClick}

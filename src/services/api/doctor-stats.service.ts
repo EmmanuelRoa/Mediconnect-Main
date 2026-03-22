@@ -4,8 +4,8 @@
  */
 import apiClient from './client';
 import API_ENDPOINTS from './endpoints';
-import type { 
-  DoctorStatsResumen, 
+import type {
+  DoctorStatsResumen,
   DoctorStatsResponse,
   DoctorServicesUtilizadosResponse,
   DoctorProductividadRawResponse,
@@ -53,14 +53,14 @@ export const getDoctorProductivity = async (periodo?: string): Promise<Productiv
     if (periodo) {
       params.append('periodo', periodo);
     }
-    
+
     const queryString = params.toString();
-    const url = queryString 
+    const url = queryString
       ? `${API_ENDPOINTS.DOCTOR_STATS.PRODUCTIVIDAD}?${queryString}`
       : API_ENDPOINTS.DOCTOR_STATS.PRODUCTIVIDAD;
 
     const { data } = await apiClient.get<DoctorProductividadRawResponse>(url);
-    
+
     // Transformar puntos del backend (label) a formato esperado por AreaChart (day)
     return data.puntos.map((punto) => ({
       day: punto.label,
@@ -77,12 +77,26 @@ export const getDoctorProductivity = async (periodo?: string): Promise<Productiv
  * Obtiene los servicios más utilizados del doctor
  * @returns Promise con datos de servicios más utilizados
  */
-export const getDoctorMostUsedServices = async (): Promise<ServicioUtilizado[]> => {
+export const getDoctorMostUsedServices = async (language?: string, source?: string, translate_fields?: string): Promise<ServicioUtilizado[]> => {
   try {
-    const { data } = await apiClient.get<DoctorServicesUtilizadosResponse>(
-      API_ENDPOINTS.DOCTOR_STATS.SERVICIOS_UTILIZADOS
-    );
-    
+    const params = new URLSearchParams();
+    if (language) {
+      params.append('target', language);
+    }
+    if (source) {
+      params.append('source', source);
+    }
+    if (translate_fields) {
+      params.append('translate_fields', translate_fields);
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `${API_ENDPOINTS.DOCTOR_STATS.SERVICIOS_UTILIZADOS}?${queryString}`
+      : API_ENDPOINTS.DOCTOR_STATS.SERVICIOS_UTILIZADOS;
+
+    const { data } = await apiClient.get<DoctorServicesUtilizadosResponse>(url);
+
     // Transformar datos para que sean compatibles con PieChart
     // Si el backend no incluye 'color', generamos colores automáticamente
     const colors = [
@@ -93,7 +107,7 @@ export const getDoctorMostUsedServices = async (): Promise<ServicioUtilizado[]> 
       'hsl(var(--chart-5))',
       'hsl(var(--chart-6))',
     ];
-    
+
     return data.masUtilizados.map((servicio, index) => ({
       ...servicio,
       color: servicio.color || colors[index % colors.length],

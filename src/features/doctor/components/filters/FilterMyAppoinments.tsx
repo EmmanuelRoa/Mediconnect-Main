@@ -5,6 +5,7 @@ import MCFilterSelect from "@/shared/components/filters/MCFilterSelect";
 import MCFilterDates from "@/shared/components/filters/MCFilterDates";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useEspecialidades } from "@/features/onboarding/services/useEspecialidades";
 
 interface MyAppointmentFilters {
   status: string;
@@ -36,6 +37,8 @@ const FilterMyAppointments = memo(function FilterMyAppointments({
 }: FilterMyAppointmentsProps) {
   const { t } = useTranslation("doctor");
   const isMobile = useIsMobile();
+
+  const { data: especialidadesOptions = [], isLoading: isLoadingEspecialidades } = useEspecialidades();
 
   // Memoizar las opciones de estado para solo crearlas una vez
   const statusOptions: OptionType[] = useMemo(
@@ -80,17 +83,6 @@ const FilterMyAppointments = memo(function FilterMyAppointments({
     [t, isMobile]
   );
 
-  // Convertir opciones dinámicas de especialidades a formato OptionType
-  const specialtyOptionsFormatted: OptionType[] = useMemo(
-    () => [
-      { value: "all", label: t("appointments.filters.specialty.all") },
-      ...specialtyOptions.map((spec) => ({
-        value: spec,
-        label: spec,
-      })),
-    ],
-    [specialtyOptions, t]
-  );
 
   // Convertir opciones dinámicas de servicios a formato OptionType
   const serviceOptionsFormatted: OptionType[] = useMemo(
@@ -173,11 +165,12 @@ const FilterMyAppointments = memo(function FilterMyAppointments({
       <MCFilterSelect
         name="specialty"
         label={t("appointments.filters.labels.specialty")}
-        options={specialtyOptionsFormatted}
-        placeholder={t("appointments.filters.placeholders.specialty")}
+        options={especialidadesOptions}
+        placeholder={isLoadingEspecialidades ? t("appointments.filters.loading") : t("appointments.filters.placeholders.specialty")}
         value={filters.specialty}
         noBadges
         onChange={handleSpecialtyChange}
+        disabled={isLoadingEspecialidades}
       />
 
       <MCFilterSelect

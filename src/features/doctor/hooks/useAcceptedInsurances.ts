@@ -18,20 +18,24 @@ export const useAcceptedInsurances = (options?: {
   enabled?: boolean;
   staleTime?: number;
   doctorId?: number; // Si se quiere obtener para un doctor específico, aunque por defecto se asume el doctor logueado
+  target?: string;
+  source?: string;
 }) => {
   const { i18n } = useTranslation();
-  const language = i18n.language || 'es';
+  const target = options?.target ?? i18n.language;
+  const source = options?.source ?? i18n.language === 'en' ? 'es' : 'en';
+  const translate_fields = 'nombre,descripcion';
 
   return useQuery({
     // include doctorId in the key so queries are cached per doctor + language
-    queryKey: [QUERY_KEYS.ACCEPTED_INSURANCES(language), options?.doctorId ?? 0],
+    queryKey: [QUERY_KEYS.ACCEPTED_INSURANCES(target), options?.doctorId ?? 0],
     queryFn: async () => {
 
-      const response = options?.doctorId && options?.doctorId > 0 ? await doctorService.getAcceptedInsurancesByDoctorId(options?.doctorId, language) : await doctorService.getAcceptedInsurances(language);
+      const response = options?.doctorId && options?.doctorId > 0 ? await doctorService.getAcceptedInsurancesByDoctorId(options?.doctorId, target, source, translate_fields) : await doctorService.getAcceptedInsurances(target, source, translate_fields);
       if (!response.success) {
         throw new Error('Error al cargar seguros aceptados');
       }
-      
+
       // Transformar la estructura anidada de la API a objetos Seguro
       const transformedInsurances: Seguro[] = response.data.map(item => ({
         id: item.seguro.id,
@@ -41,7 +45,7 @@ export const useAcceptedInsurances = (options?: {
         urlImage: item.seguro.urlImage,
         tipoSeguro: item.tipoSeguro,
       }));
-      
+
       return transformedInsurances;
     },
     // Caché moderado: 5 minutos (puede cambiar con más frecuencia que el catálogo)

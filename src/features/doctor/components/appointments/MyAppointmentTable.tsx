@@ -29,6 +29,7 @@ export interface Appointment {
   patientImage?: string;
   service: string;
   specialty: string;
+  specialtyId?: string;
   date: string;
   time: string;
   phone: string;
@@ -40,6 +41,7 @@ export interface Appointment {
 
 interface MyAppointmentTableProps {
   appointments: Appointment[];
+  isChangingPage?: boolean;
 }
 
 const truncate = (text: string | undefined, maxLength: number = 30): string => {
@@ -49,12 +51,25 @@ const truncate = (text: string | undefined, maxLength: number = 30): string => {
 
 export default function MyAppointmentTable({
   appointments,
+  isChangingPage,
 }: MyAppointmentTableProps) {
   const { t } = useTranslation("doctor");
-
   return (
-    <div className="w-full overflow-x-auto">
-      <Table>
+    <div className="w-full overflow-x-auto relative">
+
+      {/* Spinner overlay */}
+      {isChangingPage && (
+        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+            <p className="text-sm text-muted-foreground font-medium">
+              {t("common.loading")}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Table className={`transition-opacity duration-300 ${isChangingPage ? "opacity-40" : "opacity-100"}`}>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[250px]">

@@ -54,7 +54,7 @@ export interface APISearchParams {
  */
 export const mapFiltersToAPIParams = (
   filters: SearchProviderFilters,
-  language: string = "es",
+  language: string,
   especialidadesOptions: Array<{ value: string; label: string }> = [],
   providerOptions: Array<{ value: string; label: string }> = []
 ): APISearchParams => {
@@ -63,11 +63,10 @@ export const mapFiltersToAPIParams = (
   };
 
   // Add translation parameters
-  params.target = language || "es";
-  params.source = language === "es" ? "en" : "es";
+  params.target = language === "en" ? "en" : "es";
+  params.source = language === "en" ? "es" : "en";
   params.translate_fields = "nombre,descripcion,modalidad";
 
-  console.log("Mapping filters to API params:", filters);
 
   //Map provider type filter
   if (
@@ -165,12 +164,12 @@ export const mapFiltersToAPIParams = (
     const ratingValue = Array.isArray(filters.rating)
       ? parseFloat(filters.rating[0])
       : parseFloat(String(filters.rating));
-    
+
     if (!isNaN(ratingValue) && ratingValue > 0) {
       params.calificacionMin = ratingValue;
     }
   }
-  
+
   // Map years of experience filter
   if (
     filters.yearsOfExperience !== null &&

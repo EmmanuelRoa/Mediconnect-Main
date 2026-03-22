@@ -4,17 +4,17 @@
  */
 import apiClient from './client';
 import API_ENDPOINTS from './endpoints';
-import type { 
-  CitasListResponse, 
-  CitasFilters, 
-  CalendarioResponse, 
+import type {
+  CitasListResponse,
+  CitasFilters,
+  CalendarioResponse,
   CalendarioParams,
   MyDoctorsResponse,
-  MyDoctorsFilters, 
+  MyDoctorsFilters,
   CitasListResponseforView
 } from '@/types/AppointmentTypes';
-import type { 
-  MisPacientesResponse, 
+import type {
+  MisPacientesResponse,
   FiltrosPacientes,
   DoctorPatientInfoFilters,
   DoctorPatientInfoResponse,
@@ -54,7 +54,7 @@ export const getCitas = async (filters?: CitasFilters): Promise<CitasListRespons
   }
 
   const queryString = params.toString();
-  const url = queryString 
+  const url = queryString
     ? `${API_ENDPOINTS.CITAS.LIST}?${queryString}`
     : API_ENDPOINTS.CITAS.LIST;
 
@@ -91,9 +91,8 @@ export const getCitasToDoctors = async (filters?: CitasFilters) => {
     params.append('translate_fields', filters.translate_fields);
   }
 
-  
   const queryString = params.toString();
-  const url = queryString 
+  const url = queryString
     ? `${API_ENDPOINTS.CITAS.TO_DOCTORS}?${queryString}`
     : API_ENDPOINTS.CITAS.TO_DOCTORS;
 
@@ -106,7 +105,7 @@ export const getCitasToDoctors = async (filters?: CitasFilters) => {
  * @param id - ID de la cita
  * @returns Promise con los detalles de la cita
  */
-export const getCitaById = async (id: string | number, params?: any) : Promise<CitasListResponseforView> => {
+export const getCitaById = async (id: string | number, params?: any): Promise<CitasListResponseforView> => {
   const { data } = await apiClient.get<CitasListResponseforView>(API_ENDPOINTS.CITAS.BY_ID(id), { params });
   return data;
 };
@@ -148,7 +147,7 @@ export const getCalendarioCitas = async (params?: CalendarioParams): Promise<Cal
   }
 
   const queryString = searchParams.toString();
-  const url = queryString 
+  const url = queryString
     ? `${API_ENDPOINTS.CITAS.CALENDARIO}?${queryString}`
     : API_ENDPOINTS.CITAS.CALENDARIO;
 
@@ -175,7 +174,7 @@ export const getMisDoctores = async (filters?: MyDoctorsFilters): Promise<MyDoct
   }
 
   const queryString = params.toString();
-  const url = queryString 
+  const url = queryString
     ? `${API_ENDPOINTS.CITAS.MIS_DOCTORES}?${queryString}`
     : API_ENDPOINTS.CITAS.MIS_DOCTORES;
 
@@ -259,7 +258,7 @@ export const getDoctorPatients = async (filters?: FiltrosPacientes): Promise<Mis
     if (filters?.ultimaCitaHasta) {
       params.append('ultimaCitaHasta', filters.ultimaCitaHasta);
     }
-    
+
     // Filtros de traducción
     if (filters?.target) {
       params.append('target', filters.target);
@@ -272,7 +271,7 @@ export const getDoctorPatients = async (filters?: FiltrosPacientes): Promise<Mis
     }
 
     const queryString = params.toString();
-    const url = queryString 
+    const url = queryString
       ? `${API_ENDPOINTS.CITAS.MIS_PACIENTES}?${queryString}`
       : API_ENDPOINTS.CITAS.MIS_PACIENTES;
 
@@ -380,6 +379,19 @@ export const getHistorialByPacienteId = async (
 ) => {
   const { data } = await apiClient.get<any>(
     API_ENDPOINTS.CITAS.HISTORIAL(pacienteId),
+    { params }
+  );
+  return data;
+};
+
+/**
+ * Obtiene el historial de citas/diagnósticos del paciente autenticado
+ * @param params - Parámetros de paginación o filtros
+ * @returns Promise con la lista del historial y la paginación
+ */
+export const getHistorialSelf = async (params?: any) => {
+  const { data } = await apiClient.get<any>(
+    API_ENDPOINTS.CITAS.HISTORIAL_SELF,
     { params }
   );
   return data;

@@ -358,7 +358,8 @@ const DesktopFilters = memo(
 DesktopFilters.displayName = "DesktopFilters";
 
 function Search() {
-  const { t, i18n } = useTranslation("common");
+  const { t } = useTranslation("common");
+  const { i18n } = useTranslation();
   const isMobile = useIsMobile();
   const [locationPermission, setLocationPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -391,7 +392,7 @@ function Search() {
     // Use the radio filter as radius when present, otherwise default to 15km on mount
     radiusKm: searchFilters.radio ?? 15,
     filters: searchFilters,
-    language: i18n.language || "es",
+    language: i18n.language,
     enabled: true, // Always enabled, will return empty if no coords
     especialidadesOptions,
     tiposCentroOptions

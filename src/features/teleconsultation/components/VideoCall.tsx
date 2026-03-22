@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import { RatingModal } from "@/features/teleconsultation/components/RatingModal";
+
 import { useTranslation } from "react-i18next";
 import { dailyCallFrameRef } from "@/lib/hooks/useTeleconsult";
 import { useAppStore } from "@/stores/useAppStore";
@@ -33,7 +33,6 @@ export const VideoCall = ({
   const displayName = getUserFullName(user) || "Usuario";
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [showRating, setShowRating] = useState(false);
   const isMobile = useIsMobile();
 
   // Tema MediConnect para Daily Prebuilt (colores y estilo de la app)
@@ -126,16 +125,6 @@ export const VideoCall = ({
   };
 
   const handleEndCall = () => {
-    setShowRating(true);
-  };
-
-  const handleCloseRating = () => {
-    setShowRating(false);
-    onEndCall(); // calls finalizar + destroy + navigate
-  };
-
-  const handleSubmitRating = (_rating: number, _comment: string) => {
-    setShowRating(false);
     onEndCall();
   };
 
@@ -212,12 +201,6 @@ export const VideoCall = ({
         </button>
       </div>
 
-      {/* Rating Modal */}
-      <RatingModal
-        isOpen={showRating}
-        onClose={handleCloseRating}
-        onSubmit={handleSubmitRating}
-      />
     </div>
   );
 };

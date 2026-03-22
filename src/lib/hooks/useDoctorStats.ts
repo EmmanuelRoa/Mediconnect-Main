@@ -13,7 +13,7 @@ import {
   getDoctorPatientsStats,
   getDoctorServicesStats,
 } from '@/services/api/doctor-stats.service';
-import type { 
+import type {
   DoctorStatsResumen,
   DoctorServicesStats,
   ProductividadDato,
@@ -109,11 +109,17 @@ export const useDoctorProductivity = (
  * ```
  */
 export const useDoctorMostUsedServices = (
+  language?: string,
   options?: Omit<UseQueryOptions<ServicioUtilizado[]>, 'queryKey' | 'queryFn'>
 ) => {
+
+  const languageToTraslate = language === "en" ? "en" : "es";
+  const source = language === "en" ? "es" : "en";
+  const translate_fields = "masUtilizados.nombre";
+
   return useQuery<ServicioUtilizado[]>({
-    queryKey: QUERY_KEYS.DOCTOR_STATS_SERVICIOS_UTILIZADOS,
-    queryFn: getDoctorMostUsedServices,
+    queryKey: [QUERY_KEYS.DOCTOR_STATS_SERVICIOS_UTILIZADOS, language],
+    queryFn: () => getDoctorMostUsedServices(languageToTraslate, source, translate_fields),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     retry: 1,

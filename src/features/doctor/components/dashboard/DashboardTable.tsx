@@ -96,7 +96,7 @@ function DashboardTable() {
       limite: PAGE_SIZE,
       source: i18n.language === "es" ? "en" : "es",
       target: i18n.language === "es" ? "es" : "en",
-      translate_fields: "nombre",
+      translate_fields: "servicio.especialidad.nombre, nombre",
     }),
     [i18n.language, page]
   );

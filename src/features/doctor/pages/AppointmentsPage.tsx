@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useDoctorAppointments } from "@/lib/hooks/useDoctorAppointments";
+import { useDoctorCitasStats } from "@/lib/hooks/useDoctorStats";
 import MyAppointmentTable from "../components/appointments/MyAppointmentTable";
 import MCTablesLayouts from "@/shared/components/tables/MCTablesLayouts";
 import MCPDFButton from "@/shared/components/forms/MCPDFButton";
@@ -68,12 +69,13 @@ const mapCitaDetalleToAppointment = (cita: CitaDetalle): Appointment => {
     patientImage: cita.paciente.usuario.fotoPerfil || undefined,
     service: cita.servicio.nombre,
     specialty: cita.servicio.especialidad.nombre,
+    specialtyId: cita.servicio.especialidad.id.toString(),
     date: formattedDate,
     time: formattedTime,
     phone: cita.paciente.usuario.email || 'N/A',
     email: cita.paciente.usuario.email || 'N/A',
     appointmentType: isVirtual ? 'virtual' : 'in_person',
-    location: isVirtual ? 'Virtual' : 'En sitio',
+    location: isVirtual ? 'Virtual' : cita.servicio.ubicaciones.direccionCompleta,
     status: mapCitaEstadoToAppointmentStatus(cita.estado),
   };
 };
@@ -87,6 +89,7 @@ function AppointmentsPage() {
   // Estados UI
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
   const PAGE_SIZE = 10;
 
   const [filters, setFilters] = useState({
@@ -143,9 +146,10 @@ function AppointmentsPage() {
   }, [filters.status, filters.dateRange, currentPage, i18n.language]);
 
   // Petición al API
-  const { data: apiResponse, isLoading, isFetching, isPlaceholderData, error } = useDoctorAppointments(apiFilters);
+  const { data: apiResponse, isLoading, isFetching, error } = useDoctorAppointments(apiFilters);
+  const { data: doctorCitasStats } = useDoctorCitasStats();
 
-  const isChanginPage = isFetching && !isPlaceholderData;
+  const isChanginPage = isFetching;
 
   // Mapear respuesta del API
   const allAppointments = useMemo(() => {
@@ -176,7 +180,7 @@ function AppointmentsPage() {
 
     // Filtrar por rango de especialidades (client-side)
     if (filters.specialty !== "all") {
-      result = result.filter((apt) => apt.specialty === filters.specialty);
+      result = result.filter((apt) => apt.specialtyId === filters.specialty);
     }
 
     // Filtrar por servicio (client-side)
@@ -402,14 +406,8 @@ function AppointmentsPage() {
     );
   }
 
-  // Loading state - mostrar tabla vacía con esqueleto
-  const tableComponent = isLoading ? (
-    <div className="space-y-4">
-      {[...Array(PAGE_SIZE)].map((_, i) => (
-        <div key={i} className="h-20 bg-muted rounded-lg animate-pulse" />
-      ))}
-    </div>
-  ) : filteredAppointments.length === 0 ? (
+  // Mostrar estado vacío solo si no está cargando y no hay citas
+  const tableComponent = (!isLoading && filteredAppointments.length === 0) ? (
     // Empty state
     <Empty>
       <EmptyHeader>
@@ -449,47 +447,47 @@ function AppointmentsPage() {
       </EmptyContent>
     </Empty>
   ) : (
-    <div className="relative">
-      {/* Spinner overlay cuando está cargando */}
-      {isChanginPage && (
-        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground font-medium">
-              {t("common.loading")}
-            </p>
-          </div>
-        </div>
-      )}
-      <div className={`transition-opacity duration-300 ${isChanginPage ? "opacity-40" : "opacity-100"}`}>
-        <MyAppointmentTable appointments={paginatedAppointments} />
-      </div>
-    </div>
+    <MyAppointmentTable appointments={paginatedAppointments} isChangingPage={isChanginPage} />
   );
 
   // Métricas: Calcular desde los datos cargados
+  const getMetricValue = (stats: any, keys: string[]): number => {
+    for (const key of keys) {
+      const value = stats?.[key];
+      if (typeof value === "number") return value;
+    }
+    return 0;
+  };
+
+  const metricsValues = {
+    total: getMetricValue(doctorCitasStats, ["totalCitas", "total", "citasTotales"]),
+    pending: getMetricValue(doctorCitasStats, ["programadas", "citasProgramadas", "pendientes", "citasPendientes"]),
+    cancelled: getMetricValue(doctorCitasStats, ["canceladas", "citasCanceladas"]),
+    completed: getMetricValue(doctorCitasStats, ["completadas", "citasCompletadas"]),
+  };
+
   const metrics = [
     {
       title: t("appointments.metrics.total"),
-      value: apiResponse?.paginacion.total || 0,
+      value: metricsValues.total,
       subtitle: t("appointments.metrics.totalSubtitle"),
       icon: <Calendar />,
     },
     {
       title: t("appointments.metrics.pending"),
-      value: allAppointments.filter((a) => a.status === "scheduled").length,
+      value: metricsValues.pending,
       subtitle: t("appointments.metrics.pendingSubtitle"),
       icon: <Clock />,
     },
     {
       title: t("appointments.metrics.cancelled"),
-      value: allAppointments.filter((a) => a.status === "cancelled").length,
+      value: metricsValues.cancelled,
       subtitle: t("appointments.metrics.cancelledSubtitle"),
       icon: <XCircle />,
     },
     {
       title: t("appointments.metrics.completed"),
-      value: allAppointments.filter((a) => a.status === "completed").length,
+      value: metricsValues.completed,
       subtitle: t("appointments.metrics.completedSubtitle"),
       icon: <CheckCircle />,
     },

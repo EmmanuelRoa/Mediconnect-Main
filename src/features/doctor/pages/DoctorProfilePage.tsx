@@ -16,9 +16,11 @@ import DoctorServicesSection from "../components/profile/DoctorServicesSection";
 import DoctorCentersSection from "../components/profile/DoctorCentersSection";
 import MCDashboardContent from "@/shared/layout/MCDashboardContent"; // <-- importa tu layout
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function DoctorProfilePage() {
   const { doctorId } = useParams();
+  const { i18n } = useTranslation();
   const [openSheet, setOpenSheet] = useState(false);
   const isMobile = useIsMobile();
   const user = useAppStore((state) => state.user); 
@@ -31,8 +33,12 @@ function DoctorProfilePage() {
 
   // Fetch del perfil público cuando es otro doctor
   const { data: fetchedDoctorProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["doctor-profile", profileDoctorId],
-    queryFn: () => doctorService.getDoctorById(profileDoctorId!),
+    queryKey: ["doctor-profile", profileDoctorId, i18n.language],
+    queryFn: () => doctorService.getDoctorById(profileDoctorId!, {
+      target: i18n.language === 'en' ? 'en' : 'es',
+      source: i18n.language === 'en' ? 'es' : 'en',
+      translate_fields: 'biografia'
+    }),
     enabled: !isMyProfile && !!profileDoctorId,
     staleTime: 1000 * 60 * 5,
   });

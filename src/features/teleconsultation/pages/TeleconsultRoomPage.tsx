@@ -11,6 +11,12 @@ import { useTeleconsult } from "@/lib/hooks/useTeleconsult";
 import { useTeleconsultStore } from "@/stores/useTeleconsultStore";
 import { ROUTES } from "@/router/routes";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { RatingModal } from "../components/RatingModal";
+import { socketService } from "@/services/websocket/socket.service";
+import resenasService from "@/services/api/resenas.service";
+import { useCitaDetails } from "@/lib/hooks/useCitaDetails";
+import { useAppStore } from "@/stores/useAppStore";
+import { getUserAppRole } from "@/services/auth/auth.types";
 
 function TeleconsultRoomPage() {
   const { appointmentId } = useParams();
@@ -22,6 +28,16 @@ function TeleconsultRoomPage() {
     "video",
   );
   const { endCall } = useTeleconsult();
+
+  // Ratings
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  
+  const user = useAppStore((state) => state.user);
+  const userRole = user ? getUserAppRole(user) : "PATIENT";
+  const isPatient = userRole === "PATIENT";
+  
+  const { appointment } = useCitaDetails(appointmentId || "");
 
   // URL provided by the confirm page:
   // 1. First try router state (immediate navigation case)
@@ -38,9 +54,56 @@ function TeleconsultRoomPage() {
     }
   }, [callUrl, navigate]);
 
+  // Setup listener for remote call end
+  useEffect(() => {
+    const unsub = socketService.onCallEnded((data) => {
+      if (appointmentId && String(data.citaId) === String(appointmentId)) {
+        if (isPatient) {
+          setShowRatingModal(true);
+        } else {
+          endCall(appointmentId);
+        }
+      }
+    });
+    return unsub;
+  }, [appointmentId, isPatient, endCall]);
+
   const handleEndCall = () => {
     if (appointmentId) {
-      endCall(appointmentId); // POST /finalizar → destroy frame → navigate
+      if (isPatient) {
+        setShowRatingModal(true);
+      } else {
+        endCall(appointmentId);
+      }
+    }
+  };
+
+  const handleCloseRating = () => {
+    setShowRatingModal(false);
+    if (appointmentId) {
+      endCall(appointmentId);
+    }
+  };
+
+  const handleSubmitRating = async (rating: number, comment: string) => {
+    if (!appointmentId || !appointment?.servicio?.id) {
+      handleCloseRating();
+      return;
+    }
+    
+    setIsSubmittingRating(true);
+    try {
+      await resenasService.crearResena({
+        servicioId: appointment.servicio.id,
+        citaId: Number(appointmentId),
+        calificacion: rating,
+        comentario: comment,
+      });
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    } finally {
+      setIsSubmittingRating(false);
+      handleCloseRating();
     }
   };
 
@@ -165,6 +228,16 @@ function TeleconsultRoomPage() {
           </div>
         )}
       </MCDashboardContent>
+
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={handleCloseRating}
+        onSubmit={handleSubmitRating}
+        isLoading={isSubmittingRating}
+        doctorName={appointment?.doctor?.nombre ? `${appointment.doctor.nombre} ${appointment.doctor.apellido || ""}`.trim() : "Doctor."}
+        doctorAvatar={appointment?.doctor?.usuario?.fotoPerfil || undefined}
+        specialty={appointment?.servicio?.especialidad?.nombre || "Especialidad"}
+      />
     </>
   );
 }

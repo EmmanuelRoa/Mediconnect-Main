@@ -55,7 +55,7 @@ export const AppointmentDetails = ({
   const isMobile = useIsMobile();
 
   const { startConversation, isLoading: isStartingConversation } = useStartConversation();
-
+  console.log(appointment);
 
   const statusLabels: Record<AppointmentStatus, string> = {
     scheduled: t("calendar.status.scheduled"),
@@ -570,6 +570,18 @@ export const AppointmentDetails = ({
             </h4>
             <div className="bg-muted rounded-lg ">
               <p className="text-xs leading-relaxed">{appointment.notes}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Reason */}
+        {isCancelled && appointment.cancelReason && (
+          <div className="p-2.5 sm:p-3 bg-[#C62828]/10 border border-[#C62828]/20 rounded-lg flex flex-col gap-2">
+            <h4 className="text-base font-semibold text-[#C62828]">
+              {t("calendar.cancelReason", { defaultValue: "Razón de cancelación" })}
+            </h4>
+            <div>
+              <p className="text-xs leading-relaxed text-[#C62828]">{appointment.cancelReason}</p>
             </div>
           </div>
         )}

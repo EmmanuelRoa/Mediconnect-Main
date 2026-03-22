@@ -8,6 +8,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatTimeTo12h } from "@/utils/appointmentMapper";
 
 function TeleconsultConfirmPage() {
   const { appointmentId } = useParams();
@@ -57,7 +58,7 @@ function TeleconsultConfirmPage() {
               doctorName: name || "Video Consulta",
               doctorSpecialty: specialty || "",
               date: appointment.fechaInicio ? format(new Date(appointment.fechaInicio), "d 'de' MMMM, yyyy", { locale: es }) : "",
-              time: `${appointment.horaInicio} - ${appointment.horaFin}`,
+              time: `${formatTimeTo12h(appointment.horaInicio)} - ${formatTimeTo12h(appointment.horaFin)}`,
               service: appointment.servicio?.nombre ?? "",
             }
             : undefined

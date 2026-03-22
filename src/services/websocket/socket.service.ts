@@ -22,6 +22,7 @@ import type {
   NotificacionEvent,
   ContadorNotificacionesEvent,
   LlamadaEntranteEvent,
+  LlamadaFinalizadaEvent,
 } from "@/types/WebSocketTypes";
 import {
   SocketConnectionStatus,
@@ -477,7 +478,7 @@ class SocketService {
    * Escuchar cuando una llamada ha finalizado
    */
   onCallEnded(
-    callback: SocketEventCallback<void>
+    callback: SocketEventCallback<LlamadaFinalizadaEvent>
   ): () => void {
     if (!this.socket) return () => {};
     this.socket.on(SERVER_EVENTS.LLAMADA_FINALIZADA, callback);

@@ -15,6 +15,7 @@ import { diagnosticarCita } from "@/services/api/appointments.service";
 import { useCitaDetails } from "@/lib/hooks/useCitaDetails";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/stores/useAppStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

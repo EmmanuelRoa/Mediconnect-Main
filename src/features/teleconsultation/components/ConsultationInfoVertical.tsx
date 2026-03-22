@@ -164,8 +164,7 @@ export const ConsultationInfoVertical = (
             ) {
               return (
                 <MedicalPrescriptionDialog
-                  appointmentId={props.appointmentId}
-                  historyId={mostRecentHistoryId}
+                  patientId={appointment.paciente?.usuarioId}
                   key={index}
                 >
                   <button className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground hover:text-foreground hover:bg-bg-btn-secondary w-full p-2 transition-colors rounded-lg md:rounded-full text-left">

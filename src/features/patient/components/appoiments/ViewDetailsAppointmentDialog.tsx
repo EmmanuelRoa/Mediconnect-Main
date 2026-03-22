@@ -19,7 +19,11 @@ import {
   EmptyMedia,
 } from "@/shared/ui/empty";
 import { useAppStore } from "@/stores/useAppStore";
-import { getCitaById, getHistorialByPacienteId } from "@/services/api/appointments.service";
+import {
+  getCitaById,
+  getHistorialByPacienteId,
+  getHistorialSelf,
+} from "@/services/api/appointments.service";
 import type { CitaDetalle, CitaDetallePaciente } from "@/types/AppointmentTypes";
 import { formatTimeTo12h, mapCitaEstadoToAppointmentStatus } from "@/utils/appointmentMapper";
 import ubicacionesService from "@/features/onboarding/services/ubicaciones.services";
@@ -171,6 +175,8 @@ const DetailsTabContent = memo(function DetailsTabContent({
 }) {
   const { t } = useTranslation("patient");
   const isMobile = useIsMobile();
+
+  console.log(appointment);
 
   // ✅ Derived map coordinates computed once via useMemo
   const mapCoords = useMemo(() => {
@@ -617,6 +623,7 @@ function ViewDetailsAppointmentDialog({
 }: ViewDetailsAppointmentDialogProps) {
   const { t } = useTranslation("patient");
   const userRole = useAppStore((state) => state.user?.rol);
+  const isPatientRole = userRole === "PATIENT";
   const [loading, setLoading] = useState(false);
   const [appointment, setAppointment] = useState<CitaDetalle | null>(null);
   const [history, setHistory] = useState<any[]>([]);
@@ -702,9 +709,12 @@ function ViewDetailsAppointmentDialog({
 
   useEffect(() => {
     const fetchHistory = async () => {
+      const targetUsuarioId = appointment?.paciente?.usuarioId;
+      const canFetchDoctorHistory = !isPatientRole && !!targetUsuarioId;
+      
       if (
         activeTab === "history" &&
-        appointment?.paciente?.usuarioId &&
+        (isPatientRole || canFetchDoctorHistory) &&
         !historyFetched &&
         !historyLoading
       ) {
@@ -718,11 +728,11 @@ function ViewDetailsAppointmentDialog({
             target: i18n.language === "es" ? "es" : "en",
             source: i18n.language === "es" ? "en" : "es",
           };
-          const response = await getHistorialByPacienteId(
-            appointment.paciente.usuarioId,
-            params
-          );
+          const response = isPatientRole
+            ? await getHistorialSelf(params)
+            : await getHistorialByPacienteId(Number(targetUsuarioId), params);
           if (response?.success && Array.isArray(response.data)) {
+            console.log("Fetch history:", response);
             setHistory(response.data);
             setHistoryPage(1);
             setHasMoreHistory(
@@ -739,10 +749,19 @@ function ViewDetailsAppointmentDialog({
     };
 
     fetchHistory();
-  }, [activeTab, appointment?.paciente?.usuarioId, historyFetched, i18n.language]);
+  }, [
+    activeTab,
+    appointment?.paciente?.usuarioId,
+    isPatientRole,
+    historyFetched,
+    i18n.language,
+    historyLoading,
+  ]);
 
   const loadMoreHistory = useCallback(async () => {
-    if (!appointment?.paciente?.usuarioId || loadingMoreHistory || !hasMoreHistory) return;
+    const targetUsuarioId = appointment?.paciente?.usuarioId;
+    if (loadingMoreHistory || !hasMoreHistory) return;
+    if (!isPatientRole && !targetUsuarioId) return;
 
     setLoadingMoreHistory(true);
     try {
@@ -756,10 +775,9 @@ function ViewDetailsAppointmentDialog({
         source: i18n.language === "es" ? "en" : "es",
       };
 
-      const response = await getHistorialByPacienteId(
-        appointment.paciente.usuarioId,
-        params
-      );
+      const response = isPatientRole
+        ? await getHistorialSelf(params)
+        : await getHistorialByPacienteId(Number(targetUsuarioId), params);
 
       if (response?.success && Array.isArray(response.data)) {
         setHistory((prev) => [...prev, ...response.data]);
@@ -775,6 +793,7 @@ function ViewDetailsAppointmentDialog({
     }
   }, [
     appointment?.paciente?.usuarioId,
+    isPatientRole,
     historyPage,
     hasMoreHistory,
     loadingMoreHistory,

@@ -9,9 +9,9 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MCDialogBase } from "@/shared/components/MCDialogBase"; // <-- Usa tu componente base
 import { useTranslation } from "react-i18next";
 
-const doctorAvatar =
-  "https://i.pinimg.com/736x/6b/8b/0a/6b8b0aa412e8b2f5b7587c0e87a2f46e.jpg";
-const doctorName = "Dr. Cristiano Ronaldo";
+import { Loader2 } from "lucide-react";
+
+// Removed hardcoded doctor Avatar and Name as they are now passed via props
 
 export function getDoctorAvatar({
   name,
@@ -52,12 +52,20 @@ type RatingModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (rating: number, comment: string) => void;
+  doctorName?: string;
+  doctorAvatar?: string;
+  specialty?: string;
+  isLoading?: boolean;
 };
 
 export const RatingModal = ({
   isOpen,
   onClose,
   onSubmit,
+  doctorName = "Doctor",
+  doctorAvatar,
+  specialty = "Especialista Médica",
+  isLoading = false,
 }: RatingModalProps) => {
   const { t } = useTranslation();
   const [rating, setRating] = useState(0);
@@ -96,7 +104,7 @@ export const RatingModal = ({
               <p className="font-semibold">{doctorName}</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              {t("ratingModal.specialty")}
+              {specialty}
             </p>
           </div>
         </div>
@@ -144,9 +152,10 @@ export const RatingModal = ({
         <div className="w-full space-y-3">
           <MCButton
             onClick={handleSubmit}
-            disabled={rating === 0}
+            disabled={rating === 0 || isLoading}
             className="w-full"
           >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("ratingModal.submit")}
           </MCButton>
           <button

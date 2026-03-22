@@ -245,7 +245,7 @@ export interface CitaPaginacion {
 /**
  * Respuesta de la API al listar citas
  */
-export interface CitasListResponseforView{
+export interface CitasListResponseforView {
   success: boolean;
   data: CitaDetallePaciente | null;
   paginacion: CitaPaginacion;

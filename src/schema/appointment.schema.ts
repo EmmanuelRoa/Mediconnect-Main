@@ -9,7 +9,7 @@ export const appointmentSchemaBase = z.object({
   numberOfSessions: number().min(1).max(5).default(1),
   reason: z.string().min(10).max(100),
   // Soportamos citas con o sin seguro
-  useInsurance: z.boolean().optional(),
+  useInsurance: z.boolean(),
   insuranceProvider: z.string().optional(),
   serviceId: z.string(),
   doctorId: z.string(),
