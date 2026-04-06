@@ -29,8 +29,10 @@ export const useAppointments = (
   userRole?: string,
   options?: Omit<UseQueryOptions<CitasListResponse>, 'queryKey' | 'queryFn'>
 ) => {
+  const keyFilters = filters as unknown as Record<string, unknown> | undefined;
+
   return useQuery<CitasListResponse>({
-    queryKey: QUERY_KEYS.CITAS(filters),
+    queryKey: [...QUERY_KEYS.CITAS(keyFilters), userRole ?? "PATIENT"],
     queryFn: () => userRole === "DOCTOR" ? getCitasToDoctors(filters) : userRole === "PACIENTE" ? getCitas(filters) : getCitas(filters),
     // Tiempo de cache específico para citas: 2 minutos
     staleTime: 1000 * 60 * 2,

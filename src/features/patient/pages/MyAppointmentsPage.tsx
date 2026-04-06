@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MyAppointmentsCards } from "../components/appoiments/MyAppointmentsCards";
@@ -33,9 +33,10 @@ import { useAppointments } from "@/lib/hooks/useAppointments";
 import { mapCitasToAppointments } from "@/utils/appointmentMapper";
 import type { Appointment as ApiAppointment } from "@/shared/components/calendar/AppointmentCard";
 import type { CitasFilters } from "@/types/AppointmentTypes";
+import type { Locale } from "date-fns";
 import { format } from "date-fns";
+import { enUS, es } from "date-fns/locale";
 import { getUserAppRole } from "@/services/auth/auth.types";
-import i18n from "@/i18n/config";
 
 // Interfaz local para los componentes de esta página
 export interface Appointment {
@@ -49,6 +50,7 @@ export interface Appointment {
   date: string;
   time: string;
   description?: string;
+  dateISO: Date;
   appointmentType: "virtual" | "in_person";
   location?: string;
   status: "scheduled" | "pending" | "in_progress" | "completed" | "cancelled";
@@ -65,7 +67,10 @@ interface LocalAppointmentFilters {
 }
 
 // Función adaptadora: convierte el formato de API al formato local de la página
-const adaptApiAppointmentToLocal = (apiAppointment: ApiAppointment): Appointment => {
+const adaptApiAppointmentToLocal = (
+  apiAppointment: ApiAppointment,
+  locale: Locale,
+): Appointment => {
   return {
     id: apiAppointment.id,
     doctorId: apiAppointment.doctorId || "",
@@ -74,9 +79,10 @@ const adaptApiAppointmentToLocal = (apiAppointment: ApiAppointment): Appointment
     doctorSpecialty: apiAppointment.serviceData?.especialidad?.nombre || "",
     doctorSpecialtyId: apiAppointment.serviceData?.especialidad?.id ? String(apiAppointment.serviceData.especialidad.id) : "",
     evaluationType: apiAppointment.service,
-    date: format(apiAppointment.date, "dd MMM, yyyy"),
+    date: format(apiAppointment.date, "dd MMM, yyyy", { locale }),
     time: apiAppointment.startTime,
     description: apiAppointment.reason,
+    dateISO: apiAppointment.date,
     appointmentType: apiAppointment.isVirtual ? "virtual" : "in_person",
     location: undefined, // No disponible en el nuevo formato
     status: apiAppointment.status,
@@ -87,7 +93,7 @@ const ITEMS_PER_PAGE = 6;
 
 function MyAppointmentsPage() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // Obtener el usuario autenticado y su rol
   const user = useAppStore((state) => state.user);
@@ -100,10 +106,10 @@ function MyAppointmentsPage() {
   });
 
   // Guarda la preferencia cada vez que cambia
-  const handleToggleView = (val: string) => {
+  const handleToggleView = useCallback((val: string) => {
     setShowCards(val === "card");
     localStorage.setItem("appointmentsView", val);
-  };
+  }, []);
 
   // Estados locales con useState
   const [upcomingPage, setUpcomingPage] = useState(1);
@@ -123,20 +129,28 @@ function MyAppointmentsPage() {
   });
 
   // Construir filtros para la API
+  const currentLanguage = i18n.resolvedLanguage || i18n.language;
+  const locale = useMemo(() => (currentLanguage.startsWith("en") ? enUS : es), [currentLanguage]);
+
   const apiFilters: CitasFilters = useMemo(() => {
     const filters: CitasFilters = {
       limite: ITEMS_PER_PAGE * 10, // Cargar suficientes datos para filtrar localmente
-      target: i18n.language === "en" ? "en" : "es",
-      source: i18n.language === "en" ? "es" : "en",
-      translate_fields: "nombre"
+      target: currentLanguage.startsWith("en") ? "en" : "es",
+      source: currentLanguage.startsWith("en") ? "es" : "en",
+      translate_fields: "nombre",
     };
     return filters;
-  }, []);
+  }, [currentLanguage]);
 
   // Fetch appointments usando React Query
   const { data: appointmentsData, isLoading, isError, refetch } = useAppointments(
     apiFilters,
-    userRole
+    userRole,
+    {
+      refetchOnWindowFocus: false,
+      refetchInterval: 60000,
+      refetchIntervalInBackground: false,
+    },
   );
 
   // Mapear datos de la API al formato del componente
@@ -151,19 +165,21 @@ function MyAppointmentsPage() {
     const apiAppointments = mapCitasToAppointments(citasArray, userRole);
     
     // Adaptar al formato local de esta página
-    return apiAppointments.map(adaptApiAppointmentToLocal);
-  }, [appointmentsData, userRole]);
+    return apiAppointments.map((appointment) =>
+      adaptApiAppointmentToLocal(appointment, locale),
+    );
+  }, [appointmentsData, userRole, locale]);
 
   // Función para actualizar filtros
-  const updateFilters = (newFilters: Partial<LocalAppointmentFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<LocalAppointmentFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
     // Resetear paginación cuando cambian los filtros
     setUpcomingPage(1);
     setHistoricalPage(1);
-  };
+  }, []);
 
   // Función para resetear filtros
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setFilters({
       status: [],
       specialties: [],
@@ -175,10 +191,10 @@ function MyAppointmentsPage() {
     setSearchTerm("");
     setUpcomingPage(1);
     setHistoricalPage(1);
-  };
+  }, []);
 
   // Función para contar filtros activos
-  const getActiveFiltersCount = () => {
+  const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.status.length > 0) count++;
     if (filters.specialties.length > 0) count++;
@@ -187,15 +203,20 @@ function MyAppointmentsPage() {
     if (filters.dateRange) count++;
     if (searchTerm) count++;
     return count;
-  };
+  }, [filters, searchTerm]);
+
+  const normalizedSearchTerm = useMemo(
+    () => searchTerm.trim().toLowerCase(),
+    [searchTerm],
+  );
 
   // Función para filtrar las citas localmente
-  const filterAppointments = (appointments: Appointment[]) => {
-    return appointments.filter((appointment) => {
+  const filteredAppointments = useMemo(() => {
+    return allAppointments.filter((appointment) => {
       // Filtro por búsqueda de doctor/paciente
       if (
-        searchTerm &&
-        !appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase())
+        normalizedSearchTerm &&
+        !appointment.doctorName.toLowerCase().includes(normalizedSearchTerm)
       ) {
         return false;
       }
@@ -241,8 +262,7 @@ function MyAppointmentsPage() {
 
       // Filtro por rango de fechas
       if (filters.dateRange) {
-        // Parsear la fecha del formato "dd MMM, yyyy"
-        const appointmentDate = new Date(appointment.date);
+        const appointmentDate = new Date(appointment.dateISO);
         const [startDate, endDate] = filters.dateRange;
         if (appointmentDate < startDate || appointmentDate > endDate) {
           return false;
@@ -251,11 +271,15 @@ function MyAppointmentsPage() {
 
       return true;
     });
-  };
+  }, [allAppointments, filters, normalizedSearchTerm]);
 
-  // Separar citas próximas e historial con filtros aplicados
-  const { upcomingAppointments, historicalAppointments } = useMemo(() => {
-    const filteredAppointments = filterAppointments(allAppointments);
+  const { upcomingAppointments, historicalAppointments, upcomingOriginalCount, historicalOriginalCount } = useMemo(() => {
+    const upcomingSource = allAppointments.filter((apt) =>
+      ["scheduled", "pending", "in_progress"].includes(apt.status),
+    );
+    const historicalSource = allAppointments.filter((apt) =>
+      ["completed", "cancelled"].includes(apt.status),
+    );
 
     const upcoming = filteredAppointments.filter((apt) =>
       ["scheduled", "pending", "in_progress"].includes(apt.status),
@@ -266,8 +290,10 @@ function MyAppointmentsPage() {
     return {
       upcomingAppointments: upcoming,
       historicalAppointments: historical,
+      upcomingOriginalCount: upcomingSource.length,
+      historicalOriginalCount: historicalSource.length,
     };
-  }, [allAppointments, filters, searchTerm]);
+  }, [allAppointments, filteredAppointments]);
 
   const upcomingPagination = useMemo(() => {
     const totalPages = Math.ceil(upcomingAppointments.length / ITEMS_PER_PAGE);
@@ -291,9 +317,9 @@ function MyAppointmentsPage() {
   }, [historicalAppointments, historicalPage]);
 
   // Función para navegar a búsqueda
-  const handleScheduleAppointment = () => {
+  const handleScheduleAppointment = useCallback(() => {
     navigate("/search");
-  };
+  }, [navigate]);
 
   // Componente de paginación reutilizable
   const renderPagination = (
@@ -354,14 +380,10 @@ function MyAppointmentsPage() {
     const setPage = isUpcoming ? setUpcomingPage : setHistoricalPage;
 
     // Verificar si hay filtros activos
-    const hasActiveFilters = getActiveFiltersCount() > 0;
-    const originalAppointments = isUpcoming
-      ? allAppointments.filter((apt) =>
-          ["scheduled", "pending", "in_progress"].includes(apt.status),
-        )
-      : allAppointments.filter((apt) =>
-          ["completed", "cancelled"].includes(apt.status),
-        );
+    const hasActiveFilters = activeFiltersCount > 0;
+    const originalCount = isUpcoming
+      ? upcomingOriginalCount
+      : historicalOriginalCount;
 
     if (appointments.length === 0) {
       const sectionKey = isUpcoming ? "upcomingSection" : "historySection";
@@ -386,9 +408,9 @@ function MyAppointmentsPage() {
               </span>
               <EmptyDescription className="text-muted-foreground text-center max-w-md mx-auto">
                 {hasActiveFilters
-                  ? originalAppointments.length > 0
+                  ? originalCount > 0
                     ? t("patient:myAppointments.noResultsDescription", {
-                        count: originalAppointments.length,
+                        count: originalCount,
                         section: t(`patient:myAppointments.${sectionKey}`),
                       })
                     : isUpcoming
@@ -402,7 +424,7 @@ function MyAppointmentsPage() {
           </EmptyHeader>
           <EmptyContent>
             <div className="flex flex-col items-center gap-3">
-              {hasActiveFilters && originalAppointments.length > 0 ? (
+              {hasActiveFilters && originalCount > 0 ? (
                 <MCButton
                   variant="outline"
                   onClick={resetFilters}
@@ -413,7 +435,7 @@ function MyAppointmentsPage() {
                 </MCButton>
               ) : null}
 
-              {(!hasActiveFilters || originalAppointments.length === 0) &&
+              {(!hasActiveFilters || originalCount === 0) &&
                 isUpcoming && (
                   <MCButton
                     variant="primary"
@@ -514,7 +536,7 @@ function MyAppointmentsPage() {
 
   const filterComponent = (
     <MCFilterPopover
-      activeFiltersCount={getActiveFiltersCount()}
+      activeFiltersCount={activeFiltersCount}
       onClearFilters={resetFilters}
     >
       <FilterMyAppointments filters={filters} onFiltersChange={updateFilters} />

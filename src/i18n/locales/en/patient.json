@@ -416,7 +416,8 @@
       "noResults": "No doctors found",
       "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results.",
       "clearFilters": "Clear Filters"
-    }
+    },
+    "loading": "Loading doctors..."
   },
   "appointment": {
     "patient": {

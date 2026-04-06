@@ -8,7 +8,7 @@ import {
   addDays,
   subDays,
 } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import type { CalendarView, Appointment } from "@/types/CalendarTypes";
@@ -36,6 +36,9 @@ export const CalendarPage = () => {
   const { t } = useTranslation("common");
   const { i18n } = useTranslation();
   const isMobile = useIsMobile();
+  const language = i18n.resolvedLanguage || i18n.language;
+  const dateLocale = useMemo(() => (language.startsWith("en") ? enUS : es), [language]);
+  const isEnglish = language.startsWith("en");
 
   // Mapear la vista del calendario local a la vista de la API
   const apiVista = useMemo((): CalendarioVista => {
@@ -62,8 +65,8 @@ export const CalendarPage = () => {
     params: {
       vista: apiVista,
       fecha: fechaParam,
-      target: i18n.language === 'en' ? 'en' : 'es',
-      source: i18n.language === 'en' ? 'es' : 'en',
+      target: isEnglish ? 'en' : 'es',
+      source: isEnglish ? 'es' : 'en',
       translate_fields: 'nombre,motivoConsulta,diagnostico,motivoCancelacion,comentario',
     },
   });
@@ -72,7 +75,7 @@ export const CalendarPage = () => {
   const appointments = useMemo<Appointment[]>(() => {
     if (!calendarData?.dias) return [];
     return flattenCalendarioDias(calendarData.dias);
-  }, [calendarData, i18n.language]);
+  }, [calendarData]);
 
   const navigatePrevious = () => {
     switch (view) {
@@ -130,14 +133,22 @@ export const CalendarPage = () => {
   const getTitle = () => {
     switch (view) {
       case "month":
-        return format(currentDate, "MMMM 'de' yyyy", { locale: es });
+        return format(currentDate, isEnglish ? "MMMM yyyy" : "MMMM 'de' yyyy", {
+          locale: dateLocale,
+        });
       case "week":
         return t("calendar.weekOf", {
           defaultValue: "Semana del {{date}}",
-          date: format(currentDate, "d 'de' MMMM", { locale: es }),
+          date: format(currentDate, isEnglish ? "MMMM d" : "d 'de' MMMM", {
+            locale: dateLocale,
+          }),
         });
       case "day":
-        return format(currentDate, "EEEE, d 'de' MMMM", { locale: es });
+        return format(
+          currentDate,
+          isEnglish ? "EEEE, MMMM d" : "EEEE, d 'de' MMMM",
+          { locale: dateLocale },
+        );
       default:
         return t("calendar.noUpcomingAppointments", {
           defaultValue: "Próximas citas",

@@ -501,7 +501,8 @@
       "noResults": "No se encontraron doctores",
       "noResultsDescription": "No tienes doctores favoritos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda o agrega doctores a tu lista de favoritos.",
       "clearFilters": "Limpiar Filtros"
-    }
+    },
+    "loading": "Cargando doctores..."
   },
   "clinicCard": {
     "connect": "Conectar",

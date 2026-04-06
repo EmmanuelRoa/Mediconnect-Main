@@ -629,6 +629,7 @@
     "appointmentDetails": "Detalles de la cita",
     "contact": "Contacto",
     "reason": "Motivo",
+    "cancelReason": "Razon de cancelacion",
     "weekDays": {
       "sun": "Dom",
       "mon": "Lun",
@@ -647,7 +648,9 @@
     },
     "modality": {
       "virtual": "Virtual",
-      "presencial": "Presencial"
+      "presencial": "Presencial",
+      "teleconsulta": "Teleconsulta",
+      "in_person": "Presencial"
     }
   },
   "appointments": {

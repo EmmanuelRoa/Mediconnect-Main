@@ -374,7 +374,7 @@ function ScheduleAppointment() {
               <h4
                 className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-primary`}
               >
-                {t("appointments.reason", "Reason for Consultation")}
+                {t("appointments.reason", "Reason for Consultation")} 
               </h4>
               <p
                 className={`text-primary opacity-75 ${isMobile ? "text-sm" : ""}`}

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import type { Appointment } from "@/types/CalendarTypes";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import type { AppointmentStatus } from "@/types/CalendarTypes";
@@ -51,8 +51,14 @@ export const AppointmentDetails = ({
 }: AppointmentDetailsProps) => {
   const userRole = useAppStore((state) => state.user?.rol);
   const { t } = useTranslation("common");
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const language = i18n.resolvedLanguage || i18n.language;
+  const dateLocale = language.startsWith("en") ? enUS : es;
+  const dayDateFormat = language.startsWith("en")
+    ? "EEEE, MMMM d"
+    : "EEEE, d 'de' MMMM";
 
   const { startConversation, isLoading: isStartingConversation } = useStartConversation();
   console.log(appointment);
@@ -464,7 +470,7 @@ export const AppointmentDetails = ({
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium text-xs sm:text-sm">
-                {format(appointment.date, "EEEE, d 'de' MMMM", { locale: es })}
+                {format(appointment.date, dayDateFormat, { locale: dateLocale })}
               </p>
               <p className="text-xs text-muted-foreground">
                 {formatTimeTo12h(appointment.time)} • {appointment.duration} min
