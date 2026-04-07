@@ -950,7 +950,7 @@ function PatientDetailsPage() {
           : FALLBACK_TEXT,
       email: patientData.email || FALLBACK_TEXT,
       phone: patientData.telefono || FALLBACK_TEXT,
-      coverImage: DEFAULT_PATIENT_COVER_IMAGE,
+      coverImage: patientData.banner || DEFAULT_PATIENT_COVER_IMAGE,
       avatar: patientData.fotoPerfil ?? "",
       allergies,
       conditions,

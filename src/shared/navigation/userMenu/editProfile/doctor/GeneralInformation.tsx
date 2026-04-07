@@ -25,6 +25,7 @@ import type { UpdateDoctorProfileRequest } from "./services/doctor.types";
 import { toast } from "sonner";
 import { base64ToFile } from "@/utils/base64ToFile";
 import { formatPhone } from "@/utils/phoneFormat";
+import { formatDominicanCedula } from "@/utils/identityDocument";
 type CropType = "banner" | "profile";
 
 interface GeneralInformationProps {
@@ -76,6 +77,11 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
       label: t("personalIdentificationStep.nationalityOptions.otra", { ns: "auth" }),
     },
   ];
+
+  const formattedIdentityDocument = useMemo(
+    () => formatDominicanCedula(user?.doctor?.numeroDocumentoIdentificacion),
+    [user?.doctor?.numeroDocumentoIdentificacion]
+  );
   
   // Mapear los datos del doctor a los valores del formulario
   const defaultValues = useMemo(
@@ -96,13 +102,13 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
             phone: formatPhone(user.telefono || ""),
             yearsExperience: user.doctor.anosExperiencia?.toString() || "",
             licenseNumber: user.doctor.exequatur || "",
-            identityDocument: user.doctor.numeroDocumentoIdentificacion || "",
+            identityDocument: formattedIdentityDocument,
             nationality: user.doctor.nacionalidad || "",
             birthDate: user.doctor.fechaNacimiento ? user.doctor.fechaNacimiento.split('T')[0] : "",
             biography: user.doctor.biografia || "",
           }
         : undefined,
-    [user]
+    [user, formattedIdentityDocument]
   );
 
   const [bannerImage, setBannerImage] = useState<string>(
@@ -589,10 +595,13 @@ function GeneralInformation({ onOpenChange }: GeneralInformationProps) {
         />
 
         <MCInput
+          key={`identity-document-${formattedIdentityDocument}`}
           name="identityDocument"
           label={t("profileForm.identityDocument")}
           variant="cedula"
           placeholder={t("profileForm.identityDocumentPlaceholder")}
+          value={formattedIdentityDocument}
+          disabled
         />
 
         <MCSelect

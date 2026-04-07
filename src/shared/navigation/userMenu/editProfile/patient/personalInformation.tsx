@@ -17,6 +17,7 @@ import { patientService } from "./services/patient.service";
 import type { UpdatePatientProfileRequest } from "./services/patient.types";
 import { toast } from "sonner";
 import { base64ToFile } from "@/utils/base64ToFile";
+import { formatDominicanCedula } from "@/utils/identityDocument";
 
 interface PersonalInformationProps {
   schema: any;
@@ -99,6 +100,10 @@ function PersonalInformation({
     weight: user?.paciente?.peso?.toString() || "",
     bloodType: user?.paciente?.tipoSangre || "",
   };
+
+  const formattedIdentityDocument = formatDominicanCedula(
+    user?.paciente?.numero_documento_identificacion
+  );
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -480,10 +485,12 @@ function PersonalInformation({
         />
 
         <MCInput
+          key={`identity-document-${formattedIdentityDocument}`}
           name="identityDocument"
           label={t("profileForm.identityDocument")}
           variant="cedula"
           placeholder={t("profileForm.identityDocumentPlaceholder")}
+          value={formattedIdentityDocument}
           disabled
         />
 

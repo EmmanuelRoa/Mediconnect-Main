@@ -77,11 +77,23 @@ const APPOINTMENT_TYPE_FILTER_VALUES = {
   inPerson: "appointments.filters.values.type.inPerson",
 } as const;
 
+const STATUS_FILTER_CANONICAL_VALUES: Set<string> = new Set(
+  Object.values(STATUS_FILTER_VALUES)
+);
+const APPOINTMENT_TYPE_FILTER_CANONICAL_VALUES: Set<string> = new Set(
+  Object.values(APPOINTMENT_TYPE_FILTER_VALUES)
+);
+
+const normalizeFilterAliasKey = (value: string): string =>
+  value.trim().toLowerCase().replace(/[\s_-]+/g, "_");
+
 const STATUS_FILTER_ALIASES: Record<string, string> = {
   all: STATUS_FILTER_VALUES.all,
   todos: STATUS_FILTER_VALUES.all,
   scheduled: STATUS_FILTER_VALUES.scheduled,
   programada: STATUS_FILTER_VALUES.scheduled,
+  "in progress": STATUS_FILTER_VALUES.inProgress,
+  "en progreso": STATUS_FILTER_VALUES.inProgress,
   in_progress: STATUS_FILTER_VALUES.inProgress,
   en_progreso: STATUS_FILTER_VALUES.inProgress,
   completed: STATUS_FILTER_VALUES.completed,
@@ -95,15 +107,22 @@ const APPOINTMENT_TYPE_FILTER_ALIASES: Record<string, string> = {
   todos: APPOINTMENT_TYPE_FILTER_VALUES.all,
   virtual: APPOINTMENT_TYPE_FILTER_VALUES.virtual,
   teleconsulta: APPOINTMENT_TYPE_FILTER_VALUES.virtual,
+  "in person": APPOINTMENT_TYPE_FILTER_VALUES.inPerson,
   in_person: APPOINTMENT_TYPE_FILTER_VALUES.inPerson,
   presencial: APPOINTMENT_TYPE_FILTER_VALUES.inPerson,
 };
 
-const normalizeStatusFilterValue = (value: string): string =>
-  STATUS_FILTER_ALIASES[value] ?? STATUS_FILTER_VALUES.all;
+const normalizeStatusFilterValue = (value: string): string => {
+  if (STATUS_FILTER_CANONICAL_VALUES.has(value)) return value;
+  const normalizedKey = normalizeFilterAliasKey(value);
+  return STATUS_FILTER_ALIASES[normalizedKey] ?? STATUS_FILTER_VALUES.all;
+};
 
-const normalizeAppointmentTypeFilterValue = (value: string): string =>
-  APPOINTMENT_TYPE_FILTER_ALIASES[value] ?? APPOINTMENT_TYPE_FILTER_VALUES.all;
+const normalizeAppointmentTypeFilterValue = (value: string): string => {
+  if (APPOINTMENT_TYPE_FILTER_CANONICAL_VALUES.has(value)) return value;
+  const normalizedKey = normalizeFilterAliasKey(value);
+  return APPOINTMENT_TYPE_FILTER_ALIASES[normalizedKey] ?? APPOINTMENT_TYPE_FILTER_VALUES.all;
+};
 
 const normalizeLanguageCode = (language: string): "es" | "en" =>
   language.toLowerCase().startsWith("en") ? "en" : "es";

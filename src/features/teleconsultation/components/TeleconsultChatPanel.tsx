@@ -10,6 +10,7 @@ import { QUERY_KEYS } from "@/lib/react-query/config";
 import { Loader2, MessageCircle, ClipboardList, X } from "lucide-react";
 import type { CitaDetalle } from "@/types/AppointmentTypes";
 import Prescription from "./chatPanel/Prescription";
+import { useTranslation } from "react-i18next";
 
 type PanelView = "chat" | "notas";
 
@@ -53,6 +54,7 @@ function buildOtroUsuarioFromAppointment(
  * Usa pacienteId/doctorId del backend y asegura otroUsuario con nombre para evitar crashes.
  */
 export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultChatPanelProps) {
+  const { t } = useTranslation("common");
   const queryClient = useQueryClient();
   const user = useAppStore((s) => s.user);
   const setActiveConversation = useAppStore((s) => s.setActiveConversation);
@@ -142,7 +144,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
     return (
       <div className="flex flex-col h-full bg-background rounded-2xl border border-primary/15 items-center justify-center gap-3 p-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Cargando chat…</p>
+        <p className="text-sm text-muted-foreground">{t("teleconsultChatPanel.loading")}</p>
       </div>
     );
   }
@@ -151,7 +153,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
     return (
       <div className="flex flex-col h-full bg-background rounded-2xl border border-primary/15 items-center justify-center gap-2 p-4 text-center">
         <p className="text-sm text-muted-foreground">
-          No se pudo cargar la conversación para esta cita.
+          {t("teleconsultChatPanel.error")}
         </p>
       </div>
     );
@@ -161,7 +163,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
     return (
       <div className="flex flex-col h-full bg-background rounded-2xl border border-primary/15 items-center justify-center gap-2 p-4 text-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Preparando conversación…</p>
+        <p className="text-sm text-muted-foreground">{t("teleconsultChatPanel.preparing")}</p>
       </div>
     );
   }
@@ -180,7 +182,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
           }`}
         >
           <MessageCircle size={15} />
-          Chat
+          {t("teleconsultChatPanel.tabs.chat")}
         </button>
 
         {/* Notas button */}
@@ -195,7 +197,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
             }`}
             > 
             <ClipboardList size={15} />
-            Notas
+            {t("teleconsultChatPanel.tabs.notes")}
           </button>
         )}
 
@@ -204,7 +206,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
           <button
             onClick={() => setPanelView("chat")}
             className="p-1.5 rounded-full text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors"
-            aria-label="Cerrar"
+            aria-label={t("teleconsultChatPanel.close")}
           >
             <X size={16} />
           </button>

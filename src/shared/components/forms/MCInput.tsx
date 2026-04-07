@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { formatDominicanCedula } from "@/utils/identityDocument";
 
 interface MCInputProps {
   name: string;
@@ -40,13 +41,6 @@ interface MCInputProps {
   isPrice?: boolean;
   customDisplayValue?: string;
   maxLength?: number;
-}
-
-function formatCedula(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 10)}-${digits.slice(10)}`;
 }
 
 function formatExequatur(value: string) {
@@ -269,7 +263,7 @@ function MCInput({
   const isHorizontalLayout = variant === "internal-horizontal";
 
   const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCedula(e.target.value);
+    const formatted = formatDominicanCedula(e.target.value);
     setCedulaValue(formatted);
     const onlyDigits = formatted.replace(/\D/g, "");
     if (standalone) {

@@ -7,16 +7,24 @@ import { format, parseISO } from 'date-fns';
  * Mapea el estado de la API al estado del componente
  */
 export const mapCitaEstadoToAppointmentStatus = (estado: CitaEstado | string): AppointmentStatus => {
-  const normalizedEstado = String(estado).trim().toLowerCase();
+  const normalizedEstado = String(estado)
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ');
 
   const statusMap: Record<string, AppointmentStatus> = {
     'programada': 'scheduled',
+    'scheduled': 'scheduled',
     'en progreso': 'in_progress',
+    'in progress': 'in_progress',
     'en curso': 'in_progress',
     'completada': 'completed',
+    'completed': 'completed',
     'cancelada': 'cancelled',
+    'cancelled': 'cancelled',
     'reprogramada': 'scheduled',
     'pendiente': 'pending',
+    'pending': 'pending',
   };
 
   return statusMap[normalizedEstado] || 'pending';

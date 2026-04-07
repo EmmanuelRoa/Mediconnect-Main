@@ -46,22 +46,33 @@ export const formatFileSize = (bytes: number): string => {
  * `FormData` when submitting to `POST /citas/{id}/diagnosticar`.
  * Preview URLs are created ad-hoc in the component and are never stored in the form.
  */
-export function prescriptionSchema(t: (key: string) => string) {
+export function prescriptionSchema(
+  t: (key: string, options?: Record<string, unknown>) => string
+) {
   return z.object({
     diagnosisTitle: z
       .string()
-      .min(1, t("prescription.diagnosisTitleRequired"))
-      .max(200, t("prescription.diagnosisTitleMax"))
+      .min(1, t("prescription.validation.diagnosisTitleRequired"))
+      .max(
+        200,
+        t("prescription.validation.diagnosisTitleMax", { max: 200 })
+      )
       .trim(),
 
     diagnosisDescription: z
       .string()
-      .min(1, t("prescription.diagnosisDescriptionRequired"))
-      .max(5000, t("prescription.diagnosisDescriptionMax")),
+      .min(1, t("prescription.validation.diagnosisDescriptionRequired"))
+      .max(
+        5000,
+        t("prescription.validation.diagnosisDescriptionMax", { max: 5000 })
+      ),
 
     documents: z
       .array(z.instanceof(File))
-      .max(MAX_FILES, t("prescription.documentsMax"))
+      .max(
+        MAX_FILES,
+        t("prescription.validation.documentsMax", { max: MAX_FILES })
+      )
       .optional()
       .default([]),
   });

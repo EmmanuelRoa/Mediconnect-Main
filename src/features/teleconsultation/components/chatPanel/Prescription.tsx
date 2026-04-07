@@ -15,7 +15,6 @@ import { diagnosticarCita } from "@/services/api/appointments.service";
 import { useCitaDetails } from "@/lib/hooks/useCitaDetails";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/stores/useAppStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -80,18 +79,25 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
 
     for (const file of incoming) {
       if (!validateFileType(file)) {
-        errors.push(`"${file.name}": tipo no permitido (solo imágenes)`);
+        errors.push(
+          t("prescription.validation.fileTypeInvalid", { fileName: file.name })
+        );
         continue;
       }
       if (!validateFileSize(file)) {
-        errors.push(`"${file.name}": excede ${formatFileSize(MAX_FILE_SIZE)} máximo`);
+        errors.push(
+          t("prescription.validation.fileSizeExceeded", {
+            fileName: file.name,
+            maxSize: formatFileSize(MAX_FILE_SIZE),
+          })
+        );
         continue;
       }
       valid.push(file);
     }
 
     return { valid, errors };
-  }, []);
+  }, [t]);
 
   const addFiles = useCallback(
     (incoming: File[], onChange: (files: File[]) => void) => {
@@ -194,12 +200,14 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
 
       } catch (err: unknown) {
         const message =
-          err instanceof Error ? err.message : "Error al enviar el diagnóstico";
+          err instanceof Error
+            ? err.message
+            : t("prescription.status.submitError");
         setErrorMessage(message);
         setSubmitStatus("error");
       }
     },
-    [activeAppointmentId, addPrescription, clearPrescription],
+    [activeAppointmentId, addPrescription, clearPrescription, onSuccess, t],
   );
 
   // ─── Render ──────────────────────────────────────────────────────────────────
@@ -250,7 +258,7 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
                   <label className="block text-sm md:text-base lg:text-lg text-primary font-medium">
                     {t("prescription.documents")}
                     <span className="text-primary/50 font-normal text-xs md:text-sm ml-2">
-                      (máx. {MAX_FILES} imágenes · 10 MB c/u)
+                      {t("prescription.maxImagesHint", { max: MAX_FILES })}
                     </span>
                   </label>
 
@@ -285,14 +293,18 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
                     <div className="flex flex-col items-center gap-1 pointer-events-none">
                       <Upload className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                       <p className="text-xs md:text-sm font-medium text-primary">
-                        {isMobile ? "Toca para subir" : "Arrastra o haz clic"}
+                        {isMobile
+                          ? t("prescription.uploadHintMobile")
+                          : t("prescription.uploadHintDesktop")}
                       </p>
                       <p className="text-[10px] md:text-xs text-primary/75">
-                        Imágenes (JPG, PNG, GIF, WebP)
+                        {t("prescription.uploadFormats")}
                       </p>
                       {isAtLimit && (
                         <span className="text-xs text-amber-500 mt-0.5">
-                          Límite de {MAX_FILES} imágenes alcanzado
+                          {t("prescription.validation.maxReached", {
+                            max: MAX_FILES,
+                          })}
                         </span>
                       )}
                     </div>
@@ -319,7 +331,9 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
                   {filePreviews.length > 0 && (
                     <div className="mt-1">
                       <p className="text-xs md:text-sm text-primary/70 mb-2">
-                        {filePreviews.length} imagen{filePreviews.length !== 1 ? "es" : ""} adjunta{filePreviews.length !== 1 ? "s" : ""}
+                        {t("prescription.imagesAttached", {
+                          count: filePreviews.length,
+                        })}
                       </p>
                       <div className="border bg-primary/10 rounded-lg p-2 md:p-3">
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
@@ -334,7 +348,7 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
                                 onClick={() => removeFile(idx, field.onChange)}
                                 disabled={isSubmitting}
                                 className="absolute top-1 right-1 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md disabled:pointer-events-none"
-                                aria-label="Eliminar imagen"
+                                aria-label={t("prescription.removeImageAria")}
                               >
                                 <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
                               </button>
@@ -371,7 +385,7 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
             {!activeAppointmentId && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-xs md:text-sm text-amber-600">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                No hay una cita activa. El diagnóstico no puede enviarse.
+                {t("prescription.status.noActiveAppointment")}
               </div>
             )}
 
@@ -379,7 +393,7 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
             {activeAppointmentId && !loadingCita && !isCitaInProgress && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-xs md:text-sm text-amber-600">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                La cita no está en progreso. El diagnóstico no puede modificarse.
+                {t("prescription.status.notInProgress")}
               </div>
             )}
 
@@ -387,7 +401,7 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
             {submitStatus === "success" && (
               <div className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/30 px-3 py-2 text-xs md:text-sm text-green-600">
                 <CheckCircle className="w-4 h-4 shrink-0" />
-                Diagnóstico enviado con éxito.
+                {t("prescription.status.submitSuccess")}
               </div>
             )}
 
@@ -405,7 +419,9 @@ function Prescription({ minHeight, maxHeight, appointmentId: appointmentIdProp, 
               className="w-full md:w-auto"
               disabled={!activeAppointmentId || loadingCita || !isCitaInProgress || isSubmitting}
             >
-              {isSubmitting ? "Enviando diagnóstico…" : t("prescription.submit")}
+              {isSubmitting
+                ? t("prescription.status.submitting")
+                : t("prescription.submit")}
             </MCButton>
           </div>
         </div>

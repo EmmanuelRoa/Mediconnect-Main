@@ -67,8 +67,6 @@ function ServiceCards({
     return `${hours > 0 ? `${hours}h ` : ""}${remainingMinutes}m`;
   };
 
-  console.debug("[ServiceCards] Servicios recibidos:", services);
-  
   return (
     <div className="space-y-4 sm:space-y-6">
       {services.map((service) => {
@@ -140,7 +138,7 @@ function ServiceCards({
             </div>
 
             {/* Time Slots Grid - Fully Responsive */}
-            <div className="max-h-[120px] sm:max-h-[100px] md:max-h-[80px] overflow-y-auto scrollbar-hide rounded bg-muted/40 p-2 sm:px-3 sm:py-2 w-full">
+            <div className="max-h-[120px] sm:max-h-[100px] md:max-h-[80px] overflow-y-auto scrollbar-visible rounded bg-muted/40 p-2 pr-3 sm:px-3 sm:py-2 w-full">
               {(!service.timeSlots || service.timeSlots.length === 0) ? (
                 <div className="text-center text-xs sm:text-sm text-muted-foreground py-4">
                   {t("serviceCards.noTimeSlots", "No hay horarios disponibles")}

@@ -17,8 +17,33 @@ import resenasService from "@/services/api/resenas.service";
 import { useCitaDetails } from "@/lib/hooks/useCitaDetails";
 import { useAppStore } from "@/stores/useAppStore";
 import { getUserAppRole } from "@/services/auth/auth.types";
+import type { NotificacionEvent } from "@/types/WebSocketTypes";
+import { useTranslation } from "react-i18next";
+
+const DIAGNOSIS_NOTIFICATION_ENTITY_TYPES = new Set([
+  "historial_clinico",
+  "historial",
+  "medical_history",
+  "clinical_history",
+]);
+
+const normalizeText = (value?: string): string =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const isDiagnosisNotification = (event: NotificacionEvent): boolean => {
+  const entityType = normalizeText(event.tipoEntidad);
+  if (DIAGNOSIS_NOTIFICATION_ENTITY_TYPES.has(entityType)) return true;
+
+  const title = normalizeText(event.titulo);
+  const message = normalizeText(event.mensaje);
+  return title.includes("diagnostic") || message.includes("diagnostic");
+};
 
 function TeleconsultRoomPage() {
+  const { t } = useTranslation("common");
   const { appointmentId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,6 +93,28 @@ function TeleconsultRoomPage() {
     return unsub;
   }, [appointmentId, isPatient, endCall]);
 
+  // Show rating modal to patients when a diagnosis notification arrives.
+  useEffect(() => {
+    if (!isPatient || !appointmentId) return;
+
+    const unsub = socketService.onNewNotification((event) => {
+      if (!isDiagnosisNotification(event)) return;
+
+      // If backend includes cita id as entidadId, enforce match; otherwise allow
+      // diagnosis notifications while the patient is in this active teleconsult.
+      if (
+        typeof event.entidadId === "number" &&
+        String(event.entidadId) !== String(appointmentId)
+      ) {
+        return;
+      }
+
+      setShowRatingModal(true);
+    });
+
+    return unsub;
+  }, [isPatient, appointmentId]);
+
   const handleEndCall = () => {
     if (appointmentId) {
       if (isPatient) {
@@ -115,7 +162,7 @@ function TeleconsultRoomPage() {
       <div className="min-h-screen flex items-center justify-center bg-bg-btn-secondary">
         <div className="flex flex-col items-center gap-4 text-primary">
           <Loader2 className="w-10 h-10 animate-spin" />
-          <p className="text-sm font-medium">Conectando a la teleconsulta…</p>
+          <p className="text-sm font-medium">{t("teleconsultRoom.connecting")}</p>
         </div>
       </div>
     );
@@ -156,7 +203,7 @@ function TeleconsultRoomPage() {
                     d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                <span className="text-sm font-medium">Video</span>
+                <span className="text-sm font-medium">{t("teleconsultRoom.tabs.video")}</span>
               </button>
               <button
                 onClick={() => setMobileView("chat")}
@@ -166,7 +213,7 @@ function TeleconsultRoomPage() {
                   }`}
               >
                 <MessageSquare className="w-4 h-4" />
-                <span className="text-sm font-medium">Chat</span>
+                <span className="text-sm font-medium">{t("teleconsultRoom.tabs.chat")}</span>
               </button>
               <button
                 onClick={() => setMobileView("info")}
@@ -176,7 +223,7 @@ function TeleconsultRoomPage() {
                   }`}
               >
                 <Info className="w-4 h-4" />
-                <span className="text-sm font-medium">Info</span>
+                <span className="text-sm font-medium">{t("teleconsultRoom.tabs.info")}</span>
               </button>
             </div>
 
@@ -234,9 +281,9 @@ function TeleconsultRoomPage() {
         onClose={handleCloseRating}
         onSubmit={handleSubmitRating}
         isLoading={isSubmittingRating}
-        doctorName={appointment?.doctor?.nombre ? `${appointment.doctor.nombre} ${appointment.doctor.apellido || ""}`.trim() : "Doctor."}
+        doctorName={appointment?.doctor?.nombre ? `${appointment.doctor.nombre} ${appointment.doctor.apellido || ""}`.trim() : t("teleconsultRoom.fallbackDoctor")}
         doctorAvatar={appointment?.doctor?.usuario?.fotoPerfil || undefined}
-        specialty={appointment?.servicio?.especialidad?.nombre || "Especialidad"}
+        specialty={appointment?.servicio?.especialidad?.nombre || t("teleconsultRoom.fallbackSpecialty")}
       />
     </>
   );

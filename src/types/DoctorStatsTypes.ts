@@ -360,6 +360,7 @@ export interface DoctorPatientInfo {
   usuarioId: number;
   nombre: string;
   apellido: string;
+  banner: string | null;
   tipoDocIdentificacion: string;
   numeroDocumentoIdentificacion: string;
   fotoDocumento: string | null;

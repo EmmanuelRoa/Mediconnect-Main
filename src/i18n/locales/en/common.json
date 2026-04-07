@@ -509,6 +509,26 @@
     "subtitle": "You are about to start a video call",
     "joinButton": "Join teleconsultation"
   },
+  "teleconsultRoom": {
+    "connecting": "Connecting to teleconsultation...",
+    "tabs": {
+      "video": "Video",
+      "chat": "Chat",
+      "info": "Info"
+    },
+    "fallbackDoctor": "Doctor",
+    "fallbackSpecialty": "Specialty"
+  },
+  "teleconsultChatPanel": {
+    "loading": "Loading chat...",
+    "error": "Could not load the conversation for this appointment.",
+    "preparing": "Preparing conversation...",
+    "close": "Close",
+    "tabs": {
+      "chat": "Chat",
+      "notes": "Notes"
+    }
+  },
   "consultationInfo": {
     "title": "Consultation Information",
     "additionalSections": "Additional Sections",
@@ -522,6 +542,7 @@
     "rateExperience": "Rate your experience",
     "leaveComment": "Leave a comment (Optional)",
     "commentPlaceholder": "Write your comment here...",
+    "defaultDoctorName": "Doctor",
     "submit": "Submit rating",
     "skip": "Skip for now",
     "specialty": "Internal Medicine Specialist"
@@ -591,14 +612,35 @@
     "diagnosisDescription": "Diagnosis description",
     "diagnosisDescriptionPlaceholder": "Describe the diagnosis here...",
     "documents": "Attached documents",
+    "maxImagesHint": "(max {{max}} images · 10 MB each)",
     "uploadHintMobile": "Tap to upload",
     "uploadHintDesktop": "Drag or click",
-    "uploadSubHint": "Images and documents",
+    "uploadFormats": "Images (JPG, PNG, GIF, WebP)",
+    "imagesAttached": "{{count}} image attached",
+    "imagesAttached_plural": "{{count}} images attached",
+    "removeImageAria": "Remove image",
     "maxFiles": "Maximum {{count}} files",
     "uploadedFiles": "{{count}} file uploaded",
     "uploadedFiles_plural": "{{count}} files uploaded",
     "removeFile": "Remove file",
-    "submit": "Save prescription"
+    "submit": "Save prescription",
+    "status": {
+      "noActiveAppointment": "There is no active appointment. The diagnosis cannot be sent.",
+      "notInProgress": "The appointment is not in progress. The diagnosis cannot be modified.",
+      "submitSuccess": "Diagnosis sent successfully.",
+      "submitError": "Error sending diagnosis",
+      "submitting": "Sending diagnosis..."
+    },
+    "validation": {
+      "diagnosisTitleRequired": "Diagnosis title is required",
+      "diagnosisTitleMax": "Diagnosis title cannot exceed {{max}} characters",
+      "diagnosisDescriptionRequired": "Diagnosis description is required",
+      "diagnosisDescriptionMax": "Diagnosis description cannot exceed {{max}} characters",
+      "documentsMax": "You can attach a maximum of {{max}} images",
+      "fileTypeInvalid": "\"{{fileName}}\": invalid type (images only)",
+      "fileSizeExceeded": "\"{{fileName}}\": exceeds maximum {{maxSize}}",
+      "maxReached": "Limit of {{max}} images reached"
+    }
   },
   "richText": {
     "bold": "Bold (Ctrl+B)",

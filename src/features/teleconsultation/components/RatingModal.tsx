@@ -5,13 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Textarea } from "@/shared/ui/textarea";
 import MCButton from "@/shared/components/forms/MCButton";
 import { MCUserAvatar } from "@/shared/navigation/userMenu/MCUserAvatar";
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MCDialogBase } from "@/shared/components/MCDialogBase"; // <-- Usa tu componente base
 import { useTranslation } from "react-i18next";
 
 import { Loader2 } from "lucide-react";
-
-// Removed hardcoded doctor Avatar and Name as they are now passed via props
 
 export function getDoctorAvatar({
   name,
@@ -62,16 +59,18 @@ export const RatingModal = ({
   isOpen,
   onClose,
   onSubmit,
-  doctorName = "Doctor",
+  doctorName,
   doctorAvatar,
-  specialty = "Especialista Médica",
+  specialty,
   isLoading = false,
 }: RatingModalProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
-  const isMobile = useIsMobile();
+
+  const resolvedDoctorName = doctorName || t("ratingModal.defaultDoctorName");
+  const resolvedSpecialty = specialty || t("ratingModal.specialty");
 
   const handleSubmit = () => {
     onSubmit(rating, comment);
@@ -97,14 +96,14 @@ export const RatingModal = ({
         {/* Doctor info */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-20 h-20 rounded-full overflow-hidden">
-            {getDoctorAvatar({ name: doctorName, avatarUrl: doctorAvatar })}
+            {getDoctorAvatar({ name: resolvedDoctorName, avatarUrl: doctorAvatar })}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-semibold">{doctorName}</p>
+              <p className="font-semibold">{resolvedDoctorName}</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              {specialty}
+              {resolvedSpecialty}
             </p>
           </div>
         </div>

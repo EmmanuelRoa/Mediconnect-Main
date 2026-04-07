@@ -65,6 +65,22 @@ export function AppointmentCard({ appointment, index, isVertical }: AppointmentC
     if (status === "scheduled" || status === "pending") {
       return (
         <div className="flex flex-col sm:flex-row w-full sm:w-fit gap-2">
+          {status === "scheduled" && isVirtual && (
+            <MCButton
+              size="s"
+              className="rounded-full w-full sm:w-auto"
+              onClick={() =>
+                navigate(
+                  ROUTES.TELECONSULT.CONFIRM.replace(
+                    ":appointmentId",
+                    appointment.id
+                  )
+                )
+              }
+            >
+              {t("appointments.join")}
+            </MCButton>
+          )}
           <ScheduleAppointmentDialog
             idProvider={appointment.doctorId || ""}
             idAppointment={appointment.id}
