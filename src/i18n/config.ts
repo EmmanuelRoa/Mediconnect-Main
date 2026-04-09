@@ -13,7 +13,7 @@ import commonen from "@/i18n/locales/en/common.json";
 import comunes from "@/i18n/locales/es/common.json";
 import landen from "@/i18n/locales/en/landing.json"; // <-- Importa landing en inglés
 // Si tienes landing.json en español, impórtalo también:
-// import landes from "@/i18n/locales/es/landing.json";
+import landes from "@/i18n/locales/es/landing.json";
 
 i18n
   .use(LanguageDetector)
@@ -37,7 +37,7 @@ i18n
         doctor: doctores,
         center: centeres,
         common: comunes,
-        // landing: landes, // <-- Descomenta si tienes landing.json en español
+        landing: landes, // <-- Descomenta si tienes landing.json en español
       },
     },
   });

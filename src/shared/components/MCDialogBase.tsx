@@ -119,7 +119,9 @@ export function MCDialogBase({
         {(title || description) && (
           <DialogHeader
             className={`flex justify-between items-start ${headerPadding} flex-shrink-0 ${
-              borderHeader ? 'border-b border-gray-100 dark:border-neutral-800' : ''
+              borderHeader
+                ? "border-b border-gray-100 dark:border-neutral-800"
+                : ""
             }`}
           >
             <div className="flex-1">
