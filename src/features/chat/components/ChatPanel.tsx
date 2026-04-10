@@ -25,11 +25,13 @@ import { useGlobalUIStore } from "@/stores/useGlobalUIStore";
 interface ChatPanelProps {
   conversation: ConversationWithDetails | null;
   onBack?: () => void;
+  layoutMode?: "default" | "teleconsult";
 }
 
 export function ChatPanel({
   conversation,
   onBack,
+  layoutMode = "default",
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -843,6 +845,7 @@ export function ChatPanel({
                     <MessageBubble
                       key={`${message.id}-${index}`}
                       message={message}
+                      layoutMode={layoutMode}
                       onViewFile={handleViewFile}
                       onDownloadFile={handleDownloadFile}
                       getFileIcon={getFileIcon}

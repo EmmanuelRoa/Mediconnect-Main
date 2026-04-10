@@ -216,7 +216,7 @@ export function TeleconsultChatPanel({ appointmentId, onEndCall }: TeleconsultCh
       {/* Panel content */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {panelView === "chat" ? (
-          <RealChatPanel conversation={safeConversation} />
+          <RealChatPanel conversation={safeConversation} layoutMode="teleconsult" />
         ) : (
           <Prescription onSuccess={onEndCall} />
         )}

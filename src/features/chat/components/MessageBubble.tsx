@@ -18,6 +18,7 @@ import { ImageCarouselModal } from "@/features/doctor/components/healthService/I
 
 interface MessageBubbleProps {
   message: MessageWithSender;
+  layoutMode?: "default" | "teleconsult";
   onViewFile?: (msg: MessageWithSender) => void;
   onDownloadFile?: (url: string, name: string) => void;
   getFileIcon?: (type: string) => string;
@@ -29,6 +30,7 @@ interface MessageBubbleProps {
 
 export function MessageBubble({
   message,
+  layoutMode = "default",
   onViewFile,
   onDownloadFile,
   getFileIcon,
@@ -52,6 +54,7 @@ export function MessageBubble({
   
   // Detectar si es un mensaje temporal/optimista (ID negativo)
   const isOptimistic = message.id < 0;
+  const isTeleconsultLayout = layoutMode === "teleconsult";
 
   // Verificar que el remitente existe, si no, usar valores por defecto
   const remitente = message.remitente || {
@@ -297,14 +300,26 @@ export function MessageBubble({
 
         {/* Mensaje de audio */}
         {message.tipo === MessageType.AUDIO && (
-          <div className="min-w-[250px] md:min-w-[320px] max-w-[min(80vw,420px)]">
+          <div
+            className={cn(
+              "max-w-[min(80vw,420px)]",
+              isTeleconsultLayout
+                ? "w-full min-w-0 sm:max-w-[min(75vw,420px)]"
+                : "min-w-[250px] md:min-w-[320px]"
+            )}
+          >
             {isOptimistic && !mediaUrl ? (
               <div className="flex items-center gap-2 md:gap-3 p-2 bg-muted rounded-lg">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                 <p className="text-xs text-muted-foreground">Enviando audio...</p>
               </div>
             ) : mediaUrl && (
-              <div className="flex items-center gap-2 md:gap-3">
+              <div
+                className={cn(
+                  "flex items-center gap-2 md:gap-3",
+                  isTeleconsultLayout ? "rounded-lg bg-background/40 px-1.5 py-1" : ""
+                )}
+              >
                 <audio controls className="w-full chat-audio-player">
                   <source src={mediaUrl} type="audio/webm" />
                   <source src={mediaUrl} type="audio/mp4" />
