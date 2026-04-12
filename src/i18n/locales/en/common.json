@@ -597,7 +597,11 @@
   },
   "messageBubble": {
     "imageAlt": "Sent image",
+    "copy": "Copy",
+    "copied": "Copied",
     "download": "Download",
+    "audioNotSupported": "Your browser does not support audio.",
+    "videoNotSupported": "Your browser does not support video.",
     "deleted": "This message was deleted",
     "deleteError": "Error deleting message. Please try again.",
     "confirmDelete": "Are you sure you want to delete this message?",

@@ -417,9 +417,13 @@
       "insuranceAccepted": "Accepted insurances"
     },
     "empty": {
+      "noDoctorsTitle": "You don't have doctors yet",
+      "noDoctorsDescription": "When you have assigned doctors, they will appear here.",
+      "filteredTitle": "No doctors found",
+      "filteredDescription": "Try adjusting filters or your search.",
+      "clearFilters": "Clear filters",
       "noResults": "No doctors found",
-      "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results.",
-      "clearFilters": "Clear Filters"
+      "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results."
     },
     "loading": "Loading doctors..."
   },

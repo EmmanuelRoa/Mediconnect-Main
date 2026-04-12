@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, CheckCheck, Download, Play } from "lucide-react";
+import { Check, CheckCheck, Download, Play, Copy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { useTranslation } from "react-i18next";
 
@@ -54,6 +54,13 @@ export const MessageBubble = ({
     },
   };
 
+  const canQuickCopy = message.type === "text" && !!message.content?.trim();
+  const canQuickDownload =
+    !!onDownloadFile &&
+    (message.type === "image" ||
+      message.type === "file" ||
+      message.type === "voice");
+
   return (
     <motion.div
       key={message.id}
@@ -73,10 +80,12 @@ export const MessageBubble = ({
       </Avatar>
 
       <div
-        className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+        className={`rounded-3xl px-4 py-2 ${
+          message.type === "text" ? "w-fit" : "max-w-[75%]"
+        } ${
           message.sender === "user"
-            ? "bg-accent/75 text-primary rounded-br-sm"
-            : "bg-bg-btn-secondary text-primary rounded-bl-sm"
+            ? "bg-accent/75 text-primary rounded-br-xl"
+            : "bg-bg-btn-secondary text-primary rounded-bl-xl"
         }`}
       >
         {/* Mensaje de texto */}
@@ -175,13 +184,42 @@ export const MessageBubble = ({
 
         {/* Hora y estado */}
         <div
-          className={`flex items-center gap-1 mt-1 text-xs opacity-70 ${
+          className={`flex items-center gap-1 mt-2 text-xs opacity-70 ${
             message.sender === "user" ? "justify-end" : ""
           }`}
         >
+          {canQuickCopy && (
+            <button
+              onClick={() => navigator.clipboard.writeText(message.content)}
+              className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              title={t("messageBubble.copy") || "Copiar"}
+              aria-label={t("messageBubble.copy") || "Copiar"}
+            >
+              <Copy className="w-3 h-3" />
+            </button>
+          )}
+
+          {canQuickDownload && (
+            <button
+              onClick={() => {
+                const fileName =
+                  message.type === "image"
+                    ? `imagen_${message.id}.jpg`
+                    : message.fileName || "archivo";
+                onDownloadFile?.(message.content, fileName);
+              }}
+              className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              title={t("messageBubble.download") || "Descargar"}
+              aria-label={t("messageBubble.download") || "Descargar"}
+            >
+              <Download className="w-3 h-3" />
+            </button>
+          )}
+
           <span>{message.time}</span>
+
           {message.sender === "user" && message.status && (
-            <span className="ml-1">
+            <span>
               {message.status === "sent" && (
                 <Check className="inline w-4 h-4 text-black/80" />
               )}

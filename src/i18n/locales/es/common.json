@@ -596,7 +596,11 @@
   },
   "messageBubble": {
     "imageAlt": "Imagen enviada",
+    "copy": "Copiar",
+    "copied": "Copiado",
     "download": "Descargar",
+    "audioNotSupported": "Tu navegador no soporta audio.",
+    "videoNotSupported": "Tu navegador no soporta video.",
     "deleted": "Este mensaje fue eliminado",
     "deleteError": "Error al eliminar el mensaje. Por favor, intenta nuevamente.",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este mensaje?",
