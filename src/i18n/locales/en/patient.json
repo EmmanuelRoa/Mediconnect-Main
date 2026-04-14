@@ -179,6 +179,8 @@
     "success": "Appointment scheduled successfully",
     "error": "Error scheduling appointment. Please try again.",
     "rescheduleSuccess": "Appointment rescheduled successfully",
+    "cancellationPolicyTitle": "Flexible cancellation and rescheduling policy",
+    "cancellationPolicyDescription": "You can cancel or reschedule your appointment at no additional cost if you do so at least 4 hours in advance. Our goal is to offer you the greatest comfort and flexibility in your medical care.",
     "noInsurance": "Without insurance",
     "ongoing": "Ongoing",
     "withInsurance": "With insurance",

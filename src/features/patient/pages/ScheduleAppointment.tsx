@@ -39,8 +39,12 @@ const ScheduleAppointmentSkeleton = ({ isMobile }: { isMobile: boolean }) => {
     <div className={`${isMobile ? "w-full" : "max-w-2xl"} flex flex-col gap-4`}>
       <Skeleton className={`${isMobile ? "h-8" : "h-10"} w-3/4`} />
 
-      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-[4.5fr_5.5fr]"} gap-4`}>
-        <Skeleton className={`w-full ${isMobile ? "h-48" : "h-60"} rounded-xl`} />
+      <div
+        className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-[4.5fr_5.5fr]"} gap-4`}
+      >
+        <Skeleton
+          className={`w-full ${isMobile ? "h-48" : "h-60"} rounded-xl`}
+        />
         <div className="space-y-3">
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-4 w-full" />
@@ -111,8 +115,9 @@ function ScheduleAppointment() {
           {
             target: i18n.language || "es",
             source: i18n.language === "es" ? "en" : "es",
-            translate_fields: "nombre,descripcion,modalidad,especialidad.nombre",
-          }
+            translate_fields:
+              "nombre,descripcion,modalidad,especialidad.nombre",
+          },
         );
 
         if (response.success && response.data) {
@@ -152,32 +157,42 @@ function ScheduleAppointment() {
     ? `Dr. ${doctorData.nombre} ${doctorData.apellido}`
     : getUserFullName(user) || t("doctors.profile", "Doctor");
   const doctorAvatar = doctorData?.usuario?.fotoPerfil || user.fotoPerfil;
-  const doctorSpecialty = serviceData?.especialidad?.nombre || t("doctors.specialty", "Internal Medicine Specialist");
+  const doctorSpecialty =
+    serviceData?.especialidad?.nombre ||
+    t("doctors.specialty", "Internal Medicine Specialist");
 
   // Ubicación del servicio
-  const primaryLocation = serviceData?.ubicacion && serviceData.ubicacion.length > 0
-    ? serviceData.ubicacion[0]
-    : null;
+  const primaryLocation =
+    serviceData?.ubicacion && serviceData.ubicacion.length > 0
+      ? serviceData.ubicacion[0]
+      : null;
 
   // Obtener nombre del seguro
   const selectedInsurance = availableInsurances.find(
-    (insurance) => insurance.id.toString() === appointmentDetails.insuranceProvider
+    (insurance) =>
+      insurance.id.toString() === appointmentDetails.insuranceProvider,
   );
-  const insuranceName = appointmentDetails.useInsurance === false
-    ? t("appointments.noInsurance", "Sin seguro")
-    : (selectedInsurance
-      ? `${selectedInsurance.nombre}${selectedInsurance.tipoSeguro ? ` - ${typeof selectedInsurance.tipoSeguro === "string" ? selectedInsurance.tipoSeguro : selectedInsurance.tipoSeguro.nombre}` : ""}`
-      : appointmentDetails.insuranceProvider);
+  const insuranceName =
+    appointmentDetails.useInsurance === false
+      ? t("appointments.noInsurance", "Sin seguro")
+      : selectedInsurance
+        ? `${selectedInsurance.nombre}${selectedInsurance.tipoSeguro ? ` - ${typeof selectedInsurance.tipoSeguro === "string" ? selectedInsurance.tipoSeguro : selectedInsurance.tipoSeguro.nombre}` : ""}`
+        : appointmentDetails.insuranceProvider;
 
   const handleConfirm = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const seguroSeleccionado = availableInsurances.find(
-        (insurance) => insurance.id.toString() === appointmentDetails.insuranceProvider
+        (insurance) =>
+          insurance.id.toString() === appointmentDetails.insuranceProvider,
       );
 
-      const modalidadFormatted = (appointmentDetails.selectedModality || "presencial").charAt(0).toUpperCase() + (appointmentDetails.selectedModality || "presencial").slice(1);
+      const modalidadFormatted =
+        (appointmentDetails.selectedModality || "presencial")
+          .charAt(0)
+          .toUpperCase() +
+        (appointmentDetails.selectedModality || "presencial").slice(1);
 
       const appointmentData: any = {
         servicioId: Number(appointmentDetails.serviceId),
@@ -190,34 +205,54 @@ function ScheduleAppointment() {
       };
 
       // Sólo agregar datos de seguro si el usuario indicó que usará seguro
-      if (appointmentDetails.useInsurance !== false && appointmentDetails.insuranceProvider) {
-        appointmentData.seguroId = Number(appointmentDetails.insuranceProvider || 0);
+      if (
+        appointmentDetails.useInsurance !== false &&
+        appointmentDetails.insuranceProvider
+      ) {
+        appointmentData.seguroId = Number(
+          appointmentDetails.insuranceProvider || 0,
+        );
         appointmentData.tipoSeguroId = seguroSeleccionado?.idTipoSeguro || 0;
       }
 
       let response;
-      console.log("Submitting appointment data:", appointmentData, "isRescheduling:", isRescheduling, "appointmentId:", appointmentDetails.appointmentId);
+      console.log(
+        "Submitting appointment data:",
+        appointmentData,
+        "isRescheduling:",
+        isRescheduling,
+        "appointmentId:",
+        appointmentDetails.appointmentId,
+      );
       if (isRescheduling && appointmentDetails.appointmentId) {
-        response = await patientService.updateAppointment(Number(appointmentDetails.appointmentId), {
-          servicioId: Number(appointmentDetails.serviceId),
-          horarioId: appointmentDetails.horarioId || 0,
-          fecha: appointmentDetails.date,
-          hora: appointmentDetails.time,
-          modalidad: modalidadFormatted,
-          numPacientes: appointmentDetails.numberOfSessions,
-          motivoConsulta: appointmentDetails.reason,
-          seguroId: appointmentData.seguroId || null,
-          tipoSeguroId: appointmentData.tipoSeguroId || null,
-        });
+        response = await patientService.updateAppointment(
+          Number(appointmentDetails.appointmentId),
+          {
+            servicioId: Number(appointmentDetails.serviceId),
+            horarioId: appointmentDetails.horarioId || 0,
+            fecha: appointmentDetails.date,
+            hora: appointmentDetails.time,
+            modalidad: modalidadFormatted,
+            numPacientes: appointmentDetails.numberOfSessions,
+            motivoConsulta: appointmentDetails.reason,
+            seguroId: appointmentData.seguroId || null,
+            tipoSeguroId: appointmentData.tipoSeguroId || null,
+          },
+        );
       } else {
-        response = await patientService.createAppointment(appointmentData as any);
+        response = await patientService.createAppointment(
+          appointmentData as any,
+        );
       }
 
       if (response && (response.success || response.id)) {
         toast.success(
           isRescheduling
-            ? t("appointments.rescheduleSuccess", "Cita reagendada exitosamente")
-            : t("appointments.success", "Cita programada exitosamente")
+            ? t(
+                "appointments.rescheduleSuccess",
+                "Cita reagendada exitosamente",
+              )
+            : t("appointments.success", "Cita programada exitosamente"),
         );
 
         // Invalidar el cache de citas para recargar el calendario
@@ -231,8 +266,11 @@ function ScheduleAppointment() {
       console.error("Error al programar cita desde página de resumen:", error);
       toast.error(
         error?.response?.data?.message ||
-        error?.message ||
-        t("appointments.error", "Error al programar la cita. Por favor intenta nuevamente.")
+          error?.message ||
+          t(
+            "appointments.error",
+            "Error al programar la cita. Por favor intenta nuevamente.",
+          ),
       );
     } finally {
       setIsSubmitting(false);
@@ -285,8 +323,14 @@ function ScheduleAppointment() {
             >
               <div className="relative overflow-hidden rounded-2xl">
                 <img
-                  src={serviceData?.imagenes?.[0]?.url || "https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=400&q=80"}
-                  alt={serviceData?.nombre || t("appointments.reason", "Medical Consultation")}
+                  src={
+                    serviceData?.imagenes?.[0]?.url ||
+                    "https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=400&q=80"
+                  }
+                  alt={
+                    serviceData?.nombre ||
+                    t("appointments.reason", "Medical Consultation")
+                  }
                   className={`w-full ${isMobile ? "h-48" : "h-60"} object-cover rounded-xl transition-transform duration-500 hover:scale-110`}
                 />
               </div>
@@ -294,13 +338,15 @@ function ScheduleAppointment() {
                 <h2
                   className={`${isMobile ? "text-lg" : "text-xl"} font-bold text-primary`}
                 >
-                  {serviceData?.nombre || t("doctors.profile", "General Dermatology Consultation")}
+                  {serviceData?.nombre ||
+                    t("doctors.profile", "General Dermatology Consultation")}
                 </h2>
                 <p className="text-primary opacity-75 mb-4">
-                  {serviceData?.descripcion || t(
-                    "appointments.reasonPlaceholder",
-                    "Complete skin evaluation to detect and treat spots, acne, moles, or other conditions. Includes initial diagnosis and personalized recommendations.",
-                  )}
+                  {serviceData?.descripcion ||
+                    t(
+                      "appointments.reasonPlaceholder",
+                      "Complete skin evaluation to detect and treat spots, acne, moles, or other conditions. Includes initial diagnosis and personalized recommendations.",
+                    )}
                 </p>
               </div>
             </div>
@@ -374,7 +420,7 @@ function ScheduleAppointment() {
               <h4
                 className={`${isMobile ? "text-base" : "text-lg"} font-semibold text-primary`}
               >
-                {t("appointments.reason", "Reason for Consultation")} 
+                {t("appointments.reason", "Reason for Consultation")}
               </h4>
               <p
                 className={`text-primary opacity-75 ${isMobile ? "text-sm" : ""}`}
@@ -397,17 +443,25 @@ function ScheduleAppointment() {
                   {primaryLocation ? (
                     <>
                       <p className="text-sm text-primary opacity-75 mb-3">
-                        <strong>{primaryLocation.nombre}</strong> - {primaryLocation.direccion}
+                        <strong>{primaryLocation.nombre}</strong> -{" "}
+                        {primaryLocation.direccion}
                         {primaryLocation.barrio && (
-                          <>, {primaryLocation.barrio.nombre}, {primaryLocation.barrio.seccion.municipio.nombre}, {primaryLocation.barrio.seccion.municipio.provincia.nombre}</>
+                          <>
+                            , {primaryLocation.barrio.nombre},{" "}
+                            {primaryLocation.barrio.seccion.municipio.nombre},{" "}
+                            {
+                              primaryLocation.barrio.seccion.municipio.provincia
+                                .nombre
+                            }
+                          </>
                         )}
                       </p>
                       {primaryLocation.latitud !== undefined &&
-                        primaryLocation.longitud !== undefined &&
-                        !isNaN(primaryLocation.latitud) &&
-                        !isNaN(primaryLocation.longitud) &&
-                        isFinite(primaryLocation.latitud) &&
-                        isFinite(primaryLocation.longitud) ? (
+                      primaryLocation.longitud !== undefined &&
+                      !isNaN(primaryLocation.latitud) &&
+                      !isNaN(primaryLocation.longitud) &&
+                      isFinite(primaryLocation.latitud) &&
+                      isFinite(primaryLocation.longitud) ? (
                         <MapScheduleLocation
                           initialLocation={{
                             lat: primaryLocation.latitud,
@@ -450,7 +504,7 @@ function ScheduleAppointment() {
                 </div>
               )}
             </section>
-            <hr className="border-t border-primary opacity-15" />
+
             <hr className="border-t border-primary opacity-15" />
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -516,7 +570,11 @@ function ScheduleAppointment() {
               <span
                 className={`${isMobile ? "text-xl" : "text-2xl"} font-semibold text-primary`}
               >
-                {formatCurrency(serviceData?.precio ? serviceData.precio * appointmentDetails.numberOfSessions : undefined)}
+                {formatCurrency(
+                  serviceData?.precio
+                    ? serviceData.precio * appointmentDetails.numberOfSessions
+                    : undefined,
+                )}
               </span>
             </div>
             <MCButton
@@ -531,10 +589,10 @@ function ScheduleAppointment() {
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   {t("appointments.submitting", "Procesando...")}
                 </>
+              ) : appointmentDetails.appointmentId ? (
+                t("appointments.reschedule", "Reschedule appointment")
               ) : (
-                appointmentDetails.appointmentId
-                  ? t("appointments.reschedule", "Reschedule appointment")
-                  : t("appointments.schedule", "Confirm appointment")
+                t("appointments.schedule", "Confirm appointment")
               )}
             </MCButton>
           </main>

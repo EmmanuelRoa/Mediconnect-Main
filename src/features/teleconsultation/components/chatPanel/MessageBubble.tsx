@@ -84,8 +84,8 @@ export const MessageBubble = ({
           message.type === "text" ? "w-fit" : "max-w-[75%]"
         } ${
           message.sender === "user"
-            ? "bg-accent/75 text-primary rounded-br-xl"
-            : "bg-bg-btn-secondary text-primary rounded-bl-xl"
+            ? "bg-primary text-primary-foreground rounded-br-xl"
+            : "bg-primary/10 border border-primary/15 text-primary rounded-bl-xl"
         }`}
       >
         {/* Mensaje de texto */}
@@ -128,7 +128,7 @@ export const MessageBubble = ({
         {message.type === "file" && (
           <div className="min-w-[200px]">
             <div
-              className="flex items-center gap-3 p-3 bg-background/30 rounded-lg cursor-pointer hover:bg-background/50 transition-colors group"
+              className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors group"
               onClick={() => onViewFile?.(message)}
             >
               <div className="text-3xl">
@@ -154,7 +154,7 @@ export const MessageBubble = ({
                       message.fileName || "archivo",
                     );
                   }}
-                  className="flex-shrink-0 p-2 hover:bg-background/70 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                  className="flex-shrink-0 p-2 hover:bg-primary/15 rounded-full transition-colors opacity-0 group-hover:opacity-100"
                   title={t("messageBubble.download") || "Descargar"}
                 >
                   <Download size={16} />
@@ -191,7 +191,7 @@ export const MessageBubble = ({
           {canQuickCopy && (
             <button
               onClick={() => navigator.clipboard.writeText(message.content)}
-              className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              className="p-1 rounded-full hover:bg-primary/15 transition-colors"
               title={t("messageBubble.copy") || "Copiar"}
               aria-label={t("messageBubble.copy") || "Copiar"}
             >
@@ -208,7 +208,7 @@ export const MessageBubble = ({
                     : message.fileName || "archivo";
                 onDownloadFile?.(message.content, fileName);
               }}
-              className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              className="p-1 rounded-full hover:bg-primary/15 transition-colors"
               title={t("messageBubble.download") || "Descargar"}
               aria-label={t("messageBubble.download") || "Descargar"}
             >
@@ -221,13 +221,13 @@ export const MessageBubble = ({
           {message.sender === "user" && message.status && (
             <span>
               {message.status === "sent" && (
-                <Check className="inline w-4 h-4 text-black/80" />
+                <Check className="inline w-4 h-4 text-primary-foreground/80" />
               )}
               {message.status === "delivered" && (
-                <CheckCheck className="inline w-4 h-4 text-black/50" />
+                <CheckCheck className="inline w-4 h-4 text-primary-foreground/70" />
               )}
               {message.status === "read" && (
-                <CheckCheck className="inline w-4 h-4 text-black" />
+                <CheckCheck className="inline w-4 h-4 text-primary-foreground" />
               )}
             </span>
           )}

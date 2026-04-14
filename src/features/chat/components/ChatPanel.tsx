@@ -1,5 +1,13 @@
-import type { ConversationWithDetails, AttachmentQueueItem, AllowedMediaTypes } from "@/types/ChatTypes";
-import { AttachmentStatus, MediaValidationError, MessageType } from "@/types/ChatTypes";
+import type {
+  ConversationWithDetails,
+  AttachmentQueueItem,
+  AllowedMediaTypes,
+} from "@/types/ChatTypes";
+import {
+  AttachmentStatus,
+  MediaValidationError,
+  MessageType,
+} from "@/types/ChatTypes";
 import { ChatAvatar } from "./ChatAvatar";
 import { MessageBubble } from "./MessageBubble";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,10 +35,7 @@ interface ChatPanelProps {
   onBack?: () => void;
 }
 
-export function ChatPanel({
-  conversation,
-  onBack,
-}: ChatPanelProps) {
+export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const isMobile = useIsMobile();
@@ -54,7 +59,9 @@ export function ChatPanel({
   const [inputValue, setInputValue] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [attachmentQueue, setAttachmentQueue] = useState<AttachmentQueueItem[]>([]);
+  const [attachmentQueue, setAttachmentQueue] = useState<AttachmentQueueItem[]>(
+    [],
+  );
   const [viewerModal, setViewerModal] = useState<{
     open: boolean;
     content: string;
@@ -72,7 +79,9 @@ export function ChatPanel({
   // Constants
   const MAX_ATTACHMENTS_PER_MESSAGE = 5;
 
-  const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,10 +95,22 @@ export function ChatPanel({
   const lockBottomUntilRef = useRef<number>(0);
 
   // Hooks for data fetching and mutations
-  const { messages, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useMessages(conversation?.id ?? null);
+  const {
+    messages,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+  } = useMessages(conversation?.id ?? null);
   const { sendMessage } = useSendMessage();
   const { uploadMedia, isUploading } = useUploadMedia();
-  const { joinConversation, leaveConversation, sendTypingIndicator, sendStopTypingIndicator, markAsRead } = useWebSocket();
+  const {
+    joinConversation,
+    leaveConversation,
+    sendTypingIndicator,
+    sendStopTypingIndicator,
+    markAsRead,
+  } = useWebSocket();
   const resetUnreadCount = useAppStore((state) => state.resetUnreadCount);
 
   // React Query Client
@@ -132,7 +153,8 @@ export function ChatPanel({
 
     const threshold = 150;
     const alreadyAtBottom =
-      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight <= threshold;
+      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight <=
+      threshold;
 
     if (alreadyAtBottom) {
       scrollEl.scrollTop = scrollEl.scrollHeight;
@@ -149,7 +171,8 @@ export function ChatPanel({
 
     const onScroll = () => {
       const threshold = 100; // px from bottom considered "at bottom"
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+      const atBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
       setIsAtBottom(atBottom);
     };
 
@@ -191,25 +214,27 @@ export function ChatPanel({
           // Find the last message that is NOT ours (received from the other user)
           // This avoids marking our own optimistic messages (with temporary IDs) as read
           // Also filter out messages with invalid IDs (negative, null, undefined, 0)
-          const lastReceivedMessage = [...messages]
-            .reverse()
-            .find((m) => {
-              // Must have esPropio explicitly set to false (not undefined)
-              // And must have a valid positive ID (> 0)
-              return m.esPropio === false && typeof m.id === 'number' && m.id > 0;
-            });
+          const lastReceivedMessage = [...messages].reverse().find((m) => {
+            // Must have esPropio explicitly set to false (not undefined)
+            // And must have a valid positive ID (> 0)
+            return m.esPropio === false && typeof m.id === "number" && m.id > 0;
+          });
 
           if (!lastReceivedMessage) return;
           const lastId = lastReceivedMessage.id;
 
           // Additional validation: ensure lastId is a valid positive integer
           if (!Number.isInteger(lastId) || lastId <= 0) {
-            console.warn("[ChatPanel] Invalid message ID for markAsRead:", lastId);
+            console.warn(
+              "[ChatPanel] Invalid message ID for markAsRead:",
+              lastId,
+            );
             return;
           }
 
           // Skip if we've already sent this ID or a higher one
-          if (lastSentReadRef.current && lastSentReadRef.current >= lastId) return;
+          if (lastSentReadRef.current && lastSentReadRef.current >= lastId)
+            return;
 
           if (readDebounceRef.current) clearTimeout(readDebounceRef.current);
           readDebounceRef.current = setTimeout(() => {
@@ -221,7 +246,9 @@ export function ChatPanel({
 
               // Refetch en background para evitar sobrescrituras con data antigua
               setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONVERSATIONS });
+                queryClient.invalidateQueries({
+                  queryKey: QUERY_KEYS.CONVERSATIONS,
+                });
               }, 1000);
             } catch (err) {
               console.error("[ChatPanel] markAsRead error:", err);
@@ -229,7 +256,7 @@ export function ChatPanel({
           }, 500);
         });
       },
-      { root: scrollRef.current, threshold: 0.1 }
+      { root: scrollRef.current, threshold: 0.1 },
     );
 
     obs.observe(sentinel);
@@ -244,7 +271,8 @@ export function ChatPanel({
   useEffect(() => {
     const sentinel = topSentinelRef.current;
     const scrollElement = scrollRef.current;
-    if (!sentinel || !scrollElement || !hasNextPage || isFetchingNextPage) return;
+    if (!sentinel || !scrollElement || !hasNextPage || isFetchingNextPage)
+      return;
 
     const obs = new IntersectionObserver(
       (entries) => {
@@ -256,7 +284,7 @@ export function ChatPanel({
           }
         });
       },
-      { root: scrollElement, threshold: 0.1 }
+      { root: scrollElement, threshold: 0.1 },
     );
 
     obs.observe(sentinel);
@@ -305,7 +333,10 @@ export function ChatPanel({
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior,
+      });
       setIsAtBottom(true);
     }
   }, []);
@@ -321,7 +352,10 @@ export function ChatPanel({
     if (attachmentQueue.length >= MAX_ATTACHMENTS_PER_MESSAGE) {
       setToast({
         type: "error",
-        message: t("chatPanel.maxAttachmentsReached", `Máximo ${MAX_ATTACHMENTS_PER_MESSAGE} archivos por mensaje`),
+        message: t(
+          "chatPanel.maxAttachmentsReached",
+          `Máximo ${MAX_ATTACHMENTS_PER_MESSAGE} archivos por mensaje`,
+        ),
         open: true,
       });
       return;
@@ -352,7 +386,10 @@ export function ChatPanel({
           open: true,
         });
         // Add to queue with error status to show in UI
-        setAttachmentQueue((prev) => [...prev, { ...newItem, status: AttachmentStatus.ERROR, error: error.message }]);
+        setAttachmentQueue((prev) => [
+          ...prev,
+          { ...newItem, status: AttachmentStatus.ERROR, error: error.message },
+        ]);
         return;
       }
       console.error("Error validating file:", error);
@@ -365,25 +402,31 @@ export function ChatPanel({
         // Update status to compressing
         setAttachmentQueue((prev) =>
           prev.map((item) =>
-            item.id === id ? { ...item, status: AttachmentStatus.COMPRESSING } : item
-          )
+            item.id === id
+              ? { ...item, status: AttachmentStatus.COMPRESSING }
+              : item,
+          ),
         );
 
-        const { file: compressedFile, wasCompressed, compressedSize } = await compressImage(file);
+        const {
+          file: compressedFile,
+          wasCompressed,
+          compressedSize,
+        } = await compressImage(file);
 
         // Update with compressed file
         setAttachmentQueue((prev) =>
           prev.map((item) =>
             item.id === id
               ? {
-                ...item,
-                file: compressedFile,
-                preview: URL.createObjectURL(compressedFile),
-                status: AttachmentStatus.PENDING,
-                compressedSize: wasCompressed ? compressedSize : undefined,
-              }
-              : item
-          )
+                  ...item,
+                  file: compressedFile,
+                  preview: URL.createObjectURL(compressedFile),
+                  status: AttachmentStatus.PENDING,
+                  compressedSize: wasCompressed ? compressedSize : undefined,
+                }
+              : item,
+          ),
         );
 
         // Revoke old preview URL
@@ -393,8 +436,10 @@ export function ChatPanel({
         // Keep original file if compression fails
         setAttachmentQueue((prev) =>
           prev.map((item) =>
-            item.id === id ? { ...item, status: AttachmentStatus.PENDING } : item
-          )
+            item.id === id
+              ? { ...item, status: AttachmentStatus.PENDING }
+              : item,
+          ),
         );
       }
     }
@@ -422,19 +467,31 @@ export function ChatPanel({
       try {
         // Update status to uploading
         setAttachmentQueue((prev) =>
-          prev.map((i) => (i.id === item.id ? { ...i, status: AttachmentStatus.UPLOADING, progress: 0 } : i))
+          prev.map((i) =>
+            i.id === item.id
+              ? { ...i, status: AttachmentStatus.UPLOADING, progress: 0 }
+              : i,
+          ),
         );
 
         // Upload file
-        const uploadResponse = await uploadMedia({ file: item.file, tipo: item.type });
+        const uploadResponse = await uploadMedia({
+          file: item.file,
+          tipo: item.type,
+        });
 
         // Update status to success
         setAttachmentQueue((prev) =>
           prev.map((i) =>
             i.id === item.id
-              ? { ...i, status: AttachmentStatus.SUCCESS, mediaId: uploadResponse.id, progress: 100 }
-              : i
-          )
+              ? {
+                  ...i,
+                  status: AttachmentStatus.SUCCESS,
+                  mediaId: uploadResponse.id,
+                  progress: 100,
+                }
+              : i,
+          ),
         );
 
         // After a successful upload, send the message referencing the uploaded media id
@@ -445,7 +502,8 @@ export function ChatPanel({
           else if (item.type === "audio") messageType = "audio";
           else if (item.type === "video") messageType = "video";
 
-          const contenido = idx === 0 && inputValue.trim() ? inputValue.trim() : undefined;
+          const contenido =
+            idx === 0 && inputValue.trim() ? inputValue.trim() : undefined;
 
           try {
             if (!uploadResponse.id) return;
@@ -460,7 +518,15 @@ export function ChatPanel({
             console.error("Error sending message after upload:", err);
             // If sending fails, mark the attachment with an error state
             setAttachmentQueue((prev) =>
-              prev.map((i) => (i.id === item.id ? { ...i, status: AttachmentStatus.ERROR, error: "Error al enviar mensaje" } : i))
+              prev.map((i) =>
+                i.id === item.id
+                  ? {
+                      ...i,
+                      status: AttachmentStatus.ERROR,
+                      error: "Error al enviar mensaje",
+                    }
+                  : i,
+              ),
             );
           }
         }
@@ -471,9 +537,13 @@ export function ChatPanel({
         setAttachmentQueue((prev) =>
           prev.map((i) =>
             i.id === item.id
-              ? { ...i, status: AttachmentStatus.ERROR, error: "Error al subir archivo" }
-              : i
-          )
+              ? {
+                  ...i,
+                  status: AttachmentStatus.ERROR,
+                  error: "Error al subir archivo",
+                }
+              : i,
+          ),
         );
       }
     }
@@ -491,7 +561,9 @@ export function ChatPanel({
   const handleSendMessage = async () => {
     if (!conversation?.id) {
       setToast({
-        message: t("chatPanel.conversationRequired") || "No se puede enviar: conversación no disponible.",
+        message:
+          t("chatPanel.conversationRequired") ||
+          "No se puede enviar: conversación no disponible.",
         type: "error",
         open: true,
       });
@@ -581,8 +653,13 @@ export function ChatPanel({
         // Upload audio and send message
         if (conversation?.id) {
           try {
-            const audioFile = new File([audioBlob], "audio.webm", { type: "audio/webm" });
-            const uploadResponse = await uploadMedia({ file: audioFile, tipo: "audio" });
+            const audioFile = new File([audioBlob], "audio.webm", {
+              type: "audio/webm",
+            });
+            const uploadResponse = await uploadMedia({
+              file: audioFile,
+              tipo: "audio",
+            });
 
             await sendMessage({
               conversacionId: conversation.id,
@@ -611,7 +688,7 @@ export function ChatPanel({
       console.error("Error al acceder al micrófono:", error);
       alert(
         t("chatPanel.microphoneError") ||
-        "No se pudo acceder al micrófono. Verifica los permisos.",
+          "No se pudo acceder al micrófono. Verifica los permisos.",
       );
     }
   };
@@ -679,7 +756,7 @@ export function ChatPanel({
   return (
     <div className="flex-1 flex flex-col bg-background h-full max-h-full overflow-hidden relative">
       {/* Header */}
-      <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 border-b border-primary/15 bg-accent/50 rounded-tr-2xl md:rounded-tr-4xl flex-shrink-0">
+      <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 border-b border-primary/15 bg-primary/10 rounded-tr-2xl md:rounded-tr-4xl flex-shrink-0">
         {/* Botón de volver (solo mobile) */}
         {isMobile && onBack && (
           <button
@@ -724,20 +801,26 @@ export function ChatPanel({
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-3 md:py-4 scrollbar-hide min-h-0 relative"
         ref={scrollRef}
       >
-
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">{t("chatPanel.loading") || "Cargando mensajes..."}</p>
+            <p className="text-muted-foreground">
+              {t("chatPanel.loading") || "Cargando mensajes..."}
+            </p>
           </div>
         ) : (
           <div className="space-y-2 md:space-y-3">
             {/* Sentinel to detect when user scrolls to top for loading older messages */}
-            <div ref={topSentinelRef} aria-hidden style={{ width: 1, height: 20 }} />
+            <div
+              ref={topSentinelRef}
+              aria-hidden
+              style={{ width: 1, height: 20 }}
+            />
 
             {isFetchingNextPage && (
               <div className="flex justify-center py-2">
                 <p className="text-sm text-muted-foreground">
-                  {t("chatPanel.loadingOlderMessages") || "Cargando mensajes anteriores..."}
+                  {t("chatPanel.loadingOlderMessages") ||
+                    "Cargando mensajes anteriores..."}
                 </p>
               </div>
             )}
@@ -751,9 +834,10 @@ export function ChatPanel({
 
                 return messages.map((message, index) => {
                   // Encontrar el índice de la imagen actual
-                  const currentImageIndex = message.tipo === MessageType.IMAGEN && message.mediaId
-                    ? allImageMediaIds.indexOf(message.mediaId)
-                    : -1;
+                  const currentImageIndex =
+                    message.tipo === MessageType.IMAGEN && message.mediaId
+                      ? allImageMediaIds.indexOf(message.mediaId)
+                      : -1;
 
                   return (
                     <MessageBubble
@@ -772,12 +856,19 @@ export function ChatPanel({
               })()
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">{t("chatPanel.noMessages") || "No hay mensajes aún. ¡Envía el primer mensaje!"}</p>
+                <p className="text-muted-foreground">
+                  {t("chatPanel.noMessages") ||
+                    "No hay mensajes aún. ¡Envía el primer mensaje!"}
+                </p>
               </div>
             )}
 
             {/* Sentinel to detect bottom of message list for "read" detection */}
-            <div ref={bottomSentinelRef} aria-hidden style={{ width: 1, height: 1 }} />
+            <div
+              ref={bottomSentinelRef}
+              aria-hidden
+              style={{ width: 1, height: 1 }}
+            />
 
             {/* Typing indicator bubble — appears at the bottom of the message list */}
             {isTyping && (
@@ -793,7 +884,9 @@ export function ChatPanel({
                     <div className="text-sm font-medium text-foreground truncate">
                       {conversation.otroUsuario.nombre}
                     </div>
-                    <div className="text-xs text-muted-foreground">{t("chatHeader.typing") || "está escribiendo..."}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("chatHeader.typing") || "está escribiendo..."}
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-1">
@@ -808,17 +901,20 @@ export function ChatPanel({
         )}
 
         {/* Scroll-to-bottom button — sticky at the bottom of the scroll container */}
-        {!isAtBottom && !isDeleteModalOpen && !isImageModalOpen && !viewerModal.open && (
-          <div className="sticky bottom-3 z-20 flex justify-center pointer-events-none">
-            <button
-              onClick={() => scrollToBottom()}
-              className="pointer-events-auto flex items-center gap-2 bg-accent/90 text-primary px-3 py-2 rounded-full shadow-lg hover:opacity-90 transition-colors backdrop-blur-sm"
-              aria-label="Ir al último mensaje"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        {!isAtBottom &&
+          !isDeleteModalOpen &&
+          !isImageModalOpen &&
+          !viewerModal.open && (
+            <div className="sticky bottom-3 z-20 flex justify-center pointer-events-none">
+              <button
+                onClick={() => scrollToBottom()}
+                className="pointer-events-auto flex items-center gap-2 bg-accent/90 text-primary px-3 py-2 rounded-full shadow-lg hover:opacity-90 transition-colors backdrop-blur-sm"
+                aria-label="Ir al último mensaje"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+          )}
       </div>
 
       {/* File/Image Preview Section - ARRIBA del input */}
@@ -827,7 +923,6 @@ export function ChatPanel({
         onRemoveAttachment={removeFromQueue}
         isUploading={isUploading}
       />
-
 
       <div className="flex-shrink-0 border-t border-primary/10">
         <ChatInput

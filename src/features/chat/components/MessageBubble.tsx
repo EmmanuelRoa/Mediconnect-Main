@@ -244,8 +244,8 @@ export function MessageBubble({
               : "max-w-[85%] md:max-w-[75%]",
             message.tipo === MessageType.TEXTO ? "w-fit" : "",
             isOwnMessage
-              ? "bg-accent/75 text-primary rounded-br-xl"
-              : "bg-bg-btn-secondary text-primary rounded-bl-xl",
+              ? "bg-primary text-background rounded-br-xl"
+              : "bg-gray-200/55 border-primary dark:bg-bg-btn-secondary text-primary rounded-bl-xl",
           )}
         >
           {/* Texto */}
@@ -439,13 +439,13 @@ export function MessageBubble({
             {isOwnMessage && (
               <span>
                 {message.estado === MessageStatus.ENVIADO && (
-                  <Check className="inline w-3 h-3 md:w-4 md:h-4 text-black/80" />
+                  <Check className="inline w-3 h-3 md:w-4 md:h-4 text-background" />
                 )}
                 {message.estado === MessageStatus.ENTREGADO && (
-                  <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-black/50" />
+                  <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-background" />
                 )}
                 {message.estado === MessageStatus.LEIDO && (
-                  <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-black" />
+                  <CheckCheck className="inline w-3 h-3 md:w-4 md:h-4 text-background" />
                 )}
               </span>
             )}

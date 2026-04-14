@@ -47,7 +47,7 @@ function MapScheduleLocation({
   const isMobile = useIsMobile();
   const { t } = useTranslation("common");
 
-  // ✅ FIX: Refs para que el on("load") siempre tenga los valores actuales
+  // ✅ Refs para que on("load") siempre tenga los valores actuales
   // sin necesidad de reinicializar el mapa cuando cambian las ubicaciones.
   const multipleLocationsRef = useRef(multipleLocations);
   const locationRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -79,55 +79,138 @@ function MapScheduleLocation({
     return () => resizeObserver.disconnect();
   }, [isFullscreen]);
 
+  // ✅ Validación de coordenadas para evitar NaN/Infinity
+  const isValidCoord = (lat: number, lng: number) =>
+    typeof lat === "number" &&
+    typeof lng === "number" &&
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    isFinite(lat) &&
+    isFinite(lng);
+
   const getMapCenter = (): [number, number] => {
-    if (multipleLocations && multipleLocations.length > 0) {
-      // Filtrar ubicaciones con coordenadas válidas
-      const validLocations = multipleLocations.filter(
-        (loc) =>
-          loc &&
-          typeof loc.lat === "number" &&
-          typeof loc.lng === "number" &&
-          !isNaN(loc.lat) &&
-          !isNaN(loc.lng) &&
-          isFinite(loc.lat) &&
-          isFinite(loc.lng),
-      );
+    const locs = multipleLocationsRef.current;
+    const loc = locationRef.current ?? defaultLocation;
 
-      if (validLocations.length > 0) {
+    if (locs && locs.length > 0) {
+      const validLocs = locs.filter((l) => l && isValidCoord(l.lat, l.lng));
+      if (validLocs.length > 0) {
         const avgLat =
-          validLocations.reduce((sum, loc) => sum + loc.lat, 0) /
-          validLocations.length;
+          validLocs.reduce((sum, l) => sum + l.lat, 0) / validLocs.length;
         const avgLng =
-          validLocations.reduce((sum, loc) => sum + loc.lng, 0) /
-          validLocations.length;
-
-        // Validar que el resultado no sea NaN
-        if (
-          !isNaN(avgLat) &&
-          !isNaN(avgLng) &&
-          isFinite(avgLat) &&
-          isFinite(avgLng)
-        ) {
-          return [avgLng, avgLat];
-        }
+          validLocs.reduce((sum, l) => sum + l.lng, 0) / validLocs.length;
+        if (isValidCoord(avgLat, avgLng)) return [avgLng, avgLat];
       }
     }
 
-    // Validar ubicación por defecto
-    if (
-      !isNaN(location.lat) &&
-      !isNaN(location.lng) &&
-      isFinite(location.lat) &&
-      isFinite(location.lng)
-    ) {
-      return [location.lng, location.lat];
-    }
+    if (isValidCoord(loc.lat, loc.lng)) return [loc.lng, loc.lat];
 
-    // Retornar coordenadas por defecto si todo falla
     return [defaultLocation.lng, defaultLocation.lat];
   };
 
-  // Inicializar el mapa (solo cuando cambia el contenedor o tema)
+  // Helper: bloquea touch en el elemento del marcador
+  const lockMarkerTouch = (el: HTMLElement) => {
+    const stopTouch = (e: TouchEvent) => e.stopPropagation();
+    el.addEventListener("touchstart", stopTouch, { passive: false });
+    el.addEventListener("touchmove", stopTouch, { passive: false });
+    el.addEventListener("touchend", stopTouch, { passive: false });
+  };
+
+  // ✅ Función centralizada de markers — reutilizada tanto en on("load")
+  // como en el effect de actualización, garantizando que el pin nunca desaparezca.
+  const placeMarkers = (map: mapboxgl.Map) => {
+    // Limpiar markers anteriores
+    if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+    multipleMarkersRef.current.forEach((m) => m.remove());
+    multipleMarkersRef.current = [];
+
+    const locs = multipleLocationsRef.current;
+    const loc = locationRef.current ?? defaultLocation;
+    const mobile = isMobileRef.current;
+
+    if (locs && locs.length > 0) {
+      const validLocs = locs.filter((l) => l && isValidCoord(l.lat, l.lng));
+
+      validLocs.forEach((locItem) => {
+        const marker = new mapboxgl.Marker({
+          color: locItem.color || "#e11d48",
+          scale: mobile ? 1.2 : 1.5,
+        })
+          .setLngLat([locItem.lng, locItem.lat])
+          .addTo(map);
+
+        lockMarkerTouch(marker.getElement());
+
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+          closeOnClick: false,
+        });
+
+        marker.getElement().addEventListener("click", async () => {
+          try {
+            const parsedAddress = await ParseDominicanAddress(
+              locItem.lat,
+              locItem.lng,
+            );
+            setSelectedLocationAddress(parsedAddress);
+
+            const addressText =
+              locItem.label ||
+              [
+                parsedAddress.direccion,
+                parsedAddress.municipio,
+                parsedAddress.provincia,
+              ]
+                .filter(Boolean)
+                .join(", ");
+
+            popup
+              .setLngLat([locItem.lng, locItem.lat])
+              .setHTML(
+                `<div class="p-2 bg-white rounded-lg shadow-lg border border-gray-200">
+                  <p class="text-sm font-medium text-gray-800">${addressText}</p>
+                </div>`,
+              )
+              .addTo(map);
+          } catch (error) {
+            console.error("Error parsing address:", error);
+          }
+        });
+
+        multipleMarkersRef.current.push(marker);
+      });
+
+      if (validLocs.length > 1) {
+        const boundsKey = validLocs.map((l) => `${l.lat}:${l.lng}`).join("|");
+        if (lastBoundsKeyRef.current !== boundsKey) {
+          lastBoundsKeyRef.current = boundsKey;
+          const bounds = new mapboxgl.LngLatBounds();
+          validLocs.forEach((l) => bounds.extend([l.lng, l.lat]));
+          map.fitBounds(bounds, { padding: 50, duration: 600 });
+        }
+      }
+    } else {
+      lastBoundsKeyRef.current = "";
+      if (isValidCoord(loc.lat, loc.lng)) {
+        markerRef.current = new mapboxgl.Marker({
+          color: "#e11d48",
+          scale: mobile ? 1.2 : 1.5,
+        })
+          .setLngLat([loc.lng, loc.lat])
+          .addTo(map);
+
+        lockMarkerTouch(markerRef.current.getElement());
+      }
+    }
+  };
+
+  // ✅ Inicializar mapa — los markers se colocan dentro del on("load")
+  // para que siempre estén presentes sin importar expand/minimize.
+  // El toggle 3D ya NO reinicializa el mapa (tiene su propio effect abajo).
   useEffect(() => {
     const container = isFullscreen
       ? fullscreenContainerRef.current
@@ -142,8 +225,6 @@ function MapScheduleLocation({
         : "mapbox://styles/mapbox/streets-v12";
 
     const center = getMapCenter();
-
-    console.log("datos de ubicación:", multipleLocations);
 
     mapRef.current = new mapboxgl.Map({
       container,
@@ -173,27 +254,10 @@ function MapScheduleLocation({
 
     mapRef.current.on("load", () => {
       setisLoading(false);
-      // Si hay múltiples ubicaciones, ajustar el mapa para mostrar todas
-      if (multipleLocations && multipleLocations.length > 1) {
-        const validLocations = multipleLocations.filter(
-          (loc) =>
-            loc &&
-            typeof loc.lat === "number" &&
-            typeof loc.lng === "number" &&
-            !isNaN(loc.lat) &&
-            !isNaN(loc.lng) &&
-            isFinite(loc.lat) &&
-            isFinite(loc.lng),
-        );
 
-        if (validLocations.length > 1) {
-          const bounds = new mapboxgl.LngLatBounds();
-          validLocations.forEach((loc) => {
-            bounds.extend([loc.lng, loc.lat]);
-          });
-          mapRef.current!.fitBounds(bounds, { padding: 50 });
-        }
-      }
+      // ✅ Markers colocados aquí — siempre corren después del load,
+      // incluso al expandir/minimizar, garantizando que el pin no desaparezca.
+      placeMarkers(mapRef.current!);
     });
 
     return () => {
@@ -208,18 +272,15 @@ function MapScheduleLocation({
     };
   }, [isFullscreen, isdarkMode]);
 
-  // Manejar el cambio de vista 3D sin reinicializar el mapa
+  // ✅ Toggle 3D separado — usa easeTo para no reinicializar el mapa.
   useEffect(() => {
     if (!mapRef.current) return;
-
     const map = mapRef.current;
 
     const toggle3D = () => {
       if (is3D) {
-        // Activar vista 3D
         map.easeTo({ pitch: 60, bearing: -17.6, duration: 1000 });
 
-        // Agregar terreno 3D si no existe
         if (!map.getSource("mapbox-dem")) {
           map.addSource("mapbox-dem", {
             type: "raster-dem",
@@ -228,12 +289,9 @@ function MapScheduleLocation({
             maxzoom: 14,
           });
         }
-
         if (!map.getTerrain()) {
           map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
         }
-
-        // Agregar edificios 3D si no existen
         if (!map.getLayer("3d-buildings")) {
           map.addLayer(
             {
@@ -270,171 +328,64 @@ function MapScheduleLocation({
           );
         }
       } else {
-        // Desactivar vista 3D
         map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
-
-        // Remover terreno
-        if (map.getTerrain()) {
-          map.setTerrain(null);
-        }
-
-        // Remover edificios 3D
-        if (map.getLayer("3d-buildings")) {
-          map.removeLayer("3d-buildings");
-        }
+        if (map.getTerrain()) map.setTerrain(null);
+        if (map.getLayer("3d-buildings")) map.removeLayer("3d-buildings");
       }
     };
 
     if (map.loaded()) {
       toggle3D();
     } else {
-      map.on("load", toggle3D);
+      map.once("load", toggle3D);
     }
   }, [is3D]);
 
-  // ✅ FIX: Actualizar markers cuando cambian las ubicaciones SIN reinicializar el mapa.
-  // Solo corre si el mapa ya está cargado (no interfiere con el init effect).
+  // ✅ Actualizar markers cuando cambian las ubicaciones SIN reinicializar el mapa.
   useEffect(() => {
     if (!mapRef.current) return;
-
-    // Si el mapa todavía está cargando, el on("load") del effect de arriba
-    // ya se encargará de colocar los markers — no hay que hacer nada aquí.
     if (!mapRef.current.loaded()) return;
+    placeMarkers(mapRef.current);
+  }, [multipleLocations, location.lat, location.lng, isMobile]);
 
-    // Esperar a que el mapa esté cargado
-    const updateMarkers = () => {
-      if (multipleLocations && multipleLocations.length > 0) {
-        // Filtrar ubicaciones con coordenadas válidas
-        const validLocations = multipleLocations.filter(
-          (loc) =>
-            loc &&
-            typeof loc.lat === "number" &&
-            typeof loc.lng === "number" &&
-            !isNaN(loc.lat) &&
-            !isNaN(loc.lng) &&
-            isFinite(loc.lat) &&
-            isFinite(loc.lng),
-        );
+  // ✅ Actualizar centro y marcador único cuando cambia initialLocation (sin reinicializar).
+  useEffect(() => {
+    if (!mapRef.current || !initialLocation || multipleLocations) return;
+    if (!isValidCoord(initialLocation.lat, initialLocation.lng)) return;
 
-        // Múltiples marcadores
-        validLocations.forEach((loc) => {
-          const marker = new mapboxgl.Marker({
-            color: loc.color || "#e11d48",
-            scale: isMobile ? 1.2 : 1.5,
-          })
-            .setLngLat([loc.lng, loc.lat])
-            .addTo(mapRef.current!);
-
-          // Crear popup para mostrar información
-          const popup = new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false,
-            closeOnClick: false,
-          });
-
-          // Evento click en marcador
-          marker.getElement().addEventListener("click", async () => {
-            try {
-              const parsedAddress = await ParseDominicanAddress(
-                loc.lat,
-                loc.lng,
-              );
-              setSelectedLocationAddress(parsedAddress);
-
-              const addressText =
-                loc.label ||
-                [
-                  parsedAddress.direccion,
-                  parsedAddress.municipio,
-                  parsedAddress.provincia,
-                ]
-                  .filter(Boolean)
-                  .join(", ");
-
-              popup
-                .setLngLat([loc.lng, loc.lat])
-                .setHTML(
-                  `
-                  <div class="p-2 bg-white rounded-lg shadow-lg border border-gray-200">
-                    <p class="text-sm font-medium text-gray-800">${addressText}</p>
-                  </div>
-                `,
-                )
-                .addTo(mapRef.current!);
-            } catch (error) {
-              console.error("Error parsing address:", error);
-            }
-          });
-
-          multipleMarkersRef.current.push(marker);
-        });
-
-        // Ajustar vista si hay múltiples ubicaciones válidas
-        if (validLocations.length > 1) {
-          const bounds = new mapboxgl.LngLatBounds();
-          validLocations.forEach((loc) => {
-            bounds.extend([loc.lng, loc.lat]);
-          });
-          mapRef.current!.fitBounds(bounds, { padding: 50, duration: 1000 });
-        }
+    const update = () => {
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
       }
+      markerRef.current = new mapboxgl.Marker({
+        color: "#e11d48",
+        scale: isMobile ? 1.2 : 1.5,
+      })
+        .setLngLat([initialLocation.lng, initialLocation.lat])
+        .addTo(mapRef.current!);
+
+      mapRef.current!.easeTo({
+        center: [initialLocation.lng, initialLocation.lat],
+        zoom: isMobile ? 14 : 15,
+        duration: 800,
+      });
     };
 
     if (mapRef.current.loaded()) {
-      updateMarkers();
+      update();
     } else {
-      mapRef.current.on("load", updateMarkers);
-    }
-  }, [location, multipleLocations, isMobile]);
-
-  // Actualizar centro y marcador cuando cambia initialLocation (sin reinicializar)
-  useEffect(() => {
-    if (!mapRef.current || !initialLocation || multipleLocations) return;
-    if (
-      !isNaN(initialLocation.lat) &&
-      !isNaN(initialLocation.lng) &&
-      isFinite(initialLocation.lat) &&
-      isFinite(initialLocation.lng)
-    ) {
-      const update = () => {
-        // Limpiar marcador anterior antes de crear el nuevo
-        if (markerRef.current) {
-          markerRef.current.remove();
-          markerRef.current = null;
-        }
-
-        markerRef.current = new mapboxgl.Marker({
-          color: "#e11d48",
-          scale: isMobile ? 1.2 : 1.5,
-        })
-          .setLngLat([initialLocation.lng, initialLocation.lat])
-          .addTo(mapRef.current!);
-
-        mapRef.current!.easeTo({
-          center: [initialLocation.lng, initialLocation.lat],
-          zoom: isMobile ? 14 : 15,
-          duration: 800,
-        });
-      };
-
-      if (mapRef.current.loaded()) {
-        update();
-      } else {
-        mapRef.current.once("load", update);
-      }
+      mapRef.current.once("load", update);
     }
   }, [initialLocation?.lat, initialLocation?.lng, multipleLocations, isMobile]);
 
-  // Parsear dirección cuando cambia la ubicación (solo para ubicación única)
+  // Parsear dirección para ubicación única
   useEffect(() => {
     if (
       initialLocation &&
       !multipleLocations &&
       showAddressInfo &&
-      !isNaN(location.lat) &&
-      !isNaN(location.lng) &&
-      isFinite(location.lat) &&
-      isFinite(location.lng)
+      isValidCoord(location.lat, location.lng)
     ) {
       ParseDominicanAddress(location.lat, location.lng)
         .then((parsedAddress) => {
@@ -521,6 +472,7 @@ function MapScheduleLocation({
       <AnimatePresence>
         {isFullscreen && (
           <motion.div
+            key="map-fullscreen"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -630,6 +582,7 @@ function MapScheduleLocation({
       <AnimatePresence>
         {!isFullscreen && (
           <motion.div
+            key="map-normal"
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
@@ -708,6 +661,7 @@ function MapScheduleLocation({
 
         {!isFullscreen && (
           <SelectedAddressBadge
+            key="map-selected-address-badge"
             addressData={selectedLocationAddress}
             fullscreen={false}
           />
@@ -715,6 +669,7 @@ function MapScheduleLocation({
 
         {showAddressInfo && !multipleLocations && (
           <div
+            key="map-address-info"
             className={`flex ${
               isMobile ? "flex-wrap gap-4 justify-between" : "justify-between"
             } mt-4`}

@@ -3,7 +3,6 @@ import { ChatAvatar } from "./ChatAvatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 
 interface ChatListItemProps {
@@ -31,8 +30,8 @@ const formatRelativeTime = (timestamp: string): string => {
  */
 const getMessagePreview = (conversation: ConversationWithDetails): string => {
   const { ultimoMensaje } = conversation;
-  const { t, i18n } = useTranslation("common");
-  
+  const { t } = useTranslation("common");
+
   if (!ultimoMensaje) {
     return t("chat.chatListItem.noMessages") || "Sin mensajes aún";
   }
@@ -69,8 +68,8 @@ export function ChatListItem({
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2 md:gap-3 p-3 md:p-4 text-left transition-colors hover:bg-accent/45 rounded-2xl md:rounded-3xl relative",
-        isActive && "bg-accent/75",
+        "w-full flex items-center gap-2 md:gap-3 p-3 md:p-4 text-left transition-colors hover:bg-primary/5 rounded-2xl md:rounded-3xl relative",
+        isActive && "bg-primary/10",
       )}
     >
       <ChatAvatar
@@ -79,13 +78,15 @@ export function ChatListItem({
         size="md"
         isOnline={otroUsuario.conectado}
       />
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <h3
             className={cn(
               "text-sm md:text-base truncate",
-              hasUnread ? "font-bold text-foreground" : "font-semibold text-foreground"
+              hasUnread
+                ? "font-bold text-foreground"
+                : "font-semibold text-foreground",
             )}
           >
             {userName}
@@ -94,17 +95,19 @@ export function ChatListItem({
             {formatRelativeTime(lastMessageTime)}
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between gap-2 mt-0.5">
           <p
             className={cn(
               "text-xs md:text-sm truncate",
-              hasUnread ? "font-medium text-foreground" : "text-muted-foreground"
+              hasUnread
+                ? "font-medium text-foreground"
+                : "text-muted-foreground",
             )}
           >
             {getMessagePreview(conversation)}
           </p>
-          
+
           {hasUnread && (
             <span className="flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
               {mensajesNoLeidos > 99 ? "99+" : mensajesNoLeidos}
