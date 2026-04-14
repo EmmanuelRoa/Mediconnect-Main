@@ -97,12 +97,7 @@ const ubicacionesService = {
     }
   },
 
-  async getSecciones(
-    params: any,
-    newSeccionesParams:
-      | { idDistrito: string; idMunicipio?: undefined }
-      | { idMunicipio: string; idDistrito?: undefined },
-  ): Promise<SelectOption[]> {
+  async getSecciones(_language: string, params: any): Promise<SelectOption[]> {
     if (!params) return [];
 
     try {

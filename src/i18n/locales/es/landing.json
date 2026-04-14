@@ -233,10 +233,19 @@
     "namePlaceholder": "Nombre Completo",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "Correo electrónico",
+    "subjectLabel": "Asunto",
+    "subjectPlaceholder": "Escribe el asunto",
     "messageLabel": "Mensaje",
     "messagePlaceholder": "Escriba su mensaje aquí...",
     "submit": "Enviar Ahora",
+    "sending": "Cargando...",
     "success": "¡Mensaje enviado correctamente!"
+  },
+  "toasts": {
+    "contactSuccess": "Mensaje enviado correctamente. Revisa tu correo de confirmación.",
+    "contactError": "No se pudo enviar el mensaje.",
+    "newsletterSuccess": "Suscripción al newsletter completada.",
+    "newsletterError": "No se pudo suscribir el correo."
   },
   "footer": {
     "quickLinks": [

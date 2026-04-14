@@ -232,10 +232,19 @@
     "namePlaceholder": "Full Name",
     "emailLabel": "Email",
     "emailPlaceholder": "Email",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Write the subject",
     "messageLabel": "Message",
     "messagePlaceholder": "Write your message here...",
     "submit": "Send Now",
+    "sending": "Loading...",
     "success": "Message sent successfully!"
+  },
+  "toasts": {
+    "contactSuccess": "Message sent successfully. Check your confirmation email.",
+    "contactError": "Message could not be sent.",
+    "newsletterSuccess": "Newsletter subscription completed.",
+    "newsletterError": "Email subscription could not be completed."
   },
   "footer": {
     "quickLinks": [

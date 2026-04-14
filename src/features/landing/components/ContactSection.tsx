@@ -11,8 +11,10 @@ import { contactSchema } from "@/schema/landingSchema";
 
 import { useTranslation } from "react-i18next";
 import { useLandingStore } from "@/stores/useLandingPage";
+import { useLanding } from "@/features/landing/hooks/UseLanding";
 
 import { clSrcSet, clCard } from "@/utils/cloudinary";
+import { Loader2 } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,11 +27,14 @@ function ContactSection() {
 
   const isMobile = useIsMobile();
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const { t } = useTranslation("landing");
 
   // Definimos la URL base de la imagen
   const contactImageUrl =
     "https://res.cloudinary.com/dy2wtanhl/image/upload/v1774849256/InfoContainer_wggqmi.png";
+
+  const { sendContact, isSendingContact } = useLanding();
 
   useGSAP(
     () => {
@@ -149,12 +154,37 @@ function ContactSection() {
     { scope: containerRef, dependencies: [isMobile, hasAnimated] },
   );
 
-  const handleSubmit = () => {
-    alert("¡Mensaje enviado correctamente!");
+  const setContactForm = useLandingStore((state) => state.setContactForm);
+  const resetLandingForms = useLandingStore((state) => state.resetLandingForms);
+
+  const handleSubmit = async () => {
+    try {
+      await sendContact({
+        name: contactForm.name,
+        email: contactForm.email,
+        subject: contactForm.subject,
+        message: contactForm.message,
+      });
+
+      // Reset explícito del formulario de contacto
+      setContactForm({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+
+      // Reset global (contact + newsletter)
+      resetLandingForms();
+
+      // Fuerza remonte del RHF wrapper para limpiar valores internos
+      setFormKey((prev) => prev + 1);
+    } catch {
+      // toast error lo maneja useLanding
+    }
   };
 
   const contactForm = useLandingStore((state) => state.contactForm);
-  const setContactForm = useLandingStore((state) => state.setContactForm);
 
   return (
     <section id="contact" className="w-full">
@@ -226,10 +256,12 @@ function ContactSection() {
                     {t("contacts.title")}
                   </h2>
                   <MCFormWrapper
+                    key={formKey}
                     schema={contactSchema}
                     defaultValues={{
                       name: contactForm.name,
                       email: contactForm.email,
+                      subject: contactForm.subject,
                       message: contactForm.message,
                     }}
                     onSubmit={handleSubmit}
@@ -266,6 +298,21 @@ function ContactSection() {
                           required
                         />
                       </div>
+                      <div className="animate-item md:col-span-2">
+                        <MCInput
+                          name="subject"
+                          label={t("contacts.subjectLabel")}
+                          placeholder={t("contacts.subjectPlaceholder")}
+                          value={contactForm.subject}
+                          onChange={(e) =>
+                            setContactForm({
+                              ...contactForm,
+                              subject: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="animate-item">
                       <MCTextArea
@@ -290,10 +337,19 @@ function ContactSection() {
                         disabled={
                           !contactForm.name ||
                           !contactForm.email ||
-                          !contactForm.message
+                          !contactForm.subject ||
+                          !contactForm.message ||
+                          isSendingContact
                         }
                       >
-                        {t("contacts.submit")}
+                        {isSendingContact ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t("contacts.sending", "Cargando...")}
+                          </span>
+                        ) : (
+                          t("contacts.submit")
+                        )}
                       </MediButton>
                     </div>
                   </MCFormWrapper>

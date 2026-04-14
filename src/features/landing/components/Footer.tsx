@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import MediButton from "@/shared/components/landing/MediButton";
 import MCInput from "@/shared/components/forms/MCInput";
@@ -7,11 +7,12 @@ import { newsletterSchema } from "@/schema/landingSchema";
 
 import { useLandingStore } from "@/stores/useLandingPage";
 import { cl } from "@/utils/cloudinary";
+import { useLanding } from "@/features/landing/hooks/UseLanding";
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
+import { Loader2 } from "lucide-react";
 gsap.registerPlugin(ScrollTrigger);
 
 const Footer = () => {
@@ -20,7 +21,9 @@ const Footer = () => {
   const newsletterForm = useLandingStore((state) => state.newsletterForm);
   const setNewsletterForm = useLandingStore((state) => state.setNewsletterForm);
 
-  // Refs for animations
+  const { sendNewsletter, isSendingNewsletter } = useLanding();
+  const [formKey, setFormKey] = useState(0);
+
   const containerRef = useRef(null);
   const brandRef = useRef(null);
   const quickLinksRef = useRef(null);
@@ -29,7 +32,6 @@ const Footer = () => {
 
   useGSAP(
     () => {
-      // Brand section animation
       gsap.fromTo(
         brandRef.current,
         {
@@ -115,8 +117,18 @@ const Footer = () => {
     { scope: containerRef },
   );
 
-  const handleSubmit = () => {
-    setNewsletterForm({ email: "" });
+  const handleSubmit = async () => {
+    try {
+      await sendNewsletter({ email: newsletterForm.email });
+
+      // Limpia store
+      setNewsletterForm({ email: "" });
+
+      // Fuerza remount del form (limpia RHF interno)
+      setFormKey((prev) => prev + 1);
+    } catch {
+      // toast error se maneja en useLanding
+    }
   };
 
   const footerLogo = cl(
@@ -170,6 +182,7 @@ const Footer = () => {
               {/* Newsletter Form */}
               <div className="w-full">
                 <MCFormWrapper
+                  key={formKey}
                   onSubmit={handleSubmit}
                   schema={newsletterSchema}
                   defaultValues={{ email: newsletterForm.email }}
@@ -192,10 +205,18 @@ const Footer = () => {
                     <div className="w-full sm:w-auto">
                       <MediButton
                         type="submit"
-                        className="bg-accent text-primary h-12 sm:h-[52px] text-sm sm:text-base flex items-center justify-center shadow transition-all duration-300 w-full sm:w-auto sm:min-w-[140px] hover:scale-105 hover:shadow-lg hover:bg-accent/90 rounded-full "
+                        className="bg-accent text-primary h-12 sm:h-[52px] text-sm sm:text-base flex items-center justify-center shadow transition-all duration-300 w-full sm:w-auto sm:min-w-[140px] hover:scale-105 hover:shadow-lg hover:bg-accent/90 rounded-full"
                         aria-label="Enviar"
+                        disabled={!newsletterForm.email || isSendingNewsletter}
                       >
-                        {t("footer.newsletterBtn")}
+                        {isSendingNewsletter ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t("footer.sending", "Cargando...")}
+                          </span>
+                        ) : (
+                          t("footer.newsletterBtn")
+                        )}
                       </MediButton>
                     </div>
                   </div>

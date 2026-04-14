@@ -3,6 +3,7 @@ import { create } from "zustand";
 type ContactForm = {
   name: string;
   email: string;
+  subject: string;
   message: string;
 };
 
@@ -26,6 +27,7 @@ type LandingState = {
 const initialContactForm: ContactForm = {
   name: "",
   email: "",
+  subject: "",
   message: "",
 };
 
