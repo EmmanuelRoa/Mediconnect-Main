@@ -45,6 +45,7 @@
     "@turf/bbox": "^7.3.4",
     "@turf/boolean-point-in-polygon": "^7.3.4",
     "@types/dompurify": "^3.0.5",
+    "@vercel/analytics": "^2.0.1",
     "axios": "^1.13.5",
     "blendy": "^0.0.1",
     "boring-avatars": "^2.0.4",

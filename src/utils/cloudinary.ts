@@ -43,8 +43,6 @@ export function cl(url: string, options: CloudinaryOptions = {}): string {
     quality = "auto:good",
     format = "auto",
     fit = "fill",
-    // ↓ No default sharpen — opt-in only. Avoids an extra server-side pass
-    //   on images that don't need it (logos, icons, already-sharp photos).
     sharpen,
     progressive = true,
     immutable = false,
@@ -105,16 +103,12 @@ export function clSrcSet(
 export const clCard = (url: string) =>
   cl(url, { width: 800, quality: "auto:good", sharpen: 40 });
 
-/**
- * Card srcset — pair with sizes="(max-width: 640px) 100vw, 50vw"
- * Covers 1x/2x on mobile through desktop without over-fetching.
- */
 export const clCardSrcSet = (url: string) =>
   clSrcSet(url, [400, 800, 1200], { quality: "auto:good", sharpen: 40 });
 
 /** Full-screen hero */
 export const clHero = (url: string) =>
-  cl(url, { width: 1920, quality: "auto:good", sharpen: 30 });
+  cl(url, { width: 1920, quality: "auto:best", sharpen: 30 });
 
 export const clHeroSrcSet = (url: string) =>
   clSrcSet(url, [768, 1280, 1920], { quality: "auto:good", sharpen: 30 });

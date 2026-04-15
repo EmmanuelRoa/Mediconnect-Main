@@ -267,7 +267,7 @@ function ContactSection() {
                     onSubmit={handleSubmit}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="animate-item">
+                      <div className="animate-item [&_input]:h-11 [&_input]:text-[15px]">
                         <MCInput
                           name="name"
                           label={t("contacts.nameLabel")}
@@ -282,7 +282,7 @@ function ContactSection() {
                           required
                         />
                       </div>
-                      <div className="animate-item">
+                      <div className="animate-item [&_input]:h-11 [&_input]:text-[15px]">
                         <MCInput
                           name="email"
                           label={t("contacts.emailLabel")}
@@ -298,7 +298,7 @@ function ContactSection() {
                           required
                         />
                       </div>
-                      <div className="animate-item md:col-span-2">
+                      <div className="animate-item md:col-span-2 [&_input]:h-11 [&_input]:text-[15px]">
                         <MCInput
                           name="subject"
                           label={t("contacts.subjectLabel")}
@@ -314,12 +314,17 @@ function ContactSection() {
                         />
                       </div>
                     </div>
+
                     <div className="animate-item">
                       <MCTextArea
                         name="message"
                         label={t("contacts.messageLabel")}
                         placeholder={t("contacts.messagePlaceholder")}
-                        className={isMobile ? "h-[100px]" : "h-[150px]"}
+                        className={
+                          isMobile
+                            ? "h-[110px] text-[15px]"
+                            : "h-[130px] text-[15px]"
+                        }
                         value={contactForm.message}
                         onChange={(e) =>
                           setContactForm({
@@ -330,6 +335,7 @@ function ContactSection() {
                         required
                       />
                     </div>
+
                     <div className="animate-item pt-2">
                       <MediButton
                         type="submit"
