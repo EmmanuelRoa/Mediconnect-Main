@@ -15,7 +15,7 @@ const ChatPage = () => {
 
   // Hooks de datos
   const { conversations, isLoading } = useConversations();
-  const { isConnected } = useWebSocket();
+  useWebSocket(); // mantiene la conexión/suscripción sin declarar variables no usadas
 
   // Estado local de UI
   const [sidebarOpen, setSidebarOpen] = useState(true);

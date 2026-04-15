@@ -376,9 +376,6 @@ function Search() {
   const { t } = useTranslation("common");
   const { i18n } = useTranslation();
   const isMobile = useIsMobile();
-  const [locationPermission, setLocationPermission] = useState<
-    "unknown" | "granted" | "denied"
-  >("unknown");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
@@ -426,7 +423,6 @@ function Search() {
   // Handle geolocation
   useEffect(() => {
     if (!("geolocation" in navigator)) {
-      setLocationPermission("denied");
       console.warn("Geolocalización no soportada por el navegador.");
       return;
     }
@@ -438,13 +434,10 @@ function Search() {
           lng: position.coords.longitude,
         };
         setCoords(p);
-        setLocationPermission("granted");
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
-          setLocationPermission("denied");
         } else {
-          setLocationPermission("denied");
         }
         console.warn("Error obteniendo ubicación:", error);
       },
