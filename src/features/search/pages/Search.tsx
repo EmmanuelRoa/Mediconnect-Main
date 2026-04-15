@@ -30,6 +30,7 @@ import { useSearchDoctors } from "../hooks/useSearchDoctors";
 import { useDoctorAllianceRequest } from "../hooks/useDoctorAllianceRequest";
 import { useDoctorAllianceDelete } from "../hooks/useDoctorAllianceDelete";
 import { toast } from "sonner";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface SearchProviderFilters {
   name: string;
@@ -86,6 +87,7 @@ const ProviderCard = memo(
   }) => {
 
     if (provider.type === "doctor") {
+      console.log("Rendering DoctorCard for:", provider);
       return (
         <DoctorCards
           doctor={provider as Doctor}
@@ -96,6 +98,8 @@ const ProviderCard = memo(
             (provider as Doctor).connectionStatus ?? "not_connected"
           }
           onConnect={onConnect || (() => { })}
+          onDisconnect={onDisconnect}
+          isConnecting={isConnecting}
         />
       );
     } else {
@@ -369,12 +373,16 @@ DesktopFilters.displayName = "DesktopFilters";
 function Search() {
   const { t } = useTranslation("common");
   const { i18n } = useTranslation();
+  const userRole = useAppStore((state) => state.user?.rol);
   const isMobile = useIsMobile();
   const [locationPermission, setLocationPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [optimisticCenterStatuses, setOptimisticCenterStatuses] = useState<
+    Record<string, "connected" | "not_connected" | "pending">
+  >({});
+  const [optimisticDoctorStatuses, setOptimisticDoctorStatuses] = useState<
     Record<string, "connected" | "not_connected" | "pending">
   >({});
   const [searchFilters, setSearchFilters] = useState<SearchProviderFilters>({
@@ -607,14 +615,87 @@ function Search() {
     [deleteAllianceMutation, filteredProviders],
   );
 
+  const handleConnectDoctor = useCallback(
+    async (id: string, message?: string) => {
+      const destinatarioId = Number(id);
+      const allianceMessage = (message ?? "").trim();
+
+      if (!Number.isFinite(destinatarioId) || allianceMessage.length < 10) {
+        return;
+      }
+
+      setOptimisticDoctorStatuses((prev) => ({
+        ...prev,
+        [id]: "pending",
+      }));
+
+      try {
+        await allianceMutation.mutateAsync({
+          destinatarioId,
+          mensaje: allianceMessage,
+        });
+      } catch {
+        setOptimisticDoctorStatuses((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    },
+    [allianceMutation],
+  );
+
+  const handleDisconnectDoctor = useCallback(
+    async (id: string) => {
+      const doctorProvider = filteredProviders.find(
+        (provider) => provider.type === "doctor" && provider.id === id,
+      ) as (Doctor & {
+        _rawDoctor?: {
+          solicitudAlianzaId?: number;
+          solicitudId?: number;
+          idSolicitudAlianza?: number;
+          allianceRequestId?: number;
+        };
+      }) | undefined;
+
+      const rawDoctor = doctorProvider?._rawDoctor;
+      const allianceRequestId =
+        rawDoctor?.solicitudAlianzaId ??
+        rawDoctor?.solicitudId ??
+        rawDoctor?.idSolicitudAlianza ??
+        rawDoctor?.allianceRequestId;
+
+      if (!allianceRequestId) {
+        toast.error("No se encontró la solicitud de alianza para este doctor.");
+        return;
+      }
+
+      setOptimisticDoctorStatuses((prev) => ({
+        ...prev,
+        [id]: "not_connected",
+      }));
+
+      try {
+        await deleteAllianceMutation.mutateAsync(allianceRequestId);
+      } catch {
+        setOptimisticDoctorStatuses((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    },
+    [deleteAllianceMutation, filteredProviders],
+  );
+
   const providersWithOptimisticStatus = useMemo(
     () =>
       filteredProviders.map((provider) => {
-        if (provider.type !== "clinic") {
-          return provider;
-        }
+        const optimisticStatus =
+          provider.type === "clinic"
+            ? optimisticCenterStatuses[provider.id]
+            : optimisticDoctorStatuses[provider.id];
 
-        const optimisticStatus = optimisticCenterStatuses[provider.id];
         if (!optimisticStatus) {
           return provider;
         }
@@ -624,7 +705,7 @@ function Search() {
           connectionStatus: optimisticStatus,
         };
       }),
-    [filteredProviders, optimisticCenterStatuses],
+    [filteredProviders, optimisticCenterStatuses, optimisticDoctorStatuses],
   );
 
   const selectedProvidersData = useMemo(
@@ -733,10 +814,18 @@ function Search() {
                     onSelect={handleProviderSelect}
                     onViewProfile={handleViewProfile}
                     onConnect={
-                      provider.type === "clinic" ? handleConnectCenter : undefined
+                      provider.type === "clinic"
+                        ? handleConnectCenter
+                        : userRole === "CENTER"
+                          ? handleConnectDoctor
+                          : undefined
                     }
                     onDisconnect={
-                      provider.type === "clinic" ? handleDisconnectCenter : undefined
+                      provider.type === "clinic"
+                        ? handleDisconnectCenter
+                        : userRole === "CENTER"
+                          ? handleDisconnectDoctor
+                          : undefined
                     }
                     isConnecting={allianceMutation.isPending || deleteAllianceMutation.isPending}
                   />

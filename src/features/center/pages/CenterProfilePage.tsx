@@ -583,7 +583,7 @@ function CenterProfilePage() {
           {isMobile ? (
             <CenterProfileBannerMobile
               center={center}
-              setOpenSheet={setOpenSheet}
+              setOpenSheet={isMyProfile ? setOpenSheet : undefined}
               isConnected={effectiveCenterConnection.status}
               onConnect={handleConnectToCenter}
               onDisconnect={handleDisconnectFromCenter}
@@ -592,7 +592,7 @@ function CenterProfilePage() {
           ) : (
             <CenterProfileBanner
               center={center}
-              setOpenSheet={setOpenSheet}
+              setOpenSheet={isMyProfile ? setOpenSheet : undefined}
               isConnected={effectiveCenterConnection.status}
               onConnect={handleConnectToCenter}
               onDisconnect={handleDisconnectFromCenter}

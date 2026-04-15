@@ -12,6 +12,9 @@ import { formatPhone } from "@/utils/phoneFormat";
 
 import ToogleConfirmConnection from "@/features/request/components/ToogleConfirmConnection";
 
+const DEFAULT_CENTER_IMAGE =
+  "https://i.pinimg.com/736x/2c/bb/0e/2cbb0ee6c1c55b1041642128c902dadd.jpg";
+
 interface ClinicCardProps {
   clinic: Clinic;
   isConnected: "connected" | "not_connected" | "pending";
@@ -89,7 +92,7 @@ const CenterCardsComponent = ({
           )}
         >
           <img
-            src={clinic.image}
+            src={clinic.image || DEFAULT_CENTER_IMAGE}
             alt={clinic.name}
             className="w-30 h-full md:w-45 md:h-full object-cover transition-transform duration-500 hover:scale-110"
           />

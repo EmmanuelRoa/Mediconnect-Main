@@ -613,6 +613,9 @@ export interface DoctorNearbySeguro {
  */
 export interface DoctorNearby {
   usuarioId: number;
+  estaConectado?: boolean;
+  estadoAlianza?: string;
+  solicitudAlianzaId?: number;
   nombre: string;
   apellido: string;
   tipoDocIdentificacion: string;
@@ -892,7 +895,7 @@ export interface ServiceDetailResena {
       fotoPerfil?: string;
     };
   };
-}
+} 
 
 export interface ServiceDetail {
   id: number;

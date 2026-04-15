@@ -30,6 +30,8 @@ interface DoctorCardsProps {
   onViewProfile: (id: string) => void;
   connectionStatus?: "connected" | "not_connected" | "pending";
   onConnect?: (id: string, message?: string) => void;
+  onDisconnect?: (id: string) => void;
+  isConnecting?: boolean;
 }
 
 const DoctorCardsComponent = ({
@@ -39,6 +41,8 @@ const DoctorCardsComponent = ({
   onViewProfile,
   connectionStatus = "not_connected",
   onConnect,
+  onDisconnect,
+  isConnecting = false,
 }: DoctorCardsProps) => {
   const userRole = useAppStore((state) => state.user?.rol);
   const [isFavorite, setIsFavorite] = useState(doctor.isFavorite ?? false);
@@ -94,8 +98,12 @@ const DoctorCardsComponent = ({
     }
   };
 
-  const handleConfirmConnect = () => {
-    onConnect?.(doctor.id);
+  const handleConfirmConnect = (message?: string) => {
+    onConnect?.(doctor.id, message);
+  };
+
+  const handleConfirmDisconnect = () => {
+    onDisconnect?.(doctor.id);
   };
 
   // Texto y estado del botón de conexión
@@ -597,29 +605,51 @@ const DoctorCardsComponent = ({
           >
             {userRole === "CENTER" ? (
               <>
-                <ToogleConfirmConnection
-                  status={connectionStatus}
-                  id={parseInt(doctor.id)}
-                  onConfirm={handleConfirmConnect}
-                >
-                  <MCButton
-                    variant={connectVariant}
-                    size={isMobile ? "xs" : "sm"}
-                    className={cn(
-                      "flex-1 w-full",
-                      isMobile && "text-xs px-2",
-                      connectionStatus === "connected" &&
-                        "bg-secondary hover:bg-secondary/90 text-white border-none active:bg-secondary/80",
-                      connectionStatus === "not_connected" &&
-                        "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
-                      connectionStatus === "pending" &&
-                        "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
-                    )}
-                    disabled={connectBtnDisabled}
+                {connectionStatus === "not_connected" ? (
+                  <ToogleConfirmConnection
+                    status={connectionStatus}
+                    id={parseInt(doctor.id, 10)}
+                    onConfirm={handleConfirmConnect}
+                    isSubmitting={isConnecting}
+                    enableMessageInput
                   >
-                    {connectBtnText}
-                  </MCButton>
-                </ToogleConfirmConnection>
+                    <MCButton
+                      variant={connectVariant}
+                      size={isMobile ? "xs" : "sm"}
+                      className={cn(
+                        "flex-1 w-full",
+                        isMobile && "text-xs px-2",
+                        "border-secondary text-secondary hover:bg-secondary/10 hover:border-secondary/80 active:bg-secondary/20",
+                      )}
+                      disabled={connectBtnDisabled || isConnecting}
+                    >
+                      {connectBtnText}
+                    </MCButton>
+                  </ToogleConfirmConnection>
+                ) : (
+                  <ToogleConfirmConnection
+                    status={connectionStatus}
+                    id={parseInt(doctor.id, 10)}
+                    onConfirm={connectionStatus === "connected" ? handleConfirmDisconnect : undefined}
+                    isSubmitting={isConnecting}
+                  >
+                    <MCButton
+                      variant={connectVariant}
+                      size={isMobile ? "xs" : "sm"}
+                      className={cn(
+                        "flex-1 w-full",
+                        isMobile && "text-xs px-2",
+                        connectionStatus === "connected" &&
+                          "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-400 dark:text-emerald-300 dark:bg-emerald-950/30",
+                        connectionStatus === "pending" &&
+                          "border-gray-300 text-gray-500 bg-gray-100 cursor-not-allowed",
+                      )}
+                      disabled={connectBtnDisabled || isConnecting}
+                    >
+                      {connectBtnText}
+                    </MCButton>
+                  </ToogleConfirmConnection>
+                )}
                 <MCButton
                   variant="outline"
                   size={isMobile ? "xs" : "sm"}
