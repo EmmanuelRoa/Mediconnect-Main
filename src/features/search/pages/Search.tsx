@@ -795,16 +795,6 @@ function Search() {
                 selectedProviders={selectedProviders}
                 onProviderSelect={handleProviderSelect}
               />
-              {locationPermission === "denied" && (
-                <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
-                  <div className="pointer-events-auto bg-yellow-50 border border-yellow-400 text-yellow-900 px-4 py-2 rounded max-w-lg mx-4 text-center">
-                    {t(
-                      "search.locationWarning",
-                      "Debe permitir el acceso a la ubicación para listar los servicios por cercanía.",
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         </div>
