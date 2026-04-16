@@ -11,6 +11,9 @@ import centeren from "@/i18n/locales/en/center.json";
 import centeres from "@/i18n/locales/es/center.json";
 import commonen from "@/i18n/locales/en/common.json";
 import comunes from "@/i18n/locales/es/common.json";
+import landen from "@/i18n/locales/en/landing.json"; // <-- Importa landing en inglés
+// Si tienes landing.json en español, impórtalo también:
+import landes from "@/i18n/locales/es/landing.json";
 
 const normalizeLanguageCode = (language?: string): "en" | "es" =>
   language?.toLowerCase().startsWith("es") ? "es" : "en";
@@ -25,7 +28,7 @@ i18n
     load: "languageOnly",
     cleanCode: true,
     lowerCaseLng: true,
-    ns: ["auth", "patient", "doctor", "center", "common"],
+    ns: ["auth", "patient", "doctor", "center", "common", "landing"],
     defaultNS: "auth",
     detection: {
       convertDetectedLanguage: (lng: string) => normalizeLanguageCode(lng),
@@ -37,6 +40,7 @@ i18n
         doctor: doctoren,
         center: centeren,
         common: commonen,
+        landing: landen, // <-- Agrega landing
       },
       es: {
         auth: authes,
@@ -44,6 +48,7 @@ i18n
         doctor: doctores,
         center: centeres,
         common: comunes,
+        landing: landes, // <-- Descomenta si tienes landing.json en español
       },
     },
   })

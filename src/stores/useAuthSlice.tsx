@@ -51,7 +51,7 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set, get) => ({
       user: null,
       isAuthenticated: false,
     });
-    
+
     // Limpiar también el AuthFlowSlice si existe
     const state = get() as any;
     if (state.clearAuthFlow) {

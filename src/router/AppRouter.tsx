@@ -80,14 +80,18 @@ import ProfileVisibilityPage from "@/features/account/privacy/pages/ProfileVisib
 import BlockedUsersPage from "@/features/account/privacy/pages/BlockedUsersPage";
 import MessagesPrivacyPage from "@/features/account/privacy/pages/MessagesPrivacyPage";
 
+//Landing page
+import LandingPage from "@/features/landing/pages/LandingPage";
 function AppRouter() {
   const userRole = useAppStore((state) => state.user?.rol);
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Router>
+        {/* Landing Page as Initial Route */}
+        <Route path={"/"} index element={<LandingPage />} />
         {/* Public Routes */}
-        <Route path={ROUTES.LOGIN} index element={<Login />} />
+        <Route path={ROUTES.LOGIN} element={<Login />} />
 
         {/* Auth Layout Routes */}
         <Route element={<AuthLayout />}>

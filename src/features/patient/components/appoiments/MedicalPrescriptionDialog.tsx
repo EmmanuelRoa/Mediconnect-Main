@@ -192,7 +192,7 @@ function MedicalPrescriptionDialog({
 
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-  
+
   const [fetchedHistoryItem, setFetchedHistoryItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const user = useAppStore((state) => state.user);
@@ -201,7 +201,9 @@ function MedicalPrescriptionDialog({
 
   const historyItem = initialHistoryItem || fetchedHistoryItem;
   const diagnosisHtml = useMemo(() => {
-    const normalized = normalizeDiagnosisHtml(historyItem?.descripcion_diagnostico);
+    const normalized = normalizeDiagnosisHtml(
+      historyItem?.descripcion_diagnostico,
+    );
     return DOMPurify.sanitize(normalized);
   }, [historyItem?.descripcion_diagnostico]);
 
@@ -213,13 +215,20 @@ function MedicalPrescriptionDialog({
   useEffect(() => {
     const fetchHistory = async () => {
       const canFetchHistory = isPatientRole || !!patientId;
-      if (isOpen && canFetchHistory && !initialHistoryItem && !fetchedHistoryItem && !loading) {
+      if (
+        isOpen &&
+        canFetchHistory &&
+        !initialHistoryItem &&
+        !fetchedHistoryItem &&
+        !loading
+      ) {
         setLoading(true);
         try {
           const params = {
             pagina: 1,
             limite: 1,
-            translate_fields: "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
+            translate_fields:
+              "nombre_diagnostico,descripcion_diagnostico,modalidad,nombre,descripcion,motivoCancelacion,motivoConsulta,comentario",
             target: i18n.language === "es" ? "es" : "en",
             source: i18n.language === "es" ? "en" : "es",
           };
@@ -230,9 +239,16 @@ function MedicalPrescriptionDialog({
             response = await getHistorialSelf(params);
           } else {
             if (resolvedPatientId === undefined) return;
-            response = await getHistorialByPacienteId(resolvedPatientId, params);
+            response = await getHistorialByPacienteId(
+              resolvedPatientId,
+              params,
+            );
           }
-          if (response?.success && Array.isArray(response.data) && response.data.length > 0) {
+          if (
+            response?.success &&
+            Array.isArray(response.data) &&
+            response.data.length > 0
+          ) {
             setFetchedHistoryItem(response.data[0]);
           }
         } catch (error) {
@@ -258,23 +274,37 @@ function MedicalPrescriptionDialog({
     if (!historyItem) return;
 
     const pdfData = {
-      service: historyItem.cita?.servicio?.nombre || historyItem.nombre_diagnostico || "Consulta Médica",
+      service:
+        historyItem.cita?.servicio?.nombre ||
+        historyItem.nombre_diagnostico ||
+        "Consulta Médica",
       specialty: historyItem.cita?.servicio?.especialidad?.nombre || "-",
       date: historyItem.cita?.fechaFin || "-",
-      time: historyItem.cita ? `${formatTimeTo12h(historyItem.cita.horaInicio)} - ${formatTimeTo12h(historyItem.cita.horaFin)}` : "-",
-      price: historyItem.cita ? formatCurrency(historyItem.cita.totalAPagar) : "-",
+      time: historyItem.cita
+        ? `${formatTimeTo12h(historyItem.cita.horaInicio)} - ${formatTimeTo12h(historyItem.cita.horaFin)}`
+        : "-",
+      price: historyItem.cita
+        ? formatCurrency(historyItem.cita.totalAPagar)
+        : "-",
       numberOfPatients: historyItem.cita?.numPacientes || 1,
       modality: historyItem.cita?.modalidad || "-",
       location: historyItem.cita?.ubicacion?.nombre || "-",
       diagnosis: historyItem.nombre_diagnostico || "-",
       observations: diagnosisHtml || "-",
-      documents: historyItem.adjuntos?.map((adjunto: any) => adjunto.media?.archivo) || [],
+      documents:
+        historyItem.adjuntos?.map((adjunto: any) => adjunto.media?.archivo) ||
+        [],
       insurance: historyItem.cita?.seguro?.nombre || "-",
-      doctorName: historyItem.cita?.doctor ? `${historyItem.cita.doctor.nombre} ${historyItem.cita.doctor.apellido}` : "-",
-      doctorSpecialty: historyItem.cita?.doctor?.especialidades
-        ?.map((e: any) => e.especialidades?.nombre)
-        .join(", ") || "-",
-      patientName: historyItem.cita?.paciente ? `${historyItem.cita.paciente.nombre} ${historyItem.cita.paciente.apellido}` : "-",
+      doctorName: historyItem.cita?.doctor
+        ? `${historyItem.cita.doctor.nombre} ${historyItem.cita.doctor.apellido}`
+        : "-",
+      doctorSpecialty:
+        historyItem.cita?.doctor?.especialidades
+          ?.map((e: any) => e.especialidades?.nombre)
+          .join(", ") || "-",
+      patientName: historyItem.cita?.paciente
+        ? `${historyItem.cita.paciente.nombre} ${historyItem.cita.paciente.apellido}`
+        : "-",
       viewerRole: userRole,
       fileName: `receta-medica-${historyItem.cita?.id}-${historyItem.id}`,
       language: "es" as const,
@@ -309,7 +339,14 @@ function MedicalPrescriptionDialog({
         },
       });
     } else {
-      triggerElem = <span onClick={() => setInternalIsOpen(true)} className="cursor-pointer">{children}</span>;
+      triggerElem = (
+        <span
+          onClick={() => setInternalIsOpen(true)}
+          className="cursor-pointer"
+        >
+          {children}
+        </span>
+      );
     }
   }
 

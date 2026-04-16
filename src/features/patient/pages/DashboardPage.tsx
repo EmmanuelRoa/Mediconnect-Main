@@ -11,10 +11,19 @@ import { motion } from "framer-motion";
 import { fadeInUp } from "@/lib/animations/commonAnimations";
 import { useState, useEffect, useCallback } from "react";
 import { useAppStore } from "@/stores/useAppStore";
-import { calculatePatientBMI, getPatientAge, getPatientBloodType, getPatientWeight, getPatientHeight } from "@/services/auth/auth.types";
+import {
+  calculatePatientBMI,
+  getPatientAge,
+  getPatientBloodType,
+  getPatientWeight,
+  getPatientHeight,
+} from "@/services/auth/auth.types";
 import { patientService } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.service";
 import type { CondicionMedica } from "@/shared/navigation/userMenu/editProfile/patient/services/patient.types";
-import { onAllergiesChanged, onConditionsChanged } from "@/lib/events/clinicalHistoryEvents";
+import {
+  onAllergiesChanged,
+  onConditionsChanged,
+} from "@/lib/events/clinicalHistoryEvents";
 import { ROUTES } from "@/router/routes";
 
 function DashboardPage() {
@@ -97,15 +106,23 @@ function DashboardPage() {
   const height = getPatientHeight(user?.paciente || null);
 
   // Handle doctor selection - navigate to doctor profile
-  const handleDoctorSelect = useCallback((doctorId: string) => {
-    navigate(ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctorId));
-  }, [navigate]);
+  const handleDoctorSelect = useCallback(
+    (doctorId: string) => {
+      navigate(
+        ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctorId),
+      );
+    },
+    [navigate],
+  );
 
   // Handle insurance selection - trigger doctor search by insurance
-  const handleInsuranceSelect = useCallback((insuranceId: string, insuranceName: string) => {
-    console.log("Insurance selected:", { insuranceId, insuranceName });
-    // DoctorSearchBar will handle the search automatically
-  }, []);
+  const handleInsuranceSelect = useCallback(
+    (insuranceId: string, insuranceName: string) => {
+      console.log("Insurance selected:", { insuranceId, insuranceName });
+      // DoctorSearchBar will handle the search automatically
+    },
+    [],
+  );
 
   return (
     <motion.main {...fadeInUp} className="min-h-screen">
@@ -147,10 +164,24 @@ function DashboardPage() {
             {/* Información médica */}
             <MedicalInfoCard
               isMobile={isMobile}
-              age={patientAge !== null ? `${patientAge} ${t("profileForm.years")}` : t("profileForm.agePlaceholder")}
-              bmi={IMC !== null ? `${IMC.toFixed(1)}` : t("profileForm.pending")}
-              height={height !== null ? `${height} cm` : t("profileForm.heightPlaceholder") + " cm"}
-              weight={weight !== null ? `${weight} kg` : t("profileForm.weightPlaceholder") + " kg"}
+              age={
+                patientAge !== null
+                  ? `${patientAge} ${t("profileForm.years")}`
+                  : t("profileForm.agePlaceholder")
+              }
+              bmi={
+                IMC !== null ? `${IMC.toFixed(1)}` : t("profileForm.pending")
+              }
+              height={
+                height !== null
+                  ? `${height} cm`
+                  : t("profileForm.heightPlaceholder") + " cm"
+              }
+              weight={
+                weight !== null
+                  ? `${weight} kg`
+                  : t("profileForm.weightPlaceholder") + " kg"
+              }
               bloodType={bloodType || t("profileForm.bloodTypePlaceholder")}
               allergies={myAllergies.map((allergy) => allergy.nombre)}
               conditions={myConditions.map((condition) => condition.nombre)}

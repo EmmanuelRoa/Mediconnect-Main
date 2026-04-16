@@ -174,6 +174,8 @@
     "success": "Cita programada exitosamente",
     "error": "Error al programar la cita. Por favor, intenta nuevamente.",
     "rescheduleSuccess": "Cita reagendada exitosamente",
+    "cancellationPolicyTitle": "Política flexible de cancelación y reagendamiento",
+    "cancellationPolicyDescription": "Puedes cancelar o reagendar tu cita sin costo adicional si lo haces con al menos 4 horas de anticipación. Nuestro objetivo es ofrecerte la mayor comodidad y flexibilidad en tu atención médica.",
     "noInsurance": "Sin seguro",
     "withoutInsurance": "Sin seguro",
     "ongoing": "En progreso",
@@ -505,9 +507,13 @@
     "empty": {
       "title": "No tienes doctores aún",
       "description": "Cuando agregues doctores a favoritos, aparecerán aquí para que puedas acceder rápidamente.",
+      "noDoctorsTitle": "Aún no tienes doctores",
+      "noDoctorsDescription": "Cuando tengas doctores asignados, aparecerán aquí.",
+      "filteredTitle": "No se encontraron doctores",
+      "filteredDescription": "Intenta ajustar los filtros o la búsqueda.",
+      "clearFilters": "Limpiar filtros",
       "noResults": "No se encontraron doctores",
-      "noResultsDescription": "No tienes doctores favoritos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda o agrega doctores a tu lista de favoritos.",
-      "clearFilters": "Limpiar Filtros"
+      "noResultsDescription": "No tienes doctores favoritos que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda o agrega doctores a tu lista de favoritos."
     },
     "loading": "Cargando doctores..."
   },

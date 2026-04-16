@@ -5,30 +5,6 @@ import { type Provider } from "@/data/providers";
 import ProviderPopup from "./ProviderPopup";
 import { Expand, Minimize, Plus, Minus, Cuboid } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
-/**
- * MapSearchProviders Component
- * 
- * PERFORMANCE OPTIMIZATIONS:
- * 1. Incremental marker updates: Only updates/adds/removes markers that changed
- * 2. Marker reuse: Existing markers are reused and updated instead of recreated
- * 3. Separate user marker management: User location marker is managed independently
- * 4. Efficient cleanup: Properly unmounts React roots to prevent memory leaks
- * 5. Separated effects: Selection style updates don't recreate popups
- * 6. Four-tier effect system:
- *    - User location marker (independent)
- *    - Marker creation/deletion (when providers change, NOT selection)
- *    - Style updates only (when selection changes using SVG manipulation)
- *    - Smart fitBounds (only when providers change significantly)
- * 7. useMemo for efficient Set lookups (O(1) vs O(n) for includes)
- * 8. Removed unnecessary dependencies from effects to prevent cascading updates
- * 9. Proper DOM manipulation using SVG querySelector with smooth transitions
- * 10. Tracks initialization state to avoid unnecessary fitBounds calls
- * 11. Asynchronous popup attachment with timeout cleanup to prevent memory leaks
- * 12. Popup content updates when selection changes for real-time UI feedback
- * 
- * This approach significantly reduces DOM manipulations and improves rendering
- * performance, especially when dealing with many providers or frequent updates.
- */
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 import { AnimatePresence, motion } from "framer-motion";
@@ -63,13 +39,23 @@ const PopupContent: React.FC<{
   isMobile?: boolean;
   onContact?: (providerId: string) => void;
   isContactLoading?: boolean;
-}> = ({ provider, isSelected, onSelect, onScheduleAppointment, navigateFn, userRole, isMobile, onContact, isContactLoading }) => {
+}> = ({
+  provider,
+  isSelected,
+  onSelect,
+  onScheduleAppointment,
+  navigateFn,
+  userRole,
+  isMobile,
+  onContact,
+  isContactLoading,
+}) => {
   return (
     <TooltipProvider>
       <ProviderPopup
         provider={provider}
         isSelected={isSelected}
-        onSelect={onSelect ?? (() => { })}
+        onSelect={onSelect ?? (() => {})}
         onScheduleAppointment={onScheduleAppointment}
         navigateFn={navigateFn}
         userRole={userRole}
@@ -93,7 +79,9 @@ export default function MapSearchProviders({
   const normalContainerRef = useRef<HTMLDivElement | null>(null);
   const fullscreenContainerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const markersMapRef = useRef<Map<string, { marker: mapboxgl.Marker; root: any }>>(new Map());
+  const markersMapRef = useRef<
+    Map<string, { marker: mapboxgl.Marker; root: any }>
+  >(new Map());
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const popupTimeoutsRef = useRef<Map<string, number>>(new Map());
   const hasInitializedBoundsRef = useRef(false);
@@ -110,9 +98,13 @@ export default function MapSearchProviders({
   const [locationDenied, setLocationDenied] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null,
+  );
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [pendingConnectionId, setPendingConnectionId] = useState<string | null>(null);
+  const [pendingConnectionId, setPendingConnectionId] = useState<string | null>(
+    null,
+  );
   const [geoDatas, setGeoDatas] = useState<{
     santoDomingo: FeatureCollection<Geometry> | null;
     distritoNacional: FeatureCollection<Geometry> | null;
@@ -122,12 +114,13 @@ export default function MapSearchProviders({
   });
 
   const { t } = useTranslation("doctor");
-  const { startConversation, isLoading: isStartingConversation } = useStartConversation();
+  const { startConversation, isLoading: isStartingConversation } =
+    useStartConversation();
 
   // Memoize selected providers set for efficient lookups
   const selectedProvidersSet = useMemo(
     () => new Set(selectedProviders),
-    [selectedProviders]
+    [selectedProviders],
   );
 
   const normalizedExternalUserLocation = useMemo<[number, number] | null>(() => {
@@ -172,8 +165,8 @@ export default function MapSearchProviders({
     const fetchGeoJSON = async () => {
       try {
         const [resSD, resDN] = await Promise.all([
-          fetch('/data/poligonSantoDomingo.geojson'),
-          fetch('/data/poligonDistritoNacional.geojson')
+          fetch("/data/poligonSantoDomingo.geojson"),
+          fetch("/data/poligonDistritoNacional.geojson"),
         ]);
         const dataSD = await resSD.json();
         const dataDN = await resDN.json();
@@ -482,14 +475,20 @@ export default function MapSearchProviders({
 
       coordinates.forEach((coord, idx) => {
         if (!coord || !coord.lat || !coord.lng) {
-          console.warn(`Invalid coordinates for provider ${provider.id} at index ${idx}:`, coord);
+          console.warn(
+            `Invalid coordinates for provider ${provider.id} at index ${idx}:`,
+            coord,
+          );
           return;
         }
 
         const lat = Number(coord.lat);
         const lng = Number(coord.lng);
         if (isNaN(lat) || isNaN(lng)) {
-          console.warn(`Non-numeric coordinates for provider ${provider.id} at index ${idx}:`, coord);
+          console.warn(
+            `Non-numeric coordinates for provider ${provider.id} at index ${idx}:`,
+            coord,
+          );
           return;
         }
 
@@ -549,7 +548,9 @@ export default function MapSearchProviders({
     });
 
     // Legacy support: keep markersRef updated
-    markersRef.current = Array.from(markersMapRef.current.values()).map(m => m.marker);
+    markersRef.current = Array.from(markersMapRef.current.values()).map(
+      (m) => m.marker,
+    );
   }, [providers, onProviderSelect, isMapLoaded, navigate]);
 
   // Update marker styles when selection changes (optimized - only updates scale)
@@ -574,11 +575,11 @@ export default function MapSearchProviders({
           const element = existingMarker.marker.getElement();
 
           // Get the SVG element and apply scale directly
-          const svg = element.querySelector('svg');
+          const svg = element.querySelector("svg");
           if (svg) {
             svg.style.transform = `scale(${targetScale})`;
-            svg.style.transformOrigin = 'center bottom';
-            svg.style.transition = 'transform 0.2s ease';
+            svg.style.transformOrigin = "center bottom";
+            svg.style.transition = "transform 0.2s ease";
           }
 
           // Update popup content to reflect selection state
@@ -598,7 +599,13 @@ export default function MapSearchProviders({
         }
       });
     });
-  }, [selectedProvidersSet, providers, isMapLoaded, navigate, onProviderSelect]);
+  }, [
+    selectedProvidersSet,
+    providers,
+    isMapLoaded,
+    navigate,
+    onProviderSelect,
+  ]);
 
   // Ajustar vista cuando cambian los providers (solo si hay cambio significativo)
   useEffect(() => {
@@ -730,10 +737,11 @@ export default function MapSearchProviders({
                     <button
                       type="button"
                       onClick={() => setIs3D((prev) => !prev)}
-                      className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${is3D
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground"
-                        }`}
+                      className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${
+                        is3D
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground"
+                      }`}
                       aria-label="Toggle 3D"
                     >
                       <Cuboid size={24} />
@@ -799,10 +807,11 @@ export default function MapSearchProviders({
                   <button
                     type="button"
                     onClick={() => setIs3D((prev) => !prev)}
-                    className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${is3D
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground"
-                      }`}
+                    className={`bg-background shadow-lg rounded-full p-3 border border-primary/75 hover:bg-background/85 transition active:scale-95 flex items-center justify-center ${
+                      is3D
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground"
+                    }`}
                     aria-label="Toggle 3D"
                   >
                     <Cuboid size={24} />
@@ -858,17 +867,18 @@ export default function MapSearchProviders({
         </ScheduleAppointmentDialog>
       )}
 
-      {(userRole === "CENTER" || userRole === "DOCTOR") && pendingConnectionId && (
-        <ToogleConfirmConnection
-          status="not_connected"
-          id={parseInt(pendingConnectionId)}
-          onConfirm={handleConfirmConnection}
-          isOpen={confirmDialogOpen}
-          onClose={() => setConfirmDialogOpen(false)}
-        >
-          <div style={{ display: 'none' }} />
-        </ToogleConfirmConnection>
-      )}
+      {(userRole === "CENTER" || userRole === "DOCTOR") &&
+        pendingConnectionId && (
+          <ToogleConfirmConnection
+            status="not_connected"
+            id={parseInt(pendingConnectionId)}
+            onConfirm={handleConfirmConnection}
+            isOpen={confirmDialogOpen}
+            onClose={() => setConfirmDialogOpen(false)}
+          >
+            <div style={{ display: "none" }} />
+          </ToogleConfirmConnection>
+        )}
     </>
   );
 }

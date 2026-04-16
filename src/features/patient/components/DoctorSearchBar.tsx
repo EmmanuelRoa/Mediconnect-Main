@@ -19,10 +19,17 @@ interface DoctorSearchBarProps {
 // Minimum search length to trigger API call
 const MIN_SEARCH_LENGTH = 2;
 
-const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, onInsuranceSelect }: DoctorSearchBarProps) => {
+const DoctorSearchBar = ({
+  onSearchChange,
+  onInsuranceChange,
+  onDoctorSelect,
+  onInsuranceSelect,
+}: DoctorSearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [insurance, setInsurance] = useState("");
-  const [selectedInsuranceId, setSelectedInsuranceId] = useState<string | null>(null);
+  const [selectedInsuranceId, setSelectedInsuranceId] = useState<string | null>(
+    null,
+  );
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [showInsuranceDropdown, setShowInsuranceDropdown] = useState(false);
 
@@ -37,7 +44,7 @@ const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, on
   const hasSearchText = debouncedSearch.trim().length >= MIN_SEARCH_LENGTH;
   const hasInsuranceSelected = selectedInsuranceId !== null;
   const shouldEnableSearch = hasSearchText || hasInsuranceSelected;
-  
+
   console.log("DoctorSearchBar state:", {
     hasSearchText,
     hasInsuranceSelected,
@@ -45,31 +52,30 @@ const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, on
     selectedInsuranceId,
     debouncedSearch,
   });
-  
-  const { 
-    filteredProviders, 
-    isLoading 
-  } = useSearchDoctors({
+
+  const { filteredProviders, isLoading } = useSearchDoctors({
+    language: i18n.language || "es",
     lat: null, // Don't send location for name-only search
     lng: null, // Don't send location for name-only search
     radiusKm: undefined, // Don't send radius for name-only search
-    filters: shouldEnableSearch ? {
-      name: debouncedSearch,
-      insuranceAccepted: selectedInsuranceId ? [selectedInsuranceId] : [],
-      providerType: [],
-      modality: "all",
-      specialty: [],
-      gender: "all",
-      yearsOfExperience: null,
-      languages: "all",
-      scheduledAppointments: "all",
-      rating: null,
-      radio: null,
-    } : undefined,
-    language: i18n.language,
+    filters: shouldEnableSearch
+      ? {
+          name: debouncedSearch,
+          insuranceAccepted: selectedInsuranceId ? [selectedInsuranceId] : [],
+          providerType: [],
+          modality: "all",
+          specialty: [],
+          gender: "all",
+          yearsOfExperience: null,
+          languages: "all",
+          scheduledAppointments: "all",
+          rating: null,
+          radio: null,
+        }
+      : undefined,
     enabled: shouldEnableSearch,
   });
-  
+
   console.log("Search results:", {
     filteredProvidersCount: filteredProviders.length,
     isLoading,
@@ -119,7 +125,7 @@ const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, on
   const handleSelectDoctor = (doctorId: string, doctorName: string) => {
     setSearchTerm(doctorName);
     setShowSearchDropdown(false);
-    
+
     // If onDoctorSelect callback is provided, navigate to doctor profile
     if (onDoctorSelect) {
       onDoctorSelect(doctorId);
@@ -135,9 +141,12 @@ const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, on
     setInsurance(plan.name);
     setSelectedInsuranceId(plan.id);
     setShowInsuranceDropdown(false);
-    
-    console.log("Insurance selected, searching doctors with insurance ID:", plan.id);
-    
+
+    console.log(
+      "Insurance selected, searching doctors with insurance ID:",
+      plan.id,
+    );
+
     // If onInsuranceSelect callback is provided, trigger search by insurance
     if (onInsuranceSelect) {
       onInsuranceSelect(plan.id, plan.name);
@@ -201,7 +210,7 @@ const DoctorSearchBar = ({ onSearchChange, onInsuranceChange, onDoctorSelect, on
               const newValue = e.target.value;
               setInsurance(newValue);
               setShowInsuranceDropdown(true);
-              
+
               // If user clears the insurance field, clear the selected insurance ID
               if (newValue === "") {
                 setSelectedInsuranceId(null);

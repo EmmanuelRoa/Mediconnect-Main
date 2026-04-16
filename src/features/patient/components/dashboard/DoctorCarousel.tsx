@@ -79,14 +79,14 @@ export function DoctorCarousel({
   });
 
   // Fetch doctors from API (solo si no usamos mock data)
-  const { data, isLoading, error } = useMyDoctors(
+  const { data, isLoading } = useMyDoctors(
     useMockData
       ? undefined
       : {
           target: i18n.language,
-          source: 'es',
-          translate_fields: 'especialidadPrincipal.nombre',
-        }
+          source: "es",
+          translate_fields: "especialidadPrincipal.nombre",
+        },
   );
 
   // Transform API data to the format expected by MCDoctorCard
@@ -98,17 +98,28 @@ export function DoctorCarousel({
 
     // Si no hay datos de la API, retornar array vacío
     if (!data?.data) return [];
-    
+
     console.log("Transforming doctors data:", data.data);
     return data.data.map((doctor) => ({
       id: Number(doctor.id),
       name: `${doctor.nombre} ${doctor.apellido}`,
-      specialty: doctor.especialidadPrincipal?.nombre || t("myDoctors.noSpecialty", "Sin especialidad"),
+      specialty:
+        doctor.especialidadPrincipal?.nombre ||
+        t("myDoctors.noSpecialty", "Sin especialidad"),
       rating: doctor.calificacionPromedio || 0,
       yearsOfExperience: doctor.anosExperiencia || 0,
-      languages: doctor.idiomas?.map(idioma => idioma.nombre.toLowerCase().substring(0, 2)) || [],
-      insuranceAccepted: doctor.segurosAceptados?.map(seguro => seguro.nombre?.toLowerCase() || '') || [],
-      insuranceAcceptedIds: doctor.segurosAceptados?.map(seguro => seguro.id).filter((id): id is number => id !== null) || [],
+      languages:
+        doctor.idiomas?.map((idioma) =>
+          idioma.nombre.toLowerCase().substring(0, 2),
+        ) || [],
+      insuranceAccepted:
+        doctor.segurosAceptados?.map(
+          (seguro) => seguro.nombre?.toLowerCase() || "",
+        ) || [],
+      insuranceAcceptedIds:
+        doctor.segurosAceptados
+          ?.map((seguro) => seguro.id)
+          .filter((id): id is number => id !== null) || [],
       isFavorite: doctor.esFavorito || false,
       urlImage: doctor.fotoPerfil || "",
       lastAppointment: doctor.ultimaCita?.fecha,
@@ -224,6 +235,10 @@ export function DoctorCarousel({
     return count;
   };
 
+  const hasAnyDoctor = doctorList.length > 0;
+  const hasActiveFilters = getActiveFiltersCount() > 0;
+  const isFilteredEmpty = hasAnyDoctor && hasActiveFilters;
+
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = isMobile ? 250 : 300;
@@ -252,7 +267,10 @@ export function DoctorCarousel({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <div className="w-full sm:w-auto sm:min-w-[200px] lg:min-w-[250px]">
               <MCFilterInput
-                placeholder={t("filters.placeholders.name", "Search by name")}
+                placeholder={t(
+                  "myDoctors.searchPlaceholder",
+                  "Buscar por nombre...",
+                )}
                 value={searchTerm}
                 onChange={setSearchTerm}
               />
@@ -297,25 +315,41 @@ export function DoctorCarousel({
                 {t("myDoctors.loading", "Cargando doctores...")}
               </span>
             </div>
-          ) : /* Cards Container o Empty */
-          filteredDoctors.length === 0 ? (
+          ) : filteredDoctors.length === 0 ? (
             <Empty className="flex-1 my-6">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Stethoscope size={32} />
                 </EmptyMedia>
                 <EmptyTitle>
-                  {t("doctors.emptyTitle", "No doctors found")}
+                  {isFilteredEmpty
+                    ? t(
+                        "myDoctors.empty.filteredTitle",
+                        "No se encontraron doctores",
+                      )
+                    : t(
+                        "myDoctors.empty.noDoctorsTitle",
+                        "Aún no tienes doctores",
+                      )}
                 </EmptyTitle>
                 <EmptyDescription>
-                  {t(
-                    "doctors.emptyDescription",
-                    "Try adjusting your filters or search criteria.",
-                  )}
+                  {isFilteredEmpty
+                    ? t(
+                        "myDoctors.empty.filteredDescription",
+                        "Intenta ajustar los filtros o la búsqueda.",
+                      )
+                    : t(
+                        "myDoctors.empty.noDoctorsDescription",
+                        "Cuando tengas doctores asignados, aparecerán aquí.",
+                      )}
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <MCButton size="s" variant="outline" onClick={resetDoctorFilters}>
+                <MCButton
+                  size="s"
+                  variant="outline"
+                  onClick={resetDoctorFilters}
+                >
                   {t("filters.popover.clear", "Clear filters")}
                 </MCButton>
               </EmptyContent>

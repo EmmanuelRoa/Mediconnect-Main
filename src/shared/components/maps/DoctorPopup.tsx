@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Star, MapPin, Globe, Shield, Phone, Loader2 } from "lucide-react";
 import { type Doctor } from "@/data/providers";
 import { Card, CardContent, CardTitle } from "@/shared/ui/card";
@@ -32,23 +32,19 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
   isContactLoading = false,
 }) => {
   const { t } = useTranslation("common");
-  const [imageError, setImageError] = useState(false);
-  const hasValidImage = typeof provider.image === "string" && provider.image.trim().length > 0;
 
-  useEffect(() => {
-    setImageError(false);
-  }, [provider.image, provider.id]);
-
-  // Determinar estado de conexión
+  // Helpers
+  const locations = (
+    Array.isArray(provider.address) ? provider.address : [provider.address]
+  ).filter(Boolean) as string[];
+  const languages = provider.languages?.filter(Boolean) ?? [];
+  const hasPhone = !!provider.phone?.trim();
+  const insurances = provider.insurances?.filter(Boolean) ?? [];
 
   const connectBtnText = t("clinicCard.connect");
   const viewProfileText = t("clinicCard.viewProfile");
   const scheduleAppointmentText = t("clinicCard.scheduleAppointment");
   const contactText = t("clinicCard.contact");
-
-  const locations = Array.isArray(provider.address)
-    ? provider.address
-    : [provider.address];
 
   const cardSize = isMobile ? "w-[260px] rounded-2xl" : "w-[480px] rounded-3xl";
   const imgHeight = isMobile ? "h-28" : "h-36";
@@ -70,7 +66,7 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
 
   const handleContactClick = () => {
     onContact?.(provider.id);
-  }
+  };
 
   return (
     <motion.div {...fadeInUp}>
@@ -79,28 +75,13 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
       >
         {/* Imagen */}
         <div
-          className={`overflow-hidden rounded-xl border border-primary/5 ${imgHeight}`}
+          className={`overflow-hidden rounded-xl border border-primary/15 ${imgHeight}`}
         >
-          {hasValidImage && !imageError ? (
-            <img
-              src={provider.image}
-              alt={provider.name}
-              className="w-full h-full object-cover transition-transform hover:scale-105"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full bg-[#c8d4bf] flex items-center justify-center">
-              <svg
-                viewBox="0 0 200 120"
-                className="w-full h-full"
-                role="img"
-                aria-label={t("doctorCard.defaultProfileImage", "Foto de perfil por defecto")}
-              >
-                <circle cx="100" cy="44" r="28" fill="#8cad7f" />
-                <ellipse cx="100" cy="124" rx="58" ry="44" fill="#8cad7f" />
-              </svg>
-            </div>
-          )}
+          <img
+            src={provider.image}
+            alt={provider.name}
+            className="w-full h-full object-cover transition-transform hover:scale-105"
+          />
         </div>
 
         {/* Nombre + rating */}
@@ -123,71 +104,85 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
             {provider.specialty}
           </div>
 
-          {/* Ubicaciones */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className={`flex gap-1.5 cursor-pointer ${textXs} text-muted-foreground`}
-              >
-                <MapPin className="w-3 h-3 mt-0.5 text-secondary" />
-                <span className="truncate">{locations[0]}</span>
-                {locations.length > 1 && (
-                  <span className="text-secondary">
-                    +{locations.length - 1}
-                  </span>
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              {locations.join(" • ")}
-            </TooltipContent>
-          </Tooltip>
+          <div
+            className={
+              isMobile ? "space-y-2" : "grid grid-cols-2 gap-x-3 gap-y-2"
+            }
+          >
+            {/* Ubicaciones — oculto si vacío */}
+            {locations.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`flex gap-1.5 cursor-pointer ${textXs} text-muted-foreground`}
+                  >
+                    <MapPin className="w-3 h-3 mt-0.5 text-secondary" />
+                    <span className="truncate">{locations[0]}</span>
+                    {locations.length > 1 && (
+                      <span className="text-secondary">
+                        +{locations.length - 1}
+                      </span>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  {locations.join(" • ")}
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-          {/* Idiomas */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className={`flex gap-1 cursor-pointer ${textXs} text-muted-foreground`}
+            {/* Idiomas — oculto si array vacío */}
+            {languages.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`flex gap-1 cursor-pointer ${textXs} text-muted-foreground`}
+                  >
+                    <Globe className="w-3 h-3 text-secondary" />
+                    <span className="truncate max-w-[150px]">
+                      {languages.join(", ")}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{languages.join(", ")}</TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Teléfono — oculto si vacío */}
+            {hasPhone && (
+              <a
+                href={`tel:${provider.phone}`}
+                className={`flex gap-1 ${textXs} text-secondary`}
               >
-                <Globe className="w-3 h-3 text-secondary" />
-                <span className="truncate max-w-[150px]">
-                  {provider.languages.join(", ")}
+                <Phone className="w-3 h-3" />
+                <span className="text-primary">
+                  {formatPhone(provider.phone)}
                 </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{provider.languages.join(", ")}</TooltipContent>
-          </Tooltip>
+              </a>
+            )}
 
-          {/* Teléfono */}
-          {provider.phone && (
-            <a
-              href={`tel:${provider.phone}`}
-              className={`flex gap-1 ${textXs} text-secondary`}
-            >
-              <Phone className="w-3 h-3" />
-              <span className="text-primary">
-                {formatPhone(provider.phone)}
-              </span>
-            </a>
-          )}
+            {/* Seguros — oculto si array vacío */}
+            {insurances.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`flex gap-1 cursor-pointer ${textXs}`}>
+                    <Shield className="w-3 h-3 text-secondary" />
+                    <span className="truncate max-w-[150px]">
+                      {insurances.join(", ")}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{insurances.join(", ")}</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
 
-          {/* Seguros */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className={`flex gap-1 cursor-pointer pt-1 border-t ${textXs}`}
-              >
-                <Shield className="w-3 h-3 text-secondary" />
-                <span className="truncate max-w-[150px]">
-                  {provider.insurances.join(", ")}
-                </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{provider.insurances.join(", ")}</TooltipContent>
-          </Tooltip>
+          <div className="my-3 h-[1px] w-full rounded-full bg-gradient-to-r from-primary/5 via-primary/30 to-primary/5" />
 
           {/* Botones */}
-          <div className={`flex gap-2 mt-3 ${isMobile && "flex-col"}`}>
+          <div
+            className={`flex gap-2 mt-3 ${isMobile ? "flex-col" : "flex-row"}`}
+          >
             {userRole === "CENTER" && (
               <MCButton
                 size="xs"
@@ -204,7 +199,7 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
                 <MCButton
                   size="xs"
                   variant="primary"
-                  className="w-full"
+                  className="flex-1 w-full"
                   onClick={handleSchedule}
                 >
                   {scheduleAppointmentText}
@@ -212,13 +207,15 @@ const DoctorPopup: React.FC<DoctorPopupProps> = ({
                 <MCButton
                   size="xs"
                   variant="outline"
-                  className="w-full"
+                  className="flex-1 w-full"
                   onClick={handleContactClick}
                   disabled={isContactLoading}
                 >
                   {isContactLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : contactText}
+                  ) : (
+                    contactText
+                  )}
                 </MCButton>
               </>
             )}

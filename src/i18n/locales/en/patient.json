@@ -179,6 +179,8 @@
     "success": "Appointment scheduled successfully",
     "error": "Error scheduling appointment. Please try again.",
     "rescheduleSuccess": "Appointment rescheduled successfully",
+    "cancellationPolicyTitle": "Flexible cancellation and rescheduling policy",
+    "cancellationPolicyDescription": "You can cancel or reschedule your appointment at no additional cost if you do so at least 4 hours in advance. Our goal is to offer you the greatest comfort and flexibility in your medical care.",
     "noInsurance": "Without insurance",
     "withoutInsurance": "Without insurance",
     "ongoing": "Ongoing",
@@ -420,9 +422,13 @@
     "empty": {
       "title": "You have no doctors yet",
       "description": "When you add doctors to favorites, they will appear here for quick access.",
+      "noDoctorsTitle": "You don't have doctors yet",
+      "noDoctorsDescription": "When you have assigned doctors, they will appear here.",
+      "filteredTitle": "No doctors found",
+      "filteredDescription": "Try adjusting filters or your search.",
+      "clearFilters": "Clear filters",
       "noResults": "No doctors found",
-      "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results.",
-      "clearFilters": "Clear Filters"
+      "noResultsDescription": "No consultations found with the applied filters. Try adjusting the filters to see more results."
     },
     "loading": "Loading doctors..."
   },

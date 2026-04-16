@@ -31,7 +31,8 @@ export function ChatSidebar({
 
   // Filtrar conversaciones por nombre del otro usuario
   const filteredConversations = conversations.filter((conv) => {
-    const userName = `${conv.otroUsuario.nombre} ${conv.otroUsuario.apellido}`.toLowerCase();
+    const userName =
+      `${conv.otroUsuario.nombre} ${conv.otroUsuario.apellido}`.toLowerCase();
     return userName.includes(searchQuery.toLowerCase());
   });
 
@@ -104,8 +105,10 @@ export function ChatSidebar({
             <div className="text-center py-8 px-4">
               <p className="text-sm text-muted-foreground">
                 {searchQuery
-                  ? t("chatPanel.noConversationsFound") || "No se encontraron conversaciones"
-                  : t("chatPanel.noConversations") || "No tienes conversaciones aún"}
+                  ? t("chatPanel.noConversationsFound") ||
+                    "No se encontraron conversaciones"
+                  : t("chatPanel.noConversations") ||
+                    "No tienes conversaciones aún"}
               </p>
             </div>
           )}
