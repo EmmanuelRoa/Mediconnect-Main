@@ -73,6 +73,7 @@ function DoctorProfileBanner({
   const { t, i18n } = useTranslation("doctor");
   const navigate = useNavigate();
   const [languages, setLanguages] = useState<Idioma[]>([]);
+  const [isFavorite, setIsFavorite] = useState<boolean>(Boolean(doctor?.isFavorite));
 
   const logout = useAppStore((state) => state.logout);
   const setToast = useGlobalUIStore((state) => state.setToast);
@@ -119,6 +120,10 @@ function DoctorProfileBanner({
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    setIsFavorite(Boolean(doctor?.isFavorite));
+  }, [doctor?.isFavorite, doctor?.id, doctor?.usuarioId]);
 
   const getLanguageLabel = (nombre: string) => {
     const lang = AVAILABLE_LANGUAGES.find(l => l.label === nombre);
@@ -173,9 +178,10 @@ function DoctorProfileBanner({
     if (!doctorIdNum) return;
 
     // If it's already favorite, call remove mutation
-    if (doctor?.isFavorite) {
+    if (isFavorite) {
       removeFromFavorites(doctorIdNum, {
         onSuccess: () => {
+          setIsFavorite(false);
           onToggleFavorite?.();
           setToast({
             message: t('doctorCard.favoriteRemoved', { ns: 'common' }) || t('doctorCard.favoriteAdded', { ns: 'common' }),
@@ -197,6 +203,7 @@ function DoctorProfileBanner({
     // Otherwise add to favorites
     addToFavorites(doctorIdNum, {
       onSuccess: () => {
+        setIsFavorite(true);
         onToggleFavorite?.();
         setToast({
           message: t('doctorCard.favoriteAdded', { ns: 'common' }),
@@ -214,6 +221,19 @@ function DoctorProfileBanner({
     });
   };
 
+
+  const favoriteConfirmTitle = isFavorite
+    ? t("doctorCard.confirmRemoveFavoriteTitle", { ns: "common" })
+    : t("doctorCard.confirmFavoriteTitle", { ns: "common" });
+  const favoriteConfirmDescription = isFavorite
+    ? t("doctorCard.confirmRemoveFavoriteDescription", {
+        name: getUserFullName(doctor),
+        ns: "common",
+      })
+    : t("doctorCard.confirmFavoriteDescription", {
+        name: getUserFullName(doctor),
+        ns: "common",
+      });
   return (
     <div className="shadow-md rounded-4xl border-0 mx-auto">
       <div className="relative h-60 flex items-end rounded-t-4xl  ">
@@ -358,17 +378,17 @@ function DoctorProfileBanner({
                     {!isDoctorViewerOtherProfile ? (
                       <>
                         <MCModalBase
-                          id={`fav-${doctor?.id}`}
-                          title={t('doctorCard.confirmFavoriteTitle', { ns: 'common' })}
+                          id={`fav-${doctor?.id ?? doctor?.usuarioId}`}
+                          title={favoriteConfirmTitle}
                           trigger={
                             <MCButton
-                              variant={doctor.isFavorite ? "secondary" : "outline"}
+                              variant={isFavorite ? "secondary" : "outline"}
                               size="m"
                               className="font-medium rounded-full transition-colors transition-opacity transition-transform duration-200 focus:outline-none px-6 py-3 text-base md:px-8 md:py-6 md:text-lg bg-transparent border border-primary text-primary hover:bg-primary/10 hover:opacity-90 active:bg-primary/20 active:opacity-80 active:scale-95 active:shadow-inner"
                             >
                               { (isAddingFavorite || isRemovingFavorite) ? (
                                 <Spinner className="text-red-500" />
-                              ) : doctor.isFavorite ? (
+                              ) : isFavorite ? (
                                 <HeartOff className=" text-red-500" />
                               ) : (
                                 <Heart fill="red" className="text-red-500" />
@@ -384,7 +404,7 @@ function DoctorProfileBanner({
                         >
                           <div className="py-4 px-2">
                             <p className="text-sm text-muted-foreground">
-                              {t('doctorCard.confirmFavoriteDescription', { name: getUserFullName(doctor), ns: 'common' })}
+                              {favoriteConfirmDescription}
                             </p>
                           </div>
                         </MCModalBase>
