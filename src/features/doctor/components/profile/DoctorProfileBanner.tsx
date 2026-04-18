@@ -7,7 +7,6 @@ import {
   Ellipsis,
   BadgeCheck,
   Star,
-  Share2,
   MessageCircle,
   Heart,
   HeartOff,
@@ -161,8 +160,7 @@ function DoctorProfileBanner({
   };
   
   const handleCopyProfile = () => {
-    const profileUrl = `${window.location.origin}${ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", doctor?.id || "")}`;
-    navigator.clipboard.writeText(profileUrl);
+    navigator.clipboard.writeText(window.location.href);
     setToast({
       message: t("profileForm.menu.profileCopied", "Enlace de perfil copiado al portapapeles"),
       type: "success",
@@ -397,9 +395,9 @@ function DoctorProfileBanner({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Share2 className="w-4 h-4 mr-2" />
-                              {t("profileForm.menu.shareProfile")}
+                            <DropdownMenuItem onClick={handleCopyProfile}>
+                              <Copy className="w-4 h-4 mr-2" />
+                              {t("profileForm.menu.copyProfile")}
                             </DropdownMenuItem>
                             {/* <DropdownMenuItem>
                               <VolumeX className="w-4 h-4 mr-2" />

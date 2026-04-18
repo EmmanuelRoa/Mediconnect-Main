@@ -1338,7 +1338,7 @@ function ScheduleAppointmentDialog({
         if (onSuccess) {
           onSuccess();
         } else if (navigate) {
-          navigate("/patient/schedule-appointment", { replace: true });
+          navigate("/patient/schedule-appointment");
         }
       }, 100);
     } catch (error: any) {

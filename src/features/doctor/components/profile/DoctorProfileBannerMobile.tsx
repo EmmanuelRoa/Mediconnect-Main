@@ -7,7 +7,6 @@ import {
   Ellipsis,
   BadgeCheck,
   Star,
-  Share2,
   MessageCircle,
   Heart,
   HeartOff,
@@ -173,32 +172,7 @@ function DoctorProfileBannerMobile({
   };
 
   const handleCopyProfile = () => {
-    const profileUrl = `${window.location.origin}${ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", String(doctor?.id ?? doctor?.usuarioId ?? ""))}`;
-    navigator.clipboard.writeText(profileUrl);
-    setToast({
-      message: t("profileForm.menu.profileCopied", "Enlace de perfil copiado al portapapeles"),
-      type: "success",
-      open: true,
-    });
-  };
-
-  const handleShareProfile = async () => {
-    const profileUrl = `${window.location.origin}${ROUTES.DOCTOR.DOCTOR_PROFILE_PUBLIC.replace(":doctorId", String(doctor?.id ?? doctor?.usuarioId ?? ""))}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: getUserFullName(doctor),
-          text: t("profileForm.menu.shareProfile"),
-          url: profileUrl,
-        });
-        return;
-      } catch {
-        // Fallback a copiar si se cancela o falla compartir.
-      }
-    }
-
-    navigator.clipboard.writeText(profileUrl);
+    navigator.clipboard.writeText(window.location.href);
     setToast({
       message: t("profileForm.menu.profileCopied", "Enlace de perfil copiado al portapapeles"),
       type: "success",
@@ -379,9 +353,9 @@ function DoctorProfileBannerMobile({
                   </>
                 ) : (
                   <>
-                    <DropdownMenuItem onClick={handleShareProfile}>
-                      <Share2 className="w-4 h-4 mr-2" />
-                      {t("profileForm.menu.shareProfile")}
+                    <DropdownMenuItem onClick={handleCopyProfile}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      {t("profileForm.menu.copyProfile")}
                     </DropdownMenuItem>
                   </>
                 )}
