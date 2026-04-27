@@ -42,7 +42,7 @@ const SearchDropdown = ({
   // Show loading state
   if (isLoading) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-2 md:mt-2.5 bg-card rounded-xl md:rounded-2xl shadow-search border border-border overflow-hidden z-50">
+      <div className="absolute top-full left-0 right-0 mt-2 md:mt-2.5 bg-background rounded-xl md:rounded-2xl shadow-search border border-primary/15 overflow-hidden z-50">
         <div className="py-4 px-4 text-center text-sm text-muted-foreground">
           Buscando...
         </div>
@@ -52,7 +52,6 @@ const SearchDropdown = ({
 
   // Show empty state if no results
   if (filteredSpecialties.length === 0 && filteredDoctors.length === 0) {
-    // Don't show dropdown if no search term and no active filter
     if (!searchTerm.trim() && !hasActiveFilter) return null;
 
     return (
@@ -65,7 +64,7 @@ const SearchDropdown = ({
   }
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 md:mt-2.5 bg-card rounded-xl md:rounded-2xl shadow-search border border-border overflow-hidden z-50 max-h-[60vh] md:max-h-96 overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-2 md:mt-2.5 bg-background rounded-xl md:rounded-2xl shadow-search border border-primary/15 overflow-hidden z-50 max-h-[60vh] md:max-h-96 overflow-y-auto">
       <div className="py-2">
         {/* Especialidades */}
         {filteredSpecialties.length > 0 && (
