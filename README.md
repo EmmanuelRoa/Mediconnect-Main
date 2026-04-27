@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/assets/Captura de pantalla 2026-04-26 a la(s) 10.52.25 p. m..png" alt="Mediconnect Landing Page" width="100%" />
+<img src="src/assets/readmeimg.png" alt="Mediconnect Landing Page" width="100%" style="border-radius: 24px;" />
 
 # Mediconnect
 
